@@ -1,0 +1,13 @@
+{
+    "alive.format.closeParenOwnLine": "multiline",
+    "alive.format.indentWidth": 4,
+    "alive.format.maxBlankLines": 2,
+    "alive.indentMacros": true,
+    "editor.semanticTokenColorCustomizations": {
+        "rules": {
+            "error": "#ff0000",
+            "symbol": "#5599aa",
+            "parenthesis": "#999"
+        }
+    }
+}
