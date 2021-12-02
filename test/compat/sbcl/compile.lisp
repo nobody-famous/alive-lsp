@@ -16,7 +16,7 @@
                               (unless (eq line :eof)
                                       (format stdout "OUT ~A~%" line)
                               )))
-            (t (c) (declare (ignore c)))
+            (t (c) (format stdout "~&OUT CAUGHT: ~A~%" c))
         )))
 
 
@@ -28,7 +28,7 @@
                               (unless (eq line :eof)
                                       (format stdout "ERR ~A~%" (string-upcase line))
                               )))
-            (t (c) (declare (ignore c)))
+            (t (c) (format stdout "~&ERR CAUGHT: ~A~%" c))
         )))
 
 (defun run-all ()
