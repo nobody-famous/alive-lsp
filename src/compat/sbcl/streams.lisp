@@ -64,13 +64,18 @@
 
 (defun flush-read-stream (obj)
     (loop :with counter := 10
+          :with ch := nil
           :until (zerop counter)
           :do (if (zerop (length (buffer obj)))
                   (progn (decf counter)
-                         (sleep 0.1)
+                         (sleep 0.01)
                   )
-                  (next-buffer-char obj)
-              )))
+                  (progn
+                   (setf ch (next-buffer-char obj))
+                   (setf counter 10)
+                  ))
+          :finally (return (if ch ch :eof))
+    ))
 
 
 (defun next-read-char (obj)

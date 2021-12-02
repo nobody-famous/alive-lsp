@@ -15,4 +15,4 @@
 
 (register-system-packages "alive-lsp/src/compat/sbcl/streams" '(:alive/streams))
 
-(register-system-packages "alive-lsp/test/compat/sbcl/compile" '(:test/compat/sbcl/compile))
+(register-system-packages "alive-lsp/test/compat/sbcl/compile" '(:alive/test/compat/sbcl/compile))
