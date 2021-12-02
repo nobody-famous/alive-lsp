@@ -8,14 +8,6 @@
 (in-package :alive/test/compat/sbcl/compile)
 
 
-(defun print-output (stream out flags)
-    (loop :until (first flags)
-          :do (when (usocket::listen stream)
-                    (format out "TRYING RECEIVE~%")
-                    (format out "RECEIVED: ~A~%" (read stream))
-              )))
-
-
 (defun read-stuff (stdout out-stream)
     (lambda ()
         (handler-case
