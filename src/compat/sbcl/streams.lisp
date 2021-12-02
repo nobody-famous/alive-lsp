@@ -12,6 +12,10 @@
              :initform ""
              :initarg :buffer
      )
+     (stdout :accessor stdout
+             :initform nil
+             :initarg :stdout
+     )
      (closed-p :accessor closed-p
                :initform nil
                :initarg :closed-p
@@ -52,13 +56,19 @@
                        )))
 
 
+(defun end-stream (obj)
+    (setf (eof-p obj) T)
+    :eof
+)
+
+
 (defun next-buffer-char (obj)
     (bt:with-lock-held ((lock obj))
                        (let ((ch (elt (buffer obj) 0)))
                            (setf (buffer obj)
                                  (subseq (buffer obj) 1)
                            )
-                           (if ch ch #\A)
+                           (if ch ch (end-stream obj))
                        )))
 
 
@@ -70,11 +80,10 @@
                   (progn (decf counter)
                          (sleep 0.01)
                   )
-                  (progn
-                   (setf ch (next-buffer-char obj))
-                   (setf counter 10)
+                  (progn (setf counter 10)
+                         (setf ch (next-buffer-char obj))
                   ))
-          :finally (return (if ch ch :eof))
+          :finally (return (if ch ch (end-stream obj)))
     ))
 
 
@@ -99,5 +108,17 @@
 
 (defmethod sb-gray:stream-read-line ((obj rt-stream))
     (bt:with-lock-held ((lock obj))
-                       (elt (buffer obj) 0)
-    ))
+                       (loop :until (or (closed-p obj)
+                                        (position #\linefeed (buffer obj))
+                                    )
+                             :do (bt:condition-wait (cond-var obj) (lock obj))
+                       )
+
+                       (if (closed-p obj)
+                           (end-stream obj)
+                           (let* ((pos (position #\linefeed (buffer obj)))
+                                  (line (subseq (buffer obj) 0 pos))
+                                 )
+                               (setf (buffer obj) (subseq (buffer obj) (+ pos 1)))
+                               line
+                           ))))
