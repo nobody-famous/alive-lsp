@@ -4,6 +4,7 @@
     :class :package-inferred-system
     :depends-on (#:usocket
                  #:bordeaux-threads
+                 "alive-lsp/src/compat/sbcl/compile"
                  "alive-lsp/src/compat/sbcl/streams"
                 ))
 
@@ -13,6 +14,7 @@
                  "alive-lsp/test/compat/sbcl/compile"
                 ))
 
+(register-system-packages "alive-lsp/src/compat/sbcl/compile" '(:alive/compile))
 (register-system-packages "alive-lsp/src/compat/sbcl/streams" '(:alive/streams))
 
 (register-system-packages "alive-lsp/test/compat/sbcl/compile" '(:alive/test/compat/sbcl/compile))

@@ -2,10 +2,20 @@
     (:use :cl)
     (:export :run-all)
 
-    (:local-nicknames (:astreams :alive/streams))
-)
+    (:local-nicknames (:astreams :alive/streams)
+                      (:compile :alive/compile)
+    ))
 
 (in-package :alive/test/compat/sbcl/compile)
+
+
+(defun compile-foo ()
+    (compile:file
+     (lambda (msg)
+         (format T "~&CALLBACK: ~A~%" msg)
+     )
+     "test/compat/sbcl/files/foo.lisp"
+    ))
 
 
 (defun read-stuff (stdout out-stream)
@@ -31,6 +41,7 @@
             (t (c) (format stdout "~&ERR CAUGHT: ~A~%" c))
         )))
 
+
 (defun run-all ()
     (format T "SBCL Compile Tests~%")
 
@@ -43,16 +54,10 @@
            (thread (bt:make-thread (read-stuff orig-output out-stream)))
            (err-thread (bt:make-thread (read-err-stuff orig-output err-stream)))
           )
-        (compile-file "test/compat/sbcl/files/foo.lisp")
+        ; (compile-file "test/compat/sbcl/files/foo.lisp")
+        (compile-foo)
         (close out-stream)
         (close err-stream)
         (bt:join-thread thread)
         (bt:join-thread err-thread)
-    ))
-
-
-(defun foo ()
-    (loop :for i :from 1 :to 3 :do
-              (format T "~A~%" i)
-              (sleep 1)
     ))
