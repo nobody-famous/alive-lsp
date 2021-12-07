@@ -14,7 +14,7 @@
      (lambda (msg)
          (format T "~&CALLBACK: ~A~%" msg)
      )
-     "test/compat/sbcl/files/foo.lisp"
+     "test/files/compile/foo.lisp"
     ))
 
 
