@@ -2,6 +2,7 @@
     (:use :cl)
     (:export :rt-stream
              :eof-p
+             :add-listener
     ))
 
 (in-package :alive/streams)
@@ -9,8 +10,12 @@
 
 (defclass rt-stream (sb-gray:fundamental-character-output-stream)
     ((buffer :accessor buffer
-             :initform ""
+             :initform (make-string-output-stream)
              :initarg :buffer
+     )
+     (listeners :accessor listeners
+                :initform nil
+                :initarg :listeners
      )
      (stdout :accessor stdout
              :initform nil
@@ -48,12 +53,32 @@
     ))
 
 
+(defun flush-buffer (obj)
+    (loop :with str := (get-output-stream-string (buffer obj))
+          :for listener :in (listeners obj) :do
+              (funcall listener str)
+    ))
+
+
 (defmethod sb-gray:stream-write-char ((obj rt-stream) ch)
-    (bt:with-recursive-lock-held ((lock obj))
-                                 (when ch
-                                       (setf (buffer obj) (format nil "~A~A" (buffer obj) ch))
-                                       (bt:condition-notify (cond-var obj))
-                                 )))
+    (if (char= #\newline ch)
+        (flush-buffer obj)
+        (write-char ch (buffer obj))
+    ))
+
+
+
+; (defmethod sb-gray:stream-write-char ((obj rt-stream) ch)
+;     (bt:with-recursive-lock-held ((lock obj))
+;                                  (when ch
+;                                        (setf (buffer obj) (format nil "~A~A" (buffer obj) ch))
+;                                        (bt:condition-notify (cond-var obj))
+;                                  )))
+
+
+(defun add-listener (obj listener)
+    (push listener (listeners obj))
+)
 
 
 (defun end-stream (obj)

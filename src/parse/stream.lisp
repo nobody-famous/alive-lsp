@@ -73,7 +73,8 @@
 
 
 (defun from (input)
-    (loop :while (look-ahead input)
+    (loop :with start := (file-position input)
+          :while (look-ahead input)
           :collect (parse-expr input) :into exprs
-          :finally (return exprs)
+          :finally (return (list start (file-position input) exprs))
     ))

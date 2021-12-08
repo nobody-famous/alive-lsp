@@ -1,6 +1,7 @@
 (defpackage :alive/compile
     (:use :cl)
     (:export :file)
+    (:local-nicknames (:parse :alive/parse/stream))
 )
 
 (in-package :alive/compile)
@@ -32,23 +33,24 @@
 )
 
 
+(defun get-form (forms ndx)
+    (let ((kids (elt forms 2)))
+        (elt kids ndx)
+    ))
+
+
 (defun handle-warning (out-fn path)
     (lambda (err)
+
         (let* ((context (sb-c::find-error-context nil))
                (source-path (reverse (sb-c::compiler-error-context-original-source-path context)))
               )
             (with-open-file (f path)
-                (let ((form (read f)))
-                    (funcall out-fn
-                             (format nil "FORM ~A ~A~%" (elt form (second source-path)) form)
-                    )))
-
-            (funcall out-fn
-                     (format nil "WARNING: ~A~%~A~%~A~%"
-                             (sb-c::compiler-error-context-file-name context)
-                             (reverse (sb-c::compiler-error-context-original-source-path context))
-                             err
-                     )))))
+                (loop :with forms := (parse:from f)
+                      :for ndx :in source-path :do
+                          (setf forms (get-form forms ndx))
+                      :finally (funcall out-fn (format nil "~A ~A" err forms))
+                )))))
 
 
 (defun file (out path)
