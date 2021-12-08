@@ -9,9 +9,9 @@
 (in-package :alive/test/compat/sbcl/compile)
 
 
-(defun compile-foo ()
+(defun compile-foo (stdout)
     (compile:file (lambda (msg)
-                      (format T "~&CALLBACK: ~A~%" msg)
+                      (format stdout "~&CALLBACK: ~A~%" msg)
                   )
                   "test/files/compile/foo.lisp"
     ))
@@ -58,10 +58,10 @@
            (*error-output* err-stream)
           )
         ; (compile-file "test/compat/sbcl/files/foo.lisp")
-        (astreams:add-listener out-stream (report-output "OUT" orig-output))
-        (astreams:add-listener err-stream (report-output "ERR" orig-err))
+        ; (astreams:add-listener out-stream (report-output "OUT" orig-output))
+        ; (astreams:add-listener err-stream (report-output "ERR" orig-err))
 
-        (compile-foo)
+        (compile-foo orig-output)
 
         (close out-stream)
         (close err-stream)
