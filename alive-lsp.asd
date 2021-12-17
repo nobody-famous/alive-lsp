@@ -9,6 +9,8 @@
                  "alive-lsp/src/compat/sbcl/compile"
                  "alive-lsp/src/compat/sbcl/streams"
                  "alive-lsp/src/compile"
+
+                 "alive-lsp/src/server"
                 ))
 
 (defsystem "alive-lsp/test"
@@ -23,6 +25,8 @@
 (register-system-packages "alive-lsp/src/compile" '(:alive/compile))
 (register-system-packages "alive-lsp/src/compat/sbcl/compile" '(:alive/compile/compat))
 (register-system-packages "alive-lsp/src/compat/sbcl/streams" '(:alive/streams))
+
+(register-system-packages "alive-lsp/src/server" '(:alive/server))
 
 (register-system-packages "alive-lsp/test/compat/sbcl/compile" '(:alive/test/compat/sbcl/compile))
 (register-system-packages "alive-lsp/test/parse" '(:alive/test/parse))
