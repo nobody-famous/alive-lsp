@@ -1,6 +1,8 @@
 (defpackage :alive/server
     (:use :cl)
     (:export :start)
+
+    (:local-nicknames (:msg :alive/lsp/message))
 )
 
 (in-package :alive/server)
@@ -14,10 +16,8 @@
 
     (let ((socket (usocket:socket-listen "127.0.0.1" port :reuse-address T)))
         (unwind-protect
-                (let* ((conn (usocket:socket-accept socket))
-                       (line (read-line (usocket:socket-stream conn)))
-                      )
-                    (format T "LINE: ~A~%" line)
+                (let* ((conn (usocket:socket-accept socket)))
+                    (msg:parse (usocket:socket-stream conn))
                 )
             (usocket:socket-close socket)
         )))
