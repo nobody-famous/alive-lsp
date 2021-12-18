@@ -11,6 +11,12 @@
 )
 
 
+(defstruct base-message
+    header
+    content
+)
+
+
 (defun trim-ws (str)
     (string-trim (list #\space #\newline #\linefeed #\return)
                  str
@@ -76,7 +82,24 @@
     ))
 
 
+(defun read-content (input size)
+    (with-output-to-string (out)
+        (loop :for ndx :from 0 :below size :do
+                  (let ((ch (read-char input nil nil)))
+                      (when ch (write-char ch out))
+                  ))))
+
+
+(defun decode-content (content)
+    (with-input-from-string (str content)
+        (json:decode-json str)
+    ))
+
+
 (defun parse (input)
-    (let ((header (parse-header input)))
-        (format T "HEADER ~A~%" header)
+    (let* ((header (parse-header input))
+           (raw-content (read-content input (header-content-length header)))
+           (content (decode-content raw-content))
+          )
+        (format T "content ~A~%" content)
     ))

@@ -3,6 +3,7 @@
 (defsystem "alive-lsp"
     :class :package-inferred-system
     :depends-on (#:usocket
+                 #:cl-json
                  #:bordeaux-threads
                  "alive-lsp/src/types"
                  "alive-lsp/src/parse/stream"
@@ -20,6 +21,7 @@
 
                  "alive-lsp/test/compat/sbcl/compile"
                  "alive-lsp/test/parse"
+                 "alive-lsp/test/lsp/message"
                 ))
 
 (register-system-packages "alive-lsp/src/types" '(:alive/types))
@@ -34,3 +36,4 @@
 
 (register-system-packages "alive-lsp/test/compat/sbcl/compile" '(:alive/test/compat/sbcl/compile))
 (register-system-packages "alive-lsp/test/parse" '(:alive/test/parse))
+(register-system-packages "alive-lsp/test/lsp/message" '(:alive/test/lsp/message))
