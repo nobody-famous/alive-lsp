@@ -2,7 +2,7 @@
     (:use :cl)
     (:export :start)
 
-    (:local-nicknames (:msg :alive/lsp/message))
+    (:local-nicknames (:parse :alive/lsp/parse))
 )
 
 (in-package :alive/server)
@@ -17,7 +17,7 @@
     (let ((socket (usocket:socket-listen "127.0.0.1" port :reuse-address T)))
         (unwind-protect
                 (let* ((conn (usocket:socket-accept socket))
-                       (msg (msg:parse (usocket:socket-stream conn)))
+                       (msg (parse:from-stream (usocket:socket-stream conn)))
                       )
                     (format T "MSG ~A~%" msg)
                 )

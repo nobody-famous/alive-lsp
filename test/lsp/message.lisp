@@ -1,7 +1,7 @@
 (defpackage :alive/test/lsp/message
     (:use :cl)
     (:export :run-all)
-    (:local-nicknames (:alive-msg :alive/lsp/message))
+    (:local-nicknames (:parse :alive/lsp/parse))
 )
 
 (in-package :alive/test/lsp/message)
@@ -36,7 +36,7 @@
 
 (defun parse-msg ()
     (let ((msg (create-msg)))
-        (alive-msg:parse (make-string-input-stream msg))
+        (parse:from-stream (make-string-input-stream msg))
     ))
 
 
