@@ -2,8 +2,9 @@
     (:use :cl)
     (:export :from-stream)
 
-    (:local-nicknames (:message :alive/lsp/message))
-)
+    (:local-nicknames (:message :alive/lsp/message)
+                      (:init-req :alive/lsp/init-request)
+    ))
 
 (in-package :alive/lsp/parse)
 
@@ -15,6 +16,18 @@
     params
     result
     error-msg
+)
+
+
+(defstruct message
+    jsonrpc
+    id
+)
+
+
+(defstruct (request-message (:include message))
+    method-name
+    params
 )
 
 
@@ -102,7 +115,7 @@
           :for item :in payload :do
               (cond ((eq :jsonrpc (car item)) (setf (fields-jsonrpc fields) (cdr item)))
                     ((eq :id (car item)) (setf (fields-id fields) (cdr item)))
-                    ((eq :method (car item)) (setf (fields-method-name fields) (cdr item)))
+                    ((eq :method (car item)) (setf (fields-method-name fields) (string-downcase (cdr item))))
                     ((eq :result (car item)) (setf (fields-result fields) (cdr item)))
                     ((eq :error (car item)) (setf (fields-error-msg fields) (cdr item)))
                     ((eq :params (car item)) (setf (fields-params fields) (cdr item)))
@@ -122,9 +135,23 @@
     ))
 
 
+(defun build-init-req (fields)
+    (make-request-message :jsonrpc (fields-jsonrpc fields)
+                          :id (fields-id fields)
+                          :method-name (fields-method-name fields)
+                          :params (init-req:from-wire-params (fields-params fields))
+    ))
+
+
+(defun build-request (fields)
+    (cond ((string= "initialize" (fields-method-name fields)) (build-init-req fields))
+          (() ())
+    ))
+
+
 (defun build-message (payload)
     (let ((fields (get-msg-fields payload)))
-        (cond ((request-p fields) (format T "GOT REQUEST~%"))
+        (cond ((request-p fields) (build-request fields))
               ((response-p fields) (format T "GOT RESPONSE~%"))
               (T (error (format nil "Unknown payload type ~A" payload)))
         )))
@@ -135,6 +162,5 @@
            (raw-content (read-content input (message:header-content-length header)))
            (content (decode-json raw-content))
           )
-        (format T "content ~A~%" content)
         (build-message content)
     ))
