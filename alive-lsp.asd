@@ -13,6 +13,7 @@
 
                  "alive-lsp/src/lsp/types"
                  "alive-lsp/src/lsp/init-request"
+                 "alive-lsp/src/lsp/init-response"
                  "alive-lsp/src/lsp/parse"
 
                  "alive-lsp/src/server"
@@ -34,6 +35,7 @@
 
 (register-system-packages "alive-lsp/src/lsp/types" '(:alive/lsp/types))
 (register-system-packages "alive-lsp/src/lsp/init-request" '(:alive/lsp/init-request))
+(register-system-packages "alive-lsp/src/lsp/init-response" '(:alive/lsp/init-response))
 (register-system-packages "alive-lsp/src/lsp/parse" '(:alive/lsp/parse))
 
 (register-system-packages "alive-lsp/src/server" '(:alive/server))

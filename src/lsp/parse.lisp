@@ -67,7 +67,7 @@
 (defun add-to-header (header pair)
     (destructuring-bind (key value)
             pair
-        (cond ((string= key "Content-Length") (setf (types:header-content-length header)
+        (cond ((string= key "Content-Length") (setf (types:content-length header)
                                                     (parse-integer value)
                                               ))
               (T (error (format nil "Unhandled header key: ~A" key)))
@@ -75,7 +75,7 @@
 
 
 (defun parse-header (input)
-    (loop :with header := (types:make-header)
+    (loop :with header := (make-instance 'types:message-header)
           :for line :in (get-header-lines input) :do
               (add-to-header header
                              (parse-header-line line)
@@ -124,10 +124,11 @@
 
 
 (defun build-init-req (fields)
-    (types:make-request-payload :jsonrpc (fields-jsonrpc fields)
-                                :id (fields-id fields)
-                                :method-name (fields-method-name fields)
-                                :params (init-req:from-wire-params (fields-params fields))
+    (make-instance 'types:request-payload
+                   :jsonrpc (fields-jsonrpc fields)
+                   :id (fields-id fields)
+                   :method-name (fields-method-name fields)
+                   :params (init-req:from-wire-params (fields-params fields))
     ))
 
 
@@ -147,7 +148,7 @@
 
 (defun from-stream (input)
     (let* ((header (parse-header input))
-           (raw-content (read-content input (types:header-content-length header)))
+           (raw-content (read-content input (types:content-length header)))
            (content (decode-json raw-content))
           )
         (build-message content)

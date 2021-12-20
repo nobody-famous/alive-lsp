@@ -4,6 +4,7 @@
     (:local-nicknames (:parse :alive/lsp/parse)
                       (:types :alive/lsp/types)
                       (:init-req :alive/lsp/init-request)
+                      (:init-res :alive/lsp/init-response)
     ))
 
 (in-package :alive/test/lsp/message)
@@ -42,10 +43,20 @@
            (parsed (parse:from-stream (make-string-input-stream msg)))
           )
         (format T "PARSED ~A~%" parsed)
-        (format T "JSON ~A~%" (init-req:to-json (types:request-params parsed)))
+        (format T "JSON ~A~%" (json:encode-json parsed))
+    ))
+
+
+(defun resp-msg ()
+    (let ((payload (make-instance 'types:response-payload
+                                  :id 0
+                                  :result (make-instance 'init-res:result)
+                   )))
+        (format T "JSON ~A~%" (json:encode-json payload))
     ))
 
 
 (defun run-all ()
     (parse-msg)
+    (resp-msg)
 )
