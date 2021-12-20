@@ -11,7 +11,7 @@
                  "alive-lsp/src/compat/sbcl/streams"
                  "alive-lsp/src/compile"
 
-                 "alive-lsp/src/lsp/message"
+                 "alive-lsp/src/lsp/types"
                  "alive-lsp/src/lsp/init-request"
                  "alive-lsp/src/lsp/parse"
 
@@ -32,7 +32,7 @@
 (register-system-packages "alive-lsp/src/compat/sbcl/compile" '(:alive/compile/compat))
 (register-system-packages "alive-lsp/src/compat/sbcl/streams" '(:alive/streams))
 
-(register-system-packages "alive-lsp/src/lsp/message" '(:alive/lsp/message))
+(register-system-packages "alive-lsp/src/lsp/types" '(:alive/lsp/types))
 (register-system-packages "alive-lsp/src/lsp/init-request" '(:alive/lsp/init-request))
 (register-system-packages "alive-lsp/src/lsp/parse" '(:alive/lsp/parse))
 

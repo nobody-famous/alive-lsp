@@ -1,7 +1,8 @@
 (defpackage :alive/lsp/init-request
     (:use :cl)
-    (:export :from-wire-params)
-)
+    (:export :from-wire-params
+             :to-json
+    ))
 
 (in-package :alive/lsp/init-request)
 
@@ -53,4 +54,42 @@
           :for param :in params :do
               (update-param init-params (car param) (cdr param))
           :finally (return init-params)
+    ))
+
+
+(defun add-to-map (target input name accessor)
+    (when (funcall accessor input)
+          (setf (gethash name target) (funcall accessor input))
+    ))
+
+
+(defun info-to-map (info)
+    (let ((info-map (make-hash-table)))
+        (when (client-info-name info)
+              (setf (gethash :name info-map) (client-info-name info))
+        )
+
+        (when (client-info-version info)
+              (setf (gethash :version info-map) (client-info-version info))
+        )
+
+        info-map
+    ))
+
+
+(defun to-json (params)
+    (let ((param-map (make-hash-table)))
+        (when (params-client-info params)
+              (setf (gethash :client-info param-map) (info-to-map (params-client-info params)))
+        )
+
+        (when (params-locale params)
+              (setf (gethash :locale param-map) (params-locale params))
+        )
+
+        (when (params-root-path params)
+              (setf (gethash :root-path param-map) (params-root-path params))
+        )
+
+        (json:encode-json param-map nil)
     ))

@@ -2,7 +2,7 @@
     (:use :cl)
     (:export :from-stream)
 
-    (:local-nicknames (:message :alive/lsp/message)
+    (:local-nicknames (:types :alive/lsp/types)
                       (:init-req :alive/lsp/init-request)
     ))
 
@@ -16,18 +16,6 @@
     params
     result
     error-msg
-)
-
-
-(defstruct message
-    jsonrpc
-    id
-)
-
-
-(defstruct (request-message (:include message))
-    method-name
-    params
 )
 
 
@@ -79,7 +67,7 @@
 (defun add-to-header (header pair)
     (destructuring-bind (key value)
             pair
-        (cond ((string= key "Content-Length") (setf (message:header-content-length header)
+        (cond ((string= key "Content-Length") (setf (types:header-content-length header)
                                                     (parse-integer value)
                                               ))
               (T (error (format nil "Unhandled header key: ~A" key)))
@@ -87,7 +75,7 @@
 
 
 (defun parse-header (input)
-    (loop :with header := (message:make-header)
+    (loop :with header := (types:make-header)
           :for line :in (get-header-lines input) :do
               (add-to-header header
                              (parse-header-line line)
@@ -136,10 +124,10 @@
 
 
 (defun build-init-req (fields)
-    (make-request-message :jsonrpc (fields-jsonrpc fields)
-                          :id (fields-id fields)
-                          :method-name (fields-method-name fields)
-                          :params (init-req:from-wire-params (fields-params fields))
+    (types:make-request-payload :jsonrpc (fields-jsonrpc fields)
+                                :id (fields-id fields)
+                                :method-name (fields-method-name fields)
+                                :params (init-req:from-wire-params (fields-params fields))
     ))
 
 
@@ -159,7 +147,7 @@
 
 (defun from-stream (input)
     (let* ((header (parse-header input))
-           (raw-content (read-content input (message:header-content-length header)))
+           (raw-content (read-content input (types:header-content-length header)))
            (content (decode-json raw-content))
           )
         (build-message content)
