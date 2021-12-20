@@ -1,62 +1,77 @@
-(defpackage :alive/compile
+(defpackage :alive/compile/compat
     (:use :cl)
     (:export :file)
-)
+    (:local-nicknames (:parse :alive/parse/stream)
+                      (:types :alive/types)
+    ))
 
-(in-package :alive/compile)
+(in-package :alive/compile/compat)
 
 
-(defun fatal-error (out-fn)
-    (lambda (err)
-        (funcall out-fn
-                 (format nil "FATAL ERROR: ~A~%" err)
+(defun get-form (forms ndx)
+    (let ((kids (elt forms 2)))
+        (elt kids ndx)
+    ))
+
+
+(defun get-err-location (forms)
+    (let* ((context (sb-c::find-error-context nil))
+           (source-path (reverse (sb-c::compiler-error-context-original-source-path context)))
+          )
+        (loop :for ndx :in source-path :do
+                  (setf forms (get-form forms ndx))
+              :finally (return (subseq forms 0 2))
         )))
 
 
-(defun compiler-error (out-fn)
+(defun send-message (out-fn forms sev err)
+    (let* ((loc (get-err-location forms))
+           (msg (types:make-compile-message :severity sev
+                                            :location loc
+                                            :message (format nil "~A" err)
+                )))
+        (funcall out-fn msg)
+    ))
+
+
+(defun fatal-error (out-fn forms)
     (lambda (err)
-        (funcall out-fn
-                 (format nil "COMPILER ERROR: ~A~%" err)
-        )))
+        (send-message out-fn forms types:*sev-error* err)
+    ))
 
 
-(defun compiler-note (out-fn)
+(defun compiler-error (out-fn forms)
     (lambda (err)
-        (funcall out-fn
-                 (format nil "COMPILER NOTE: ~A~%" err)
-        )))
+        (send-message out-fn forms types:*sev-error* err)
+    ))
 
 
-(defun handle-error (err)
-    (format nil "ERROR: ~A~%" err)
-)
-
-
-(defun handle-warning (out-fn path)
+(defun compiler-note (out-fn forms)
     (lambda (err)
-        (let* ((context (sb-c::find-error-context nil))
-               (source-path (reverse (sb-c::compiler-error-context-original-source-path context)))
-              )
-            (with-open-file (f path)
-                (let ((form (read f)))
-                    (funcall out-fn
-                             (format nil "FORM ~A ~A~%" (elt form (second source-path)) form)
-                    )))
+        (send-message out-fn forms types:*sev-info* err)
+    ))
 
-            (funcall out-fn
-                     (format nil "WARNING: ~A~%~A~%~A~%"
-                             (sb-c::compiler-error-context-file-name context)
-                             (reverse (sb-c::compiler-error-context-original-source-path context))
-                             err
-                     )))))
+
+(defun handle-error (out-fn forms)
+    (lambda (err)
+        (send-message out-fn forms types:*sev-error* err)
+    ))
+
+
+(defun handle-warning (out-fn forms)
+    (lambda (err)
+        (send-message out-fn forms types:*sev-warn* err)
+    ))
 
 
 (defun file (out path)
-    (handler-bind ((sb-c:fatal-compiler-error (compiler-error out))
-                   (sb-c:compiler-error (compiler-error out))
-                   (sb-ext:compiler-note (compiler-note out))
-                   (error #'handle-error)
-                   (warning (handle-warning out path))
-                  )
-        (compile-file path)
-    ))
+    (with-open-file (f path)
+        (let ((forms (parse:from f)))
+            (handler-bind ((sb-c:fatal-compiler-error (fatal-error out forms))
+                           (sb-c:compiler-error (compiler-error out forms))
+                           (sb-ext:compiler-note (compiler-note out forms))
+                           (error (handle-error out forms))
+                           (warning (handle-warning out forms))
+                          )
+                (compile-file path)
+            ))))

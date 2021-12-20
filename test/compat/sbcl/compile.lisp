@@ -9,12 +9,11 @@
 (in-package :alive/test/compat/sbcl/compile)
 
 
-(defun compile-foo ()
-    (compile:file
-     (lambda (msg)
-         (format T "~&CALLBACK: ~A~%" msg)
-     )
-     "test/files/compile/foo.lisp"
+(defun compile-foo (stdout)
+    (compile:file (lambda (msg)
+                      (format stdout "~&CALLBACK: ~A~%" msg)
+                  )
+                  "test/files/compile/foo.lisp"
     ))
 
 
@@ -42,6 +41,12 @@
         )))
 
 
+(defun report-output (label orig-stdout)
+    (lambda (data)
+        (format orig-stdout "~A ~A~&" label data)
+    ))
+
+
 (defun run-all ()
     (format T "SBCL Compile Tests~%")
 
@@ -51,13 +56,13 @@
            (err-stream (make-instance 'astreams:rt-stream :stdout orig-err))
            (*standard-output* out-stream)
            (*error-output* err-stream)
-           (thread (bt:make-thread (read-stuff orig-output out-stream)))
-           (err-thread (bt:make-thread (read-err-stuff orig-output err-stream)))
           )
         ; (compile-file "test/compat/sbcl/files/foo.lisp")
-        (compile-foo)
+        ; (astreams:add-listener out-stream (report-output "OUT" orig-output))
+        ; (astreams:add-listener err-stream (report-output "ERR" orig-err))
+
+        (compile-foo orig-output)
+
         (close out-stream)
         (close err-stream)
-        (bt:join-thread thread)
-        (bt:join-thread err-thread)
     ))
