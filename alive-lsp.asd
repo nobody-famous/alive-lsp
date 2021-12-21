@@ -16,16 +16,15 @@
                  "alive-lsp/src/lsp/init-response"
                  "alive-lsp/src/lsp/parse"
 
-                 "alive-lsp/src/server"
-                ))
+                 "alive-lsp/src/session"
+                 "alive-lsp/src/server"))
 
 (defsystem "alive-lsp/test"
     :depends-on ("alive-lsp"
 
                  "alive-lsp/test/compat/sbcl/compile"
                  "alive-lsp/test/parse"
-                 "alive-lsp/test/lsp/message"
-                ))
+                 "alive-lsp/test/lsp/message"))
 
 (register-system-packages "alive-lsp/src/types" '(:alive/types))
 (register-system-packages "alive-lsp/src/parse/stream" '(:alive/parse/stream))
@@ -38,6 +37,7 @@
 (register-system-packages "alive-lsp/src/lsp/init-response" '(:alive/lsp/init-response))
 (register-system-packages "alive-lsp/src/lsp/parse" '(:alive/lsp/parse))
 
+(register-system-packages "alive-lsp/src/session" '(:alive/session))
 (register-system-packages "alive-lsp/src/server" '(:alive/server))
 
 (register-system-packages "alive-lsp/test/compat/sbcl/compile" '(:alive/test/compat/sbcl/compile))
