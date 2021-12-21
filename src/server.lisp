@@ -17,6 +17,9 @@
     ((running :accessor running
               :initform nil
               :initarg :running)
+     (pair :accessor pair
+           :initform nil
+           :initarg :pair)
      (socket :accessor socket
              :initform nil
              :initarg :socket)))
@@ -31,23 +34,44 @@
                                 (session:start conn))))))
 
 
-(defun wait-for-conn (socket)
+(defun wait-for-conn (server)
     (format T "Waiting for connection~%")
+    (format T "  ~A~%" (first (pair server)))
 
-    (let ((ready (usocket:wait-for-input socket)))
-        (format T "Connection ready ~A~%" ready)
-        (when ready
-              (accept-conn ready))))
+    (let* ((sockets (list (socket server) (first (pair server))))
+           (inputs (usocket:wait-for-input sockets)))
+        (format T "Connections ready ~A~%" inputs)
+        (loop :for ready :in inputs :do
+                  (format T "READY ~A~%" ready)
+                  (when (eq ready (socket server))
+                        (accept-conn ready)))))
 
 
 (defun stop (server)
     (format T "Stop server~%")
 
     (when (socket server)
-          (usocket:socket-close (socket server)))
+          (format T "Closing socket~%")
+          (usocket:socket-close (socket server))
+          (format T "Socket closed~%"))
+
+    (when (pair server)
+          (format T "Sending wake up~%")
+          (write "WAKE UP"
+                 :stream (usocket:socket-stream (second (pair server))))
+          (force-output (usocket:socket-stream (second (pair server)))))
 
     (setf (running server) nil)
-    (setf (socket server) nil))
+    (setf (socket server) nil)
+    (setf (pair server) nil))
+
+
+(defun create-socket-pair ()
+    (let* ((listener (usocket:socket-listen "127.0.0.1" 0 :reuse-address T))
+           (write-side (usocket:socket-connect "127.0.0.1" (usocket:get-local-port listener)))
+           (read-side (usocket:socket-accept listener)))
+        (usocket:socket-close listener)
+        (list read-side write-side)))
 
 
 (defun start (server &key (port *default-port*))
@@ -61,12 +85,14 @@
         (bt:make-thread (lambda ()
                             (let ((*standard-output* stdout))
                                 (unwind-protect
-                                        (progn (setf (socket server) socket)
+                                        (progn (setf (pair server) (create-socket-pair))
+                                               (setf (socket server) socket)
                                                (setf (running server) T)
 
                                                (loop :while (running server)
-                                                     :do (wait-for-conn socket)))
-                                    (stop server)))))))
+                                                     :do (wait-for-conn server)))
+                                    (progn (format T "Top level calling stop~%")
+                                           (stop server))))))))
 
 
 (defun create ()
