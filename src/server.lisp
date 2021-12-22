@@ -13,6 +13,15 @@
 (defvar *default-port* 25483)
 
 
+(defclass socket-pair ()
+    ((reader :accessor reader
+             :initform nil
+             :initarg :reader)
+     (writer :accessor writer
+             :initform nil
+             :initarg :writer)))
+
+
 (defclass lsp-server ()
     ((running :accessor running
               :initform nil
@@ -35,49 +44,28 @@
 
 
 (defun wait-for-conn (server)
-    (format T "Waiting for connection~%")
-    (format T "  ~A~%" (first (pair server)))
-
-    (let* ((sockets (list (socket server) (first (pair server))))
-           (inputs (usocket:wait-for-input sockets)))
-        (format T "Connections ready ~A~%" inputs)
+    (let* ((wake-up (reader (pair server)))
+           (inputs (usocket:wait-for-input (list (socket server) wake-up))))
         (loop :for ready :in inputs :do
-                  (format T "READY ~A~%" ready)
                   (when (eq ready (socket server))
-                        (accept-conn ready)))))
+                        (accept-conn (socket server))))))
 
 
-(defun stop (server)
-    (format T "Stop server~%")
-
+(defun stop-server (server)
     (when (socket server)
-          (format T "Closing socket~%")
           (usocket:socket-close (socket server))
-          (format T "Socket closed~%"))
+          (setf (socket server) nil))
 
     (when (pair server)
-          (format T "Sending wake up~%")
           (write "WAKE UP"
-                 :stream (usocket:socket-stream (second (pair server))))
-          (force-output (usocket:socket-stream (second (pair server)))))
+                 :stream (usocket:socket-stream (writer (pair server))))
+          (force-output (usocket:socket-stream (writer (pair server)))))
 
     (setf (running server) nil)
-    (setf (socket server) nil)
     (setf (pair server) nil))
 
 
-(defun create-socket-pair ()
-    (let* ((listener (usocket:socket-listen "127.0.0.1" 0 :reuse-address T))
-           (write-side (usocket:socket-connect "127.0.0.1" (usocket:get-local-port listener)))
-           (read-side (usocket:socket-accept listener)))
-        (usocket:socket-close listener)
-        (list read-side write-side)))
-
-
-(defun start (server &key (port *default-port*))
-    (when (running server)
-          (error "Server already running"))
-
+(defun start-server (server port)
     (let ((stdout *standard-output*)
           (socket (usocket:socket-listen "127.0.0.1" port :reuse-address T)))
         (format T "Started on port ~A~%" (usocket:get-local-port socket))
@@ -91,8 +79,30 @@
 
                                                (loop :while (running server)
                                                      :do (wait-for-conn server)))
-                                    (progn (format T "Top level calling stop~%")
-                                           (stop server))))))))
+                                    (stop-server server)))))))
+
+
+(defun stop (server)
+    (format T "Stop server~%")
+    (stop-server server))
+
+
+(defun create-socket-pair ()
+    (let* ((listener (usocket:socket-listen "127.0.0.1" 0 :reuse-address T))
+           (port (usocket:get-local-port listener))
+           (write-side (usocket:socket-connect "127.0.0.1" port))
+           (read-side (usocket:socket-accept listener)))
+        (usocket:socket-close listener)
+
+        (make-instance 'socket-pair
+                       :reader read-side
+                       :writer write-side)))
+
+
+(defun start (server &key (port *default-port*))
+    (if (running server)
+        (format T "Server already running")
+        (start-server server port)))
 
 
 (defun create ()
