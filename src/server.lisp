@@ -5,21 +5,13 @@
              :start)
 
     (:local-nicknames (:parse :alive/lsp/parse)
+                      (:socket-pair :alive/socket-pair)
                       (:session :alive/session)))
 
 (in-package :alive/server)
 
 
 (defvar *default-port* 25483)
-
-
-(defclass socket-pair ()
-    ((reader :accessor reader
-             :initform nil
-             :initarg :reader)
-     (writer :accessor writer
-             :initform nil
-             :initarg :writer)))
 
 
 (defclass lsp-server ()
@@ -44,24 +36,28 @@
 
 
 (defun wait-for-conn (server)
-    (let* ((wake-up (reader (pair server)))
-           (inputs (usocket:wait-for-input (list (socket server) wake-up))))
+    (let* ((wake-up (socket-pair:reader (pair server)))
+           (inputs (usocket:wait-for-input (list (socket server) wake-up)
+                                           :ready-only T
+                                           :timeout 10)))
+        (format T "WOKE UP ~A~%" inputs)
         (loop :for ready :in inputs :do
                   (when (eq ready (socket server))
                         (accept-conn (socket server))))))
 
 
 (defun stop-server (server)
+    (setf (running server) nil)
+
     (when (socket server)
           (usocket:socket-close (socket server))
           (setf (socket server) nil))
 
     (when (pair server)
           (write "WAKE UP"
-                 :stream (usocket:socket-stream (writer (pair server))))
-          (force-output (usocket:socket-stream (writer (pair server)))))
+                 :stream (usocket:socket-stream (socket-pair:writer (pair server))))
+          (force-output (usocket:socket-stream (socket-pair:writer (pair server)))))
 
-    (setf (running server) nil)
     (setf (pair server) nil))
 
 
@@ -73,7 +69,7 @@
         (bt:make-thread (lambda ()
                             (let ((*standard-output* stdout))
                                 (unwind-protect
-                                        (progn (setf (pair server) (create-socket-pair))
+                                        (progn (setf (pair server) (socket-pair:create))
                                                (setf (socket server) socket)
                                                (setf (running server) T)
 
@@ -85,18 +81,6 @@
 (defun stop (server)
     (format T "Stop server~%")
     (stop-server server))
-
-
-(defun create-socket-pair ()
-    (let* ((listener (usocket:socket-listen "127.0.0.1" 0 :reuse-address T))
-           (port (usocket:get-local-port listener))
-           (write-side (usocket:socket-connect "127.0.0.1" port))
-           (read-side (usocket:socket-accept listener)))
-        (usocket:socket-close listener)
-
-        (make-instance 'socket-pair
-                       :reader read-side
-                       :writer write-side)))
 
 
 (defun start (server &key (port *default-port*))

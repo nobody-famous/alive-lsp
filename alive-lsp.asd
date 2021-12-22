@@ -16,6 +16,7 @@
                  "alive-lsp/src/lsp/init-response"
                  "alive-lsp/src/lsp/parse"
 
+                 "alive-lsp/src/socket-pair"
                  "alive-lsp/src/session"
                  "alive-lsp/src/server"))
 
@@ -37,6 +38,7 @@
 (register-system-packages "alive-lsp/src/lsp/init-response" '(:alive/lsp/init-response))
 (register-system-packages "alive-lsp/src/lsp/parse" '(:alive/lsp/parse))
 
+(register-system-packages "alive-lsp/src/socket-pair" '(:alive/socket-pair))
 (register-system-packages "alive-lsp/src/session" '(:alive/session))
 (register-system-packages "alive-lsp/src/server" '(:alive/server))
 
