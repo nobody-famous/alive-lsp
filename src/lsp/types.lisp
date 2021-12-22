@@ -5,8 +5,7 @@
              :request-params
              :request-payload
              :response-payload
-             :params
-    ))
+             :params))
 
 (in-package :alive/lsp/types)
 
@@ -14,49 +13,40 @@
 (defclass message-header ()
     ((content-length :accessor content-length
                      :initform nil
-                     :initarg :content-length
-     )))
+                     :initarg :content-length)))
 
 
 (defclass message-payload ()
     ((id :accessor id
          :initform nil
-         :initarg :id
-     )))
+         :initarg :id)))
 
 
 (defclass request-payload (message-payload)
     ((jsonrpc :accessor jsonrpc
               :initform 2.0
-              :initarg :jsonrpc
-     )
+              :initarg :jsonrpc)
      (method-name :accessor method-name
                   :initform nil
-                  :initarg :method-name
-     )
+                  :initarg :method-name)
      (params :accessor params
              :initform nil
-             :initarg :params
-     )))
+             :initarg :params)))
 
 
 (defclass response-payload (message-payload)
     ((result :accessor result
              :initform nil
-             :initarg :result
-     )
+             :initarg :result)
      (error-info :accessor error-info
                  :initform nil
-                 :initarg :error-info
-     )))
+                 :initarg :error-info)))
 
 
 (defclass message ()
     ((header :accessor header
              :initform (make-instance 'message-header)
-             :initarg :header
-     )
+             :initarg :header)
      (payload :accessor payload
               :initform nil
-              :initarg :payload
-     )))
+              :initarg :payload)))

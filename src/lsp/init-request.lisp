@@ -1,8 +1,7 @@
 (defpackage :alive/lsp/init-request
     (:use :cl)
     (:export :from-wire-params)
-    (:local-nicknames (:types :alive/lsp/types))
-)
+    (:local-nicknames (:types :alive/lsp/types)))
 
 (in-package :alive/lsp/init-request)
 
@@ -10,47 +9,37 @@
 (defclass client-info ()
     ((name :accessor name
            :initform nil
-           :initarg :name
-     )
+           :initarg :name)
      (version :accessor version
               :initform nil
-              :initarg :version
-     )))
+              :initarg :version)))
 
 
 (defclass params ()
     ((client-info :accessor client-info
                   :initform (make-instance 'client-info)
-                  :initarg :client-info
-     )
+                  :initarg :client-info)
      (locale :accessor locale
              :initform nil
-             :initarg :locale
-     )
+             :initarg :locale)
      (root-path :accessor root-path
                 :initform nil
-                :initarg :root-path
-     )
+                :initarg :root-path)
      (root-uri :accessor root-uri
                :initform nil
-               :initarg :root-uri
-     )
+               :initarg :root-uri)
      (process-id :accessor process-id
                  :initform nil
-                 :initarg :process-id
-     )
+                 :initarg :process-id)
      (capabilities :accessor capabilities
                    :initform nil
-                   :initarg :capabilities
-     )
+                   :initarg :capabilities)
      (trace-enabled :accessor trace-enabled
                     :initform nil
-                    :initarg :trace-enabled
-     )
+                    :initarg :trace-enabled)
      (workspace-folders :accessor workspace-folders
                         :initform nil
-                        :initarg :workspace-folders
-     )))
+                        :initarg :workspace-folders)))
 
 
 (defun get-client-info (info)
@@ -58,10 +47,8 @@
           :for item :in info :do
               (cond ((eq (car item) :name) (setf (name out) (cdr item)))
                     ((eq (car item) :version) (setf (version out) (cdr item)))
-                    (t (error (format nil "Unhandled client info item: ~A" item)))
-              )
-          :finally (return out)
-    ))
+                    (t (error (format nil "Unhandled client info item: ~A" item))))
+          :finally (return out)))
 
 
 (defun update-param (params key value)
@@ -73,13 +60,11 @@
           ((eq key :capabilities) (setf (capabilities params) value))
           ((eq key :trace) (setf (trace-enabled params) value))
           ((eq key :workspace-folders) (setf (workspace-folders params) value))
-          (t (error (format nil "Unhandled init request param: ~A" key)))
-    ))
+          (t (error (format nil "Unhandled init request param: ~A" key)))))
 
 
 (defun from-wire-params (params)
     (loop :with init-params := (make-instance 'params)
           :for param :in params :do
               (update-param init-params (car param) (cdr param))
-          :finally (return init-params)
-    ))
+          :finally (return init-params)))

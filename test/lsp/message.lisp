@@ -4,8 +4,7 @@
     (:local-nicknames (:parse :alive/lsp/parse)
                       (:types :alive/lsp/types)
                       (:init-req :alive/lsp/init-request)
-                      (:init-res :alive/lsp/init-response)
-    ))
+                      (:init-res :alive/lsp/init-response)))
 
 (in-package :alive/test/lsp/message)
 
@@ -25,8 +24,7 @@
         (format str "      \"version\": \"1.62.3\"~A" *end-line*)
         (format str "    }~A" *end-line*)
         (format str "  }~A" *end-line*)
-        (format str "}~A" *end-line*)
-    ))
+        (format str "}~A" *end-line*)))
 
 
 (defun create-msg ()
@@ -34,29 +32,23 @@
         (let ((content (create-content)))
             (format str "Content-Length: ~A~A" (length content) *end-line*)
             (format str "~A" *end-line*)
-            (format str "~A" content)
-        )))
+            (format str "~A" content))))
 
 
 (defun parse-msg ()
     (let* ((msg (create-msg))
-           (parsed (parse:from-stream (make-string-input-stream msg)))
-          )
+           (parsed (parse:from-stream (make-string-input-stream msg))))
         (format T "PARSED ~A~%" parsed)
-        (format T "JSON ~A~%" (json:encode-json parsed))
-    ))
+        (format T "JSON ~A~%" (json:encode-json parsed))))
 
 
 (defun resp-msg ()
     (let ((payload (make-instance 'types:response-payload
                                   :id 0
-                                  :result (make-instance 'init-res:result)
-                   )))
-        (format T "JSON ~A~%" (json:encode-json payload))
-    ))
+                                  :result (init-res:create))))
+        (format T "JSON ~A~%" (json:encode-json payload))))
 
 
 (defun run-all ()
     (parse-msg)
-    (resp-msg)
-)
+    (resp-msg))
