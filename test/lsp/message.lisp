@@ -2,7 +2,7 @@
     (:use :cl)
     (:export :run-all)
     (:local-nicknames (:parse :alive/lsp/parse)
-                      (:types :alive/lsp/types)
+                      (:message :alive/lsp/message)
                       (:init-req :alive/lsp/init-request)
                       (:init-res :alive/lsp/init-response)))
 
@@ -43,7 +43,7 @@
 
 
 (defun resp-msg ()
-    (let ((payload (make-instance 'types:response-payload
+    (let ((payload (make-instance 'message:response-payload
                                   :id 0
                                   :result (init-res:create))))
         (format T "JSON ~A~%" (json:encode-json payload))))

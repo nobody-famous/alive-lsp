@@ -2,7 +2,7 @@
     (:use :cl)
     (:export :from-stream)
 
-    (:local-nicknames (:types :alive/lsp/types)
+    (:local-nicknames (:message :alive/lsp/message)
                       (:init-req :alive/lsp/init-request)
     ))
 
@@ -67,7 +67,7 @@
 (defun add-to-header (header pair)
     (destructuring-bind (key value)
             pair
-        (cond ((string= key "Content-Length") (setf (types:content-length header)
+        (cond ((string= key "Content-Length") (setf (message:content-length header)
                                                     (parse-integer value)
                                               ))
               (T (error (format nil "Unhandled header key: ~A" key)))
@@ -75,7 +75,7 @@
 
 
 (defun parse-header (input)
-    (loop :with header := (make-instance 'types:message-header)
+    (loop :with header := (message:create-header)
           :for line :in (get-header-lines input) :do
               (add-to-header header
                              (parse-header-line line)
@@ -124,7 +124,7 @@
 
 
 (defun build-init-req (fields)
-    (make-instance 'types:request-payload
+    (make-instance 'message:request-payload
                    :jsonrpc (fields-jsonrpc fields)
                    :id (fields-id fields)
                    :method-name (fields-method-name fields)
@@ -148,7 +148,7 @@
 
 (defun from-stream (input)
     (let* ((header (parse-header input))
-           (raw-content (read-content input (types:content-length header)))
+           (raw-content (read-content input (message:content-length header)))
            (content (decode-json raw-content))
           )
         (build-message content)

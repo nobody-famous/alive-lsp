@@ -2,7 +2,7 @@
     (:use :cl)
     (:export :start)
     (:local-nicknames (:parse :alive/lsp/parse)
-                      (:types :alive/lsp/types)
+                      (:message :alive/lsp/message)
                       (:init-req :alive/lsp/init-request)
                       (:init-res :alive/lsp/init-response)))
 
@@ -22,18 +22,18 @@
 
 
 (defgeneric handle-msg (session msg))
-(defgeneric handle-req (session req))
+(defgeneric handle-req (session msg req))
 
 
-(defmethod handle-msg (session (msg types:request-payload))
+(defmethod handle-msg (session (msg message:request-payload))
     (format T "Handle request ~A~%" msg)
-    (handle-req session (types:params msg)))
+    (handle-req session msg (message:params msg)))
 
 
-(defmethod handle-req (session (req init-req::params))
-    (let* ((resp (init-res:create))
-           (resp-json (json:encode-json-to-string resp)))
-        (format T "Handle init request: ~A~%" resp-json)))
+(defmethod handle-req (session (msg message:request-payload) (req init-req::params))
+    (let* ((result (init-res:create))
+           (resp-msg (message:create-response (message:id msg) result)))
+        (format T "Handle init request: ~A~%" (message:to-wire resp-msg))))
 
 
 (defun read-message (session)
@@ -46,7 +46,7 @@
 
 (defun read-messages (session)
     (let ((msg (read-message session)))
-        (format T "MSG ~A~%" (types::method-name msg))
+        (format T "MSG ~A~%" (message::method-name msg))
         (handle-msg session msg)))
 
 

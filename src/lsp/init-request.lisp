@@ -1,7 +1,6 @@
 (defpackage :alive/lsp/init-request
     (:use :cl)
-    (:export :from-wire-params)
-    (:local-nicknames (:types :alive/lsp/types)))
+    (:export :from-wire-params))
 
 (in-package :alive/lsp/init-request)
 
