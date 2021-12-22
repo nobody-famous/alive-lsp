@@ -32,8 +32,10 @@
 
 (defmethod handle-req (session (msg message:request-payload) (req init-req::params))
     (let* ((result (init-res:create))
-           (resp-msg (message:create-response (message:id msg) result)))
-        (format T "Handle init request: ~A~%" (message:to-wire resp-msg))))
+           (resp-msg (message:create-result (message:id msg) result))
+           (to-send (message:to-wire resp-msg)))
+        (format T "Handle init request: ~A~%" to-send)
+        (write to-send :stream (usocket:socket-stream (conn session)))))
 
 
 (defun read-message (session)
@@ -45,9 +47,9 @@
 
 
 (defun read-messages (session)
-    (let ((msg (read-message session)))
-        (format T "MSG ~A~%" (message::method-name msg))
-        (handle-msg session msg)))
+    (loop :while (running session)
+          :do (let ((msg (read-message session)))
+                  (when msg (handle-msg session msg)))))
 
 
 (defun start-read-thread (session)

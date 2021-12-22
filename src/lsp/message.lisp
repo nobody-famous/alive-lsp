@@ -2,11 +2,12 @@
     (:use :cl)
     (:export :content-length
              :create-header
-             :create-response
+             :create-result
              :id
              :params
              :request-payload
-             :response-payload
+             :result-payload
+             :error-payload
              :to-wire))
 
 (in-package :alive/lsp/message)
@@ -28,21 +29,24 @@
     ((jsonrpc :accessor jsonrpc
               :initform 2.0
               :initarg :jsonrpc)
-     (method-name :accessor method-name
-                  :initform nil
-                  :initarg :method-name)
+     (method :accessor method-name
+             :initform nil
+             :initarg :method)
      (params :accessor params
              :initform nil
              :initarg :params)))
 
 
-(defclass response-payload (payload)
+(defclass result-payload (payload)
     ((result :accessor result
              :initform nil
-             :initarg :result)
-     (error-info :accessor error-info
-                 :initform nil
-                 :initarg :error-info)))
+             :initarg :result)))
+
+
+(defclass error-payload (payload)
+    ((error :accessor error-info
+            :initform nil
+            :initarg :error)))
 
 
 (defclass message ()
@@ -67,12 +71,7 @@
     (make-instance 'header))
 
 
-(defun create-response (req-id result-data &optional (error-data nil))
-    (let ((resp (make-instance 'response-payload)))
-        (setf (id resp) req-id)
-
-        (cond (result-data (setf (result resp) result-data))
-              (error-data (setf (error-info resp) error-data))
-              (t (error "No response values")))
-
-        resp))
+(defun create-result (req-id result-data)
+    (make-instance 'result-payload
+                   :id req-id
+                   :result result-data))

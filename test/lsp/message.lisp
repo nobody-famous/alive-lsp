@@ -43,7 +43,7 @@
 
 
 (defun resp-msg ()
-    (let ((payload (make-instance 'message:response-payload
+    (let ((payload (make-instance 'message:result-payload
                                   :id 0
                                   :result (init-res:create))))
         (format T "JSON ~A~%" (json:encode-json payload))))
