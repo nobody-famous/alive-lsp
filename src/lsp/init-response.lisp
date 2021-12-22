@@ -6,7 +6,7 @@
 
 
 (defparameter *server-name* "Alive LSP")
-(defparameter *server-version* 0.1)
+(defparameter *server-version* "0.1")
 
 
 (defparameter *doc-sync-none* 0)
@@ -39,7 +39,7 @@
     ((capabilities :accessor capabilities
                    :initform (make-instance 'server-capabilities)
                    :initarg :capabilities)
-     (server-info :accessor server-info
+     #+n (server-info :accessor server-info
                   :initform (make-instance 'server-info
                                            :name *server-name*
                                            :version *server-version*)

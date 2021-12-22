@@ -20,16 +20,16 @@
 
 
 (defclass payload ()
-    ((id :accessor id
+    ((jsonrpc :accessor jsonrpc
+              :initform "2.0"
+              :initarg :jsonrpc)
+     (id :accessor id
          :initform nil
          :initarg :id)))
 
 
 (defclass request-payload (payload)
-    ((jsonrpc :accessor jsonrpc
-              :initform 2.0
-              :initarg :jsonrpc)
-     (method :accessor method-name
+    ((method :accessor method-name
              :initform nil
              :initarg :method)
      (params :accessor params

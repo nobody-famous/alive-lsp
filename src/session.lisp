@@ -35,7 +35,9 @@
            (resp-msg (message:create-result (message:id msg) result))
            (to-send (message:to-wire resp-msg)))
         (format T "Handle init request: ~A~%" to-send)
-        (write to-send :stream (usocket:socket-stream (conn session)))))
+
+        (write-string to-send (usocket:socket-stream (conn session)))
+        (force-output (usocket:socket-stream (conn session)))))
 
 
 (defun read-message (session)
