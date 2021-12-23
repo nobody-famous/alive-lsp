@@ -114,7 +114,7 @@
 
 (defun build-request (fields)
     (cond ((string= "initialize" (fields-method-name fields)) (build-init-req fields))
-          (() ())))
+          (T (error (format nil "Unhandled request ~A" fields)))))
 
 
 (defun build-message (payload)
@@ -125,7 +125,6 @@
 
 
 (defun from-stream (input)
-    (format T "from-stream~%")
     (let* ((header (parse-header input))
            (raw-content (read-content input (message:content-length header)))
            (content (decode-json raw-content)))

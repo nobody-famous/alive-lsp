@@ -1,8 +1,7 @@
 (defpackage :alive/test/parse
     (:use :cl)
     (:export :run-all)
-    (:local-nicknames (:p :alive/parse/stream))
-)
+    (:local-nicknames (:p :alive/parse/stream)))
 
 (in-package :alive/test/parse)
 
@@ -12,5 +11,4 @@
 
     (with-open-file (f "test/files/parse/foo.lisp")
         (loop :for expr :in (p:from f) :do
-                  (format T "EXPR: ~A~%" expr)
-        )))
+                  (format T "EXPR: ~A~%" expr))))

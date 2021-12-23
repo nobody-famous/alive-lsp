@@ -15,7 +15,7 @@
 (defun create-content ()
     (with-output-to-string (str)
         (format str "{~A" *end-line*)
-        (format str "  \"jsonrpc\": 2.0,~A" *end-line*)
+        (format str "  \"jsonrpc\": \"2.0\",~A" *end-line*)
         (format str "  \"id\": 0,~A" *end-line*)
         (format str "  \"method\": \"initialize\",~A" *end-line*)
         (format str "  \"params\": {~A" *end-line*)
@@ -39,14 +39,15 @@
     (let* ((msg (create-msg))
            (parsed (parse:from-stream (make-string-input-stream msg))))
         (format T "PARSED ~A~%" parsed)
-        (format T "JSON ~A~%" (json:encode-json parsed))))
+        (format T "JSON ~A~%" (json:encode-json-to-string parsed))))
 
 
 (defun resp-msg ()
     (let ((payload (make-instance 'message:result-payload
                                   :id 0
                                   :result (init-res:create))))
-        (format T "JSON ~A~%" (json:encode-json payload))))
+        (format T "JSON ~A~%" (parse:from-stream (make-string-input-stream (message:to-wire payload))))
+        (format T "JSON ~A~%" (json:encode-json-to-string payload))))
 
 
 (defun run-all ()

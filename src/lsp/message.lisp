@@ -62,7 +62,7 @@
     (with-output-to-string (str)
         (let* ((end-line (format nil "~C~C" #\return #\newline))
                (payload (json:encode-json-to-string msg)))
-            (format str "Content-Length ~A~A" (length payload) end-line)
+            (format str "Content-Length: ~A~A" (length payload) end-line)
             (format str "~A" end-line)
             (format str "~A" payload))))
 
