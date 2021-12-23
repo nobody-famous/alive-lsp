@@ -1,6 +1,7 @@
 (defpackage :alive/session
     (:use :cl)
-    (:export :start)
+    (:export :start
+             :stop)
     (:local-nicknames (:parse :alive/lsp/parse)
                       (:message :alive/lsp/message)
                       (:init-req :alive/lsp/init-request)
@@ -26,8 +27,9 @@
 
 
 (defmethod handle-msg (session (msg message:request-payload))
-    (format T "Handle request ~A~%" msg)
-    (handle-req session msg (message:params msg)))
+    (format T "Handle request ~A~%" (message::method-name msg))
+    (when (message:params msg)
+          (handle-req session msg (message:params msg))))
 
 
 (defmethod handle-req (session (msg message:request-payload) (req init-req::params))
@@ -44,6 +46,7 @@
     (usocket:wait-for-input (conn session))
 
     (let ((in-stream (usocket:socket-stream (conn session))))
+        (format T "WOKE UP~%")
         (when (listen in-stream)
               (parse:from-stream in-stream))))
 
@@ -51,6 +54,7 @@
 (defun read-messages (session)
     (loop :while (running session)
           :do (let ((msg (read-message session)))
+                  (format T "MESSAGE ~A~%" msg)
                   (when msg (handle-msg session msg)))))
 
 
@@ -65,5 +69,11 @@
 
 (defun start (conn)
     (let* ((session (make-instance 'client-session :conn conn)))
-        (format T "start session ~A~%" session)
-        (start-read-thread session)))
+        (start-read-thread session)
+        session))
+
+
+(defun stop (session)
+    (when (conn session)
+          (usocket:socket-close (conn session))
+          (setf (conn session) nil)))

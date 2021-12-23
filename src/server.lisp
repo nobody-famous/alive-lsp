@@ -21,15 +21,19 @@
      (lock :accessor lock
            :initform (bt:make-recursive-lock)
            :initarg :lock)
+     (sessions :accessor sessions
+               :initform nil
+               :initarg :sessions)
      (socket :accessor socket
              :initform nil
              :initarg :socket)))
 
 
-(defun accept-conn (socket)
-    (let* ((conn (usocket:socket-accept socket)))
+(defun accept-conn (server)
+    (let* ((conn (usocket:socket-accept (socket server)))
+           (session (session:start conn)))
         (format T "Connection received~%")
-        (session:start conn)))
+        (push session (sessions server))))
 
 
 (defun wait-for-conn (server)
@@ -37,7 +41,7 @@
 
     (when (and (running server)
                (usocket::state (socket server)))
-          (accept-conn (socket server))))
+          (accept-conn server)))
 
 
 (defun wake-up-accept (server)
@@ -49,6 +53,11 @@
 (defun stop-server (server)
     (bt:with-recursive-lock-held ((lock server))
                                  (setf (running server) nil)
+
+                                 (loop :for session :in (sessions server) :do
+                                           (session:stop session))
+
+                                 (setf (sessions server) nil)
 
                                  (when (socket server)
                                        (wake-up-accept server)

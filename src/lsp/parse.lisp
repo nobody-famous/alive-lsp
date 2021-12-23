@@ -112,8 +112,16 @@
                    :params (init-req:from-wire-params (fields-params fields))))
 
 
+(defun build-initialized (fields)
+    (make-instance 'message:request-payload
+                   :jsonrpc (fields-jsonrpc fields)
+                   :method (fields-method-name fields)
+                   :params nil))
+
+
 (defun build-request (fields)
     (cond ((string= "initialize" (fields-method-name fields)) (build-init-req fields))
+          ((string= "initialized" (fields-method-name fields)) (build-initialized fields))
           (T (error (format nil "Unhandled request ~A" fields)))))
 
 
