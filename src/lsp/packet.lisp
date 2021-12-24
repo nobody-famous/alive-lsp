@@ -3,6 +3,7 @@
     (:export :content-length
              :create-header
              :packet
+             :payload
              :to-wire))
 
 (in-package :alive/lsp/packet)

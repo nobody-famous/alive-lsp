@@ -4,9 +4,10 @@
              :stop
              :start)
 
-    (:local-nicknames (:parse :alive/lsp/parse)
-                      (:socket-pair :alive/socket-pair)
-                      (:session :alive/session)))
+    (:local-nicknames (:logger :alive/logger)
+                      (:parse :alive/lsp/parse)
+                      (:session :alive/session)
+                      (:socket-pair :alive/socket-pair)))
 
 (in-package :alive/server)
 
@@ -18,6 +19,9 @@
     ((running :accessor running
               :initform nil
               :initarg :running)
+     (logger :accessor logger
+             :initform nil
+             :initarg :logger)
      (lock :accessor lock
            :initform (bt:make-recursive-lock)
            :initarg :lock)
@@ -31,8 +35,8 @@
 
 (defun accept-conn (server)
     (let* ((conn (usocket:socket-accept (socket server)))
-           (session (session:start conn)))
-        (format T "Connection received~%")
+           (session (session:start (logger server) conn)))
+        (logger:info-msg (logger server) "Connection received~%")
         (push session (sessions server))))
 
 
@@ -67,7 +71,7 @@
 
 (defun listen-for-conns (server port)
     (let ((socket (usocket:socket-listen "127.0.0.1" port :reuse-address T)))
-        (format T "Started on port ~A~%" (usocket:get-local-port socket))
+        (logger:info-msg (logger server) "Started on port ~A~%" (usocket:get-local-port socket))
 
         (unwind-protect
                 (progn (setf (socket server) socket)
@@ -79,22 +83,22 @@
 
 
 (defun start-server (server port)
-    (let ((stdout *standard-output*))
-        (bt:make-thread (lambda ()
-                            (let ((*standard-output* stdout))
-                                (listen-for-conns server port)))
-                        :name "Main Loop")
-        server))
+    (bt:make-thread (lambda () (listen-for-conns server port))
+                    :name "Main Loop")
+
+    (setf (logger server) (logger:create *standard-output* logger:*trace*))
+
+    server)
 
 
 (defun stop (server)
-    (format T "Stop server~%")
+    (logger:info-msg (logger server) "Stop server~%")
     (stop-server server))
 
 
 (defun start (server &key (port *default-port*))
     (if (running server)
-        (format T "Server already running")
+        (logger:error-msg (logger server) "Server already running")
         (start-server server port)))
 
 

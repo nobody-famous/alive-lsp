@@ -3,6 +3,7 @@
     (:export :start
              :stop)
     (:local-nicknames (:init :alive/lsp/message/initialize)
+                      (:logger :alive/logger)
                       (:message :alive/lsp/message/abstract)
                       (:packet :alive/lsp/packet)
                       (:parse :alive/lsp/parse)))
@@ -17,6 +18,9 @@
      (conn :accessor conn
            :initform nil
            :initarg :conn)
+     (logger :accessor logger
+             :initform nil
+             :initarg :logger)
      (initialized :accessor initialized
                   :initform nil
                   :initarg :initialized)
@@ -28,13 +32,17 @@
 (defgeneric handle-msg (session msg))
 
 
-(defmethod handle-msg (session (msg init:request))
-    (format T "Handle init request~%")
+(defun send-msg (session msg)
+    (logger:trace-msg (logger session) "<-- ~A~%" (json:encode-json-to-string msg))
 
-    (let* ((resp (init:create-response (message:id msg)))
-           (to-send (packet:to-wire resp)))
+    (let ((to-send (packet:to-wire msg)))
         (write-string to-send (usocket:socket-stream (conn session)))
         (force-output (usocket:socket-stream (conn session)))))
+
+
+(defmethod handle-msg (session (msg init:request))
+    (let* ((resp (init:create-response (message:id msg))))
+        (send-msg session resp)))
 
 
 (defmethod handle-msg (session (msg init:initialized))
@@ -52,20 +60,21 @@
 (defun read-messages (session)
     (loop :while (running session)
           :do (let ((msg (read-message session)))
-                  (when msg (handle-msg session msg)))))
+                  (when msg
+                        (logger:trace-msg (logger session) "--> ~A~%" (json:encode-json-to-string msg))
+                        (handle-msg session msg)))))
 
 
 (defun start-read-thread (session)
-    (let ((stdout *standard-output*))
-        (setf (read-thread session)
-              (bt:make-thread (lambda ()
-                                  (let ((*standard-output* stdout))
-                                      (read-messages session)))
-                              :name "Session Message Reader"))))
+    (setf (read-thread session)
+          (bt:make-thread (lambda () (read-messages session))
+                          :name "Session Message Reader")))
 
 
-(defun start (conn)
-    (let* ((session (make-instance 'client-session :conn conn)))
+(defun start (logger conn)
+    (let* ((session (make-instance 'client-session
+                                   :conn conn
+                                   :Logger logger)))
         (start-read-thread session)
         session))
 
