@@ -3,9 +3,7 @@
     (:export :start
              :stop)
     (:local-nicknames (:parse :alive/lsp/parse)
-                      (:message :alive/lsp/message)
-                      (:init-req :alive/lsp/init-request)
-                      (:init-res :alive/lsp/init-response)))
+                      (:init :alive/lsp/message/initialize)))
 
 (in-package :alive/session)
 
@@ -23,23 +21,23 @@
 
 
 (defgeneric handle-msg (session msg))
-(defgeneric handle-req (session msg req))
+; (defgeneric handle-req (session msg req))
 
 
-(defmethod handle-msg (session (msg message:request-payload))
-    (format T "Handle request ~A~%" (message::method-name msg))
-    (when (message:params msg)
+(defmethod handle-msg (session (msg init:request))
+    (format T "Handle init request~%")
+    #+n (when (message:params msg)
           (handle-req session msg (message:params msg))))
 
 
-(defmethod handle-req (session (msg message:request-payload) (req init-req::params))
-    (let* ((result (init-res:create))
-           (resp-msg (message:create-result (message:id msg) result))
-           (to-send (message:to-wire resp-msg)))
-        (format T "Handle init request: ~A~%" to-send)
+; (defmethod handle-req (session (msg message:request-payload) (req init-req::params))
+;     (let* ((result (init-res:create))
+;            (resp-msg (message:create-result (message:id msg) result))
+;            (to-send (message:to-wire resp-msg)))
+;         (format T "Handle init request: ~A~%" to-send)
 
-        (write-string to-send (usocket:socket-stream (conn session)))
-        (force-output (usocket:socket-stream (conn session)))))
+;         (write-string to-send (usocket:socket-stream (conn session)))
+;         (force-output (usocket:socket-stream (conn session)))))
 
 
 (defun read-message (session)

@@ -2,7 +2,8 @@
     (:use :cl)
     (:export :from-stream)
 
-    (:local-nicknames (:message :alive/lsp/message)
+    (:local-nicknames (:init :alive/lsp/message/initialize)
+                      (:packet :alive/lsp/packet)
                       (:init-req :alive/lsp/init-request)))
 
 (in-package :alive/lsp/parse)
@@ -58,13 +59,13 @@
 (defun add-to-header (header pair)
     (destructuring-bind (key value)
             pair
-        (cond ((string= key "Content-Length") (setf (message:content-length header)
+        (cond ((string= key "Content-Length") (setf (packet:content-length header)
                                                     (parse-integer value)))
               (T (error (format nil "Unhandled header key: ~A" key))))))
 
 
 (defun parse-header (input)
-    (loop :with header := (message:create-header)
+    (loop :with header := (packet:create-header)
           :for line :in (get-header-lines input) :do
               (add-to-header header
                              (parse-header-line line))
@@ -105,23 +106,27 @@
 
 
 (defun build-init-req (fields)
-    (make-instance 'message:request-payload
-                   :jsonrpc (fields-jsonrpc fields)
-                   :id (fields-id fields)
-                   :method (fields-method-name fields)
-                   :params (init-req:from-wire-params (fields-params fields))))
+    (init:request-from-wire :jsonrpc (fields-jsonrpc fields)
+                            :id (fields-id fields)
+                            :params (fields-params fields))
+
+    #+n (make-instance 'message:request-payload
+                       :jsonrpc (fields-jsonrpc fields)
+                       :id (fields-id fields)
+                       :method (fields-method-name fields)
+                       :params (init-req:from-wire-params (fields-params fields))))
 
 
-(defun build-initialized (fields)
-    (make-instance 'message:request-payload
-                   :jsonrpc (fields-jsonrpc fields)
-                   :method (fields-method-name fields)
-                   :params nil))
+; (defun build-initialized (fields)
+;     (make-instance 'message:request-payload
+;                    :jsonrpc (fields-jsonrpc fields)
+;                    :method (fields-method-name fields)
+;                    :params nil))
 
 
 (defun build-request (fields)
     (cond ((string= "initialize" (fields-method-name fields)) (build-init-req fields))
-          ((string= "initialized" (fields-method-name fields)) (build-initialized fields))
+          #+n ((string= "initialized" (fields-method-name fields)) (build-initialized fields))
           (T (error (format nil "Unhandled request ~A" fields)))))
 
 
@@ -134,6 +139,6 @@
 
 (defun from-stream (input)
     (let* ((header (parse-header input))
-           (raw-content (read-content input (message:content-length header)))
+           (raw-content (read-content input (packet:content-length header)))
            (content (decode-json raw-content)))
         (build-message content)))

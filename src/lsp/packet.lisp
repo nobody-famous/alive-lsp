@@ -1,22 +1,26 @@
-(defpackage :alive/lsp/message
+(defpackage :alive/lsp/packet
     (:use :cl)
     (:export :content-length
              :create-header
-             :create-result
-             :id
-             :params
-             :request-payload
-             :result-payload
-             :error-payload
+             :packet
              :to-wire))
 
-(in-package :alive/lsp/message)
+(in-package :alive/lsp/packet)
 
 
 (defclass header ()
     ((content-length :accessor content-length
                      :initform nil
                      :initarg :content-length)))
+
+
+(defclass packet ()
+    ((header :accessor header
+             :initform nil
+             :initarg :header)
+     (payload :accessor payload
+              :initform nil
+              :initarg :payload)))
 
 
 (defclass payload ()
