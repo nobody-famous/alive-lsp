@@ -1,7 +1,9 @@
 (defpackage :alive/test/lsp/message
     (:use :cl)
     (:export :run-all)
-    (:local-nicknames (:parse :alive/lsp/parse)
+    (:local-nicknames (:message :alive/lsp/message/abstract)
+                      (:packet :alive/lsp/packet)
+                      (:parse :alive/lsp/parse)
                       (:init :alive/lsp/message/initialize)))
 
 (in-package :alive/test/lsp/message)
@@ -40,14 +42,13 @@
         (format T "JSON ~A~%" (json:encode-json-to-string parsed))))
 
 
-; (defun resp-msg ()
-;     (let ((payload (make-instance 'message:result-payload
-;                                   :id 0
-;                                   :result (init-res:create))))
-;         (format T "JSON ~A~%" (parse:from-stream (make-string-input-stream (message:to-wire payload))))
-;         (format T "JSON ~A~%" (json:encode-json-to-string payload))))
+(defun resp-msg ()
+    (let ((msg (init:create-response 0)))
+        (format T "MSG ~A~%" (message::id msg))
+        (format T "JSON ~A~%" (parse:from-stream (make-string-input-stream (packet:to-wire msg))))
+        (format T "JSON ~A~%" (json:encode-json-to-string msg))))
 
 
 (defun run-all ()
     (parse-msg)
-    #+n (resp-msg))
+    (resp-msg))

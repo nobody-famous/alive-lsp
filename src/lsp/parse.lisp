@@ -114,7 +114,7 @@
 (defun build-request (fields)
     (cond ((string= "initialize" (fields-method-name fields)) (build-init-req fields))
           ((string= "initialized" (fields-method-name fields)) (init:create-initialized-notification))
-          (T (error (format nil "Unhandled request ~A" fields)))))
+          (T (error (format nil "Unhandled request")))))
 
 
 (defun build-message (payload)

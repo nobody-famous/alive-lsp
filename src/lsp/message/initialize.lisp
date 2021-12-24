@@ -19,6 +19,40 @@
 (defparameter *doc-sync-incr* 2)
 
 
+(defparameter *sem-token-types* (list "comment"
+                                      "string"
+                                      "keyword"
+                                      "number"
+                                      "regexp"
+                                      "operator"
+                                      "namespace"
+                                      "type"
+                                      "struct"
+                                      "class"
+                                      "interface"
+                                      "enum"
+                                      "typeParameter"
+                                      "function"
+                                      "member"
+                                      "macro"
+                                      "variable"
+                                      "parameter"
+                                      "property"
+                                      "label"
+                                      "parenthesis"
+                                      "symbol"))
+
+
+(defparameter *sem-token-mods* (list "declaration"
+                                     "documentation"
+                                     "readonly"
+                                     "static"
+                                     "abstract"
+                                     "deprecated"
+                                     "modification"
+                                     "async"))
+
+
 (defclass client-info ()
     ((name :accessor name
            :initform nil
@@ -74,20 +108,30 @@
              :initarg :change)))
 
 
-(defclass doc-sync ()
-    ((text-document-sync :accessor text-document-sync
-                         :initform (make-instance 'doc-sync-options)
-                         :initarg :text-document-sync)))
+(defclass sem-tokens-legend ()
+    ((token-types :initform *sem-token-types*)
+     (token-modifiers :initform *sem-token-mods*)))
+
+
+(defclass sem-tokens-opts ()
+    ((legend :initform (make-instance 'sem-tokens-legend))
+     (full :initform T)))
 
 
 (defclass server-capabilities ()
+    ((text-document-sync :initform *doc-sync-full*)
+     (hover-provider :initform T)
+     (semantic-tokens-provider :initform (make-instance 'sem-tokens-opts))))
+
+
+(defclass response-body ()
     ((capabilities :accessor capabilities
-                   :initform (make-instance 'doc-sync)
+                   :initform (make-instance 'server-capabilities)
                    :initarg :capabilities)))
 
 
 (defclass response (message:result-response)
-    ())
+    ((message::result :initform (make-instance 'response-body))))
 
 
 (defclass initialized (message:notification)
@@ -134,9 +178,7 @@
 
 
 (defun create-response (id)
-    (make-instance 'response
-                   :id id
-                   :result (make-instance 'server-capabilities)))
+    (make-instance 'response :id id))
 
 
 (defun create-initialized-notification ()
