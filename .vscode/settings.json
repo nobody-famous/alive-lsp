@@ -1,5 +1,5 @@
 {
-    "alive.format.closeParenOwnLine": "multiline",
+    "alive.format.closeParenOwnLine": "never",
     "alive.format.indentWidth": 4,
     "alive.format.maxBlankLines": 2,
     "alive.indentMacros": true,

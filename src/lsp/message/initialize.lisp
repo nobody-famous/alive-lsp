@@ -1,8 +1,22 @@
-(defpackage :alive/lsp/init-request
+(defpackage :alive/lsp/message/initialize
     (:use :cl)
-    (:export :from-wire-params))
+    (:export :create-response
+             :create-initialized-notification
+             :initialized
+             :request-from-wire
+             :request)
+    (:local-nicknames (:message :alive/lsp/message/abstract)))
 
-(in-package :alive/lsp/init-request)
+(in-package :alive/lsp/message/initialize)
+
+
+(defparameter *server-name* "Alive LSP")
+(defparameter *server-version* "0.1")
+
+
+(defparameter *doc-sync-none* 0)
+(defparameter *doc-sync-full* 1)
+(defparameter *doc-sync-incr* 2)
 
 
 (defclass client-info ()
@@ -41,6 +55,45 @@
                         :initarg :workspace-folders)))
 
 
+(defclass request (message:request)
+    ((method :initform "initialize")))
+
+
+(defclass server-info ()
+    ((name :accessor name
+           :initform nil
+           :initarg :name)
+     (version :accessor version
+              :initform nil
+              :initarg :version)))
+
+
+(defclass doc-sync-options ()
+    ((change :accessor change
+             :initform *doc-sync-full*
+             :initarg :change)))
+
+
+(defclass doc-sync ()
+    ((text-document-sync :accessor text-document-sync
+                         :initform (make-instance 'doc-sync-options)
+                         :initarg :text-document-sync)))
+
+
+(defclass server-capabilities ()
+    ((capabilities :accessor capabilities
+                   :initform (make-instance 'doc-sync)
+                   :initarg :capabilities)))
+
+
+(defclass response (message:result-response)
+    ())
+
+
+(defclass initialized (message:notification)
+    ((method :initform "initialized")))
+
+
 (defun get-client-info (info)
     (loop :with out := (make-instance 'client-info)
           :for item :in info :do
@@ -62,8 +115,29 @@
           (t (error (format nil "Unhandled init request param: ~A" key)))))
 
 
-(defun from-wire-params (params)
+(defun add-params (req params)
     (loop :with init-params := (make-instance 'params)
           :for param :in params :do
               (update-param init-params (car param) (cdr param))
-          :finally (return init-params)))
+          :finally (setf (message:params req) init-params)))
+
+
+(defun request-from-wire (&key jsonrpc id params)
+    (let ((req (make-instance 'request)))
+
+        (setf (message:version req) jsonrpc)
+        (setf (message:id req) id)
+
+        (add-params req params)
+
+        req))
+
+
+(defun create-response (id)
+    (make-instance 'response
+                   :id id
+                   :result (make-instance 'server-capabilities)))
+
+
+(defun create-initialized-notification ()
+    (make-instance 'initialized))

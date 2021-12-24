@@ -3,8 +3,7 @@
     (:export :make-compile-message
              :*sev-error*
              :*sev-warn*
-             :*sev-info*
-    ))
+             :*sev-info*))
 
 (in-package :alive/types)
 
@@ -17,5 +16,4 @@
 (defstruct compile-message
     severity
     location
-    message
-)
+    message)
