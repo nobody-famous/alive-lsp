@@ -3,8 +3,8 @@
     (:export :from-stream)
 
     (:local-nicknames (:init :alive/lsp/message/initialize)
-                      (:packet :alive/lsp/packet)
-                      (:init-req :alive/lsp/init-request)))
+                      (:message :alive/lsp/message/abstract)
+                      (:packet :alive/lsp/packet)))
 
 (in-package :alive/lsp/parse)
 
@@ -108,25 +108,19 @@
 (defun build-init-req (fields)
     (init:request-from-wire :jsonrpc (fields-jsonrpc fields)
                             :id (fields-id fields)
-                            :params (fields-params fields))
+                            :params (fields-params fields)))
 
-    #+n (make-instance 'message:request-payload
+
+#+n (defun build-initialized (fields)
+        (make-instance 'message:request-payload
                        :jsonrpc (fields-jsonrpc fields)
-                       :id (fields-id fields)
                        :method (fields-method-name fields)
-                       :params (init-req:from-wire-params (fields-params fields))))
-
-
-; (defun build-initialized (fields)
-;     (make-instance 'message:request-payload
-;                    :jsonrpc (fields-jsonrpc fields)
-;                    :method (fields-method-name fields)
-;                    :params nil))
+                       :params nil))
 
 
 (defun build-request (fields)
     (cond ((string= "initialize" (fields-method-name fields)) (build-init-req fields))
-          #+n ((string= "initialized" (fields-method-name fields)) (build-initialized fields))
+          ((string= "initialized" (fields-method-name fields)) (init:create-initialized-notification))
           (T (error (format nil "Unhandled request ~A" fields)))))
 
 

@@ -2,8 +2,10 @@
     (:use :cl)
     (:export :start
              :stop)
-    (:local-nicknames (:parse :alive/lsp/parse)
-                      (:init :alive/lsp/message/initialize)))
+    (:local-nicknames (:init :alive/lsp/message/initialize)
+                      (:message :alive/lsp/message/abstract)
+                      (:packet :alive/lsp/packet)
+                      (:parse :alive/lsp/parse)))
 
 (in-package :alive/session)
 
@@ -15,36 +17,34 @@
      (conn :accessor conn
            :initform nil
            :initarg :conn)
+     (initialized :accessor initialized
+                  :initform nil
+                  :initarg :initialized)
      (read-thread :accessor read-thread
                   :initform nil
                   :initarg :read-thread)))
 
 
 (defgeneric handle-msg (session msg))
-; (defgeneric handle-req (session msg req))
 
 
 (defmethod handle-msg (session (msg init:request))
     (format T "Handle init request~%")
-    #+n (when (message:params msg)
-          (handle-req session msg (message:params msg))))
+
+    (let* ((resp (init:create-response (message:id msg)))
+           (to-send (packet:to-wire resp)))
+        (write-string to-send (usocket:socket-stream (conn session)))
+        (force-output (usocket:socket-stream (conn session)))))
 
 
-; (defmethod handle-req (session (msg message:request-payload) (req init-req::params))
-;     (let* ((result (init-res:create))
-;            (resp-msg (message:create-result (message:id msg) result))
-;            (to-send (message:to-wire resp-msg)))
-;         (format T "Handle init request: ~A~%" to-send)
-
-;         (write-string to-send (usocket:socket-stream (conn session)))
-;         (force-output (usocket:socket-stream (conn session)))))
+(defmethod handle-msg (session (msg init:initialized))
+    (setf (initialized session) T))
 
 
 (defun read-message (session)
     (usocket:wait-for-input (conn session))
 
     (let ((in-stream (usocket:socket-stream (conn session))))
-        (format T "WOKE UP~%")
         (when (listen in-stream)
               (parse:from-stream in-stream))))
 
@@ -52,7 +52,6 @@
 (defun read-messages (session)
     (loop :while (running session)
           :do (let ((msg (read-message session)))
-                  (format T "MESSAGE ~A~%" msg)
                   (when msg (handle-msg session msg)))))
 
 
