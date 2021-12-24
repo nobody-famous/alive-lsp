@@ -17,8 +17,6 @@
                  "alive-lsp/src/lsp/message/abstract"
                  "alive-lsp/src/lsp/message/initialize"
                  "alive-lsp/src/lsp/message/payload"
-                 "alive-lsp/src/lsp/init-request"
-                 "alive-lsp/src/lsp/init-response"
                  "alive-lsp/src/lsp/packet"
                  "alive-lsp/src/lsp/parse"
 
@@ -44,8 +42,6 @@
 (register-system-packages "alive-lsp/src/lsp/message/abstract" '(:alive/lsp/message/abstract))
 (register-system-packages "alive-lsp/src/lsp/message/initialize" '(:alive/lsp/message/initialize))
 (register-system-packages "alive-lsp/src/lsp/message/payload" '(:alive/lsp/message/payload))
-(register-system-packages "alive-lsp/src/lsp/init-request" '(:alive/lsp/init-request))
-(register-system-packages "alive-lsp/src/lsp/init-response" '(:alive/lsp/init-response))
 (register-system-packages "alive-lsp/src/lsp/packet" '(:alive/lsp/packet))
 (register-system-packages "alive-lsp/src/lsp/parse" '(:alive/lsp/parse))
 

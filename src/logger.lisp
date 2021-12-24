@@ -34,6 +34,9 @@
     ((level :accessor level
             :initform *error*
             :initarg :level)
+     (lock :accessor lock
+           :initform (bt:make-recursive-lock)
+           :initarg :lock)
      (out :accessor out
           :initform nil
           :initarg :out)))
@@ -49,29 +52,30 @@
         (format nil "~d/~d/~d ~2,'0d:~2,'0d:~2,'0d" month day year hour minute sec)))
 
 
-(defun msg (out level fmt &rest rest)
-    (let ((new-fmt (format nil "[~A][~A] ~A" (get-timestamp) (level-name level) fmt)))
-        (apply #'format out new-fmt rest)))
+(defun msg (logger level fmt &rest rest)
+    (bt:with-recursive-lock-held ((lock logger))
+                                 (let ((new-fmt (format nil "[~A][~A] ~A" (get-timestamp) (level-name level) fmt)))
+                                     (apply #'format (out logger) new-fmt rest))))
 
 
 (defun trace-msg (logger fmt &rest rest)
     (when (<= (level logger) *trace*)
-          (apply #'msg (out logger) *trace* fmt rest)))
+          (apply #'msg logger *trace* fmt rest)))
 
 
 (defun debug-msg (logger fmt &rest rest)
     (when (<= (level logger) *debug*)
-          (apply #'msg (out logger) *debug* fmt rest)))
+          (apply #'msg logger *debug* fmt rest)))
 
 
 (defun info-msg (logger fmt &rest rest)
     (when (<= (level logger) *info*)
-          (apply #'msg (out logger) *info* fmt rest)))
+          (apply #'msg logger *info* fmt rest)))
 
 
 (defun error-msg (logger fmt &rest rest)
     (when (<= (level logger) *error*)
-          (apply #'msg (out logger) *error* fmt rest)))
+          (apply #'msg logger *error* fmt rest)))
 
 
 (defun set-level (logger level)
