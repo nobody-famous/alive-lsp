@@ -111,13 +111,6 @@
                             :params (fields-params fields)))
 
 
-#+n (defun build-initialized (fields)
-        (make-instance 'message:request-payload
-                       :jsonrpc (fields-jsonrpc fields)
-                       :method (fields-method-name fields)
-                       :params nil))
-
-
 (defun build-request (fields)
     (cond ((string= "initialize" (fields-method-name fields)) (build-init-req fields))
           ((string= "initialized" (fields-method-name fields)) (init:create-initialized-notification))

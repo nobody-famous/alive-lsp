@@ -32,17 +32,20 @@
 (defgeneric handle-msg (session msg))
 
 
-(defmethod handle-msg (session (msg init:request))
-    (logger:debug-msg (logger session) "Initialize request~%")
+(defun send-msg (session msg)
+    (logger:trace-msg (logger session) "<-- ~A~%" (json:encode-json-to-string msg))
 
-    (let* ((resp (init:create-response (message:id msg)))
-           (to-send (packet:to-wire resp)))
+    (let ((to-send (packet:to-wire msg)))
         (write-string to-send (usocket:socket-stream (conn session)))
         (force-output (usocket:socket-stream (conn session)))))
 
 
+(defmethod handle-msg (session (msg init:request))
+    (let* ((resp (init:create-response (message:id msg))))
+        (send-msg session resp)))
+
+
 (defmethod handle-msg (session (msg init:initialized))
-    (logger:debug-msg (logger session) "Initialized notification~%")
     (setf (initialized session) T))
 
 
@@ -57,7 +60,9 @@
 (defun read-messages (session)
     (loop :while (running session)
           :do (let ((msg (read-message session)))
-                  (when msg (handle-msg session msg)))))
+                  (when msg
+                        (logger:trace-msg (logger session) "--> ~A~%" (json:encode-json-to-string msg))
+                        (handle-msg session msg)))))
 
 
 (defun start-read-thread (session)
