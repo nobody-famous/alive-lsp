@@ -5,6 +5,9 @@
     :depends-on (#:usocket
                  #:cl-json
                  #:bordeaux-threads
+
+                 "alive-lsp/src/logger"
+
                  "alive-lsp/src/types"
                  "alive-lsp/src/parse/stream"
                  "alive-lsp/src/compat/sbcl/compile"
@@ -29,6 +32,8 @@
                  "alive-lsp/test/compat/sbcl/compile"
                  "alive-lsp/test/parse"
                  "alive-lsp/test/lsp/message"))
+
+(register-system-packages "alive-lsp/src/logger" '(:alive/logger))
 
 (register-system-packages "alive-lsp/src/types" '(:alive/types))
 (register-system-packages "alive-lsp/src/parse/stream" '(:alive/parse/stream))
