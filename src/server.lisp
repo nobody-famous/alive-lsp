@@ -83,13 +83,15 @@
 
 
 (defun start-server (server port)
-    (bt:make-thread (lambda () (listen-for-conns server port))
-                    :name "Main Loop")
+    (let ((stdout *standard-output*))
+        (bt:make-thread (lambda ()
+                            (let ((*standard-output* stdout))
+                                (listen-for-conns server port)))
+                        :name "Main Loop")
 
-    (setf (logger server) (logger:create *standard-output* logger:*trace*))
+        (setf (logger server) (logger:create *standard-output* logger:*trace*))
 
-    server)
-
+        server))
 
 (defun stop (server)
     (logger:info-msg (logger server) "Stop server~%")

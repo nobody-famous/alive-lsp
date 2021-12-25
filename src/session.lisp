@@ -2,7 +2,8 @@
     (:use :cl)
     (:export :start
              :stop)
-    (:local-nicknames (:init :alive/lsp/message/initialize)
+    (:local-nicknames (:did-open :alive/lsp/message/document/did-open)
+                      (:init :alive/lsp/message/initialize)
                       (:logger :alive/logger)
                       (:message :alive/lsp/message/abstract)
                       (:packet :alive/lsp/packet)
@@ -18,6 +19,9 @@
      (conn :accessor conn
            :initform nil
            :initarg :conn)
+     (files :accessor files
+            :initform (make-hash-table :test 'equalp)
+            :initarg :files)
      (logger :accessor logger
              :initform nil
              :initarg :logger)
@@ -49,6 +53,12 @@
     (setf (initialized session) T))
 
 
+(defmethod handle-msg (session (msg did-open:did-open))
+    (let ((key (did-open:get-uri msg))
+          (value (did-open:get-text msg)))
+        (setf (gethash key (files session)) value)))
+
+
 (defun read-message (session)
     (usocket:wait-for-input (conn session))
 
@@ -68,10 +78,12 @@
 
 
 (defun start-read-thread (session)
-    (setf (read-thread session)
-          (bt:make-thread (lambda () (read-messages session))
-                          :name "Session Message Reader")))
-
+    (let ((stdout *standard-output*))
+        (setf (read-thread session)
+              (bt:make-thread (lambda ()
+                                  (let ((*standard-output* stdout))
+                                      (read-messages session)))
+                              :name "Session Message Reader"))))
 
 (defun start (logger conn)
     (let* ((session (make-instance 'client-session

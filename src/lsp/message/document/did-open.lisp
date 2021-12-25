@@ -1,6 +1,9 @@
 (defpackage :alive/lsp/message/document/did-open
     (:use :cl)
-    (:export :from-wire)
+    (:export :did-open
+             :from-wire
+             :get-text
+             :get-uri)
     (:local-nicknames (:message :alive/lsp/message/abstract)))
 
 (in-package :alive/lsp/message/document/did-open)
@@ -31,7 +34,19 @@
                     :initarg :text-document)))
 
 
-(defun get-text-doc (params)
+(defun get-uri (msg)
+    (let* ((params (message:params msg))
+           (doc (text-document params)))
+        (uri doc)))
+
+
+(defun get-text (msg)
+    (let* ((params (message:params msg))
+           (doc (text-document params)))
+        (text doc)))
+
+
+(defun text-doc-from-wire (params)
     (labels ((add-param (params key value)
                   (cond ((eq key :uri) (setf (uri params) value))
                         ((eq key :language-id) (setf (language-id params) value))
@@ -47,7 +62,8 @@
 
 (defun from-wire (params)
     (labels ((add-param (params key value)
-                  (cond ((eq key :text-document) (setf (text-document params) (get-text-doc value))))))
+                  (cond ((eq key :text-document) (setf (text-document params)
+                                                       (text-doc-from-wire value))))))
 
         (loop :with out-params := (make-instance 'params)
               :for param :in params :do
