@@ -52,10 +52,11 @@
         (format nil "~d/~d/~d ~2,'0d:~2,'0d:~2,'0d" month day year hour minute sec)))
 
 
-(defun msg (logger level fmt &rest rest)
+(defun msg (logger level fmt &rest args)
     (bt:with-recursive-lock-held ((lock logger))
-                                 (let ((new-fmt (format nil "[~A][~A] ~A" (get-timestamp) (level-name level) fmt)))
-                                     (apply #'format (out logger) new-fmt rest))))
+                                 (let* ((new-fmt (format nil "~&[~A][~A] ~A~&" (get-timestamp) (level-name level) fmt))
+                                        (params (concatenate 'list (list (out logger) new-fmt) args)))
+                                     (apply #'format params))))
 
 
 (defun trace-msg (logger fmt &rest rest)

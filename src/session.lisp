@@ -52,14 +52,16 @@
 (defun read-message (session)
     (usocket:wait-for-input (conn session))
 
-    (let ((in-stream (usocket:socket-stream (conn session))))
-        (when (listen in-stream)
-              (parse:from-stream in-stream))))
-
+    (handler-case
+            (let ((in-stream (usocket:socket-stream (conn session))))
+                (when (listen in-stream)
+                      (parse:from-stream in-stream)))
+        (error (c) (logger:error-msg (logger session) "~A" c))))
 
 (defun read-messages (session)
     (loop :while (running session)
           :do (let ((msg (read-message session)))
+                  (logger:debug-msg (logger session) "MSG ~A" msg)
                   (when msg
                         (logger:trace-msg (logger session) "--> ~A~%" (json:encode-json-to-string msg))
                         (handle-msg session msg)))))

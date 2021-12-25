@@ -15,8 +15,10 @@
                  "alive-lsp/src/compile"
 
                  "alive-lsp/src/lsp/message/abstract"
-                 "alive-lsp/src/lsp/message/initialize"
                  "alive-lsp/src/lsp/message/payload"
+                 "alive-lsp/src/lsp/message/initialize"
+                 "alive-lsp/src/lsp/message/document/did-open"
+
                  "alive-lsp/src/lsp/packet"
                  "alive-lsp/src/lsp/parse"
 
@@ -40,8 +42,10 @@
 (register-system-packages "alive-lsp/src/compat/sbcl/streams" '(:alive/streams))
 
 (register-system-packages "alive-lsp/src/lsp/message/abstract" '(:alive/lsp/message/abstract))
-(register-system-packages "alive-lsp/src/lsp/message/initialize" '(:alive/lsp/message/initialize))
 (register-system-packages "alive-lsp/src/lsp/message/payload" '(:alive/lsp/message/payload))
+(register-system-packages "alive-lsp/src/lsp/message/initialize" '(:alive/lsp/message/initialize))
+(register-system-packages "alive-lsp/src/lsp/message/document/did-open" '(:alive/lsp/message/document/did-open))
+
 (register-system-packages "alive-lsp/src/lsp/packet" '(:alive/lsp/packet))
 (register-system-packages "alive-lsp/src/lsp/parse" '(:alive/lsp/parse))
 
