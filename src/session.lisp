@@ -60,13 +60,24 @@
 
 
 (defun read-message (session)
-    (usocket:wait-for-input (conn session))
-
     (handler-case
             (let ((in-stream (usocket:socket-stream (conn session))))
-                (when (listen in-stream)
-                      (parse:from-stream in-stream)))
-        (error (c) (logger:error-msg (logger session) "~A" c))))
+                (parse:from-stream in-stream))
+        (error (c)
+               (logger:error-msg (logger session) "~A" c)
+               (stop session))))
+
+
+; (defun read-message (session)
+;     (usocket:wait-for-input (conn session) :ready-only T)
+;     (format T "WOKE UP~%")
+
+;     (handler-case
+;             (let ((in-stream (usocket:socket-stream (conn session))))
+;                 (when (listen in-stream)
+;                       (parse:from-stream in-stream)))
+;         (error (c) (logger:error-msg (logger session) "~A" c))))
+
 
 (defun read-messages (session)
     (loop :while (running session)
