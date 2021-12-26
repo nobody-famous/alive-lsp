@@ -1,6 +1,8 @@
 (defpackage :alive/session
     (:use :cl)
-    (:export :start
+    (:export :add-listener
+             :listener
+             :start
              :stop)
     (:local-nicknames (:did-open :alive/lsp/message/document/did-open)
                       (:init :alive/lsp/message/initialize)
@@ -12,10 +14,19 @@
 (in-package :alive/session)
 
 
+(defclass listener ()
+    ((on-done :accessor on-done
+              :initform nil
+              :initarg :on-done)))
+
+
 (defclass client-session ()
     ((running :accessor running
               :initform T
               :initarg :running)
+     (listeners :accessor listeners
+                :initform nil
+                :initarg :listeners)
      (conn :accessor conn
            :initform nil
            :initarg :conn)
@@ -31,6 +42,10 @@
      (read-thread :accessor read-thread
                   :initform nil
                   :initarg :read-thread)))
+
+
+(defmethod add-listener ((obj client-session) (to-add listener))
+    (push to-add (listeners obj)))
 
 
 (defgeneric handle-msg (session msg))
@@ -63,20 +78,12 @@
     (handler-case
             (let ((in-stream (usocket:socket-stream (conn session))))
                 (parse:from-stream in-stream))
+        (end-of-file (c)
+                     (declare (ignore c))
+                     (logger:error-msg (logger session) "EOF caught, assuming socket is closed")
+                     (stop session))
         (error (c)
-               (logger:error-msg (logger session) "~A" c)
-               (stop session))))
-
-
-; (defun read-message (session)
-;     (usocket:wait-for-input (conn session) :ready-only T)
-;     (format T "WOKE UP~%")
-
-;     (handler-case
-;             (let ((in-stream (usocket:socket-stream (conn session))))
-;                 (when (listen in-stream)
-;                       (parse:from-stream in-stream)))
-;         (error (c) (logger:error-msg (logger session) "~A" c))))
+               (logger:error-msg (logger session) "~A" c))))
 
 
 (defun read-messages (session)
@@ -96,15 +103,24 @@
                                       (read-messages session)))
                               :name "Session Message Reader"))))
 
+
 (defun start (logger conn)
     (let* ((session (make-instance 'client-session
                                    :conn conn
                                    :Logger logger)))
         (start-read-thread session)
+        (logger:info-msg logger "Started session ~A" session)
         session))
 
 
 (defun stop (session)
+    (logger:info-msg (logger session) "Stopping session ~A" session)
+    (setf (running session) nil)
+
     (when (conn session)
           (usocket:socket-close (conn session))
-          (setf (conn session) nil)))
+          (setf (conn session) nil))
+
+    (loop :for listener :in (listeners session) :do
+              (when (on-done listener)
+                    (funcall (on-done listener)))))

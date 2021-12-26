@@ -36,7 +36,11 @@
 (defun accept-conn (server)
     (let* ((conn (usocket:socket-accept (socket server)))
            (session (session:start (logger server) conn)))
-        (logger:info-msg (logger server) "Connection received~%")
+        (session:add-listener session
+                              (make-instance 'session:listener
+                                             :on-done (lambda ()
+                                                          (setf (sessions server)
+                                                                (remove session (sessions server))))))
         (push session (sessions server))))
 
 

@@ -41,7 +41,7 @@
           :with prev-char := (code-char 0)
           :until (and (char= #\return prev-char)
                       (char= #\newline
-                             (peek-char nil input nil nil)))
+                             (peek-char nil input)))
           :do (let ((ch (read-char input)))
                   (setf prev-char ch)
                   (write-char ch str))
@@ -88,7 +88,7 @@
 (defun read-content (input size)
     (with-output-to-string (out)
         (loop :for ndx :from 0 :below size :do
-                  (let ((ch (read-char input nil nil)))
+                  (let ((ch (read-char input)))
                       (when ch (write-char ch out))))))
 
 
@@ -129,7 +129,7 @@
         (cond ((string= "initialize" name) (build-init-req fields))
               ((string= "initialized" name) (init:create-initialized-notification))
               ((string= "textdocument/didopen" name) (did-open:from-wire (params fields)))
-              (T (error "Unhandled request ~A" name)))))
+              (T (error (format nil "Unhandled request ~A" name))))))
 
 (defun build-message (payload)
     (let ((fields (get-msg-fields payload)))
