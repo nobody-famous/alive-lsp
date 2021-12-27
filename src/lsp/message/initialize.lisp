@@ -5,7 +5,8 @@
              :initialized
              :request-from-wire
              :request)
-    (:local-nicknames (:message :alive/lsp/message/abstract)))
+    (:local-nicknames (:sem-tokens :alive/lsp/types/sem-tokens)
+                      (:message :alive/lsp/message/abstract)))
 
 (in-package :alive/lsp/message/initialize)
 
@@ -17,40 +18,6 @@
 (defparameter *doc-sync-none* 0)
 (defparameter *doc-sync-full* 1)
 (defparameter *doc-sync-incr* 2)
-
-
-(defparameter *sem-token-types* (list "comment"
-                                      "string"
-                                      "keyword"
-                                      "number"
-                                      "regexp"
-                                      "operator"
-                                      "namespace"
-                                      "type"
-                                      "struct"
-                                      "class"
-                                      "interface"
-                                      "enum"
-                                      "typeParameter"
-                                      "function"
-                                      "member"
-                                      "macro"
-                                      "variable"
-                                      "parameter"
-                                      "property"
-                                      "label"
-                                      "parenthesis"
-                                      "symbol"))
-
-
-(defparameter *sem-token-mods* (list "declaration"
-                                     "documentation"
-                                     "readonly"
-                                     "static"
-                                     "abstract"
-                                     "deprecated"
-                                     "modification"
-                                     "async"))
 
 
 (defclass client-info ()
@@ -109,8 +76,8 @@
 
 
 (defclass sem-tokens-legend ()
-    ((token-types :initform *sem-token-types*)
-     (token-modifiers :initform *sem-token-mods*)))
+    ((token-types :initform sem-tokens:*types*)
+     (token-modifiers :initform sem-tokens:*mods*)))
 
 
 (defclass sem-tokens-opts ()
@@ -147,34 +114,25 @@
           :finally (return out)))
 
 
-(defun update-param (params key value)
-    (cond ((eq key :client-info) (setf (client-info params) (get-client-info value)))
-          ((eq key :locale) (setf (locale params) value))
-          ((eq key :root-path) (setf (root-path params) value))
-          ((eq key :root-uri) (setf (root-uri params) value))
-          ((eq key :process-id) (setf (process-id params) value))
-          ((eq key :capabilities) (setf (capabilities params) value))
-          ((eq key :trace) (setf (trace-enabled params) value))
-          ((eq key :workspace-folders) (setf (workspace-folders params) value))
-          (t (error (format nil "Unhandled init request param: ~A" key)))))
-
-
-(defun add-params (req params)
-    (loop :with init-params := (make-instance 'params)
-          :for param :in params :do
-              (update-param init-params (car param) (cdr param))
-          :finally (setf (message:params req) init-params)))
-
-
 (defun request-from-wire (&key jsonrpc id params)
-    (let ((req (make-instance 'request)))
+    (labels ((add-param (out-params key value)
+                  (cond ((eq key :client-info) (setf (client-info out-params) (get-client-info value)))
+                        ((eq key :locale) (setf (locale out-params) value))
+                        ((eq key :root-path) (setf (root-path out-params) value))
+                        ((eq key :root-uri) (setf (root-uri out-params) value))
+                        ((eq key :process-id) (setf (process-id out-params) value))
+                        ((eq key :capabilities) (setf (capabilities out-params) value))
+                        ((eq key :trace) (setf (trace-enabled out-params) value))
+                        ((eq key :workspace-folders) (setf (workspace-folders out-params) value))
+                        (t (error (format nil "Unhandled init request param: ~A" key))))))
 
-        (setf (message:version req) jsonrpc)
-        (setf (message:id req) id)
-
-        (add-params req params)
-
-        req))
+        (loop :with out-params := (make-instance 'params)
+              :for param :in params :do
+                  (add-param out-params (car param) (cdr param))
+              :finally (return (make-instance 'request
+                                              :id id
+                                              :jsonrpc jsonrpc
+                                              :params out-params)))))
 
 
 (defun create-response (id)

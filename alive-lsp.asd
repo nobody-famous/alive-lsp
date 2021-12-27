@@ -14,10 +14,14 @@
                  "alive-lsp/src/compat/sbcl/streams"
                  "alive-lsp/src/compile"
 
+                 "alive-lsp/src/lsp/types/sem-tokens"
+                 "alive-lsp/src/lsp/types/text-doc"
+
                  "alive-lsp/src/lsp/message/abstract"
                  "alive-lsp/src/lsp/message/payload"
                  "alive-lsp/src/lsp/message/initialize"
                  "alive-lsp/src/lsp/message/document/did-open"
+                 "alive-lsp/src/lsp/message/document/sem-tokens-full"
 
                  "alive-lsp/src/lsp/packet"
                  "alive-lsp/src/lsp/parse"
@@ -41,10 +45,14 @@
 (register-system-packages "alive-lsp/src/compat/sbcl/compile" '(:alive/compile/compat))
 (register-system-packages "alive-lsp/src/compat/sbcl/streams" '(:alive/streams))
 
+(register-system-packages "alive-lsp/src/lsp/types/sem-tokens" '(:alive/lsp/types/sem-tokens))
+(register-system-packages "alive-lsp/src/lsp/types/text-doc" '(:alive/lsp/types/text-doc))
+
 (register-system-packages "alive-lsp/src/lsp/message/abstract" '(:alive/lsp/message/abstract))
 (register-system-packages "alive-lsp/src/lsp/message/payload" '(:alive/lsp/message/payload))
 (register-system-packages "alive-lsp/src/lsp/message/initialize" '(:alive/lsp/message/initialize))
 (register-system-packages "alive-lsp/src/lsp/message/document/did-open" '(:alive/lsp/message/document/did-open))
+(register-system-packages "alive-lsp/src/lsp/message/document/sem-tokens-full" '(:alive/lsp/message/document/sem-tokens-full))
 
 (register-system-packages "alive-lsp/src/lsp/packet" '(:alive/lsp/packet))
 (register-system-packages "alive-lsp/src/lsp/parse" '(:alive/lsp/parse))

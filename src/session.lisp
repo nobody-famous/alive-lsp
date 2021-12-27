@@ -9,7 +9,8 @@
                       (:logger :alive/logger)
                       (:message :alive/lsp/message/abstract)
                       (:packet :alive/lsp/packet)
-                      (:parse :alive/lsp/parse)))
+                      (:parse :alive/lsp/parse)
+                      (:sem-tokens :alive/lsp/message/document/sem-tokens-full)))
 
 (in-package :alive/session)
 
@@ -72,6 +73,11 @@
     (let ((key (did-open:get-uri msg))
           (value (did-open:get-text msg)))
         (setf (gethash key (files session)) value)))
+
+
+(defmethod handle-msg (session (msg sem-tokens:request))
+    (format T "SEM TOKENS REQUEST ~A~%" msg)
+    (send-msg session (sem-tokens:create-response (message:id msg))))
 
 
 (defun read-message (session)

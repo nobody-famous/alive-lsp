@@ -6,6 +6,7 @@
              :notification
              :params
              :request
+             :result
              :result-response))
 
 (in-package :alive/lsp/message/abstract)

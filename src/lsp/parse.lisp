@@ -5,7 +5,8 @@
     (:local-nicknames (:did-open :alive/lsp/message/document/did-open)
                       (:init :alive/lsp/message/initialize)
                       (:message :alive/lsp/message/abstract)
-                      (:packet :alive/lsp/packet)))
+                      (:packet :alive/lsp/packet)
+                      (:sem-tokens :alive/lsp/message/document/sem-tokens-full)))
 
 (in-package :alive/lsp/parse)
 
@@ -118,17 +119,24 @@
         (error-msg fields)))
 
 
-(defun build-init-req (fields)
-    (init:request-from-wire :jsonrpc (jsonrpc fields)
-                            :id (id fields)
-                            :params (params fields)))
-
-
 (defun build-request (fields)
     (let ((name (string-downcase (method-name fields))))
-        (cond ((string= "initialize" name) (build-init-req fields))
-              ((string= "initialized" name) (init:create-initialized-notification))
-              ((string= "textdocument/didopen" name) (did-open:from-wire (params fields)))
+        (cond ((string= "initialize" name)
+               (init:request-from-wire :jsonrpc (jsonrpc fields)
+                                       :id (id fields)
+                                       :params (params fields)))
+
+              ((string= "initialized" name)
+               (init:create-initialized-notification))
+
+              ((string= "textdocument/didopen" name)
+               (did-open:from-wire (params fields)))
+
+              ((string= "textdocument/semantictokens/full" name)
+               (sem-tokens:req-from-wire :jsonrpc (jsonrpc fields)
+                                         :id (id fields)
+                                         :params (params fields)))
+
               (T (error (format nil "Unhandled request ~A" name))))))
 
 (defun build-message (payload)
