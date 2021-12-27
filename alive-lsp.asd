@@ -9,9 +9,15 @@
                  "alive-lsp/src/logger"
 
                  "alive-lsp/src/types"
+
                  "alive-lsp/src/parse/stream"
+                 "alive-lsp/src/parse/pos"
+                 "alive-lsp/src/parse/token"
+                 "alive-lsp/src/parse/tokenizer"
+
                  "alive-lsp/src/compat/sbcl/compile"
                  "alive-lsp/src/compat/sbcl/streams"
+
                  "alive-lsp/src/compile"
 
                  "alive-lsp/src/lsp/types/sem-tokens"
@@ -40,8 +46,14 @@
 (register-system-packages "alive-lsp/src/logger" '(:alive/logger))
 
 (register-system-packages "alive-lsp/src/types" '(:alive/types))
+
 (register-system-packages "alive-lsp/src/parse/stream" '(:alive/parse/stream))
+(register-system-packages "alive-lsp/src/parse/pos" '(:alive/parse/pos))
+(register-system-packages "alive-lsp/src/parse/token" '(:alive/parse/token))
+(register-system-packages "alive-lsp/src/parse/tokenizer" '(:alive/parse/tokenizer))
+
 (register-system-packages "alive-lsp/src/compile" '(:alive/compile))
+
 (register-system-packages "alive-lsp/src/compat/sbcl/compile" '(:alive/compile/compat))
 (register-system-packages "alive-lsp/src/compat/sbcl/streams" '(:alive/streams))
 
