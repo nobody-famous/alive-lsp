@@ -22,7 +22,7 @@
 
 
 (defmethod print-object ((obj token) out)
-    (format out "{~A,~A ~A \"~A\"}"
+    (format out "{~A,~A ~A ~A}"
             (start obj)
             (end obj)
             (type-value obj)

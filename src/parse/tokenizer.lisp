@@ -78,6 +78,20 @@
     (new-token state tok-type text))
 
 
+(defun read-string-token (state)
+    (let ((start (file-position (input state)))
+          (str (read-preserving-whitespace (input state) nil nil))
+          (end (file-position (input state))))
+
+        ; In case the string spans multiple lines, reset to the start
+        ; and read character by character to the end.
+        (file-position (input state) start)
+        (loop :until (eq end (file-position (input state)))
+              :do (next-char state))
+
+        (new-token state types:*string* str)))
+
+
 (defun next-token (state)
     (setf (token-start state)
           (pos:create :line (line state) :col (col state)))
@@ -85,6 +99,7 @@
     (let ((ch (look-ahead state)))
         (cond ((char= ch #\() (read-ch-token state types:*open-paren* "("))
               ((char= ch #\)) (read-ch-token state types:*close-paren* ")"))
+              ((char= ch #\") (read-string-token state))
               ((is-ws ch) (read-ws-token state))
               (T (read-symbol-token state)))))
 

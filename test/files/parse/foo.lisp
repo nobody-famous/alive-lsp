@@ -1,3 +1,5 @@
+"Test string \"quoted\"
+and multiline"
 bar
 
 
