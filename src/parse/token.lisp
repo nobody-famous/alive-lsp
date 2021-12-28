@@ -1,6 +1,7 @@
 (defpackage :alive/parse/token
     (:use :cl)
-    (:export :create))
+    (:export :create)
+    (:local-nicknames (:types :alive/types)))
 
 (in-package :alive/parse/token)
 
@@ -18,6 +19,16 @@
      (type-value :accessor type-value
                  :initform nil
                  :initarg :type-value)))
+
+
+(defmethod print-object ((obj token) out)
+    (format out "{~A,~A ~A \"~A\"}"
+            (start obj)
+            (end obj)
+            (type-value obj)
+            (if (eq types:*ws* (type-value obj))
+                ""
+                (text obj))))
 
 
 (defun create (&key type-value start end text)

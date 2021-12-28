@@ -55,15 +55,6 @@
         (write-char ch (buffer obj))))
 
 
-
-; (defmethod sb-gray:stream-write-char ((obj rt-stream) ch)
-;     (bt:with-recursive-lock-held ((lock obj))
-;                                  (when ch
-;                                        (setf (buffer obj) (format nil "~A~A" (buffer obj) ch))
-;                                        (bt:condition-notify (cond-var obj))
-;                                  )))
-
-
 (defun add-listener (obj listener)
     (push listener (listeners obj)))
 

@@ -2,6 +2,7 @@
     (:use :cl)
     (:export :from-stream)
     (:local-nicknames (:pos :alive/parse/pos)
+                      (:token :alive/parse/token)
                       (:types :alive/types)))
 
 (in-package :alive/parse/tokenizer)
@@ -46,11 +47,10 @@
     (let ((end (pos:create :line (line state)
                            :col (col state))))
 
-        (format T "NEW TOKEN ~A ~A ~A ~A~%"
-                tok-type
-                (token-start state)
-                end
-                text)))
+        (token:create :type-value tok-type
+                      :start (token-start state)
+                      :end end
+                      :text text)))
 
 
 (defun read-ws-token (state)
@@ -61,20 +61,35 @@
           :do (write-char (next-char state) str)
               (setf next-ch (look-ahead state))
 
-          :finally (new-token state types:*ws* (get-output-stream-string str))))
+          :finally (return (new-token state types:*ws* (get-output-stream-string str)))))
+
+
+(defun read-symbol-token (state)
+    (let ((start (file-position (input state)))
+          (sym (read-preserving-whitespace (input state) nil nil))
+          (end (file-position (input state))))
+
+        (incf (col state) (- end start))
+        (new-token state types:*symbol* sym)))
+
+
+(defun read-ch-token (state tok-type text)
+    (next-char state)
+    (new-token state tok-type text))
 
 
 (defun next-token (state)
     (setf (token-start state)
           (pos:create :line (line state) :col (col state)))
 
-    (let ((ch (next-char state)))
-        (cond ((char= ch #\() (new-token state types:*open-paren* "("))
-              ((char= ch #\)) (new-token state types:*close-paren* ")"))
-              ((is-ws ch) (read-ws-token state)))))
+    (let ((ch (look-ahead state)))
+        (cond ((char= ch #\() (read-ch-token state types:*open-paren* "("))
+              ((char= ch #\)) (read-ch-token state types:*close-paren* ")"))
+              ((is-ws ch) (read-ws-token state))
+              (T (read-symbol-token state)))))
 
 
 (defun from-stream (input)
     (loop :with state := (make-instance 'parse-state :input input)
           :while (look-ahead state)
-          :do (next-token state)))
+          :collect (next-token state)))
