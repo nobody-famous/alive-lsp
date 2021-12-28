@@ -12,13 +12,17 @@
      (end :accessor end
           :initform (make-instance 'pos)
           :initarg :end)
-     (type-name :accessor type-name
-                :initform nil
-                :initarg :type-name)))
+     (text :accessor text
+           :initform nil
+           :initarg :text)
+     (type-value :accessor type-value
+                 :initform nil
+                 :initarg :type-value)))
 
 
-(defun create (&key type-name start end)
+(defun create (&key type-value start end text)
     (make-instance 'token
                    :start start
                    :end end
-                   :type-name type-name))
+                   :text text
+                   :type-value type-value))

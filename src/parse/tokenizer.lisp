@@ -42,14 +42,26 @@
         ch))
 
 
-(defun new-token (state tok-type)
+(defun new-token (state tok-type text)
     (let ((end (pos:create :line (line state)
                            :col (col state))))
 
-        (format T "NEW TOKEN ~A ~A ~A~%"
+        (format T "NEW TOKEN ~A ~A ~A ~A~%"
                 tok-type
                 (token-start state)
-                end)))
+                end
+                text)))
+
+
+(defun read-ws-token (state)
+    (loop :with str := (make-string-output-stream)
+          :with next-ch := (look-ahead state)
+
+          :while (and next-ch (is-ws next-ch))
+          :do (write-char (next-char state) str)
+              (setf next-ch (look-ahead state))
+
+          :finally (new-token state types:*ws* (get-output-stream-string str))))
 
 
 (defun next-token (state)
@@ -57,9 +69,9 @@
           (pos:create :line (line state) :col (col state)))
 
     (let ((ch (next-char state)))
-        (cond ((char= ch #\() (new-token state types:*token-type-open-paren*))
-              ((char= ch #\)) (new-token state types:*token-type-close-paren*))
-              (() ()))))
+        (cond ((char= ch #\() (new-token state types:*open-paren* "("))
+              ((char= ch #\)) (new-token state types:*close-paren* ")"))
+              ((is-ws ch) (read-ws-token state)))))
 
 
 (defun from-stream (input)
