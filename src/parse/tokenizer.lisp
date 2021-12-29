@@ -55,11 +55,10 @@
 
 (defun read-ws-token (state)
     (loop :with str := (make-string-output-stream)
-          :with next-ch := (look-ahead state)
+          :for next-ch := (look-ahead state)
 
           :while (and next-ch (is-ws next-ch))
           :do (write-char (next-char state) str)
-              (setf next-ch (look-ahead state))
 
           :finally (return (new-token state types:*ws* (get-output-stream-string str)))))
 
@@ -79,17 +78,38 @@
 
 
 (defun read-string-token (state)
-    (let ((start (file-position (input state)))
-          (str (read-preserving-whitespace (input state) nil nil))
-          (end (file-position (input state))))
+    (labels ((try-read (state)
+                  (handler-case
+                          (read-preserving-whitespace (input state))
+                      (error (c)
+                             (declare (ignore c))
+                             nil))))
 
-        ; In case the string spans multiple lines, reset to the start
-        ; and read character by character to the end.
-        (file-position (input state) start)
-        (loop :until (eq end (file-position (input state)))
-              :do (next-char state))
+        (let ((start (file-position (input state)))
+              (str (try-read state))
+              (end (file-position (input state))))
 
-        (new-token state types:*string* str)))
+            ; In case the string spans multiple lines, reset to the start
+            ; and read character by character to the end.
+            (file-position (input state) start)
+            (loop :until (eq end (file-position (input state)))
+                  :do (next-char state))
+
+            (when str
+                  (new-token state types:*string* str)))))
+
+
+(defun read-comment-token (state)
+    (loop :with str := (make-string-output-stream)
+
+          :for ch := (look-ahead state)
+          :until (or (not ch)
+                     (char= #\newline ch))
+
+          :do (next-char state)
+              (write-char ch str)
+
+          :finally (return (new-token state types:*comment* (get-output-stream-string str)))))
 
 
 (defun next-token (state)
@@ -100,6 +120,7 @@
         (cond ((char= ch #\() (read-ch-token state types:*open-paren* "("))
               ((char= ch #\)) (read-ch-token state types:*close-paren* ")"))
               ((char= ch #\") (read-string-token state))
+              ((char= ch #\;) (read-comment-token state))
               ((is-ws ch) (read-ws-token state))
               (T (read-symbol-token state)))))
 
