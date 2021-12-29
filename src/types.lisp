@@ -18,7 +18,9 @@
              :*close-paren*
              :*symbol*
              :*ws*
-             :*colons*))
+             :*colons*
+             :*ifdef-true*
+             :*ifdef-false*))
 
 (in-package :alive/types)
 
@@ -42,6 +44,8 @@
 (defparameter *symbol* 11)
 (defparameter *ws* 12)
 (defparameter *colons* 13)
+(defparameter *ifdef-true* 14)
+(defparameter *ifdef-false* 15)
 
 
 (defstruct compile-message

@@ -129,6 +129,45 @@
                                     (char= ch #\:))))
 
 
+(defun read-ifdef-token (state sign-ch)
+    (next-char state)
+
+    (labels ((check-ifdef (text)
+                  (let ((to-check (format nil "~A T" text)))
+                      (ignore-errors (read-from-string to-check)))))
+
+        (loop :with str := (make-string-output-stream)
+              :for ch := (look-ahead state)
+
+              :until (or (not ch)
+                         (is-ws ch))
+              :do (next-char state)
+                  (write-char ch str)
+
+              :finally (return (let ((text (format nil "#~A~A" sign-ch (get-output-stream-string str))))
+                                   (if (check-ifdef text)
+                                       (new-token state types:*ifdef-true* text)
+                                       (new-token state types:*ifdef-false* text)))))))
+
+
+(defun read-block-comment-token (state)
+    nil)
+
+
+(defun read-macro-generic-token (state)
+    nil)
+
+
+(defun read-macro-token (state)
+    (next-char state)
+
+    (let ((ch (look-ahead state)))
+        (cond ((or (char= ch #\+)
+                   (char= ch #\-)) (read-ifdef-token state ch))
+              ((char= ch #\|) (read-block-comment-token state))
+              (t (read-macro-generic-token state)))))
+
+
 (defun next-token (state)
     (setf (token-start state)
           (pos:create :line (line state) :col (col state)))
@@ -139,6 +178,7 @@
               ((char= ch #\") (read-string-token state))
               ((char= ch #\;) (read-comment-token state))
               ((char= ch #\:) (read-colons-token state))
+              ((char= ch #\#) (read-macro-token state))
               ((is-ws ch) (read-ws-token state))
               (T (read-symbol-token state)))))
 
