@@ -34,6 +34,13 @@
         (char= ch #\newline)))
 
 
+(defun is-delim (ch)
+    (or (not ch)
+        (is-ws ch)
+        (char= ch #\))
+        (char= ch #\()))
+
+
 (defun next-char (state)
     (let ((ch (read-char (input state) nil nil)))
         (cond ((char= ch #\newline) (incf (line state))
@@ -53,23 +60,30 @@
                       :text text)))
 
 
-(defun read-ws-token (state)
+(defun read-text-token (&key state tok-type predicate)
     (loop :with str := (make-string-output-stream)
-          :for next-ch := (look-ahead state)
 
-          :while (and next-ch (is-ws next-ch))
-          :do (write-char (next-char state) str)
+          :for ch := (look-ahead state)
+          :while (funcall predicate ch)
+          :do (write-char ch str)
+              (next-char state)
 
-          :finally (return (new-token state types:*ws* (get-output-stream-string str)))))
+          :finally (return (new-token state tok-type (get-output-stream-string str)))))
+
+
+(defun read-ws-token (state)
+    (read-text-token :state state
+                     :tok-type types:*ws*
+                     :predicate (lambda (ch)
+                                    (and ch (is-ws ch)))))
 
 
 (defun read-symbol-token (state)
-    (let ((start (file-position (input state)))
-          (sym (read-preserving-whitespace (input state) nil nil))
-          (end (file-position (input state))))
-
-        (incf (col state) (- end start))
-        (new-token state types:*symbol* sym)))
+    (read-text-token :state state
+                     :tok-type types:*symbol*
+                     :predicate (lambda (ch)
+                                    (not (or (is-delim ch)
+                                             (char= ch #\:))))))
 
 
 (defun read-ch-token (state tok-type text)
@@ -90,7 +104,8 @@
               (end (file-position (input state))))
 
             ; In case the string spans multiple lines, reset to the start
-            ; and read character by character to the end.
+            ; and read character by character to the end so the state gets
+            ; updated.
             (file-position (input state) start)
             (loop :until (eq end (file-position (input state)))
                   :do (next-char state))
@@ -100,16 +115,18 @@
 
 
 (defun read-comment-token (state)
-    (loop :with str := (make-string-output-stream)
+    (read-text-token :state state
+                     :tok-type types:*comment*
+                     :predicate (lambda (ch)
+                                    (not (or (not ch)
+                                             (char= #\newline ch))))))
 
-          :for ch := (look-ahead state)
-          :until (or (not ch)
-                     (char= #\newline ch))
 
-          :do (next-char state)
-              (write-char ch str)
-
-          :finally (return (new-token state types:*comment* (get-output-stream-string str)))))
+(defun read-colons-token (state)
+    (read-text-token :state state
+                     :tok-type types:*colons*
+                     :predicate (lambda (ch)
+                                    (char= ch #\:))))
 
 
 (defun next-token (state)
@@ -121,6 +138,7 @@
               ((char= ch #\)) (read-ch-token state types:*close-paren* ")"))
               ((char= ch #\") (read-string-token state))
               ((char= ch #\;) (read-comment-token state))
+              ((char= ch #\:) (read-colons-token state))
               ((is-ws ch) (read-ws-token state))
               (T (read-symbol-token state)))))
 

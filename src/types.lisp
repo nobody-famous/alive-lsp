@@ -17,7 +17,8 @@
              :*open-paren*
              :*close-paren*
              :*symbol*
-             :*ws*))
+             :*ws*
+             :*colons*))
 
 (in-package :alive/types)
 
@@ -40,6 +41,7 @@
 (defparameter *close-paren* 10)
 (defparameter *symbol* 11)
 (defparameter *ws* 12)
+(defparameter *colons* 13)
 
 
 (defstruct compile-message
