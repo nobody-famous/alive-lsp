@@ -76,8 +76,7 @@
 
 
 (defmethod handle-msg (session (msg sem-tokens:request))
-    (format T "SEM TOKENS REQUEST ~A~%" msg)
-    (send-msg session (sem-tokens:create-response (message:id msg))))
+    (send-msg session (sem-tokens:create-response msg)))
 
 
 (defun read-message (session)

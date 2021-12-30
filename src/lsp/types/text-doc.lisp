@@ -1,6 +1,7 @@
 (defpackage :alive/lsp/types/text-doc
     (:use :cl)
-    (:export :id-from-wire))
+    (:export :id-from-wire
+             :uri))
 
 (in-package :alive/lsp/types/text-doc)
 
@@ -9,6 +10,10 @@
     ((uri :accessor uri
           :initform nil
           :initarg :uri)))
+
+
+(defmethod print-object ((obj identifier) out)
+    (format out "{uri ~A}" (uri obj)))
 
 
 (defun id-from-wire (fields)

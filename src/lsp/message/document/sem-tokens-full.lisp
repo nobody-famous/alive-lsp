@@ -13,14 +13,26 @@
     ((message::method :initform "textDocument/semanticTokens/full")))
 
 
+(defmethod print-object ((obj request) out)
+    (format out "{sem-tokens-full-request ~A}" (message:params obj)))
+
+
 (defclass req-params ()
     ((text-document :accessor text-document
                     :initform nil
                     :initarg :text-document)))
 
 
+(defmethod print-object ((obj req-params) out)
+    (format out "{text-document ~A}" (text-document obj)))
+
+
 (defclass response (message:result-response)
     ())
+
+
+(defmethod print-object ((obj response) out)
+    (format out "{sem-tokens-full-result ~A}" (message:result obj)))
 
 
 (defclass sem-tokens ()
@@ -33,9 +45,15 @@
     (make-instance 'sem-tokens :data (list 0 0 2 0 0)))
 
 
-(defun create-response (id)
+(defun create-response (msg)
+    (let* ((params (message:params msg))
+           (doc (text-document params))
+           (uri (text-doc:uri doc)))
+        (format T "URI ~A~%" uri))
+
+    (format T "SEM TOKENS RESPONSE ~A~%" msg)
     (make-instance 'response
-                   :id id
+                   :id (message:id msg)
                    :result (get-sem-tokens)))
 
 
