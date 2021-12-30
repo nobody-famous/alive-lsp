@@ -3,7 +3,7 @@
 "Test string \"quoted\"
 and multiline"
 
-#-n bar:baz
+#+(or sbcl) bar:baz
 
 
 (defun foo ()

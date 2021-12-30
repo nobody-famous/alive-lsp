@@ -137,11 +137,16 @@
                       (ignore-errors (read-from-string to-check)))))
 
         (loop :with str := (make-string-output-stream)
+              :with depth := 0
               :for ch := (look-ahead state)
 
-              :until (or (not ch)
-                         (is-ws ch))
-              :do (next-char state)
+              :until (and (eq 0 depth)
+                          (or (not ch)
+                              (is-ws ch)))
+              :do (cond ((char= ch #\() (incf depth))
+                        ((char= ch #\)) (when (< 0 depth)
+                                              (decf depth))))
+                  (next-char state)
                   (write-char ch str)
 
               :finally (return (let ((text (format nil "#~A~A" sign-ch (get-output-stream-string str))))
