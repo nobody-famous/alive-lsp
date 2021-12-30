@@ -5,6 +5,8 @@ and multiline"
 
 #+(or sbcl) bar:baz
 
+#\)
+#\(
 
 (defun foo ()
     (if (zerop 5)

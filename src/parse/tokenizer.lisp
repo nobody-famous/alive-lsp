@@ -12,15 +12,25 @@
     ((input :accessor input
             :initform nil
             :initarg :input)
-     (token-start :accessor token-start
-                  :initform nil
-                  :initarg :token-start)
+     (start :accessor start
+            :initform nil
+            :initarg :start)
+     (buffer :accessor buffer
+             :initform nil
+             :initarg :buffer)
      (line :accessor line
            :initform 0
            :initarg :line)
      (col :accessor col
           :initform 0
           :initarg :col)))
+
+
+(defun start-token (state)
+    (setf (start state)
+          (pos:create :line (line state) :col (col state)))
+    (setf (buffer state)
+          (make-string-output-stream)))
 
 
 (defun look-ahead (state)
@@ -46,49 +56,49 @@
         (cond ((char= ch #\newline) (incf (line state))
                                     (setf (col state) 0))
               (T (incf (col state))))
-
+        (write-char ch (buffer state))
         ch))
 
 
-(defun new-token (state tok-type text)
+(defun new-token (state token-type &optional text)
     (let ((end (pos:create :line (line state)
                            :col (col state))))
 
-        (token:create :type-value tok-type
-                      :start (token-start state)
+        (token:create :type-value token-type
+                      :start (start state)
                       :end end
-                      :text text)))
+                      :text (if text
+                                text
+                                (get-output-stream-string (buffer state))))))
 
 
-(defun read-text-token (&key state tok-type predicate)
-    (loop :with str := (make-string-output-stream)
+(defun read-text-token (&key state token-type predicate)
+    (loop :for ch := (look-ahead state)
 
-          :for ch := (look-ahead state)
           :while (funcall predicate ch)
-          :do (write-char ch str)
-              (next-char state)
+          :do (next-char state)
 
-          :finally (return (new-token state tok-type (get-output-stream-string str)))))
+          :finally (return (new-token state token-type))))
 
 
 (defun read-ws-token (state)
     (read-text-token :state state
-                     :tok-type types:*ws*
+                     :token-type types:*ws*
                      :predicate (lambda (ch)
                                     (and ch (is-ws ch)))))
 
 
 (defun read-symbol-token (state)
     (read-text-token :state state
-                     :tok-type types:*symbol*
+                     :token-type types:*symbol*
                      :predicate (lambda (ch)
                                     (not (or (is-delim ch)
                                              (char= ch #\:))))))
 
 
-(defun read-ch-token (state tok-type text)
+(defun read-ch-token (state token-type)
     (next-char state)
-    (new-token state tok-type text))
+    (new-token state token-type))
 
 
 (defun read-string-token (state)
@@ -116,15 +126,15 @@
 
 (defun read-comment-token (state)
     (read-text-token :state state
-                     :tok-type types:*comment*
+                     :token-type types:*comment*
                      :predicate (lambda (ch)
-                                    (not (or (not ch)
-                                             (char= #\newline ch))))))
+                                    (and ch
+                                         (not (char= ch #\newline))))))
 
 
 (defun read-colons-token (state)
     (read-text-token :state state
-                     :tok-type types:*colons*
+                     :token-type types:*colons*
                      :predicate (lambda (ch)
                                     (char= ch #\:))))
 
@@ -160,7 +170,11 @@
 
 
 (defun read-macro-generic-token (state)
-    nil)
+    (read-text-token :state state
+                     :token-type types:*macro*
+                     :predicate (lambda (ch)
+                                    (and ch
+                                         (not (is-ws ch))))))
 
 
 (defun read-macro-token (state)
@@ -174,12 +188,11 @@
 
 
 (defun next-token (state)
-    (setf (token-start state)
-          (pos:create :line (line state) :col (col state)))
+    (start-token state)
 
     (let ((ch (look-ahead state)))
-        (cond ((char= ch #\() (read-ch-token state types:*open-paren* "("))
-              ((char= ch #\)) (read-ch-token state types:*close-paren* ")"))
+        (cond ((char= ch #\() (read-ch-token state types:*open-paren*))
+              ((char= ch #\)) (read-ch-token state types:*close-paren*))
               ((char= ch #\") (read-string-token state))
               ((char= ch #\;) (read-comment-token state))
               ((char= ch #\:) (read-colons-token state))
