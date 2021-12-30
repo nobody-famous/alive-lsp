@@ -166,7 +166,29 @@
 
 
 (defun read-block-comment-token (state)
-    nil)
+    (next-char state)
+
+    (loop :with depth := 0
+          :with done := nil
+          :with have-bar := nil
+          :with have-pound := nil
+
+          :for ch := (look-ahead state)
+          :until done
+
+          :do (cond ((char= ch #\|) (if have-pound
+                                        (progn (incf depth)
+                                               (setf have-pound nil))
+                                        (setf have-bar t)))
+                    ((char= ch #\#) (if have-bar
+                                        (if (eq 0 depth)
+                                            (setf done t)
+                                            (progn (decf depth)
+                                                   (setf have-bar nil)))
+                                        (setf have-pound t))))
+              (next-char state)
+
+          :finally (return (new-token state types:*comment*))))
 
 
 (defun read-macro-generic-token (state)

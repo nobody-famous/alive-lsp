@@ -5,6 +5,10 @@ and multiline"
 
 #+(or sbcl) bar:baz
 
+#|
+  Some block #| nested #| twice |# |# comment
+|#
+
 #\)
 #\(
 
