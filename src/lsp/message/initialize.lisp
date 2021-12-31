@@ -98,7 +98,7 @@
 
 
 (defclass response (message:result-response)
-    ((message::result :initform (make-instance 'response-body))))
+    ((message:result :initform (make-instance 'response-body))))
 
 
 (defclass initialized (message:notification)

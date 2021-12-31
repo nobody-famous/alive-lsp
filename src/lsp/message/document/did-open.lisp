@@ -13,10 +13,6 @@
     ((message::method :initform "textDocument/didOpen")))
 
 
-(defmethod print-object ((obj did-open) out)
-    (format out "{did-open ~A}" (message:params obj)))
-
-
 (defclass text-document-item ()
     ((uri :accessor uri
           :initform nil
@@ -32,18 +28,10 @@
            :initarg :text)))
 
 
-(defmethod print-object ((obj text-document-item) out)
-    (format out "{uri: ~A}" (uri obj)))
-
-
 (defclass params ()
     ((text-document :accessor text-document
                     :initform nil
                     :initarg :text-document)))
-
-
-(defmethod print-object ((obj params) out)
-    (format out "{text-document ~A}" (text-document obj)))
 
 
 (defun get-uri (msg)

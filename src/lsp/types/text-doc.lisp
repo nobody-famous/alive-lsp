@@ -12,10 +12,6 @@
           :initarg :uri)))
 
 
-(defmethod print-object ((obj identifier) out)
-    (format out "{uri ~A}" (uri obj)))
-
-
 (defun id-from-wire (fields)
     (labels ((add-field (id key value)
                   (cond ((eq key :uri) (setf (uri id) value)))))

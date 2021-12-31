@@ -94,7 +94,7 @@
 (defun read-messages (session)
     (loop :while (running session)
           :do (let ((msg (read-message session)))
-                  (logger:debug-msg (logger session) "MSG ~A" msg)
+                  (logger:debug-msg (logger session) "MSG ~A" (json:encode-json-to-string msg))
                   (when msg
                         (logger:trace-msg (logger session) "--> ~A~%" (json:encode-json-to-string msg))
                         (handle-msg session msg)))))
