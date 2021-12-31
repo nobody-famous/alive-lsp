@@ -37,9 +37,11 @@
     (let* ((params (message:params msg))
            (doc (text-document params))
            (uri (text-doc:uri doc)))
-        (format T "URI ~A~%" uri))
+        (format T "URI ~A~%" uri)
 
-    (format T "SEM TOKENS RESPONSE ~A~%" (json:encode-json-to-string msg))
+        (format T "SEM TOKENS RESPONSE ~A~%" (json:encode-json-to-string msg))
+        (format T "URL ~A~%" (purl:url-path (purl:url uri))))
+
     (make-instance 'response
                    :id (message:id msg)
                    :result (get-sem-tokens)))
