@@ -121,7 +121,7 @@
                   :do (next-char state))
 
             (when str
-                  (new-token state types:*string* str)))))
+                  (new-token state types:*string*)))))
 
 
 (defun read-comment-token (state)

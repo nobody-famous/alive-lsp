@@ -4,6 +4,9 @@
              :req-from-wire
              :request)
     (:local-nicknames (:message :alive/lsp/message/abstract)
+                      (:types :alive/types)
+                      (:token :alive/parse/token)
+                      (:tokenizer :alive/parse/tokenizer)
                       (:text-doc :alive/lsp/types/text-doc)))
 
 (in-package :alive/lsp/message/document/sem-tokens-full)
@@ -33,14 +36,36 @@
     (make-instance 'sem-tokens :data (list 0 0 2 0 0)))
 
 
+(defun get-file-path (uri)
+    (merge-pathnames (pathname (purl:url-path (purl:url uri)))
+                     #p"/"))
+
+
+(defun read-tokens (path)
+    (with-open-file (f path :if-does-not-exist nil)
+        (tokenizer:from-stream f)))
+
+
+(defun is-keyword (token)
+    (and (eq types:*symbol* (token:type-value token))
+         (find-symbol (string-upcase (token:text token)) :cl-user)))
+
+
 (defun create-response (msg)
     (let* ((params (message:params msg))
            (doc (text-document params))
-           (uri (text-doc:uri doc)))
-        (format T "URI ~A~%" uri)
+           (path (get-file-path (text-doc:uri doc)))
+           (tokens (read-tokens path)))
+
+        (loop :for token :in tokens :do
+                  (format T "TOKEN ~A ~A~%"
+                          token
+                          (if (is-keyword token)
+                              "T"
+                              "")))
 
         (format T "SEM TOKENS RESPONSE ~A~%" (json:encode-json-to-string msg))
-        (format T "URL ~A~%" (purl:url-path (purl:url uri))))
+        (format T "PATH ~A~%" path))
 
     (make-instance 'response
                    :id (message:id msg)

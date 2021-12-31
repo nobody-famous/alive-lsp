@@ -1,6 +1,8 @@
 (defpackage :alive/parse/token
     (:use :cl)
-    (:export :create)
+    (:export :create
+             :text
+             :type-value)
     (:local-nicknames (:types :alive/types)))
 
 (in-package :alive/parse/token)
