@@ -90,6 +90,12 @@
                               (token:start token)
                               (token:end token)
                               sem-types:*string*))
+              
+              ((eq (token:type-value token) types:*macro*)
+               (add-sem-token state
+                              (token:start token)
+                              (token:end token)
+                              sem-types:*macro*))
 
               ((eq (token:type-value token) types:*ws*) nil)
 
@@ -98,6 +104,8 @@
 
 (defun to-sem-tokens (tokens)
     (loop :with state := (make-instance 'analysis-state :lex-tokens tokens)
+
           :while (lex-tokens state)
           :do (process-next-token state)
+
           :finally (return (reverse (sem-tokens state)))))
