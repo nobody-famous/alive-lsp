@@ -1,19 +1,22 @@
 (defpackage :alive/parse/token
     (:use :cl)
     (:export :create
+             :end
+             :start
              :text
              :type-value)
-    (:local-nicknames (:types :alive/types)))
+    (:local-nicknames (:pos :alive/parse/pos)
+                      (:types :alive/types)))
 
 (in-package :alive/parse/token)
 
 
 (defclass token ()
     ((start :accessor start
-            :initform (make-instance 'pos)
+            :initform (pos:create)
             :initarg :start)
      (end :accessor end
-          :initform (make-instance 'pos)
+          :initform (pos:create)
           :initarg :end)
      (text :accessor text
            :initform nil

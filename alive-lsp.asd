@@ -24,6 +24,8 @@
                  "alive-lsp/src/lsp/types/sem-tokens"
                  "alive-lsp/src/lsp/types/text-doc"
 
+                 "alive-lsp/src/lsp/sem-analysis"
+
                  "alive-lsp/src/lsp/message/abstract"
                  "alive-lsp/src/lsp/message/payload"
                  "alive-lsp/src/lsp/message/initialize"
@@ -60,6 +62,8 @@
 
 (register-system-packages "alive-lsp/src/lsp/types/sem-tokens" '(:alive/lsp/types/sem-tokens))
 (register-system-packages "alive-lsp/src/lsp/types/text-doc" '(:alive/lsp/types/text-doc))
+
+(register-system-packages "alive-lsp/src/lsp/sem-analysis" '(:alive/lsp/sem-analysis))
 
 (register-system-packages "alive-lsp/src/lsp/message/abstract" '(:alive/lsp/message/abstract))
 (register-system-packages "alive-lsp/src/lsp/message/payload" '(:alive/lsp/message/payload))

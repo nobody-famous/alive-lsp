@@ -7,6 +7,7 @@
                       (:types :alive/types)
                       (:token :alive/parse/token)
                       (:tokenizer :alive/parse/tokenizer)
+                      (:analysis :alive/lsp/sem-analysis)
                       (:text-doc :alive/lsp/types/text-doc)))
 
 (in-package :alive/lsp/message/document/sem-tokens-full)
@@ -55,7 +56,8 @@
     (let* ((params (message:params msg))
            (doc (text-document params))
            (path (get-file-path (text-doc:uri doc)))
-           (tokens (read-tokens path)))
+           (tokens (read-tokens path))
+           (sem-tokens (analysis:to-sem-tokens tokens)))
 
         (loop :for token :in tokens :do
                   (format T "TOKEN ~A ~A~%"
