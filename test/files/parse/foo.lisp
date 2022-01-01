@@ -1,6 +1,6 @@
 ; Some comment
 
-"Test string \"quoted\"
+   "Test string \"quoted\"
 and multiline"
 
 #+(or sbcl) bar:baz

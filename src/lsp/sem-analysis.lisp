@@ -62,15 +62,19 @@
 
 
 (defun add-sem-token (state start end token-type)
-    (when (not (equal (pos:line start) (pos:line end)))
-          (error (format nil "Need to split token ~A ~A" start end)))
-
-    (let ((new-token (make-instance 'sem-token
-                                    :line (pos:line start)
-                                    :start-col (pos:col start)
-                                    :end-col (pos:col end)
-                                    :token-type token-type)))
-        (push new-token (sem-tokens state))))
+    (loop :for line :from (pos:line start) :to (pos:line end)
+          :for start-col := (if (eq line (pos:line start))
+                                (pos:col start)
+                                0)
+          :for end-col := (if (eq line (pos:line end))
+                              (pos:col end)
+                              #xFFFFFFFF)
+          :for new-token := (make-instance 'sem-token
+                                           :line line
+                                           :start-col start-col
+                                           :end-col end-col
+                                           :token-type token-type) :do
+              (push new-token (sem-tokens state))))
 
 
 (defun process-next-token (state)
@@ -95,4 +99,5 @@
 (defun to-sem-tokens (tokens)
     (loop :with state := (make-instance 'analysis-state :lex-tokens tokens)
           :while (lex-tokens state)
-          :do (process-next-token state)))
+          :do (process-next-token state)
+          :finally (return (reverse (sem-tokens state)))))
