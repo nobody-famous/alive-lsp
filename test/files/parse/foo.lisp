@@ -3,7 +3,8 @@
    "Test string \"quoted\"
 and multiline"
 
-; #+(or sbcl) bar:baz
+#+n f:g
+#+(or sbcl) bar:baz
 
 #|
   Some block #| nested #| twice |# |# comment

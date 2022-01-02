@@ -39,6 +39,9 @@
      (sem-tokens :accessor sem-tokens
                  :initform nil
                  :initarg :sem-tokens)
+     (forced-type :accessor forced-type
+                  :initform nil
+                  :initarg :forced-type)
      (opens :accessor opens
             :initform nil
             :initarg :opens)))
@@ -61,8 +64,29 @@
         token))
 
 
-(defun add-sem-token (state start end token-type)
-    (loop :for line :from (pos:line start) :to (pos:line end)
+(defun skip-ws (state)
+    (when (eq types:*ws*
+              (token:type-value (peek-token state)))
+          (next-token state)))
+
+
+(defun is-type (token target)
+    (eq (token:type-value token)
+        target))
+
+
+(defun is-next-type (state target)
+    (eq (token:type-value (peek-token state))
+        target))
+
+
+(defun add-sem-token (state token sem-type)
+    (loop :with new-type := (or (forced-type state)
+                                sem-type)
+          :with start := (token:start token)
+          :with end := (token:end token)
+
+          :for line :from (pos:line start) :to (pos:line end)
           :for start-col := (if (eq line (pos:line start))
                                 (pos:col start)
                                 0)
@@ -73,31 +97,40 @@
                                            :line line
                                            :start-col start-col
                                            :end-col end-col
-                                           :token-type token-type) :do
+                                           :token-type new-type) :do
               (push new-token (sem-tokens state))))
 
 
-(defun process-next-token (state)
+(defun process-expr (state)
     (let ((token (next-token state)))
-        (cond ((eq (token:type-value token) types:*comment*)
-               (add-sem-token state
-                              (token:start token)
-                              (token:end token)
-                              sem-types:*comment*))
+        (cond ((is-type token types:*comment*) (add-sem-token state token sem-types:*comment*))
 
-              ((eq (token:type-value token) types:*string*)
-               (add-sem-token state
-                              (token:start token)
-                              (token:end token)
-                              sem-types:*string*))
-              
-              ((eq (token:type-value token) types:*macro*)
-               (add-sem-token state
-                              (token:start token)
-                              (token:end token)
-                              sem-types:*macro*))
+              ((is-type token types:*string*) (add-sem-token state token sem-types:*string*))
 
-              ((eq (token:type-value token) types:*ws*) nil)
+              ((is-type token types:*macro*) (add-sem-token state token sem-types:*macro*))
+
+              ((is-type token types:*ifdef-true*) (add-sem-token state token sem-types:*macro*))
+
+              ((is-type token types:*ifdef-false*) (add-sem-token state token sem-types:*comment*)
+                                                   (setf (forced-type state) types:*comment*)
+                                                   (skip-ws state)
+                                                   (process-expr state)
+                                                   (setf (forced-type state) nil))
+
+              ((is-type token types:*symbol*) (if (is-next-type state types:*colons*)
+                                                  (progn (add-sem-token state token sem-types:*namespace*)
+
+                                                         (setf token (next-token state))
+
+                                                         (add-sem-token state token sem-types:*symbol*)
+                                                         (process-expr state))
+                                                  (add-sem-token state token sem-types:*symbol*)))
+
+              ((is-type token types:*ws*) nil)
+
+              ((forced-type state) (add-sem-token state
+                                                  token
+                                                  (forced-type state)))
 
               (T (error (format nil "Unhandled token: ~A" token))))))
 
@@ -106,6 +139,6 @@
     (loop :with state := (make-instance 'analysis-state :lex-tokens tokens)
 
           :while (lex-tokens state)
-          :do (process-next-token state)
+          :do (process-expr state)
 
           :finally (return (reverse (sem-tokens state)))))
