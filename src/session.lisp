@@ -5,6 +5,7 @@
              :start
              :stop)
     (:local-nicknames (:did-open :alive/lsp/message/document/did-open)
+                      (:did-change :alive/lsp/message/document/did-change)
                       (:init :alive/lsp/message/initialize)
                       (:logger :alive/logger)
                       (:message :alive/lsp/message/abstract)
@@ -73,6 +74,12 @@
 (defmethod handle-msg (session (msg did-open:did-open))
     (let ((key (did-open:get-uri msg))
           (value (did-open:get-text msg)))
+        (setf (gethash key (files session)) value)))
+
+
+(defmethod handle-msg (session (msg did-change:did-change))
+    (let ((key (did-change:get-uri msg))
+          (value (did-change:get-text msg)))
         (setf (gethash key (files session)) value)))
 
 

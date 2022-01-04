@@ -3,6 +3,7 @@
     (:export :from-stream)
 
     (:local-nicknames (:did-open :alive/lsp/message/document/did-open)
+                      (:did-change :alive/lsp/message/document/did-change)
                       (:init :alive/lsp/message/initialize)
                       (:message :alive/lsp/message/abstract)
                       (:packet :alive/lsp/packet)
@@ -131,6 +132,9 @@
 
               ((string= "textdocument/didopen" name)
                (did-open:from-wire (params fields)))
+
+              ((string= "textdocument/didchange" name)
+               (did-change:from-wire (params fields)))
 
               ((string= "textdocument/semantictokens/full" name)
                (sem-tokens:req-from-wire :jsonrpc (jsonrpc fields)
