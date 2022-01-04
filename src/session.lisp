@@ -10,6 +10,7 @@
                       (:message :alive/lsp/message/abstract)
                       (:packet :alive/lsp/packet)
                       (:parse :alive/lsp/parse)
+                      (:text-doc :alive/lsp/types/text-doc)
                       (:sem-tokens :alive/lsp/message/document/sem-tokens-full)))
 
 (in-package :alive/session)
@@ -76,7 +77,12 @@
 
 
 (defmethod handle-msg (session (msg sem-tokens:request))
-    (send-msg session (sem-tokens:create-response msg)))
+    (let* ((params (message:params msg))
+           (doc (sem-tokens:text-document params))
+           (uri (text-doc:uri doc))
+           (text (gethash uri (files session))))
+
+        (send-msg session (sem-tokens:create-response (message:id msg) text))))
 
 
 (defun read-message (session)

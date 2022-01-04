@@ -2,7 +2,9 @@
     (:use :cl)
     (:export :create-response
              :req-from-wire
-             :request)
+             :request
+             :req-params
+             :text-document)
     (:local-nicknames (:message :alive/lsp/message/abstract)
                       (:types :alive/types)
                       (:token :alive/parse/token)
@@ -32,10 +34,6 @@
     ((data :accessor data
            :initform nil
            :initarg :data)))
-
-
-(defun get-sem-tokens ()
-    (make-instance 'sem-tokens :data (list 0 0 2 0 0)))
 
 
 (defun get-file-path (uri)
@@ -71,15 +69,13 @@
           :finally (return (reverse out-list))))
 
 
-(defun create-response (msg)
-    (let* ((params (message:params msg))
-           (doc (text-document params))
-           (path (get-file-path (text-doc:uri doc)))
-           (tokens (read-tokens path))
+(defun create-response (id text)
+    (let* ((input (make-string-input-stream text))
+           (tokens (tokenizer:from-stream input))
            (sem-tokens (analysis:to-sem-tokens tokens)))
 
         (make-instance 'response
-                       :id (message:id msg)
+                       :id id
                        :result (make-instance 'sem-tokens
                                               :data (to-sem-array sem-tokens)))))
 
