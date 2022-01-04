@@ -8,7 +8,8 @@
                       (:token :alive/parse/token)
                       (:tokenizer :alive/parse/tokenizer)
                       (:analysis :alive/lsp/sem-analysis)
-                      (:text-doc :alive/lsp/types/text-doc)))
+                      (:text-doc :alive/lsp/types/text-doc)
+                      (:sem-types :alive/lsp/types/sem-tokens)))
 
 (in-package :alive/lsp/message/document/sem-tokens-full)
 
@@ -47,9 +48,27 @@
         (tokenizer:from-stream f)))
 
 
-(defun is-keyword (token)
-    (and (eq types:*symbol* (token:type-value token))
-         (find-symbol (string-upcase (token:text token)) :cl-user)))
+(defun to-sem-array (sem-tokens)
+    (loop :with line := 0
+          :with col := 0
+          :with out-list := nil
+
+          :for token :in sem-tokens
+          :for len := (- (sem-types:end-col token) (sem-types:start-col token))
+          :for line-diff := (- (sem-types:line token) line)
+          :for col-diff := (if (zerop line-diff)
+                               (- (sem-types:start-col token) col)
+                               (sem-types:start-col token)) :do
+
+              (push line-diff out-list)
+              (push col-diff out-list)
+              (push len out-list)
+              (push (sem-types:token-type token) out-list)
+              (push 0 out-list)
+
+              (setf line (sem-types:line token))
+              (setf col (sem-types:start-col token))
+          :finally (return (reverse out-list))))
 
 
 (defun create-response (msg)
@@ -59,19 +78,10 @@
            (tokens (read-tokens path))
            (sem-tokens (analysis:to-sem-tokens tokens)))
 
-        (loop :for token :in tokens :do
-                  (format T "TOKEN ~A ~A~%"
-                          token
-                          (if (is-keyword token)
-                              "T"
-                              "")))
-
-        (format T "SEM TOKENS RESPONSE ~A~%" (json:encode-json-to-string msg))
-        (format T "PATH ~A~%" path))
-
-    (make-instance 'response
-                   :id (message:id msg)
-                   :result (get-sem-tokens)))
+        (make-instance 'response
+                       :id (message:id msg)
+                       :result (make-instance 'sem-tokens
+                                              :data (to-sem-array sem-tokens)))))
 
 
 (defun req-from-wire (&key jsonrpc id params)

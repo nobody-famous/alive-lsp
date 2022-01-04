@@ -9,29 +9,6 @@
 (in-package :alive/lsp/sem-analysis)
 
 
-(defclass sem-token ()
-    ((token-type :accessor token-type
-                 :initform nil
-                 :initarg :token-type)
-     (line :accessor line
-           :initform nil
-           :initarg :line)
-     (start-col :accessor start-col
-                :initform nil
-                :initarg :start-col)
-     (end-col :accessor end-col
-              :initform nil
-              :initarg :end-col)))
-
-
-(defmethod print-object ((obj sem-token) out)
-    (format out "{~A line ~A start ~A end ~A}"
-            (token-type obj)
-            (line obj)
-            (start-col obj)
-            (end-col obj)))
-
-
 (defclass analysis-state ()
     ((lex-tokens :accessor lex-tokens
                  :initform nil
@@ -93,12 +70,16 @@
           :for end-col := (if (eq line (pos:line end))
                               (pos:col end)
                               #xFFFFFFFF)
-          :for new-token := (make-instance 'sem-token
+          :for new-token := (make-instance 'sem-types:token
                                            :line line
                                            :start-col start-col
                                            :end-col end-col
                                            :token-type new-type) :do
               (push new-token (sem-tokens state))))
+
+
+(defun is-keyword (token)
+    (find-symbol (string-upcase (token:text token)) :cl-user))
 
 
 (defun process-expr (state)
@@ -117,6 +98,8 @@
                                                    (process-expr state)
                                                    (setf (forced-type state) nil))
 
+              ((is-type token types:*colons*) (add-sem-token state token sem-types:*symbol*))
+
               ((is-type token types:*symbol*) (if (is-next-type state types:*colons*)
                                                   (progn (add-sem-token state token sem-types:*namespace*)
 
@@ -124,7 +107,9 @@
 
                                                          (add-sem-token state token sem-types:*symbol*)
                                                          (process-expr state))
-                                                  (add-sem-token state token sem-types:*symbol*)))
+                                                  (add-sem-token state token (if (is-keyword token)
+                                                                                 sem-types:*keyword*
+                                                                                 sem-types:*symbol*))))
 
               ((is-type token types:*ws*) nil)
 
@@ -132,7 +117,7 @@
                                                   token
                                                   (forced-type state)))
 
-              (T (error (format nil "Unhandled token: ~A" token))))))
+              (T nil))))
 
 
 (defun to-sem-tokens (tokens)
