@@ -79,45 +79,61 @@
 
 
 (defun is-keyword (token)
-    (find-symbol (string-upcase (token:text token)) :cl-user))
+    (find-symbol (string-upcase (token:text token)) :common-lisp))
 
 
 (defun process-expr (state)
-    (let ((token (next-token state)))
-        (cond ((is-type token types:*comment*) (add-sem-token state token sem-types:*comment*))
+    (labels ((process-list (state paren-token)
+                  (add-sem-token state paren-token sem-types:*parenthesis*)
 
-              ((is-type token types:*string*) (add-sem-token state token sem-types:*string*))
+                  (loop :for token := (peek-token state)
 
-              ((is-type token types:*macro*) (add-sem-token state token sem-types:*macro*))
+                        :until (is-type token types:*close-paren*)
+                        :do (process-expr state)
 
-              ((is-type token types:*ifdef-true*) (add-sem-token state token sem-types:*macro*))
+                        :finally (progn
+                                  (add-sem-token state token sem-types:*parenthesis*)
+                                  (next-token state)))))
 
-              ((is-type token types:*ifdef-false*) (add-sem-token state token sem-types:*comment*)
-                                                   (setf (forced-type state) types:*comment*)
-                                                   (skip-ws state)
-                                                   (process-expr state)
-                                                   (setf (forced-type state) nil))
+        (let ((token (next-token state)))
+            (cond ((is-type token types:*comment*) (add-sem-token state token sem-types:*comment*))
 
-              ((is-type token types:*colons*) (add-sem-token state token sem-types:*symbol*))
+                  ((is-type token types:*string*) (add-sem-token state token sem-types:*string*))
 
-              ((is-type token types:*symbol*) (if (is-next-type state types:*colons*)
-                                                  (progn (add-sem-token state token sem-types:*namespace*)
+                  ((is-type token types:*macro*) (add-sem-token state token sem-types:*macro*))
 
-                                                         (setf token (next-token state))
+                  ((is-type token types:*ifdef-true*) (add-sem-token state token sem-types:*macro*))
 
-                                                         (add-sem-token state token sem-types:*symbol*)
-                                                         (process-expr state))
-                                                  (add-sem-token state token (if (is-keyword token)
-                                                                                 sem-types:*keyword*
-                                                                                 sem-types:*symbol*))))
+                  ((is-type token types:*ifdef-false*) (add-sem-token state token sem-types:*comment*)
+                                                       (setf (forced-type state) types:*comment*)
+                                                       (skip-ws state)
+                                                       (process-expr state)
+                                                       (setf (forced-type state) nil))
 
-              ((is-type token types:*ws*) nil)
+                  ((is-type token types:*colons*) (add-sem-token state token sem-types:*symbol*))
 
-              ((forced-type state) (add-sem-token state
-                                                  token
-                                                  (forced-type state)))
+                  ((is-type token types:*symbol*) (if (is-next-type state types:*colons*)
+                                                      (progn (add-sem-token state token sem-types:*namespace*)
 
-              (T nil))))
+                                                             (setf token (next-token state))
+
+                                                             (add-sem-token state token sem-types:*symbol*)
+                                                             (process-expr state))
+                                                      (add-sem-token state token (if (is-keyword token)
+                                                                                     sem-types:*keyword*
+                                                                                     sem-types:*symbol*))))
+
+                  ((is-type token types:*open-paren*) (process-list state token))
+
+                  ((is-type token types:*close-paren*) (error "CLOSE PAREN SHOULD NOT BE HANDLED HERE"))
+
+                  ((is-type token types:*ws*) nil)
+
+                  ((forced-type state) (add-sem-token state
+                                                      token
+                                                      (forced-type state)))
+
+                  (T nil)))))
 
 
 (defun to-sem-tokens (tokens)

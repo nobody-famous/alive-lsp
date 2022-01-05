@@ -196,7 +196,7 @@
                      :token-type types:*macro*
                      :predicate (lambda (ch)
                                     (and ch
-                                         (not (is-ws ch))))))
+                                         (not (is-delim ch))))))
 
 
 (defun read-macro-token (state)
