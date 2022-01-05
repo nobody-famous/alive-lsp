@@ -72,15 +72,19 @@
 
 
 (defmethod handle-msg (session (msg did-open:did-open))
-    (let ((key (did-open:get-uri msg))
-          (value (did-open:get-text msg)))
-        (setf (gethash key (files session)) value)))
+    (let ((uri (did-open:get-uri msg))
+          (text (did-open:get-text msg)))
+
+        (when text
+              (setf (gethash uri (files session)) text))))
 
 
 (defmethod handle-msg (session (msg did-change:did-change))
-    (let ((key (did-change:get-uri msg))
-          (value (did-change:get-text msg)))
-        (setf (gethash key (files session)) value)))
+    (let ((uri (did-change:get-uri msg))
+          (text (did-change:get-text msg)))
+
+        (when text
+              (setf (gethash uri (files session)) text))))
 
 
 (defmethod handle-msg (session (msg sem-tokens:request))
@@ -89,7 +93,8 @@
            (uri (text-doc:uri doc))
            (text (gethash uri (files session))))
 
-        (send-msg session (sem-tokens:create-response (message:id msg) text))))
+        (when text
+              (send-msg session (sem-tokens:create-response (message:id msg) text)))))
 
 
 (defun read-message (session)

@@ -36,11 +36,6 @@
            :initarg :data)))
 
 
-(defun get-file-path (uri)
-    (merge-pathnames (pathname (purl:url-path (purl:url uri)))
-                     #p"/"))
-
-
 (defun read-tokens (path)
     (with-open-file (f path :if-does-not-exist nil)
         (tokenizer:from-stream f)))

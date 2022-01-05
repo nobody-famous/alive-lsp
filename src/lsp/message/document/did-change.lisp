@@ -23,7 +23,7 @@
                       :initarg :content-changes)))
 
 
-(defclass content-changes ()
+(defclass content-change ()
     ((text :accessor text
            :initform nil
            :initarg :text)))
@@ -36,25 +36,32 @@
 
 
 (defun get-text (msg)
-    (format T "GET-TEXT ~A~%" (content-changes (message:params msg)))
     (let* ((params (message:params msg))
            (changes (content-changes params)))
-        (text changes)))
+
+        (when (first changes)
+              (text (first changes)))))
 
 
-(defun changes-from-wire (params)
+(defun change-from-wire (change)
     (labels ((add-param (params key value)
                   (cond ((eq key :text) (setf (text params) value)))))
 
-        (loop :with out-params := (make-instance 'content-changes)
-              :for param :in params :do
+        (loop :with out-params := (make-instance 'content-change)
+
+              :for param :in change :do
                   (add-param out-params (car param) (cdr param))
+
               :finally (return out-params))))
+
+
+(defun changes-from-wire (changes)
+    (loop :for change :in changes
+          :collect (change-from-wire change)))
 
 
 (defun from-wire (params)
     (labels ((add-param (params key value)
-                  (format T "DID-CHANGE ~A~%" key)
                   (cond ((eq key :text-document) (setf (text-document params)
                                                        (tdi:from-wire value)))
                         ((eq key :content-changes) (setf (content-changes params)
