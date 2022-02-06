@@ -44,8 +44,10 @@
 
     (let* ((orig-output *standard-output*)
            (orig-err *error-output*)
-           (out-stream (make-instance 'astreams:rt-stream :stdout orig-output))
-           (err-stream (make-instance 'astreams:rt-stream :stdout orig-err))
+           (out-stream (astreams:make-stream :stdout orig-output))
+           (err-stream (astreams:make-stream :stdout orig-err))
+        ;    (out-stream (make-instance 'astreams:rt-stream :stdout orig-output))
+        ;    (err-stream (make-instance 'astreams:rt-stream :stdout orig-err))
            (*standard-output* out-stream)
            (*error-output* err-stream))
         ; (compile-file "test/compat/sbcl/files/foo.lisp")

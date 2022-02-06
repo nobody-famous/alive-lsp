@@ -17,8 +17,11 @@
 
                  "alive-lsp/src/compat/sbcl/compile"
                  "alive-lsp/src/compat/sbcl/streams"
+                 "alive-lsp/src/compat/sbcl/symbols"
 
                  "alive-lsp/src/compile"
+                 "alive-lsp/src/streams"
+                 "alive-lsp/src/symbols"
 
                  "alive-lsp/src/lsp/types/sem-tokens"
                  "alive-lsp/src/lsp/types/text-doc"
@@ -44,6 +47,7 @@
     :depends-on ("alive-lsp"
 
                  "alive-lsp/test/compat/sbcl/compile"
+                 "alive-lsp/test/compat/sbcl/symbols"
                  "alive-lsp/test/parse"
                  "alive-lsp/test/lsp/message"))
 
@@ -57,9 +61,12 @@
 (register-system-packages "alive-lsp/src/parse/tokenizer" '(:alive/parse/tokenizer))
 
 (register-system-packages "alive-lsp/src/compile" '(:alive/compile))
+(register-system-packages "alive-lsp/src/streams" '(:alive/streams))
+(register-system-packages "alive-lsp/src/symbols" '(:alive/symbols))
 
-(register-system-packages "alive-lsp/src/compat/sbcl/compile" '(:alive/compile/compat))
-(register-system-packages "alive-lsp/src/compat/sbcl/streams" '(:alive/streams))
+(register-system-packages "alive-lsp/src/compat/sbcl/compile" '(:alive/sbcl/compat))
+(register-system-packages "alive-lsp/src/compat/sbcl/streams" '(:alive/sbcl/streams))
+(register-system-packages "alive-lsp/src/compat/sbcl/symbols" '(:alive/sbcl/symbols))
 
 (register-system-packages "alive-lsp/src/lsp/types/sem-tokens" '(:alive/lsp/types/sem-tokens))
 (register-system-packages "alive-lsp/src/lsp/types/text-doc" '(:alive/lsp/types/text-doc))
@@ -82,5 +89,6 @@
 (register-system-packages "alive-lsp/src/server" '(:alive/server))
 
 (register-system-packages "alive-lsp/test/compat/sbcl/compile" '(:alive/test/compat/sbcl/compile))
+(register-system-packages "alive-lsp/test/compat/sbcl/symbols" '(:alive/test/compat/sbcl/symbols))
 (register-system-packages "alive-lsp/test/parse" '(:alive/test/parse))
 (register-system-packages "alive-lsp/test/lsp/message" '(:alive/test/lsp/message))

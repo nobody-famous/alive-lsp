@@ -6,4 +6,4 @@
 
 
 (defun file (out-fn path)
-    #+sbcl (alive/compile/compat:file out-fn path))
+    #+sbcl (alive/sbcl/compile:file out-fn path))

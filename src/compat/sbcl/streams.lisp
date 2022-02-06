@@ -1,10 +1,10 @@
-(defpackage :alive/streams
+(defpackage :alive/sbcl/streams
     (:use :cl)
     (:export :rt-stream
              :eof-p
              :add-listener))
 
-(in-package :alive/streams)
+(in-package :alive/sbcl/streams)
 
 
 (defclass rt-stream (sb-gray:fundamental-character-output-stream)

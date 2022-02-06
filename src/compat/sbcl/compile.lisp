@@ -1,10 +1,10 @@
-(defpackage :alive/compile/compat
+(defpackage :alive/sbcl/compile
     (:use :cl)
     (:export :file)
     (:local-nicknames (:parse :alive/parse/stream)
                       (:types :alive/types)))
 
-(in-package :alive/compile/compat)
+(in-package :alive/sbcl/compile)
 
 
 (defun get-form (forms ndx)
