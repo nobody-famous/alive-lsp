@@ -85,6 +85,10 @@
 (defun process-expr (state)
     (labels ((process-list (state paren-token)
                   (add-sem-token state paren-token sem-types:*parenthesis*)
+                  (skip-ws state)
+
+                  (when (is-next-type state types:*symbol*)
+                        (format T "SYMBOL ~A~%" (token:text (peek-token state))))
 
                   (loop :for token := (peek-token state)
 
