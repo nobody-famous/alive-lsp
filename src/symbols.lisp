@@ -5,5 +5,5 @@
 (in-package :alive/symbols)
 
 
-(defun callable-p (name)
-    #+sbcl (alive/sbcl/symbols:callable-p name))
+(defun callable-p (name &optional pkg)
+    #+sbcl (alive/sbcl/symbols:callable-p name pkg))
