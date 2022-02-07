@@ -44,7 +44,10 @@
                  "alive-lsp/src/server"))
 
 (defsystem "alive-lsp/test"
-    :depends-on ("alive-lsp"
+    :depends-on (#:fiveam
+                 "alive-lsp"
+
+                 "alive-lsp/test/suite"
 
                  "alive-lsp/test/compat/sbcl/compile"
                  "alive-lsp/test/compat/sbcl/symbols"
@@ -87,6 +90,8 @@
 (register-system-packages "alive-lsp/src/socket-pair" '(:alive/socket-pair))
 (register-system-packages "alive-lsp/src/session" '(:alive/session))
 (register-system-packages "alive-lsp/src/server" '(:alive/server))
+
+(register-system-packages "alive-lsp/test/suite" '(:alive/test/suite))
 
 (register-system-packages "alive-lsp/test/compat/sbcl/compile" '(:alive/test/compat/sbcl/compile))
 (register-system-packages "alive-lsp/test/compat/sbcl/symbols" '(:alive/test/compat/sbcl/symbols))
