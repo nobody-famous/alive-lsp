@@ -5,6 +5,7 @@
     :depends-on (#:usocket
                  #:cl-json
                  #:bordeaux-threads
+                 #:sb-introspect
 
                  "alive-lsp/src/logger"
 

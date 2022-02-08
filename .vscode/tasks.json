@@ -19,6 +19,18 @@
                 "'(fiveam:run!)'"
             ],
             "problemMatcher": []
+        },
+        {
+            "label": "Watch Tests",
+            "type": "shell",
+            "command": "nodemon",
+            "args": [
+                "-e",
+                "lisp",
+                "--exec",
+                "./run-tests.sh"
+            ],
+            "problemMatcher": []
         }
     ]
 }
