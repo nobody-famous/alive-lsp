@@ -1,17 +1,13 @@
-(defpackage :alive/test/compat/sbcl/symbols
-    (:use :cl)
-    (:export :run-all)
-
-    (:local-nicknames (:asymbols :alive/symbols)))
-
-(in-package :alive/test/compat/sbcl/symbols)
+(defpackage :alive/test/compat/sbcl/symbols)
 
 
-(defun test-lookup ()
-    (format T "Lookup ~A~%" (asymbols:callable-p "callable-p" "alive/symbols")))
+(fiveam:def-suite alive-lsp/sbcl/symbols
+    :in alive-lsp)
 
 
-(defun run-all ()
-    (format T "SBCL Symbol Tests~%")
+(fiveam:in-suite alive-lsp/sbcl/symbols)
 
-    (test-lookup))
+
+(fiveam:test lookup ()
+    (fiveam:is (alive/symbols:callable-p "callable-p" "alive/symbols"))
+    (fiveam:is (not (alive/symbols:callable-p "callable-p" "foo"))))

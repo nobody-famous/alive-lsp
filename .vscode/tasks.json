@@ -6,18 +6,7 @@
         {
             "label": "Run Tests",
             "type": "shell",
-            "command": "sbcl",
-            "args": [
-                "--non-interactive",
-                "--load",
-                "alive-lsp.asd",
-                "--eval",
-                "'(ql:quickload :fiveam)'",
-                "--load",
-                "test/suite.lisp",
-                "--eval",
-                "'(fiveam:run!)'"
-            ],
+            "command": "./run-tests.sh",
             "problemMatcher": []
         },
         {

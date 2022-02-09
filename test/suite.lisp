@@ -5,10 +5,13 @@
     :description "Test the Alive LSP server")
 
 
-(fiveam:test should-pass
-    (fiveam:is (alive/symbols:callable-p "callable-p" "alive/symbols"))
-    (fiveam:is (not (eq t nil))))
+(fiveam:in-suite alive-lsp)
 
 
-(fiveam:test should-fail
-    (fiveam:is (eq t nil)))
+; (fiveam:test should-pass
+;     (fiveam:is (alive/symbols:callable-p "callable-p" "alive/symbols"))
+;     (fiveam:is (not (eq t nil))))
+
+
+; (fiveam:test should-fail
+;     (fiveam:is (eq t nil)))
