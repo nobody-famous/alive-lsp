@@ -45,14 +45,16 @@
                  "alive-lsp/src/server"))
 
 (defsystem "alive-lsp/test"
-    :depends-on (#:fiveam
-                 "alive-lsp"
+    :depends-on ("alive-lsp"
 
+                 "alive-lsp/test/harness/formatting"
+                 
                  "alive-lsp/test/suite"
 
                  "alive-lsp/test/compat/sbcl/compile"
                  "alive-lsp/test/compat/sbcl/symbols"
                  "alive-lsp/test/parse"
+                 "alive-lsp/test/parse/tokens"
                  "alive-lsp/test/lsp/message"))
 
 (register-system-packages "alive-lsp/src/logger" '(:alive/logger))
@@ -92,9 +94,12 @@
 (register-system-packages "alive-lsp/src/session" '(:alive/session))
 (register-system-packages "alive-lsp/src/server" '(:alive/server))
 
+(register-system-packages "alive-lsp/test/harness/formatting" '(:alive/test/harness/formatting))
+
 (register-system-packages "alive-lsp/test/suite" '(:alive/test/suite))
 
 (register-system-packages "alive-lsp/test/compat/sbcl/compile" '(:alive/test/compat/sbcl/compile))
 (register-system-packages "alive-lsp/test/compat/sbcl/symbols" '(:alive/test/compat/sbcl/symbols))
 (register-system-packages "alive-lsp/test/parse" '(:alive/test/parse))
+(register-system-packages "alive-lsp/test/parse/tokens" '(:alive/test/parse/tokens))
 (register-system-packages "alive-lsp/test/lsp/message" '(:alive/test/lsp/message))

@@ -1,17 +1,12 @@
-(defpackage :alive-lsp/suite)
+(defpackage :alive/test/suite
+    (:use :cl)
+    (:export :run-all)
+    (:local-nicknames (:fmt :alive/test/harness/formatting)))
+
+(in-package :alive/test/suite)
 
 
-(fiveam:def-suite alive-lsp
-    :description "Test the Alive LSP server")
+(defun run-all ()
+    (fmt:print-header "Run all Alive LSP tests")
 
-
-(fiveam:in-suite alive-lsp)
-
-
-; (fiveam:test should-pass
-;     (fiveam:is (alive/symbols:callable-p "callable-p" "alive/symbols"))
-;     (fiveam:is (not (eq t nil))))
-
-
-; (fiveam:test should-fail
-;     (fiveam:is (eq t nil)))
+    (alive/test/parse/tokens:run-all))
