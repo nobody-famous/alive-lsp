@@ -1,12 +1,12 @@
 (defpackage :alive/test/suite
     (:use :cl)
     (:export :run-all)
-    (:local-nicknames (:fmt :alive/test/harness/formatting)))
+    (:local-nicknames (:run :alive/test/harness/run)))
 
 (in-package :alive/test/suite)
 
 
 (defun run-all ()
-    (fmt:print-header "Run all Alive LSP tests")
-
-    (alive/test/parse/tokens:run-all))
+    (run:suite "Run all Alive LSP tests"
+                   (lambda ()
+                       (alive/test/parse/tokens:run-all))))
