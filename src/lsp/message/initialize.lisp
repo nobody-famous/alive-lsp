@@ -1,6 +1,11 @@
 (defpackage :alive/lsp/message/initialize
     (:use :cl)
-    (:export :create-response
+    (:export :create-client-info
+             :create-capabilities
+             :create-request
+             :create-request-params
+             :create-response
+             :create-sem-tokens-opts
              :create-initialized-notification
              :initialized
              :request-from-wire
@@ -60,6 +65,32 @@
     ((method :initform "initialize")))
 
 
+(defun create-request (&key id (jsonrpc "2.0") params)
+    (make-instance 'request
+                   :id id
+                   :jsonrpc jsonrpc
+                   :params params))
+
+
+(defun create-request-params (&key client-info locale root-path root-uri process-id
+                              capabilities trace-enabled workspace-folders)
+    (make-instance 'params
+                   :client-info client-info
+                   :locale locale
+                   :root-path root-path
+                   :root-uri root-uri
+                   :process-id process-id
+                   :capabilities capabilities
+                   :trace-enabled trace-enabled
+                   :workspace-folders workspace-folders))
+
+
+(defun create-client-info (&key name version)
+    (make-instance 'client-info
+                   :name name
+                   :version version))
+
+
 (defclass server-info ()
     ((name :accessor name
            :initform nil
@@ -81,14 +112,37 @@
 
 
 (defclass sem-tokens-opts ()
-    ((legend :initform (make-instance 'sem-tokens-legend))
-     (full :initform T)))
+    ((legend :accessor legend
+             :initform (make-instance 'sem-tokens-legend)
+             :initarg :legend)
+     (full :accessor full
+           :initform T
+           :initarg :full)))
+
+
+(defun create-sem-tokens-opts (&key legend full)
+    (make-instance 'sem-tokens-opts
+                   :legend legend
+                   :full full))
 
 
 (defclass server-capabilities ()
-    ((text-document-sync :initform *doc-sync-full*)
-     (hover-provider :initform T)
-     (semantic-tokens-provider :initform (make-instance 'sem-tokens-opts))))
+    ((text-document-sync :accessor text-document-sync
+                         :initform *doc-sync-full*
+                         :initarg :text-document-sync)
+     (hover-provider :accessor hover-provider
+                     :initform T
+                     :initarg :hover-provider)
+     (semantic-tokens-provider :accessor semantic-tokens-provider
+                               :initform (make-instance 'sem-tokens-opts)
+                               :initarg :semantic-tokens-provider)))
+
+
+(defun create-capabilities (&key text-doc-sync hover-provider sem-tokens-provider)
+    (make-instance 'server-capabilities
+                   :text-document-sync text-doc-sync
+                   :hover-provider hover-provider
+                   :semantic-tokens-provider sem-tokens-provider))
 
 
 (defclass response-body ()

@@ -5,27 +5,15 @@
                       (:init :alive/lsp/message/initialize)
                       (:message :alive/lsp/message/abstract)
                       (:packet :alive/lsp/packet)
-                      (:parse :alive/lsp/parse)))
+                      (:parse :alive/lsp/parse)
+
+                      (:run :alive/test/harness/run)
+                      (:check :alive/test/harness/check)))
 
 (in-package :alive/test/lsp/message)
 
 
 (defparameter *end-line* (format nil "~C~C" #\return #\linefeed))
-
-
-(defun create-init-content ()
-    (with-output-to-string (str)
-        (format str "{~A" *end-line*)
-        (format str "  \"jsonrpc\": \"2.0\",~A" *end-line*)
-        (format str "  \"id\": 0,~A" *end-line*)
-        (format str "  \"method\": \"initialize\",~A" *end-line*)
-        (format str "  \"params\": {~A" *end-line*)
-        (format str "    \"clientInfo\": {~A" *end-line*)
-        (format str "      \"name\": \"Visual Studio Code\",~A" *end-line*)
-        (format str "      \"version\": \"1.62.3\"~A" *end-line*)
-        (format str "    }~A" *end-line*)
-        (format str "  }~A" *end-line*)
-        (format str "}~A" *end-line*)))
 
 
 (defun create-did-open-content ()
@@ -52,17 +40,58 @@
         (format str "~A" content)))
 
 
-(defun parse-msg ()
-    (let* ((msg (create-msg (create-init-content)))
-           (parsed (parse:from-stream (make-string-input-stream msg))))
-        (format T "PARSED ~A~%" parsed)
-        (format T "JSON ~A~%" (json:encode-json-to-string parsed))))
+(defun parse-init-msg ()
+    (labels ((create-init-content ()
+                  (with-output-to-string (str)
+                      (format str "{~A" *end-line*)
+                      (format str "  \"jsonrpc\": \"2.0\",~A" *end-line*)
+                      (format str "  \"id\": 0,~A" *end-line*)
+                      (format str "  \"method\": \"initialize\",~A" *end-line*)
+                      (format str "  \"params\": {~A" *end-line*)
+                      (format str "    \"clientInfo\": {~A" *end-line*)
+                      (format str "      \"name\": \"Visual Studio Code\",~A" *end-line*)
+                      (format str "      \"version\": \"1.62.3\"~A" *end-line*)
+                      (format str "    }~A" *end-line*)
+                      (format str "  }~A" *end-line*)
+                      (format str "}~A" *end-line*))))
+
+        (run:test "Parse Message"
+                  (lambda ()
+                      (let* ((msg (create-msg (create-init-content)))
+                             (parsed (parse:from-stream (make-string-input-stream msg))))
+                          (check:are-equal (alive/lsp/message/initialize:create-request
+                                            :id 1
+                                            :params (alive/lsp/message/initialize:create-request-params
+                                                     :client-info (alive/lsp/message/initialize:create-client-info
+                                                                   :name "Visual Studio Code"
+                                                                   :version "1.62.3")))
+                                           parsed))))))
 
 
-(defun resp-msg ()
-    (let ((msg (init:create-response 0)))
-        (format T "resp-msg ~A~%" (parse:from-stream (make-string-input-stream (packet:to-wire msg))))
-        (format T "resp-msg ~A~%" (json:encode-json-to-string msg))))
+(defun init-resp-msg ()
+    (run:test "Initialize Response"
+              (lambda ()
+                  (let* ((msg (init:create-response 0))
+                         (result (alive/lsp/message/abstract:result msg)))
+                      (check:are-equal (alive/lsp/message/initialize:create-capabilities
+                                        :text-doc-sync 1
+                                        :hover-provider t
+                                        :sem-tokens-provider (alive/lsp/message/initialize:create-sem-tokens-opts
+                                                              :legend (list "comment"
+                                                                            "string"
+                                                                            "keyword"
+                                                                            "number"
+                                                                            "namespace"
+                                                                            "function"
+                                                                            "macro"
+                                                                            "variable"
+                                                                            "parameter"
+                                                                            "parenthesis"
+                                                                            "symbol")
+                                                              :full t))
+                                       (alive/lsp/message/initialize::capabilities result))
+                      (format T "resp-msg ~A~%" (parse:from-stream (make-string-input-stream (packet:to-wire msg))))
+                      (format T "resp-msg ~A~%" (json:encode-json-to-string msg))))))
 
 
 (defun did-open-msg ()
@@ -73,6 +102,8 @@
 
 
 (defun run-all ()
-    (parse-msg)
-    (resp-msg)
-    (did-open-msg))
+    (run:suite "LSP Messages"
+               (lambda ()
+                   (parse-init-msg)
+                   (init-resp-msg)
+                   (did-open-msg))))

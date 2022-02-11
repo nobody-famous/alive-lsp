@@ -18,6 +18,33 @@
          (eq (alive/parse/token:type-value a) (alive/parse/token:type-value b))))
 
 
+(defmethod deep-equal-p ((a alive/lsp/message/initialize::client-info) (b alive/lsp/message/initialize::client-info))
+    (and (string-equal (alive/lsp/message/initialize::name a) (alive/lsp/message/initialize::name b))
+         (string-equal (alive/lsp/message/initialize::version a) (alive/lsp/message/initialize::version b))))
+
+
+(defmethod deep-equal-p ((a alive/lsp/message/initialize::params) (b alive/lsp/message/initialize::params))
+    (and (deep-equal-p (alive/lsp/message/initialize::client-info a) (alive/lsp/message/initialize::client-info b))
+         (string-equal (alive/lsp/message/initialize::locale a) (alive/lsp/message/initialize::locale b))
+         (string-equal (alive/lsp/message/initialize::root-path a) (alive/lsp/message/initialize::root-path b))
+         (string-equal (alive/lsp/message/initialize::root-uri a) (alive/lsp/message/initialize::root-uri b))))
+
+
+(defmethod deep-equal-p ((a alive/lsp/message/initialize::request) (b alive/lsp/message/initialize::request))
+    (and (deep-equal-p (alive/lsp/message/abstract::params a) (alive/lsp/message/abstract::params b))))
+
+
+(defmethod deep-equal-p ((a alive/lsp/message/initialize::sem-tokens-opts) (b alive/lsp/message/initialize::sem-tokens-opts))
+    (and (deep-equal-p (alive/lsp/message/initialize::legend a) (alive/lsp/message/initialize::legend b))
+         (eq (alive/lsp/message/initialize::full a) (alive/lsp/message/initialize::full b))))
+
+
+(defmethod deep-equal-p ((a alive/lsp/message/initialize::server-capabilities) (b alive/lsp/message/initialize::server-capabilities))
+    (and (eq (alive/lsp/message/initialize::text-document-sync a) (alive/lsp/message/initialize::text-document-sync b))
+         (eq (alive/lsp/message/initialize::hover-provider a) (alive/lsp/message/initialize::hover-provider b))
+         (deep-equal-p (alive/lsp/message/initialize::semantic-tokens-provider a) (alive/lsp/message/initialize::semantic-tokens-provider b))))
+
+
 (defun has-deep-equal-p (obj1 obj2)
     (find-method #'deep-equal-p
                  '()

@@ -8,5 +8,6 @@
 
 (defun run-all ()
     (run:suite "Run all Alive LSP tests"
-                   (lambda ()
-                       (alive/test/parse/tokens:run-all))))
+               (lambda ()
+                   (alive/test/lsp/message:run-all)
+                   (alive/test/parse/tokens:run-all))))
