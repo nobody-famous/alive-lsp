@@ -1,8 +1,10 @@
 (defpackage :alive/lsp/types/text-doc-item
     (:use :cl)
-    (:export :from-wire
+    (:export :create-item
+             :from-wire
              :text
-             :uri))
+             :uri)
+    (:local-nicknames (:types :alive/types)))
 
 (in-package :alive/lsp/types/text-doc-item)
 
@@ -20,6 +22,29 @@
      (text :accessor text
            :initform nil
            :initarg :text)))
+
+
+(defmethod print-object ((obj text-document-item) out)
+    (format out "{uri: \"~A\"; language-id: \"~A\"; version: \"~A\"; text: \"~A\"}"
+            (uri obj)
+            (language-id obj)
+            (version obj)
+            (text obj)))
+
+
+(defmethod types:deep-equal-p ((a text-document-item) (b text-document-item))
+    (and (string-equal (uri a) (uri b))
+         (string-equal (language-id a) (language-id b))
+         (string-equal (version a) (version b))
+         (string-equal (text a) (text b))))
+
+
+(defun create-item (&key uri language-id version text)
+    (make-instance 'text-document-item
+                   :uri uri
+                   :language-id language-id
+                   :version version
+                   :text text))
 
 
 (defun from-wire (params)

@@ -16,23 +16,6 @@
 (defparameter *end-line* (format nil "~C~C" #\return #\linefeed))
 
 
-(defun create-did-open-content ()
-    (with-output-to-string (str)
-        (format str "{~A" *end-line*)
-        (format str "  \"jsonrpc\": \"2.0\",~A" *end-line*)
-        (format str "  \"id\": 0,~A" *end-line*)
-        (format str "  \"method\": \"textDocument/didOpen\",~A" *end-line*)
-        (format str "  \"params\": {~A" *end-line*)
-        (format str "    \"textDocument\": {~A" *end-line*)
-        (format str "      \"uri\": \"file:///some/file.txt\",~A" *end-line*)
-        (format str "      \"languageId\": \"lisp\",~A" *end-line*)
-        (format str "      \"version\": \"1\",~A" *end-line*)
-        (format str "      \"text\": \"(foo)\"~A" *end-line*)
-        (format str "    }~A" *end-line*)
-        (format str "  }~A" *end-line*)
-        (format str "}~A" *end-line*)))
-
-
 (defun create-msg (content)
     (with-output-to-string (str)
         (format str "Content-Length: ~A~A" (length content) *end-line*)
@@ -40,7 +23,7 @@
         (format str "~A" content)))
 
 
-(defun parse-init-msg ()
+(defun init-msg ()
     (labels ((create-init-content ()
                   (with-output-to-string (str)
                       (format str "{~A" *end-line*)
@@ -55,7 +38,7 @@
                       (format str "  }~A" *end-line*)
                       (format str "}~A" *end-line*))))
 
-        (run:test "Parse Message"
+        (run:test "Initialize Message"
                   (lambda ()
                       (let* ((msg (create-msg (create-init-content)))
                              (parsed (parse:from-stream (make-string-input-stream msg))))
@@ -77,33 +60,55 @@
                                         :text-doc-sync 1
                                         :hover-provider t
                                         :sem-tokens-provider (alive/lsp/message/initialize:create-sem-tokens-opts
-                                                              :legend (list "comment"
-                                                                            "string"
-                                                                            "keyword"
-                                                                            "number"
-                                                                            "namespace"
-                                                                            "function"
-                                                                            "macro"
-                                                                            "variable"
-                                                                            "parameter"
-                                                                            "parenthesis"
-                                                                            "symbol")
+                                                              :legend (alive/lsp/message/initialize:create-legend
+                                                                       :types (list "comment"
+                                                                                    "string"
+                                                                                    "keyword"
+                                                                                    "number"
+                                                                                    "namespace"
+                                                                                    "function"
+                                                                                    "macro"
+                                                                                    "variable"
+                                                                                    "parameter"
+                                                                                    "parenthesis"
+                                                                                    "symbol"))
                                                               :full t))
-                                       (alive/lsp/message/initialize::capabilities result))
-                      (format T "resp-msg ~A~%" (parse:from-stream (make-string-input-stream (packet:to-wire msg))))
-                      (format T "resp-msg ~A~%" (json:encode-json-to-string msg))))))
+                                       (alive/lsp/message/initialize::capabilities result))))))
 
 
 (defun did-open-msg ()
-    (let* ((msg (create-msg (create-did-open-content)))
-           (parsed (parse:from-stream (make-string-input-stream msg))))
-        (format T "did-open text ~A~%" (did-open:get-text parsed))
-        (format T "did-open uri ~A~%" (did-open:get-uri parsed))))
+    (labels ((create-did-open-content ()
+                  (with-output-to-string (str)
+                      (format str "{~A" *end-line*)
+                      (format str "  \"jsonrpc\": \"2.0\",~A" *end-line*)
+                      (format str "  \"id\": 0,~A" *end-line*)
+                      (format str "  \"method\": \"textDocument/didOpen\",~A" *end-line*)
+                      (format str "  \"params\": {~A" *end-line*)
+                      (format str "    \"textDocument\": {~A" *end-line*)
+                      (format str "      \"uri\": \"file:///some/file.txt\",~A" *end-line*)
+                      (format str "      \"languageId\": \"lisp\",~A" *end-line*)
+                      (format str "      \"version\": \"1\",~A" *end-line*)
+                      (format str "      \"text\": \"(foo)\"~A" *end-line*)
+                      (format str "    }~A" *end-line*)
+                      (format str "  }~A" *end-line*)
+                      (format str "}~A" *end-line*))))
+
+        (run:test "Did Open Message"
+                  (lambda ()
+                      (let* ((msg (create-msg (create-did-open-content)))
+                             (parsed (parse:from-stream (make-string-input-stream msg))))
+                          (check:are-equal (alive/lsp/message/document/did-open:create-did-open
+                                            (alive/lsp/message/document/did-open:create-params
+                                             (alive/lsp/types/text-doc-item:create-item :text "(foo)"
+                                                                                        :language-id "lisp"
+                                                                                        :version "1"
+                                                                                        :uri "file:///some/file.txt")))
+                                           parsed))))))
 
 
 (defun run-all ()
     (run:suite "LSP Messages"
                (lambda ()
-                   (parse-init-msg)
+                   (init-msg)
                    (init-resp-msg)
                    (did-open-msg))))

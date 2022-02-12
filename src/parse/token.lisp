@@ -36,6 +36,13 @@
                 (text obj))))
 
 
+(defmethod types:deep-equal-p ((a alive/parse/token::token) (b alive/parse/token::token))
+    (and (types:deep-equal-p (alive/parse/token:start a) (alive/parse/token:start b))
+         (types:deep-equal-p (alive/parse/token:end a) (alive/parse/token:end b))
+         (string-equal (alive/parse/token:text a) (alive/parse/token:text b))
+         (eq (alive/parse/token:type-value a) (alive/parse/token:type-value b))))
+
+
 (defun create (&key type-value start end text)
     (make-instance 'token
                    :start start

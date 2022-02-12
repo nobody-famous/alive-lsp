@@ -2,6 +2,7 @@
     (:use :cl)
     (:export :create-client-info
              :create-capabilities
+             :create-legend
              :create-request
              :create-request-params
              :create-response
@@ -11,7 +12,8 @@
              :request-from-wire
              :request)
     (:local-nicknames (:sem-tokens :alive/lsp/types/sem-tokens)
-                      (:message :alive/lsp/message/abstract)))
+                      (:message :alive/lsp/message/abstract)
+                      (:types :alive/types)))
 
 (in-package :alive/lsp/message/initialize)
 
@@ -32,6 +34,11 @@
      (version :accessor version
               :initform nil
               :initarg :version)))
+
+
+(defmethod types:deep-equal-p ((a alive/lsp/message/initialize::client-info) (b alive/lsp/message/initialize::client-info))
+    (and (string-equal (alive/lsp/message/initialize::name a) (alive/lsp/message/initialize::name b))
+         (string-equal (alive/lsp/message/initialize::version a) (alive/lsp/message/initialize::version b))))
 
 
 (defclass params ()
@@ -61,8 +68,19 @@
                         :initarg :workspace-folders)))
 
 
+(defmethod types:deep-equal-p ((a alive/lsp/message/initialize::params) (b alive/lsp/message/initialize::params))
+    (and (types:deep-equal-p (alive/lsp/message/initialize::client-info a) (alive/lsp/message/initialize::client-info b))
+         (string-equal (alive/lsp/message/initialize::locale a) (alive/lsp/message/initialize::locale b))
+         (string-equal (alive/lsp/message/initialize::root-path a) (alive/lsp/message/initialize::root-path b))
+         (string-equal (alive/lsp/message/initialize::root-uri a) (alive/lsp/message/initialize::root-uri b))))
+
+
 (defclass request (message:request)
     ((method :initform "initialize")))
+
+
+(defmethod types:deep-equal-p ((a alive/lsp/message/initialize::request) (b alive/lsp/message/initialize::request))
+    (and (types:deep-equal-p (alive/lsp/message/abstract::params a) (alive/lsp/message/abstract::params b))))
 
 
 (defun create-request (&key id (jsonrpc "2.0") params)
@@ -107,8 +125,22 @@
 
 
 (defclass sem-tokens-legend ()
-    ((token-types :initform sem-tokens:*types*)
-     (token-modifiers :initform sem-tokens:*mods*)))
+    ((token-types :accessor token-types
+                  :initform sem-tokens:*types*
+                  :initarg :token-types)
+     (token-modifiers :accessor token-modifiers
+                      :initform sem-tokens:*mods*
+                      :initarg :token-modifiers)))
+
+
+(defmethod types:deep-equal-p ((a sem-tokens-legend) (b sem-tokens-legend))
+    (and (types:deep-equal-p (token-types a) (token-types b))))
+
+
+(defun create-legend (&key types modifiers)
+    (make-instance 'sem-tokens-legend
+                   :token-types types
+                   :token-modifiers modifiers))
 
 
 (defclass sem-tokens-opts ()
@@ -118,6 +150,11 @@
      (full :accessor full
            :initform T
            :initarg :full)))
+
+
+(defmethod types:deep-equal-p ((a alive/lsp/message/initialize::sem-tokens-opts) (b alive/lsp/message/initialize::sem-tokens-opts))
+    (and (types:deep-equal-p (alive/lsp/message/initialize::legend a) (alive/lsp/message/initialize::legend b))
+         (eq (alive/lsp/message/initialize::full a) (alive/lsp/message/initialize::full b))))
 
 
 (defun create-sem-tokens-opts (&key legend full)
@@ -136,6 +173,12 @@
      (semantic-tokens-provider :accessor semantic-tokens-provider
                                :initform (make-instance 'sem-tokens-opts)
                                :initarg :semantic-tokens-provider)))
+
+
+(defmethod types:deep-equal-p ((a alive/lsp/message/initialize::server-capabilities) (b alive/lsp/message/initialize::server-capabilities))
+    (and (eq (alive/lsp/message/initialize::text-document-sync a) (alive/lsp/message/initialize::text-document-sync b))
+         (eq (alive/lsp/message/initialize::hover-provider a) (alive/lsp/message/initialize::hover-provider b))
+         (types:deep-equal-p (alive/lsp/message/initialize::semantic-tokens-provider a) (alive/lsp/message/initialize::semantic-tokens-provider b))))
 
 
 (defun create-capabilities (&key text-doc-sync hover-provider sem-tokens-provider)

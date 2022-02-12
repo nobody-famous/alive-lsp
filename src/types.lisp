@@ -20,7 +20,9 @@
              :*ws*
              :*colons*
              :*ifdef-true*
-             :*ifdef-false*))
+             :*ifdef-false*
+
+             :deep-equal-p))
 
 (in-package :alive/types)
 
@@ -52,3 +54,6 @@
     severity
     location
     message)
+
+
+(defgeneric deep-equal-p (a b))
