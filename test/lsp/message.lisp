@@ -24,7 +24,7 @@
 
 
 (defun init-msg ()
-    (labels ((create-init-content ()
+    (labels ((create-content ()
                   (with-output-to-string (str)
                       (format str "{~A" *end-line*)
                       (format str "  \"jsonrpc\": \"2.0\",~A" *end-line*)
@@ -40,7 +40,7 @@
 
         (run:test "Initialize Message"
                   (lambda ()
-                      (let* ((msg (create-msg (create-init-content)))
+                      (let* ((msg (create-msg (create-content)))
                              (parsed (parse:from-stream (make-string-input-stream msg))))
                           (check:are-equal (alive/lsp/message/initialize:create-request
                                             :id 1
@@ -77,7 +77,7 @@
 
 
 (defun did-open-msg ()
-    (labels ((create-did-open-content ()
+    (labels ((create-content ()
                   (with-output-to-string (str)
                       (format str "{~A" *end-line*)
                       (format str "  \"jsonrpc\": \"2.0\",~A" *end-line*)
@@ -95,7 +95,7 @@
 
         (run:test "Did Open Message"
                   (lambda ()
-                      (let* ((msg (create-msg (create-did-open-content)))
+                      (let* ((msg (create-msg (create-content)))
                              (parsed (parse:from-stream (make-string-input-stream msg))))
                           (check:are-equal (alive/lsp/message/document/did-open:create-did-open
                                             (alive/lsp/message/document/did-open:create-params
@@ -106,9 +106,39 @@
                                            parsed))))))
 
 
+(defun did-change-msg ()
+    (labels ((create-content ()
+                  (with-output-to-string (str)
+                      (format str "{~A" *end-line*)
+                      (format str "  \"jsonrpc\": \"2.0\",~A" *end-line*)
+                      (format str "  \"id\": 0,~A" *end-line*)
+                      (format str "  \"method\": \"textDocument/didChange\",~A" *end-line*)
+                      (format str "  \"params\": {~A" *end-line*)
+                      (format str "    \"textDocument\": {~A" *end-line*)
+                      (format str "      \"uri\": \"file:///some/file.txt\"~A" *end-line*)
+                      (format str "    },~A" *end-line*)
+                      (format str "    \"contentChanges\": [~A" *end-line*)
+                      (format str "      {~A" *end-line*)
+                      (format str "        \"text\": \"(foo)\"~A" *end-line*)
+                      (format str "      }~A" *end-line*)
+                      (format str "    ]~A" *end-line*)
+                      (format str "  }~A" *end-line*)
+                      (format str "}~A" *end-line*))))
+
+        (run:test "Did Change Message"
+                  (lambda ()
+                      (let* ((msg (create-msg (create-content)))
+                             (parsed (parse:from-stream (make-string-input-stream msg))))
+                          (format T "~A~%" msg)
+                          (check:are-equal
+                           parsed
+                           parsed))))))
+
+
 (defun run-all ()
     (run:suite "LSP Messages"
                (lambda ()
                    (init-msg)
                    (init-resp-msg)
-                   (did-open-msg))))
+                   (did-open-msg)
+                   (did-change-msg))))

@@ -1,22 +1,26 @@
 (defpackage :alive/lsp/types/text-doc
     (:use :cl)
-    (:export :id-from-wire
+    (:export :from-wire
              :uri))
 
 (in-package :alive/lsp/types/text-doc)
 
 
-(defclass identifier ()
+(defclass text-document ()
     ((uri :accessor uri
           :initform nil
-          :initarg :uri)))
+          :initarg :uri)
+     (version :accessor version
+              :initform nil
+              :initarg :version)))
 
 
-(defun id-from-wire (fields)
+(defun from-wire (fields)
     (labels ((add-field (id key value)
-                  (cond ((eq key :uri) (setf (uri id) value)))))
+                  (cond ((eq key :uri) (setf (uri id) value))
+                        ((eq key :version) (setf (version id) value)))))
 
-        (loop :with id := (make-instance 'identifier)
+        (loop :with id := (make-instance 'text-document)
               :for field :in fields :do
                   (add-field id (car field) (cdr field))
               :finally (return id))))

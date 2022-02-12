@@ -77,7 +77,7 @@
 
 (defun req-from-wire (&key jsonrpc id params)
     (labels ((add-param (out-params key value)
-                  (cond ((eq key :text-document) (setf (text-document out-params) (text-doc:id-from-wire value))))))
+                  (cond ((eq key :text-document) (setf (text-document out-params) (text-doc:from-wire value))))))
 
         (loop :with out-params := (make-instance 'req-params)
 

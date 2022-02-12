@@ -5,13 +5,19 @@
              :get-text
              :get-uri)
     (:local-nicknames (:message :alive/lsp/message/abstract)
-                      (:tdi :alive/lsp/types/text-doc-item)))
+                      (:text-doc :alive/lsp/types/text-doc)))
 
 (in-package :alive/lsp/message/document/did-change)
 
 
 (defclass did-change (message:notification)
     ((message::method :initform "textDocument/didChange")))
+
+
+(defmethod print-object ((obj did-change) out)
+    (format out "{method: \"~A\"; params: ~A}"
+            (message:method-name obj)
+            (message:params obj)))
 
 
 (defclass params ()
@@ -23,6 +29,12 @@
                       :initarg :content-changes)))
 
 
+(defmethod print-object ((obj params) out)
+    (format out "{text-document: ~A; content-changes: ~A}"
+            (text-document obj)
+            (content-changes obj)))
+
+
 (defclass content-change ()
     ((text :accessor text
            :initform nil
@@ -32,7 +44,7 @@
 (defun get-uri (msg)
     (let* ((params (message:params msg))
            (doc (text-document params)))
-        (tdi:uri doc)))
+        (text-doc:uri doc)))
 
 
 (defun get-text (msg)
@@ -63,7 +75,7 @@
 (defun from-wire (params)
     (labels ((add-param (params key value)
                   (cond ((eq key :text-document) (setf (text-document params)
-                                                       (tdi:from-wire value)))
+                                                       (text-doc:from-wire value)))
                         ((eq key :content-changes) (setf (content-changes params)
                                                          (changes-from-wire value))))))
 
