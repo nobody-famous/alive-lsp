@@ -5,7 +5,8 @@
              :get-text
              :get-uri)
     (:local-nicknames (:message :alive/lsp/message/abstract)
-                      (:text-doc :alive/lsp/types/text-doc)))
+                      (:text-doc :alive/lsp/types/text-doc)
+                      (:types :alive/types)))
 
 (in-package :alive/lsp/message/document/did-change)
 
@@ -18,6 +19,11 @@
     (format out "{method: \"~A\"; params: ~A}"
             (message:method-name obj)
             (message:params obj)))
+
+
+(defmethod types:deep-equal-p ((a did-change) (b did-change))
+    (and (string-equal (message:method-name a) (message:method-name b))
+         (types:deep-equal-p (message:params a) (message:params b))))
 
 
 (defclass params ()
@@ -35,10 +41,23 @@
             (content-changes obj)))
 
 
+(defmethod types:deep-equal-p ((a params) (b params))
+    (and (types:deep-equal-p (text-document a) (text-document b))
+         (types:deep-equal-p (content-changes a) (content-changes b))))
+
+
 (defclass content-change ()
     ((text :accessor text
            :initform nil
            :initarg :text)))
+
+
+(defmethod print-object ((obj content-change) out)
+    (format out "{text: \"~A\"}" (text obj)))
+
+
+(defmethod types:deep-equal-p ((a content-change) (b content-change))
+    (string-equal (text a) (text b)))
 
 
 (defun get-uri (msg)

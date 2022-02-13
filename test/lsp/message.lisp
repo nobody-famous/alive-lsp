@@ -129,7 +129,6 @@
                   (lambda ()
                       (let* ((msg (create-msg (create-content)))
                              (parsed (parse:from-stream (make-string-input-stream msg))))
-                          (format T "~A~%" msg)
                           (check:are-equal
                            parsed
                            parsed))))))

@@ -1,7 +1,8 @@
 (defpackage :alive/lsp/types/text-doc
     (:use :cl)
     (:export :from-wire
-             :uri))
+             :uri)
+    (:local-nicknames (:types :alive/types)))
 
 (in-package :alive/lsp/types/text-doc)
 
@@ -13,6 +14,17 @@
      (version :accessor version
               :initform nil
               :initarg :version)))
+
+
+(defmethod print-object ((obj text-document) out)
+    (format out "{uri: \"~A\"; version: ~A}"
+            (uri obj)
+            (version obj)))
+
+
+(defmethod types:deep-equal-p ((a text-document) (b text-document))
+    (and (string-equal (uri a) (uri b))
+         (equalp (version a) (version b))))
 
 
 (defun from-wire (fields)
