@@ -7,7 +7,7 @@
 (in-package :alive/test/harness/check)
 
 
-(defmethod types:deep-equal-p ((obj1 cons) (obj2 cons))
+(defmethod types:deep-equal-p ((obj1 cons) obj2)
     (cond ((not (typep obj2 'cons)) nil)
           ((not (eq (length obj1) (length obj2))) nil)
           (t (loop :with same := t
@@ -19,8 +19,9 @@
                    :finally (return same)))))
 
 
-(defmethod types:deep-equal-p ((a string) (b string))
-    (string-equal a b))
+(defmethod types:deep-equal-p ((a string) b)
+    (and (equal (type-of a) (type-of b))
+         (string-equal a b)))
 
 
 (defun are-equal (expected actual)

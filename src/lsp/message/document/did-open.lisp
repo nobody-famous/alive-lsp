@@ -23,8 +23,9 @@
             (message:params obj)))
 
 
-(defmethod types:deep-equal-p ((a did-open) (b did-open))
-    (and (types:deep-equal-p (message:params a) (message:params b))))
+(defmethod types:deep-equal-p ((a did-open) b)
+    (and (equal (type-of a) (type-of b))
+         (types:deep-equal-p (message:params a) (message:params b))))
 
 
 (defun create-did-open (params)
@@ -42,8 +43,9 @@
     (format out "{text-document: ~A}" (text-document obj)))
 
 
-(defmethod types:deep-equal-p ((a params) (b params))
-    (types:deep-equal-p (text-document a) (text-document b)))
+(defmethod types:deep-equal-p ((a params) b)
+    (and (equal (type-of a) (type-of b))
+         (types:deep-equal-p (text-document a) (text-document b))))
 
 
 (defun create-params (doc)

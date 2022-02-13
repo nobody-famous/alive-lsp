@@ -32,8 +32,9 @@
             (text obj)))
 
 
-(defmethod types:deep-equal-p ((a text-document-item) (b text-document-item))
-    (and (string-equal (uri a) (uri b))
+(defmethod types:deep-equal-p ((a text-document-item) b)
+    (and (equal (type-of a) (type-of b))
+         (string-equal (uri a) (uri b))
          (string-equal (language-id a) (language-id b))
          (string-equal (version a) (version b))
          (string-equal (text a) (text b))))

@@ -21,9 +21,10 @@
     (format out "[~A:~A]" (line obj) (col obj)))
 
 
-(defmethod types:deep-equal-p ((a alive/parse/pos::pos) (b alive/parse/pos::pos))
-    (and (eq (alive/parse/pos:line a) (alive/parse/pos:line b))
-         (eq (alive/parse/pos:col a) (alive/parse/pos:col b))))
+(defmethod types:deep-equal-p ((a pos) b)
+    (and (equal (type-of a) (type-of b))
+         (eq (line a) (line b))
+         (eq (col a) (col b))))
 
 
 (defun create (&key (line 0) (col 0))

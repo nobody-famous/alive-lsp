@@ -36,9 +36,10 @@
               :initarg :version)))
 
 
-(defmethod types:deep-equal-p ((a alive/lsp/message/initialize::client-info) (b alive/lsp/message/initialize::client-info))
-    (and (string-equal (alive/lsp/message/initialize::name a) (alive/lsp/message/initialize::name b))
-         (string-equal (alive/lsp/message/initialize::version a) (alive/lsp/message/initialize::version b))))
+(defmethod types:deep-equal-p ((a client-info) b)
+    (and (equal (type-of a) (type-of b))
+         (string-equal (name a) (name b))
+         (string-equal (version a) (version b))))
 
 
 (defclass params ()
@@ -68,19 +69,21 @@
                         :initarg :workspace-folders)))
 
 
-(defmethod types:deep-equal-p ((a alive/lsp/message/initialize::params) (b alive/lsp/message/initialize::params))
-    (and (types:deep-equal-p (alive/lsp/message/initialize::client-info a) (alive/lsp/message/initialize::client-info b))
-         (string-equal (alive/lsp/message/initialize::locale a) (alive/lsp/message/initialize::locale b))
-         (string-equal (alive/lsp/message/initialize::root-path a) (alive/lsp/message/initialize::root-path b))
-         (string-equal (alive/lsp/message/initialize::root-uri a) (alive/lsp/message/initialize::root-uri b))))
+(defmethod types:deep-equal-p ((a params) b)
+    (and (equal (type-of a) (type-of b))
+         (types:deep-equal-p (client-info a) (client-info b))
+         (string-equal (locale a) (locale b))
+         (string-equal (root-path a) (root-path b))
+         (string-equal (root-uri a) (root-uri b))))
 
 
 (defclass request (message:request)
     ((method :initform "initialize")))
 
 
-(defmethod types:deep-equal-p ((a alive/lsp/message/initialize::request) (b alive/lsp/message/initialize::request))
-    (and (types:deep-equal-p (alive/lsp/message/abstract::params a) (alive/lsp/message/abstract::params b))))
+(defmethod types:deep-equal-p ((a request) b)
+    (and (equal (type-of a) (type-of b))
+         (types:deep-equal-p (message::params a) (message::params b))))
 
 
 (defun create-request (&key id (jsonrpc "2.0") params)
@@ -133,8 +136,15 @@
                       :initarg :token-modifiers)))
 
 
-(defmethod types:deep-equal-p ((a sem-tokens-legend) (b sem-tokens-legend))
-    (and (types:deep-equal-p (token-types a) (token-types b))))
+(defmethod print-object ((obj sem-tokens-legend) out)
+    (format out "{types: ~A; modifiers: ~A}"
+            (token-types obj)
+            (token-modifiers obj)))
+
+
+(defmethod types:deep-equal-p ((a sem-tokens-legend) b)
+    (and (equal (type-of a) (type-of b))
+         (types:deep-equal-p (token-types a) (token-types b))))
 
 
 (defun create-legend (&key types modifiers)
@@ -152,9 +162,16 @@
            :initarg :full)))
 
 
-(defmethod types:deep-equal-p ((a alive/lsp/message/initialize::sem-tokens-opts) (b alive/lsp/message/initialize::sem-tokens-opts))
-    (and (types:deep-equal-p (alive/lsp/message/initialize::legend a) (alive/lsp/message/initialize::legend b))
-         (eq (alive/lsp/message/initialize::full a) (alive/lsp/message/initialize::full b))))
+(defmethod print-object ((obj sem-tokens-opts) out)
+    (format out "{legend: ~A; full: ~A}"
+            (legend obj)
+            (full obj)))
+
+
+(defmethod types:deep-equal-p ((a sem-tokens-opts) b)
+    (and (equal (type-of a) (type-of b))
+         (types:deep-equal-p (legend a) (legend b))
+         (eq (full a) (full b))))
 
 
 (defun create-sem-tokens-opts (&key legend full)
@@ -175,10 +192,18 @@
                                :initarg :semantic-tokens-provider)))
 
 
-(defmethod types:deep-equal-p ((a alive/lsp/message/initialize::server-capabilities) (b alive/lsp/message/initialize::server-capabilities))
-    (and (eq (alive/lsp/message/initialize::text-document-sync a) (alive/lsp/message/initialize::text-document-sync b))
-         (eq (alive/lsp/message/initialize::hover-provider a) (alive/lsp/message/initialize::hover-provider b))
-         (types:deep-equal-p (alive/lsp/message/initialize::semantic-tokens-provider a) (alive/lsp/message/initialize::semantic-tokens-provider b))))
+(defmethod print-object ((obj server-capabilities) out)
+    (format out "{text-document-sync: ~A; hover-provider: ~A; semantic-tokens-provider: ~A}"
+            (text-document-sync obj)
+            (hover-provider obj)
+            (semantic-tokens-provider obj)))
+
+
+(defmethod types:deep-equal-p ((a server-capabilities) b)
+    (and (equal (type-of a) (type-of b))
+         (eq (text-document-sync a) (text-document-sync b))
+         (eq (hover-provider a) (hover-provider b))
+         (types:deep-equal-p (semantic-tokens-provider a) (semantic-tokens-provider b))))
 
 
 (defun create-capabilities (&key text-doc-sync hover-provider sem-tokens-provider)

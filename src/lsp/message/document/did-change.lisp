@@ -21,8 +21,9 @@
             (message:params obj)))
 
 
-(defmethod types:deep-equal-p ((a did-change) (b did-change))
-    (and (string-equal (message:method-name a) (message:method-name b))
+(defmethod types:deep-equal-p ((a did-change) b)
+    (and (equal (type-of a) (type-of b))
+         (string-equal (message:method-name a) (message:method-name b))
          (types:deep-equal-p (message:params a) (message:params b))))
 
 
@@ -41,8 +42,9 @@
             (content-changes obj)))
 
 
-(defmethod types:deep-equal-p ((a params) (b params))
-    (and (types:deep-equal-p (text-document a) (text-document b))
+(defmethod types:deep-equal-p ((a params) b)
+    (and (equal (type-of a) (type-of b))
+         (types:deep-equal-p (text-document a) (text-document b))
          (types:deep-equal-p (content-changes a) (content-changes b))))
 
 
@@ -56,8 +58,9 @@
     (format out "{text: \"~A\"}" (text obj)))
 
 
-(defmethod types:deep-equal-p ((a content-change) (b content-change))
-    (string-equal (text a) (text b)))
+(defmethod types:deep-equal-p ((a content-change) b)
+    (and (equal (type-of a) (type-of b))
+         (string-equal (text a) (text b))))
 
 
 (defun get-uri (msg)
