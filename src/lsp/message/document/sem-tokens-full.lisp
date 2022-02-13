@@ -1,7 +1,7 @@
 (defpackage :alive/lsp/message/document/sem-tokens-full
     (:use :cl)
     (:export :create-response
-             :req-from-wire
+             :from-wire
              :request
              :req-params
              :text-document)
@@ -18,6 +18,12 @@
 
 (defclass request (message:request)
     ((message::method :initform "textDocument/semanticTokens/full")))
+
+
+(defmethod print-object ((obj request) out)
+    (format out "{method: \"~A\"; params: ~A}"
+            (message:method-name obj)
+            (message:params obj)))
 
 
 (defclass req-params ()
@@ -75,7 +81,7 @@
                                               :data (to-sem-array sem-tokens)))))
 
 
-(defun req-from-wire (&key jsonrpc id params)
+(defun from-wire (&key jsonrpc id params)
     (labels ((add-param (out-params key value)
                   (cond ((eq key :text-document) (setf (text-document out-params) (text-doc:from-wire value))))))
 

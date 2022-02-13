@@ -137,9 +137,9 @@
                (did-change:from-wire (params fields)))
 
               ((string= "textdocument/semantictokens/full" name)
-               (sem-tokens:req-from-wire :jsonrpc (jsonrpc fields)
-                                         :id (id fields)
-                                         :params (params fields)))
+               (sem-tokens:from-wire :jsonrpc (jsonrpc fields)
+                                     :id (id fields)
+                                     :params (params fields)))
 
               (T (error (format nil "Unhandled request ~A" name))))))
 
