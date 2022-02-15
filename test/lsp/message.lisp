@@ -1,7 +1,8 @@
 (defpackage :alive/test/lsp/message
     (:use :cl)
     (:export :run-all)
-    (:local-nicknames (:did-open :alive/lsp/message/document/did-open)
+    (:local-nicknames (:did-change :alive/lsp/message/document/did-change)
+                      (:did-open :alive/lsp/message/document/did-open)
                       (:text-doc :alive/lsp/types/text-doc)
                       (:text-doc-item :alive/lsp/types/text-doc-item)
                       (:sem-tokens :alive/lsp/message/document/sem-tokens-full)
@@ -133,7 +134,10 @@
                       (let* ((msg (create-msg (create-content)))
                              (parsed (parse:from-stream (make-string-input-stream msg))))
                           (check:are-equal
-                           parsed
+                           (did-change:create
+                            (did-change:create-params
+                             :text-doc (text-doc:create :uri "file:///some/file.txt")
+                             :changes (list (did-change:create-change "(foo)"))))
                            parsed))))))
 
 

@@ -1,6 +1,9 @@
 (defpackage :alive/lsp/message/document/did-change
     (:use :cl)
-    (:export :did-change
+    (:export :create
+             :create-change
+             :create-params
+             :did-change
              :from-wire
              :get-text
              :get-uri)
@@ -27,6 +30,11 @@
          (types:deep-equal-p (message:params a) (message:params b))))
 
 
+(defun create (params)
+    (make-instance 'did-change
+                   :params params))
+
+
 (defclass params ()
     ((text-document :accessor text-document
                     :initform nil
@@ -48,6 +56,12 @@
          (types:deep-equal-p (content-changes a) (content-changes b))))
 
 
+(defun create-params (&key text-doc changes)
+    (make-instance 'params
+                   :text-document text-doc
+                   :content-changes changes))
+
+
 (defclass content-change ()
     ((text :accessor text
            :initform nil
@@ -61,6 +75,11 @@
 (defmethod types:deep-equal-p ((a content-change) b)
     (and (equal (type-of a) (type-of b))
          (string-equal (text a) (text b))))
+
+
+(defun create-change (text)
+    (make-instance 'content-change
+                   :text text))
 
 
 (defun get-uri (msg)
