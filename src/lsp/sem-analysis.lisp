@@ -71,11 +71,10 @@
           :for end-col := (if (eq line (pos:line end))
                               (pos:col end)
                               #xFFFFFFFF)
-          :for new-token := (make-instance 'sem-types:token
-                                           :line line
-                                           :start-col start-col
-                                           :end-col end-col
-                                           :token-type new-type) :do
+          :for new-token := (sem-types:create :line line
+                                              :start start-col
+                                              :end end-col
+                                              :token-type new-type) :do
               (push new-token (sem-tokens state))))
 
 

@@ -1,6 +1,7 @@
 (defpackage :alive/lsp/types/sem-tokens
     (:use :cl)
-    (:export :token
+    (:export :create
+             :token
              :token-type
              :line
              :start-col
@@ -75,6 +76,22 @@
             (line obj)
             (start-col obj)
             (end-col obj)))
+
+
+(defmethod types:deep-equal-p ((a token) b)
+    (and (equal (type-of a) (type-of b))
+         (eq (token-type a) (token-type b))
+         (eq (line a) (line b))
+         (eq (start-col a) (start-col b))
+         (eq (end-col a) (end-col b))))
+
+
+(defun create (&key token-type line start end)
+    (make-instance 'token
+                   :token-type token-type
+                   :line line
+                   :start-col start
+                   :end-col end))
 
 
 (defun from-type (value)
