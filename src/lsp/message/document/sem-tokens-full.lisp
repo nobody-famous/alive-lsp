@@ -1,6 +1,8 @@
 (defpackage :alive/lsp/message/document/sem-tokens-full
     (:use :cl)
-    (:export :create-response
+    (:export :create-params
+             :create-request
+             :create-response
              :from-wire
              :request
              :req-params
@@ -26,10 +28,36 @@
             (message:params obj)))
 
 
+(defmethod types:deep-equal-p ((a request) b)
+    (and (equal (type-of a) (type-of b))
+         (types:deep-equal-p (message:method-name a) (message:method-name b))
+         (types:deep-equal-p (message:params a) (message:params b))))
+
+
+(defun create-request (params)
+    (make-instance 'request
+                   :params params))
+
+
 (defclass req-params ()
     ((text-document :accessor text-document
                     :initform nil
                     :initarg :text-document)))
+
+
+(defmethod print-object ((obj req-params) out)
+    (format out "{text-document: ~A}"
+            (text-document obj)))
+
+
+(defmethod types:deep-equal-p ((a req-params) b)
+    (and (equal (type-of a) (type-of b))
+         (types:deep-equal-p (text-document a) (text-document b))))
+
+
+(defun create-params (text-doc)
+    (make-instance 'req-params
+                   :text-document text-doc))
 
 
 (defclass response (message:result-response)

@@ -1,6 +1,7 @@
 (defpackage :alive/lsp/types/text-doc
     (:use :cl)
-    (:export :from-wire
+    (:export :create
+             :from-wire
              :uri)
     (:local-nicknames (:types :alive/types)))
 
@@ -20,6 +21,12 @@
     (format out "{uri: \"~A\"; version: ~A}"
             (uri obj)
             (version obj)))
+
+
+(defun create (&key uri version)
+    (make-instance 'text-document
+                   :uri uri
+                   :version version))
 
 
 (defmethod types:deep-equal-p ((a text-document) b)

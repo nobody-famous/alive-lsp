@@ -2,6 +2,9 @@
     (:use :cl)
     (:export :run-all)
     (:local-nicknames (:did-open :alive/lsp/message/document/did-open)
+                      (:text-doc :alive/lsp/types/text-doc)
+                      (:text-doc-item :alive/lsp/types/text-doc-item)
+                      (:sem-tokens :alive/lsp/message/document/sem-tokens-full)
                       (:init :alive/lsp/message/initialize)
                       (:message :alive/lsp/message/abstract)
                       (:packet :alive/lsp/packet)
@@ -97,12 +100,12 @@
                   (lambda ()
                       (let* ((msg (create-msg (create-content)))
                              (parsed (parse:from-stream (make-string-input-stream msg))))
-                          (check:are-equal (alive/lsp/message/document/did-open:create-did-open
-                                            (alive/lsp/message/document/did-open:create-params
-                                             (alive/lsp/types/text-doc-item:create-item :text "(foo)"
-                                                                                        :language-id "lisp"
-                                                                                        :version "1"
-                                                                                        :uri "file:///some/file.txt")))
+                          (check:are-equal (did-open:create-did-open
+                                            (did-open:create-params
+                                             (text-doc-item:create-item :text "(foo)"
+                                                                        :language-id "lisp"
+                                                                        :version "1"
+                                                                        :uri "file:///some/file.txt")))
                                            parsed))))))
 
 
@@ -134,10 +137,36 @@
                            parsed))))))
 
 
+(defun sem-tokens-msg ()
+    (labels ((create-content ()
+                  (with-output-to-string (str)
+                      (format str "{~A" *end-line*)
+                      (format str "  \"jsonrpc\": \"2.0\",~A" *end-line*)
+                      (format str "  \"id\": 0,~A" *end-line*)
+                      (format str "  \"method\": \"textDocument/semanticTokens/full\",~A" *end-line*)
+                      (format str "  \"params\": {~A" *end-line*)
+                      (format str "    \"textDocument\": {~A" *end-line*)
+                      (format str "      \"uri\": \"file:///some/file.txt\"~A" *end-line*)
+                      (format str "    }~A" *end-line*)
+                      (format str "  }~A" *end-line*)
+                      (format str "}~A" *end-line*))))
+
+        (run:test "Semantic Tokens Message"
+                  (lambda ()
+                      (let* ((msg (create-msg (create-content)))
+                             (parsed (parse:from-stream (make-string-input-stream msg))))
+                          (check:are-equal
+                           (sem-tokens:create-request
+                            (sem-tokens:create-params
+                             (text-doc:create :uri "file:///some/file.txt")))
+                           parsed))))))
+
+
 (defun run-all ()
     (run:suite "LSP Messages"
                (lambda ()
                    (init-msg)
                    (init-resp-msg)
                    (did-open-msg)
-                   (did-change-msg))))
+                   (did-change-msg)
+                   (sem-tokens-msg))))
