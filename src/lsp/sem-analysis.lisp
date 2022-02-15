@@ -53,8 +53,9 @@
 
 
 (defun is-next-type (state target)
-    (eq (token:type-value (peek-token state))
-        target))
+    (let ((peeked (peek-token state)))
+        (and peeked
+             (eq (token:type-value peeked) target))))
 
 
 (defun add-sem-token (state token sem-type)

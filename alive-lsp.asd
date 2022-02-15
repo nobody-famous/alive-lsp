@@ -57,6 +57,7 @@
                  "alive-lsp/test/parse"
                  "alive-lsp/test/parse/tokens"
                  "alive-lsp/test/lsp/message"
+                 "alive-lsp/test/lsp/sem-tokens"
 
                  "alive-lsp/test/suite"))
 
@@ -109,3 +110,4 @@
 (register-system-packages "alive-lsp/test/parse" '(:alive/test/parse))
 (register-system-packages "alive-lsp/test/parse/tokens" '(:alive/test/parse/tokens))
 (register-system-packages "alive-lsp/test/lsp/message" '(:alive/test/lsp/message))
+(register-system-packages "alive-lsp/test/lsp/sem-tokens" '(:alive/test/lsp/sem-tokens))
