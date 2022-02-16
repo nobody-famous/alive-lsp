@@ -75,7 +75,7 @@
 (defun read-text-token (&key state token-type predicate)
     (loop :for ch := (look-ahead state)
 
-          :while (funcall predicate ch)
+          :while (and ch (funcall predicate ch))
           :do (next-char state)
 
           :finally (return (new-token state token-type))))

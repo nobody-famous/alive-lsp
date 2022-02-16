@@ -42,14 +42,16 @@
 
 
 (defun skip-ws (state)
-    (when (eq types:*ws*
-              (token:type-value (peek-token state)))
+    (when (and (peek-token state)
+               (eq types:*ws*
+                   (token:type-value (peek-token state))))
           (next-token state)))
 
 
 (defun is-type (token target)
-    (eq (token:type-value token)
-        target))
+    (and token
+         (eq (token:type-value token)
+             target)))
 
 
 (defun is-next-type (state target)
@@ -59,23 +61,24 @@
 
 
 (defun add-sem-token (state token sem-type)
-    (loop :with new-type := (or (forced-type state)
-                                sem-type)
-          :with start := (token:start token)
-          :with end := (token:end token)
+    (when token
+          (loop :with new-type := (or (forced-type state)
+                                      sem-type)
+                :with start := (token:start token)
+                :with end := (token:end token)
 
-          :for line :from (pos:line start) :to (pos:line end)
-          :for start-col := (if (eq line (pos:line start))
-                                (pos:col start)
-                                0)
-          :for end-col := (if (eq line (pos:line end))
-                              (pos:col end)
-                              #xFFFFFFFF)
-          :for new-token := (sem-types:create :line line
-                                              :start start-col
-                                              :end end-col
-                                              :token-type new-type) :do
-              (push new-token (sem-tokens state))))
+                :for line :from (pos:line start) :to (pos:line end)
+                :for start-col := (if (eq line (pos:line start))
+                                      (pos:col start)
+                                      0)
+                :for end-col := (if (eq line (pos:line end))
+                                    (pos:col end)
+                                    #xFFFFFFFF)
+                :for new-token := (sem-types:create :line line
+                                                    :start start-col
+                                                    :end end-col
+                                                    :token-type new-type) :do
+                    (push new-token (sem-tokens state)))))
 
 
 (defun is-keyword (token)
@@ -92,7 +95,8 @@
 
                   (loop :for token := (peek-token state)
 
-                        :until (is-type token types:*close-paren*)
+                        :until (or (not token)
+                                   (is-type token types:*close-paren*))
                         :do (process-expr state)
 
                         :finally (progn
@@ -129,7 +133,7 @@
 
                   ((is-type token types:*open-paren*) (process-list state token))
 
-                  ((is-type token types:*close-paren*) (error "CLOSE PAREN SHOULD NOT BE HANDLED HERE"))
+                  ((is-type token types:*close-paren*) (add-sem-token state token sem-types:*parenthesis*))
 
                   ((is-type token types:*ws*) nil)
 

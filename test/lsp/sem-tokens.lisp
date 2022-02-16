@@ -39,21 +39,36 @@
                                                   :line 0
                                                   :start 0
                                                   :end 8))
-                    ;   (check-symbol "123" (sem-types:create
-                    ;                            :token-type sem-types:*number*
-                    ;                            :line 0
-                    ;                            :start 0
-                    ;                            :end 3))
-                    ;   (check-symbol "(" (sem-types:create
-                    ;                      :token-type sem-types:*parenthesis*
-                    ;                      :line 0
-                    ;                      :start 0
-                    ;                      :end 1))
-                    ;   (check-symbol ")" (sem-types:create
-                    ;                      :token-type sem-types:*parenthesis*
-                    ;                      :line 0
-                    ;                      :start 0
-                    ;                      :end 1))
+                      (check-symbol "#foo" (sem-types:create
+                                            :token-type sem-types:*macro*
+                                            :line 0
+                                            :start 0
+                                            :end 4))
+                      (check-symbol ":" (sem-types:create
+                                         :token-type sem-types:*symbol*
+                                         :line 0
+                                         :start 0
+                                         :end 1))
+                      (check-symbol "::" (sem-types:create
+                                          :token-type sem-types:*symbol*
+                                          :line 0
+                                          :start 0
+                                          :end 2))
+                      ;   (check-symbol "123" (sem-types:create
+                      ;                            :token-type sem-types:*number*
+                      ;                            :line 0
+                      ;                            :start 0
+                      ;                            :end 3))
+                      (check-symbol "(" (sem-types:create
+                                         :token-type sem-types:*parenthesis*
+                                         :line 0
+                                         :start 0
+                                         :end 1))
+                      (check-symbol ")" (sem-types:create
+                                         :token-type sem-types:*parenthesis*
+                                         :line 0
+                                         :start 0
+                                         :end 1))
                       (check-symbol "foo" (sem-types:create
                                            :token-type sem-types:*symbol*
                                            :line 0
