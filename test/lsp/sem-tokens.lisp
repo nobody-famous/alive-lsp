@@ -93,10 +93,85 @@
                                            :token-type sem-types:*symbol*
                                            :line 0
                                            :start 0
-                                           :end 3))))))
+                                           :end 3))
+                      (check-symbol "defun" (sem-types:create
+                                             :token-type sem-types:*keyword*
+                                             :line 0
+                                             :start 0
+                                             :end 5))))))
+
+
+(defun combos ()
+    (labels ((check-combo (text expected)
+                  (let ((tokens (get-sem-tokens text)))
+                      (check:are-equal expected tokens))))
+
+        (run:test "Combos"
+                  (lambda ()
+                      (check-combo "()" (list (sem-types:create
+                                               :token-type sem-types:*parenthesis*
+                                               :line 0
+                                               :start 0
+                                               :end 1)
+                                              (sem-types:create
+                                               :token-type sem-types:*parenthesis*
+                                               :line 0
+                                               :start 1
+                                               :end 2)))
+                      (check-combo "(123" (list (sem-types:create
+                                                 :token-type sem-types:*parenthesis*
+                                                 :line 0
+                                                 :start 0
+                                                 :end 1)
+                                                (sem-types:create
+                                                 :token-type sem-types:*number*
+                                                 :line 0
+                                                 :start 1
+                                                 :end 4)))
+                      (check-combo "123)" (list (sem-types:create
+                                                 :token-type sem-types:*number*
+                                                 :line 0
+                                                 :start 0
+                                                 :end 3)
+                                                (sem-types:create
+                                                 :token-type sem-types:*parenthesis*
+                                                 :line 0
+                                                 :start 3
+                                                 :end 4)))
+                      (check-combo "foo:bar" (list (sem-types:create
+                                                    :token-type sem-types:*namespace*
+                                                    :line 0
+                                                    :start 0
+                                                    :end 3)
+                                                   (sem-types:create
+                                                    :token-type sem-types:*symbol*
+                                                    :line 0
+                                                    :start 3
+                                                    :end 4)
+                                                   (sem-types:create
+                                                    :token-type sem-types:*symbol*
+                                                    :line 0
+                                                    :start 4
+                                                    :end 7)))
+                      (check-combo "foo::bar" (list (sem-types:create
+                                                     :token-type sem-types:*namespace*
+                                                     :line 0
+                                                     :start 0
+                                                     :end 3)
+                                                    (sem-types:create
+                                                     :token-type sem-types:*symbol*
+                                                     :line 0
+                                                     :start 3
+                                                     :end 5)
+                                                    (sem-types:create
+                                                     :token-type sem-types:*symbol*
+                                                     :line 0
+                                                     :start 5
+                                                     :end 8)))))))
 
 
 (defun run-all ()
     (run:suite "Semantic Tokens"
                (lambda ()
-                   (symbols))))
+                   (symbols)
+                   (combos))))
