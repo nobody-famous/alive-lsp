@@ -54,11 +54,31 @@
                                           :line 0
                                           :start 0
                                           :end 2))
-                      ;   (check-symbol "123" (sem-types:create
-                      ;                            :token-type sem-types:*number*
-                      ;                            :line 0
-                      ;                            :start 0
-                      ;                            :end 3))
+                      (check-symbol "123" (sem-types:create
+                                           :token-type sem-types:*number*
+                                           :line 0
+                                           :start 0
+                                           :end 3))
+                      (check-symbol "123/45" (sem-types:create
+                                              :token-type sem-types:*number*
+                                              :line 0
+                                              :start 0
+                                              :end 6))
+                      (check-symbol "123.45" (sem-types:create
+                                              :token-type sem-types:*number*
+                                              :line 0
+                                              :start 0
+                                              :end 6))
+                      (check-symbol "123/" (sem-types:create
+                                            :token-type sem-types:*symbol*
+                                            :line 0
+                                            :start 0
+                                            :end 4))
+                      (check-symbol "123." (sem-types:create
+                                            :token-type sem-types:*symbol*
+                                            :line 0
+                                            :start 0
+                                            :end 4))
                       (check-symbol "(" (sem-types:create
                                          :token-type sem-types:*parenthesis*
                                          :line 0

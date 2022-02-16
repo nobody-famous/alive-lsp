@@ -85,6 +85,33 @@
     (find-symbol (string-upcase (token:text token)) :common-lisp))
 
 
+(defun is-number (token)
+    (loop :with is-valid := T
+          :with have-decimal := nil
+          :with have-after-decimal := nil
+          :with have-div := nil
+          :with have-after-div := nil
+
+          :for ch :across (token:text token) :do
+              (cond ((char= ch #\.) (if have-decimal
+                                        (setf is-valid nil)
+                                        (setf have-decimal T)))
+                    ((char= ch #\/) (if have-div
+                                        (setf is-valid nil)
+                                        (setf have-div T)))
+                    ((digit-char-p ch) (when (and is-valid
+                                                  have-div)
+                                             (setf have-after-div T))
+                                       (when (and is-valid
+                                                  have-decimal)
+                                             (setf have-after-decimal T)))
+                    (T (setf is-valid nil)))
+
+          :finally (return (and is-valid
+                                (eq have-div have-after-div)
+                                (eq have-decimal have-after-decimal)))))
+
+
 (defun process-expr (state)
     (labels ((process-list (state paren-token)
                   (add-sem-token state paren-token sem-types:*parenthesis*)
@@ -101,7 +128,15 @@
 
                         :finally (progn
                                   (add-sem-token state token sem-types:*parenthesis*)
-                                  (next-token state)))))
+                                  (next-token state))))
+
+             (get-symbol-type (token)
+                  (cond ((is-keyword token) sem-types:*keyword*)
+                        ((is-number token) sem-types:*number*)
+                        (t sem-types:*symbol*)))
+
+             (process-symbol (state symbol-token)
+                  (add-sem-token state symbol-token (get-symbol-type symbol-token))))
 
         (let ((token (next-token state)))
             (cond ((is-type token types:*comment*) (add-sem-token state token sem-types:*comment*))
@@ -127,9 +162,7 @@
 
                                                              (add-sem-token state token sem-types:*symbol*)
                                                              (process-expr state))
-                                                      (add-sem-token state token (if (is-keyword token)
-                                                                                     sem-types:*keyword*
-                                                                                     sem-types:*symbol*))))
+                                                      (process-symbol state token)))
 
                   ((is-type token types:*open-paren*) (process-list state token))
 
