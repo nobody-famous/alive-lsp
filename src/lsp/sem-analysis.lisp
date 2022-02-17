@@ -3,6 +3,7 @@
     (:export :to-sem-tokens)
     (:local-nicknames (:pos :alive/parse/pos)
                       (:sem-types :alive/lsp/types/sem-tokens)
+                      (:symbols :alive/symbols)
                       (:token :alive/parse/token)
                       (:types :alive/types)))
 
@@ -27,7 +28,7 @@
 (defmethod print-object ((obj analysis-state) out)
     (format out "{lex ~A sem ~A opens ~A}"
             (lex-tokens obj)
-            (sem-tokens obj)
+            (reverse (sem-tokens obj))
             (opens obj)))
 
 
@@ -81,18 +82,20 @@
                     (push new-token (sem-tokens state)))))
 
 
-(defun is-keyword (token)
-    (find-symbol (string-upcase (token:text token)) :common-lisp))
+(defun is-keyword (name)
+    (if (find-symbol (string-upcase name) :common-lisp)
+        T
+        nil))
 
 
-(defun is-number (token)
+(defun is-number (text)
     (loop :with is-valid := T
           :with have-decimal := nil
           :with have-after-decimal := nil
           :with have-div := nil
           :with have-after-div := nil
 
-          :for ch :across (token:text token) :do
+          :for ch :across text :do
               (cond ((char= ch #\.) (if have-decimal
                                         (setf is-valid nil)
                                         (setf have-decimal T)))
@@ -117,6 +120,11 @@
                   (add-sem-token state paren-token sem-types:*parenthesis*)
                   (skip-ws state)
 
+                  (when (is-type (peek-token state) types:*symbol*)
+                        (format T "CALLABLE ~A ~A~%"
+                                (peek-token state)
+                                (symbols:callable-p (token:text (peek-token state)))))
+
                   (loop :for token := (peek-token state)
 
                         :until (or (not token)
@@ -128,8 +136,8 @@
                                   (next-token state))))
 
              (get-symbol-type (token)
-                  (cond ((is-keyword token) sem-types:*keyword*)
-                        ((is-number token) sem-types:*number*)
+                  (cond ((is-keyword (token:text token)) sem-types:*keyword*)
+                        ((is-number (token:text token)) sem-types:*number*)
                         (t sem-types:*symbol*)))
 
              (process-symbol (state symbol-token)
