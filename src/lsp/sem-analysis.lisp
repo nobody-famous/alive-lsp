@@ -116,24 +116,55 @@
 
 
 (defun process-expr (state)
-    (labels ((process-list (state paren-token)
+    (labels ((process-fn (state token)
+                  (if (is-keyword (token:text token))
+                      (add-sem-token state token sem-types:*keyword*)
+                      (add-sem-token state token sem-types:*function*))
+
+                  (skip-ws state)
+
+                  (loop :for item :in (symbols:get-lambda-list (token:text token))
+                        :for item-token := (next-token state)
+
+                        :until (or (not item-token)
+                                   (is-type item-token types:*close-paren*))
+
+                        :do (skip-ws state)
+                            (format T "ITEM ~A ~A ~A ~A~%"
+                                    item
+                                    (char (string item) 0)
+                                    (token:type-value item-token)
+                                    (string= "LAMBDA-LIST" (string item)))
+
+                        :finally (when (is-type item-token types:*close-paren*)
+                                       (add-sem-token state item-token sem-types:*parenthesis*)
+                                       (next-token state))))
+
+             (process-list (state paren-token)
                   (add-sem-token state paren-token sem-types:*parenthesis*)
                   (skip-ws state)
 
-                  (when (is-type (peek-token state) types:*symbol*)
-                        (format T "CALLABLE ~A ~A~%"
-                                (peek-token state)
-                                (symbols:callable-p (token:text (peek-token state)))))
+                  (let ((token (next-token state)))
+                      (cond ((is-type token types:*close-paren*) (add-sem-token state token sem-types:*parenthesis*))
+                            ((is-type token types:*symbol*)
+                             (cond ((symbols:callable-p (token:text token)) (process-fn state token))
+                                   ((is-number (token:text token)) (add-sem-token state token sem-types:*number*))))
+                            (t (process-expr state))))
 
-                  (loop :for token := (peek-token state)
+                  #+n (when (is-type (peek-token state) types:*symbol*)
+                            (format T "CALLABLE ~A ~A~%"
+                                    (peek-token state)
+                                    (symbols:callable-p (token:text (peek-token state)))))
 
-                        :until (or (not token)
-                                   (is-type token types:*close-paren*))
-                        :do (process-expr state)
+                  #+n (loop :for token := (peek-token state)
 
-                        :finally (progn
-                                  (add-sem-token state token sem-types:*parenthesis*)
-                                  (next-token state))))
+                            :until (or (not token)
+                                       (is-type token types:*close-paren*))
+                            :do (process-expr state)
+
+                            :finally (progn
+                                      (add-sem-token state token sem-types:*parenthesis*)
+                                      (next-token state))))
 
              (get-symbol-type (token)
                   (cond ((is-keyword (token:text token)) sem-types:*keyword*)
