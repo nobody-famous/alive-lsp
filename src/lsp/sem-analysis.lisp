@@ -135,25 +135,52 @@
 
 
 (defun process-expr (state)
-    (labels ((process-fn (state obj)
+    (labels ((finish-list (state)
+                  (loop :for token := (peek-token state)
+
+                        :until (or (not token)
+                                   (is-type token types:*close-paren*))
+                        :do (process-expr state)
+
+                        :finally (progn
+                                  (add-sem-token state token sem-types:*parenthesis*)
+                                  (next-token state))))
+
+             (process-lambda-list (state)
+                  (if (is-type (peek-token state) types:*open-paren*)
+                      (progn (add-sem-token state (peek-token state) sem-types:*parenthesis*)
+                             (next-token state)
+                             (loop :for token := (peek-token state)
+                                   :until (or (not token)
+                                              (is-type token types:*close-paren*))
+                                   :do (setf (forced-type state) sem-types:*parameter*)
+                                       (process-expr state)
+                                       (setf (forced-type state) nil)
+                                   :finally (progn (add-sem-token state token sem-types:*parenthesis*)
+                                                   (next-token state))))
+                      nil))
+
+             (process-fn (state obj)
                   (skip-ws state)
 
                   (loop :with fn-name := (if (sym obj) (token:text (sym obj)) nil)
                         :with pkg-name := (if (pkg obj) (token:text (pkg obj)) nil)
+                        :with done := nil
 
                         :for item :in (symbols:get-lambda-list fn-name pkg-name)
-                        :for item-token := (next-token state)
+                        :for item-token := (peek-token state)
 
-                        :until (or (not item-token)
+                        :until (or done
+                                   (not item-token)
                                    (is-type item-token types:*close-paren*))
 
-                        :do (skip-ws state)
-                            (format T "ITEM ~A ~A ~A ~A ~A~%"
-                                    (package-name *package*)
-                                    item
-                                    (char (string item) 0)
-                                    (token:type-value item-token)
-                                    (string= "LAMBDA-LIST" (string item)))
+                        :do (cond ((char= #\& (char (string item) 0)) (finish-list state)
+                                                                      (setf done T))
+                                  ((string= "LAMBDA-LIST" (string item)) (process-lambda-list state))
+                                  (t (process-expr state)))
+
+                            (next-token state)
+                            (skip-ws state)
 
                         :finally (when (is-type item-token types:*close-paren*)
                                        (add-sem-token state item-token sem-types:*parenthesis*)
@@ -165,36 +192,20 @@
 
                   (let ((token (next-token state)))
                       (cond ((is-type token types:*close-paren*) (add-sem-token state token sem-types:*parenthesis*))
-                            ((is-type token types:*symbol*)
-                             (let* ((obj (get-symbol-pkg state token))
-                                    (pkg-name (if (pkg obj)
-                                                  (token:text (pkg obj))
-                                                  (package-name *package*)))
-                                    (sym-name (if (sym obj)
-                                                  (token:text (sym obj))
-                                                  nil)))
+                            ((is-type token types:*symbol*) (let* ((obj (get-symbol-pkg state token))
+                                                                   (pkg-name (if (pkg obj)
+                                                                                 (token:text (pkg obj))
+                                                                                 (package-name *package*)))
+                                                                   (sym-name (if (sym obj)
+                                                                                 (token:text (sym obj))
+                                                                                 nil)))
 
-                                 (if (symbols:callable-p sym-name pkg-name)
-                                     (progn (process-symbol state obj sem-types:*function*)
-                                            (process-fn state obj))
-                                     (process-symbol state obj))))
+                                                                (if (symbols:callable-p sym-name pkg-name)
+                                                                    (progn (process-symbol state obj sem-types:*function*)
+                                                                           (process-fn state obj))
+                                                                    (process-symbol state obj))))
 
-                            (t (process-expr state))))
-
-                  #+n (when (is-type (peek-token state) types:*symbol*)
-                            (format T "CALLABLE ~A ~A~%"
-                                    (peek-token state)
-                                    (symbols:callable-p (token:text (peek-token state)))))
-
-                  #+n (loop :for token := (peek-token state)
-
-                            :until (or (not token)
-                                       (is-type token types:*close-paren*))
-                            :do (process-expr state)
-
-                            :finally (progn
-                                      (add-sem-token state token sem-types:*parenthesis*)
-                                      (next-token state))))
+                            (t (process-expr state)))))
 
              (get-symbol-type (token)
                   (cond ((is-keyword (token:text token)) sem-types:*keyword*)
