@@ -250,15 +250,7 @@
                   ((is-type token types:*colons*) (add-sem-token state token sem-types:*symbol*))
 
                   ((is-type token types:*symbol*) (process-symbol state
-                                                                  (get-symbol-pkg state token))
-                                                  #+n (if (is-next-type state types:*colons*)
-                                                          (progn (add-sem-token state token sem-types:*namespace*)
-
-                                                                 (setf token (next-token state))
-
-                                                                 (add-sem-token state token sem-types:*symbol*)
-                                                                 (process-expr state))
-                                                          (process-symbol state token)))
+                                                                  (get-symbol-pkg state token)))
 
                   ((is-type token types:*open-paren*) (process-list state token))
 
