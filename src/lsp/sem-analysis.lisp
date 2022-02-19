@@ -158,7 +158,7 @@
                                        (setf (forced-type state) nil)
                                    :finally (progn (add-sem-token state token sem-types:*parenthesis*)
                                                    (next-token state))))
-                      nil))
+                      (process-expr state)))
 
              (process-fn (state obj)
                   (skip-ws state)
