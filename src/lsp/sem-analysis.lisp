@@ -32,6 +32,25 @@
             (opens obj)))
 
 
+(defclass symbol-with-pkg ()
+    ((pkg :accessor pkg
+          :initform nil
+          :initarg :pkg)
+     (colons :accessor colons
+             :initform nil
+             :initarg :colons)
+     (sym :accessor sym
+          :initform nil
+          :initarg :sym)))
+
+
+(defmethod print-object ((obj symbol-with-pkg) out)
+    (format out "{pkg: ~A; colons: ~A; sym: ~A}"
+            (pkg obj)
+            (colons obj)
+            (sym obj)))
+
+
 (defun peek-token (state)
     (car (lex-tokens state)))
 
@@ -116,21 +135,21 @@
 
 
 (defun process-expr (state)
-    (labels ((process-fn (state token)
-                  (if (is-keyword (token:text token))
-                      (add-sem-token state token sem-types:*keyword*)
-                      (add-sem-token state token sem-types:*function*))
-
+    (labels ((process-fn (state obj)
                   (skip-ws state)
 
-                  (loop :for item :in (symbols:get-lambda-list (token:text token))
+                  (loop :with fn-name := (if (sym obj) (token:text (sym obj)) nil)
+                        :with pkg-name := (if (pkg obj) (token:text (pkg obj)) nil)
+
+                        :for item :in (symbols:get-lambda-list fn-name pkg-name)
                         :for item-token := (next-token state)
 
                         :until (or (not item-token)
                                    (is-type item-token types:*close-paren*))
 
                         :do (skip-ws state)
-                            (format T "ITEM ~A ~A ~A ~A~%"
+                            (format T "ITEM ~A ~A ~A ~A ~A~%"
+                                    (package-name *package*)
                                     item
                                     (char (string item) 0)
                                     (token:type-value item-token)
@@ -147,8 +166,19 @@
                   (let ((token (next-token state)))
                       (cond ((is-type token types:*close-paren*) (add-sem-token state token sem-types:*parenthesis*))
                             ((is-type token types:*symbol*)
-                             (cond ((symbols:callable-p (token:text token)) (process-fn state token))
-                                   ((is-number (token:text token)) (add-sem-token state token sem-types:*number*))))
+                             (let* ((obj (get-symbol-pkg state token))
+                                    (pkg-name (if (pkg obj)
+                                                  (token:text (pkg obj))
+                                                  (package-name *package*)))
+                                    (sym-name (if (sym obj)
+                                                  (token:text (sym obj))
+                                                  nil)))
+
+                                 (if (symbols:callable-p sym-name pkg-name)
+                                     (progn (process-symbol state obj sem-types:*function*)
+                                            (process-fn state obj))
+                                     (process-symbol state obj))))
+
                             (t (process-expr state))))
 
                   #+n (when (is-type (peek-token state) types:*symbol*)
@@ -171,8 +201,36 @@
                         ((is-number (token:text token)) sem-types:*number*)
                         (t sem-types:*symbol*)))
 
-             (process-symbol (state symbol-token)
-                  (add-sem-token state symbol-token (get-symbol-type symbol-token))))
+             (get-symbol-pkg (state token)
+                  (if (is-next-type state types:*colons*)
+                      (let ((pkg-token token)
+                            (colon-token (next-token state))
+                            (after-colon (peek-token state)))
+                          (if (is-type after-colon types:*ws*)
+                              (make-instance 'symbol-with-pkg
+                                             :pkg pkg-token
+                                             :colons colon-token
+                                             :sym nil)
+                              (progn (next-token state)
+                                     (make-instance 'symbol-with-pkg
+                                                    :pkg pkg-token
+                                                    :colons colon-token
+                                                    :sym after-colon))))
+                      (make-instance 'symbol-with-pkg
+                                     :pkg nil
+                                     :sym token)))
+
+             (process-symbol (state obj &optional (sym-type nil))
+                  (if (colons obj)
+                      (progn (add-sem-token state (pkg obj) sem-types:*namespace*)
+                             (add-sem-token state (colons obj) sem-types:*symbol*)
+                             (when (sym obj)
+                                   (add-sem-token state
+                                                  (sym obj)
+                                                  (if sym-type
+                                                      sym-type
+                                                      (get-symbol-type (sym obj))))))
+                      (add-sem-token state (sym obj) (get-symbol-type (sym obj))))))
 
         (let ((token (next-token state)))
             (cond ((is-type token types:*comment*) (add-sem-token state token sem-types:*comment*))
@@ -191,14 +249,16 @@
 
                   ((is-type token types:*colons*) (add-sem-token state token sem-types:*symbol*))
 
-                  ((is-type token types:*symbol*) (if (is-next-type state types:*colons*)
-                                                      (progn (add-sem-token state token sem-types:*namespace*)
+                  ((is-type token types:*symbol*) (process-symbol state
+                                                                  (get-symbol-pkg state token))
+                                                  #+n (if (is-next-type state types:*colons*)
+                                                          (progn (add-sem-token state token sem-types:*namespace*)
 
-                                                             (setf token (next-token state))
+                                                                 (setf token (next-token state))
 
-                                                             (add-sem-token state token sem-types:*symbol*)
-                                                             (process-expr state))
-                                                      (process-symbol state token)))
+                                                                 (add-sem-token state token sem-types:*symbol*)
+                                                                 (process-expr state))
+                                                          (process-symbol state token)))
 
                   ((is-type token types:*open-paren*) (process-list state token))
 
