@@ -2,20 +2,35 @@
     (:use :cl)
     (:export :from-stream)
 
-    (:local-nicknames (:init :alive/lsp/message/initialize)
+    (:local-nicknames (:did-open :alive/lsp/message/document/did-open)
+                      (:did-change :alive/lsp/message/document/did-change)
+                      (:init :alive/lsp/message/initialize)
                       (:message :alive/lsp/message/abstract)
-                      (:packet :alive/lsp/packet)))
+                      (:packet :alive/lsp/packet)
+                      (:sem-tokens :alive/lsp/message/document/sem-tokens-full)))
 
 (in-package :alive/lsp/parse)
 
 
-(defstruct fields
-    id
-    jsonrpc
-    method-name
-    params
-    result
-    error-msg)
+(defclass fields ()
+    ((id :accessor id
+         :initform nil
+         :initarg :id)
+     (jsonrpc :accessor jsonrpc
+              :initform nil
+              :initarg :jsonrpc)
+     (method :accessor method-name
+             :initform nil
+             :initarg :method)
+     (params :accessor params
+             :initform nil
+             :initarg :params)
+     (result :accessor result
+             :initform nil
+             :initarg :result)
+     (error :accessor error-msg
+            :initform nil
+            :initarg :error)))
 
 
 (defun trim-ws (str)
@@ -28,7 +43,7 @@
           :with prev-char := (code-char 0)
           :until (and (char= #\return prev-char)
                       (char= #\newline
-                             (peek-char nil input nil nil)))
+                             (peek-char nil input)))
           :do (let ((ch (read-char input)))
                   (setf prev-char ch)
                   (write-char ch str))
@@ -75,7 +90,7 @@
 (defun read-content (input size)
     (with-output-to-string (out)
         (loop :for ndx :from 0 :below size :do
-                  (let ((ch (read-char input nil nil)))
+                  (let ((ch (read-char input)))
                       (when ch (write-char ch out))))))
 
 
@@ -85,37 +100,48 @@
 
 
 (defun get-msg-fields (payload)
-    (loop :with fields := (make-fields)
+    (loop :with fields := (make-instance 'fields)
           :for item :in payload :do
-              (cond ((eq :jsonrpc (car item)) (setf (fields-jsonrpc fields) (cdr item)))
-                    ((eq :id (car item)) (setf (fields-id fields) (cdr item)))
-                    ((eq :method (car item)) (setf (fields-method-name fields) (string-downcase (cdr item))))
-                    ((eq :result (car item)) (setf (fields-result fields) (cdr item)))
-                    ((eq :error (car item)) (setf (fields-error-msg fields) (cdr item)))
-                    ((eq :params (car item)) (setf (fields-params fields) (cdr item))))
+              (cond ((eq :jsonrpc (car item)) (setf (jsonrpc fields) (cdr item)))
+                    ((eq :id (car item)) (setf (id fields) (cdr item)))
+                    ((eq :method (car item)) (setf (method-name fields) (string-downcase (cdr item))))
+                    ((eq :result (car item)) (setf (result fields) (cdr item)))
+                    ((eq :error (car item)) (setf (error-msg fields) (cdr item)))
+                    ((eq :params (car item)) (setf (params fields) (cdr item))))
           :finally (return fields)))
 
 
 (defun request-p (fields)
-    (fields-method-name fields))
+    (method-name fields))
 
 
 (defun response-p (fields)
-    (or (fields-result fields)
-        (fields-error-msg fields)))
-
-
-(defun build-init-req (fields)
-    (init:request-from-wire :jsonrpc (fields-jsonrpc fields)
-                            :id (fields-id fields)
-                            :params (fields-params fields)))
+    (or (result fields)
+        (error-msg fields)))
 
 
 (defun build-request (fields)
-    (cond ((string= "initialize" (fields-method-name fields)) (build-init-req fields))
-          ((string= "initialized" (fields-method-name fields)) (init:create-initialized-notification))
-          (T (error (format nil "Unhandled request ~A" fields)))))
+    (let ((name (string-downcase (method-name fields))))
+        (cond ((string= "initialize" name)
+               (init:request-from-wire :jsonrpc (jsonrpc fields)
+                                       :id (id fields)
+                                       :params (params fields)))
 
+              ((string= "initialized" name)
+               (init:create-initialized-notification))
+
+              ((string= "textdocument/didopen" name)
+               (did-open:from-wire (params fields)))
+
+              ((string= "textdocument/didchange" name)
+               (did-change:from-wire (params fields)))
+
+              ((string= "textdocument/semantictokens/full" name)
+               (sem-tokens:from-wire :jsonrpc (jsonrpc fields)
+                                     :id (id fields)
+                                     :params (params fields)))
+
+              (T (error (format nil "Unhandled request ~A" name))))))
 
 (defun build-message (payload)
     (let ((fields (get-msg-fields payload)))

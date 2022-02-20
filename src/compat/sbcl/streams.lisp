@@ -1,10 +1,10 @@
-(defpackage :alive/streams
+(defpackage :alive/sbcl/streams
     (:use :cl)
     (:export :rt-stream
              :eof-p
              :add-listener))
 
-(in-package :alive/streams)
+(in-package :alive/sbcl/streams)
 
 
 (defclass rt-stream (sb-gray:fundamental-character-output-stream)
@@ -53,15 +53,6 @@
     (if (char= #\newline ch)
         (flush-buffer obj)
         (write-char ch (buffer obj))))
-
-
-
-; (defmethod sb-gray:stream-write-char ((obj rt-stream) ch)
-;     (bt:with-recursive-lock-held ((lock obj))
-;                                  (when ch
-;                                        (setf (buffer obj) (format nil "~A~A" (buffer obj) ch))
-;                                        (bt:condition-notify (cond-var obj))
-;                                  )))
 
 
 (defun add-listener (obj listener)

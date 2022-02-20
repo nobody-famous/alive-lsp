@@ -36,7 +36,11 @@
 (defun accept-conn (server)
     (let* ((conn (usocket:socket-accept (socket server)))
            (session (session:start (logger server) conn)))
-        (logger:info-msg (logger server) "Connection received~%")
+        (session:add-listener session
+                              (make-instance 'session:listener
+                                             :on-done (lambda ()
+                                                          (setf (sessions server)
+                                                                (remove session (sessions server))))))
         (push session (sessions server))))
 
 
@@ -83,13 +87,15 @@
 
 
 (defun start-server (server port)
-    (bt:make-thread (lambda () (listen-for-conns server port))
-                    :name "Main Loop")
+    (let ((stdout *standard-output*))
+        (bt:make-thread (lambda ()
+                            (let ((*standard-output* stdout))
+                                (listen-for-conns server port)))
+                        :name "Main Loop")
 
-    (setf (logger server) (logger:create *standard-output* logger:*trace*))
+        (setf (logger server) (logger:create *standard-output* logger:*trace*))
 
-    server)
-
+        server))
 
 (defun stop (server)
     (logger:info-msg (logger server) "Stop server~%")
