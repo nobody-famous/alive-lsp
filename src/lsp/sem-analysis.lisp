@@ -153,10 +153,18 @@
                                                             (finish-list state)))))
 
              (process-param (state)
-                  (let ((token (next-token state)))
-                      (cond ((is-type token types:*symbol*) (add-sem-token state token sem-types:*parameter*))
+                  (skip-ws state)
+
+                  (let ((token (peek-token state)))
+                      (cond ((is-type token types:*symbol*) (add-sem-token state token sem-types:*parameter*)
+                                                            (next-token state))
                             ((is-type token types:*open-paren*) (add-sem-token state token sem-types:*parenthesis*)
-                                                                (process-nested-param state)))))
+                                                                (next-token state)
+                                                                (process-nested-param state))
+                            ((is-type token types:*ifdef-false*) (process-expr state))
+                            ((is-type token types:*ifdef-true*) (next-token state))
+                            (T (format T "UNHANDLED PARAM ~A~%" token)
+                               (next-token state)))))
 
              (process-lambda-list (state)
                   (if (is-type (peek-token state) types:*open-paren*)

@@ -193,6 +193,51 @@
                                                        :line 0
                                                        :start 9
                                                        :end 10)))
+                      (check-combo "(defun foo (#+n a b))" (list (sem-types:create
+                                                                  :token-type sem-types:*parenthesis*
+                                                                  :line 0
+                                                                  :start 0
+                                                                  :end 1)
+                                                                 (sem-types:create
+                                                                  :token-type sem-types:*keyword*
+                                                                  :line 0
+                                                                  :start 1
+                                                                  :end 6)
+                                                                 (sem-types:create
+                                                                  :token-type sem-types:*symbol*
+                                                                  :line 0
+                                                                  :start 7
+                                                                  :end 10)
+                                                                 (sem-types:create
+                                                                  :token-type sem-types:*parenthesis*
+                                                                  :line 0
+                                                                  :start 11
+                                                                  :end 12)
+                                                                 (sem-types:create
+                                                                  :token-type sem-types:*comment*
+                                                                  :line 0
+                                                                  :start 12
+                                                                  :end 15)
+                                                                 (sem-types:create
+                                                                  :token-type sem-types:*comment*
+                                                                  :line 0
+                                                                  :start 16
+                                                                  :end 17)
+                                                                 (sem-types:create
+                                                                  :token-type sem-types:*parameter*
+                                                                  :line 0
+                                                                  :start 18
+                                                                  :end 19)
+                                                                 (sem-types:create
+                                                                  :token-type sem-types:*parenthesis*
+                                                                  :line 0
+                                                                  :start 19
+                                                                  :end 20)
+                                                                 (sem-types:create
+                                                                  :token-type sem-types:*parenthesis*
+                                                                  :line 0
+                                                                  :start 20
+                                                                  :end 21)))
                       (check-combo "(defun foo ((a b) c))" (list (sem-types:create
                                                                   :token-type sem-types:*parenthesis*
                                                                   :line 0
