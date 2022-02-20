@@ -24,6 +24,8 @@
                  "alive-lsp/src/streams"
                  "alive-lsp/src/symbols"
 
+                 "alive-lsp/src/lsp/errors"
+
                  "alive-lsp/src/lsp/types/sem-tokens"
                  "alive-lsp/src/lsp/types/text-doc"
                  "alive-lsp/src/lsp/types/text-doc-item"
@@ -77,6 +79,8 @@
 (register-system-packages "alive-lsp/src/compat/sbcl/compile" '(:alive/sbcl/compat))
 (register-system-packages "alive-lsp/src/compat/sbcl/streams" '(:alive/sbcl/streams))
 (register-system-packages "alive-lsp/src/compat/sbcl/symbols" '(:alive/sbcl/symbols))
+
+(register-system-packages "alive-lsp/src/lsp/errors" '(:alive/lsp/errors))
 
 (register-system-packages "alive-lsp/src/lsp/types/sem-tokens" '(:alive/lsp/types/sem-tokens))
 (register-system-packages "alive-lsp/src/lsp/types/text-doc" '(:alive/lsp/types/text-doc))

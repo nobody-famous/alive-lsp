@@ -106,7 +106,7 @@
                      (logger:error-msg (logger session) "EOF caught, assuming socket is closed")
                      (stop session))
         (error (c)
-               (logger:error-msg (logger session) "~A" c))))
+               (logger:error-msg (logger session) "read-message: ~A" c))))
 
 
 (defun read-messages (session)
