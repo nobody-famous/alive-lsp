@@ -146,16 +146,29 @@
                                   (add-sem-token state token sem-types:*parenthesis*)
                                   (next-token state))))
 
+             (process-nested-param (state)
+                  (let ((token (peek-token state)))
+                      (cond ((is-type token types:*symbol*) (add-sem-token state token sem-types:*parameter*)
+                                                            (next-token state)
+                                                            (finish-list state)))))
+
+             (process-param (state)
+                  (let ((token (next-token state)))
+                      (cond ((is-type token types:*symbol*) (add-sem-token state token sem-types:*parameter*))
+                            ((is-type token types:*open-paren*) (add-sem-token state token sem-types:*parenthesis*)
+                                                                (process-nested-param state)))))
+
              (process-lambda-list (state)
                   (if (is-type (peek-token state) types:*open-paren*)
                       (progn (add-sem-token state (peek-token state) sem-types:*parenthesis*)
                              (next-token state)
                              (loop :for token := (peek-token state)
+
                                    :until (or (not token)
                                               (is-type token types:*close-paren*))
-                                   :do (setf (forced-type state) sem-types:*parameter*)
-                                       (process-expr state)
-                                       (setf (forced-type state) nil)
+
+                                   :do (process-param state)
+
                                    :finally (progn (add-sem-token state token sem-types:*parenthesis*)
                                                    (next-token state))))
                       (process-expr state)))
@@ -179,12 +192,11 @@
                                   ((string= "LAMBDA-LIST" (string item)) (process-lambda-list state))
                                   (t (process-expr state)))
 
-                            (next-token state)
                             (skip-ws state)
 
-                        :finally (when (is-type item-token types:*close-paren*)
-                                       (add-sem-token state item-token sem-types:*parenthesis*)
-                                       (next-token state))))
+                        :finally (progn (when (is-type item-token types:*close-paren*)
+                                              (add-sem-token state item-token sem-types:*parenthesis*)
+                                              (next-token state)))))
 
              (process-list (state paren-token)
                   (add-sem-token state paren-token sem-types:*parenthesis*)
