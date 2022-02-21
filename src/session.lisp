@@ -11,6 +11,7 @@
                       (:message :alive/lsp/message/abstract)
                       (:packet :alive/lsp/packet)
                       (:parse :alive/lsp/parse)
+                      (:errors :alive/lsp/errors)
                       (:text-doc :alive/lsp/types/text-doc)
                       (:sem-tokens :alive/lsp/message/document/sem-tokens-full)))
 
@@ -101,10 +102,19 @@
     (handler-case
             (let ((in-stream (usocket:socket-stream (conn session))))
                 (parse:from-stream in-stream))
+
         (end-of-file (c)
                      (declare (ignore c))
                      (logger:error-msg (logger session) "EOF caught, assuming socket is closed")
                      (stop session))
+
+        (errors:unhandled-request (c)
+                                  (logger:error-msg (logger session) "read-message: ~A" c)
+                                  (send-msg session
+                                            (message:create-error-resp :id (errors:id c)
+                                                                       :code errors:*method-not-found*
+                                                                       :message (format nil "Unhandled request: ~A" (errors:method-name c)))))
+
         (error (c)
                (logger:error-msg (logger session) "read-message: ~A" c))))
 

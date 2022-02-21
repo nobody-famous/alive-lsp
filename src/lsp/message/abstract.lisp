@@ -73,8 +73,9 @@
             (error-info obj)))
 
 
-(defmethod create-error-resp (&key code message)
+(defmethod create-error-resp (&key code message id)
     (make-instance 'error-response
+                   :id id
                    :error (make-instance 'error-data
                                          :code code
                                          :message message)))

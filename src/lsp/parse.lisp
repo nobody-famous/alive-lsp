@@ -7,6 +7,7 @@
                       (:init :alive/lsp/message/initialize)
                       (:message :alive/lsp/message/abstract)
                       (:packet :alive/lsp/packet)
+                      (:errors :alive/lsp/errors)
                       (:sem-tokens :alive/lsp/message/document/sem-tokens-full)))
 
 (in-package :alive/lsp/parse)
@@ -121,7 +122,8 @@
 
 
 (defun build-request (fields)
-    (let ((name (string-downcase (method-name fields))))
+    (let ((name (string-downcase (method-name fields)))
+          (msg-id (id fields)))
         (cond ((string= "initialize" name)
                (init:request-from-wire :jsonrpc (jsonrpc fields)
                                        :id (id fields)
@@ -141,7 +143,9 @@
                                      :id (id fields)
                                      :params (params fields)))
 
-              (T (error (format nil "Unhandled request ~A" name))))))
+              (T (error (make-condition 'errors:unhandled-request
+                                        :id msg-id
+                                        :method-name name))))))
 
 (defun build-message (payload)
     (let ((fields (get-msg-fields payload)))
