@@ -115,8 +115,19 @@
                                                                        :code errors:*method-not-found*
                                                                        :message (format nil "Unhandled request: ~A" (errors:method-name c)))))
 
+        (errors:server-error (c)
+                             (logger:error-msg (logger session) "read-message: ~A" c)
+                             (send-msg session
+                                       (message:create-error-resp :id (errors:id c)
+                                                                  :code errors:*internal-error*
+                                                                  :message (format nil "Server error: ~A" (errors:message c)))))
+
         (error (c)
-               (logger:error-msg (logger session) "read-message: ~A" c))))
+               (logger:error-msg (logger session) "read-message: ~A" c)
+               (send-msg session (message:create-error-resp
+                                  :id (errors:id c)
+                                  :code errors:*internal-error*
+                                  :message "Internal Server Error")))))
 
 
 (defun read-messages (session)

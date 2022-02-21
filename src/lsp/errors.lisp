@@ -1,7 +1,6 @@
 (defpackage :alive/lsp/errors
     (:use :cl)
-    (:export :unhandled-request
-             :*parse-error*
+    (:export :*parse-error*
              :*invalid-request*
              :*method-not-found*
              :*invalid-params*
@@ -13,7 +12,11 @@
              :*content-modified*
              :*request-cancelled*
 
+             :unhandled-request
+             :server-error
+
              method-name
+             message
              id))
 
 (in-package :alive/lsp/errors)
@@ -41,6 +44,20 @@
          :initarg :id))
 
     (:report (lambda (c stream)
-                 (format stream "Unhandled request for msg ~A: ~A"
+                 (format stream "Unhandled request for request ~A: ~A"
                          (id c)
                          (method-name c)))))
+
+
+(define-condition server-error (error)
+    ((message :accessor message
+              :initform nil
+              :initarg :message)
+     (id :accessor id
+         :initform nil
+         :initarg :id))
+
+    (:report (lambda (c stream)
+                 (format stream "Server error for request ~A: ~A"
+                         (id c)
+                         (message c)))))

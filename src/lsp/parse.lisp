@@ -143,6 +143,11 @@
                                      :id (id fields)
                                      :params (params fields)))
 
+              ((string= "$/alive/loadfile" name)
+               (error (make-condition 'errors:server-error
+                                      :id msg-id
+                                      :message "$/alive/loadfile Not done yet")))
+
               (T (error (make-condition 'errors:unhandled-request
                                         :id msg-id
                                         :method-name name))))))
