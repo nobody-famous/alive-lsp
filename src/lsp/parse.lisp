@@ -4,6 +4,7 @@
 
     (:local-nicknames (:did-open :alive/lsp/message/document/did-open)
                       (:did-change :alive/lsp/message/document/did-change)
+                      (:load-file :alive/lsp/message/alive/load-file)
                       (:init :alive/lsp/message/initialize)
                       (:message :alive/lsp/message/abstract)
                       (:packet :alive/lsp/packet)
@@ -144,9 +145,7 @@
                                      :params (params fields)))
 
               ((string= "$/alive/loadfile" name)
-               (error (make-condition 'errors:server-error
-                                      :id msg-id
-                                      :message "$/alive/loadfile Not done yet")))
+               (load-file:from-wire (params fields)))
 
               (T (error (make-condition 'errors:unhandled-request
                                         :id msg-id

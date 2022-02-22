@@ -3,6 +3,7 @@
     (:export :run-all)
     (:local-nicknames (:did-change :alive/lsp/message/document/did-change)
                       (:did-open :alive/lsp/message/document/did-open)
+                      (:load-file :alive/lsp/message/alive/load-file)
                       (:text-doc :alive/lsp/types/text-doc)
                       (:text-doc-item :alive/lsp/types/text-doc-item)
                       (:sem-tokens :alive/lsp/message/document/sem-tokens-full)
@@ -166,6 +167,28 @@
                            parsed))))))
 
 
+(defun load-file-msg ()
+    (labels ((create-content ()
+                  (with-output-to-string (str)
+                      (format str "{~A" *end-line*)
+                      (format str "  \"jsonrpc\": \"2.0\",~A" *end-line*)
+                      (format str "  \"id\": 0,~A" *end-line*)
+                      (format str "  \"method\": \"$/alive/loadFile\",~A" *end-line*)
+                      (format str "  \"params\": {~A" *end-line*)
+                      (format str "    \"path\": \"file:///some/file.txt\"~A" *end-line*)
+                      (format str "  }~A" *end-line*)
+                      (format str "}~A" *end-line*))))
+
+        (run:test "Load File Message"
+                  (lambda ()
+                      (let* ((msg (create-msg (create-content)))
+                             (parsed (parse:from-stream (make-string-input-stream msg))))
+                          (check:are-equal
+                           (load-file:create-request
+                            (load-file:create-params :path "file:///some/file.txt"))
+                           parsed))))))
+
+
 (defun run-all ()
     (run:suite "LSP Messages"
                (lambda ()
@@ -173,4 +196,5 @@
                    (init-resp-msg)
                    (did-open-msg)
                    (did-change-msg)
-                   (sem-tokens-msg))))
+                   (sem-tokens-msg)
+                   (load-file-msg))))
