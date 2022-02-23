@@ -7,6 +7,7 @@
     (:local-nicknames (:logger :alive/logger)
                       (:parse :alive/lsp/parse)
                       (:session :alive/session)
+                      (:msg-handler :alive/message-handler)
                       (:socket-pair :alive/socket-pair)))
 
 (in-package :alive/server)
@@ -35,10 +36,13 @@
 
 (defun accept-conn (server)
     (let* ((conn (usocket:socket-accept (socket server)))
-           (session (session:start (logger server) conn)))
+           (session (session:create (logger server) conn)))
+
+        (msg-handler:start session)
         (session:add-listener session
                               (make-instance 'session:listener
                                              :on-done (lambda ()
+                                                          (usocket:socket-close conn)
                                                           (setf (sessions server)
                                                                 (remove session (sessions server))))))
         (push session (sessions server))))

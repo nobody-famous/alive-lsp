@@ -45,6 +45,7 @@
 
                  "alive-lsp/src/socket-pair"
                  "alive-lsp/src/session"
+                 "alive-lsp/src/message-handler"
                  "alive-lsp/src/server"))
 
 (defsystem "alive-lsp/test"
@@ -57,10 +58,14 @@
 
                  "alive-lsp/test/compat/sbcl/compile"
                  "alive-lsp/test/compat/sbcl/symbols"
+
                  "alive-lsp/test/parse"
                  "alive-lsp/test/parse/tokens"
+
                  "alive-lsp/test/lsp/message"
                  "alive-lsp/test/lsp/sem-tokens"
+
+                 "alive-lsp/test/session"
 
                  "alive-lsp/test/suite"))
 
@@ -102,6 +107,7 @@
 
 (register-system-packages "alive-lsp/src/socket-pair" '(:alive/socket-pair))
 (register-system-packages "alive-lsp/src/session" '(:alive/session))
+(register-system-packages "alive-lsp/src/message-handler" '(:alive/message-handler))
 (register-system-packages "alive-lsp/src/server" '(:alive/server))
 
 (register-system-packages "alive-lsp/test/harness/errors" '(:alive/test/harness/errors))
@@ -113,7 +119,11 @@
 
 (register-system-packages "alive-lsp/test/compat/sbcl/compile" '(:alive/test/compat/sbcl/compile))
 (register-system-packages "alive-lsp/test/compat/sbcl/symbols" '(:alive/test/compat/sbcl/symbols))
+
 (register-system-packages "alive-lsp/test/parse" '(:alive/test/parse))
 (register-system-packages "alive-lsp/test/parse/tokens" '(:alive/test/parse/tokens))
+
 (register-system-packages "alive-lsp/test/lsp/message" '(:alive/test/lsp/message))
 (register-system-packages "alive-lsp/test/lsp/sem-tokens" '(:alive/test/lsp/sem-tokens))
+
+(register-system-packages "alive-lsp/test/session" '(:alive/test/session))
