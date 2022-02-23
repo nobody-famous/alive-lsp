@@ -44,8 +44,8 @@
                  "alive-lsp/src/lsp/parse"
 
                  "alive-lsp/src/socket-pair"
+                 "alive-lsp/src/state"
                  "alive-lsp/src/session"
-                 "alive-lsp/src/message-handler"
                  "alive-lsp/src/server"))
 
 (defsystem "alive-lsp/test"
@@ -106,8 +106,8 @@
 (register-system-packages "alive-lsp/src/lsp/parse" '(:alive/lsp/parse))
 
 (register-system-packages "alive-lsp/src/socket-pair" '(:alive/socket-pair))
+(register-system-packages "alive-lsp/src/state" '(:alive/state))
 (register-system-packages "alive-lsp/src/session" '(:alive/session))
-(register-system-packages "alive-lsp/src/message-handler" '(:alive/message-handler))
 (register-system-packages "alive-lsp/src/server" '(:alive/server))
 
 (register-system-packages "alive-lsp/test/harness/errors" '(:alive/test/harness/errors))
