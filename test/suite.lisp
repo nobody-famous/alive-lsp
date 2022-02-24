@@ -12,4 +12,4 @@
                    (alive/test/lsp/message:run-all)
                    (alive/test/lsp/sem-tokens:run-all)
                    (alive/test/parse/tokens:run-all)
-                   (alive/test/session:run-all))))
+                   (alive/test/session/messages:run-all))))

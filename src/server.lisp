@@ -6,7 +6,6 @@
 
     (:local-nicknames (:logger :alive/logger)
                       (:parse :alive/lsp/parse)
-                      (:state :alive/state)
                       (:session :alive/session)
                       (:socket-pair :alive/socket-pair)))
 
@@ -36,9 +35,7 @@
 
 (defun accept-conn (server)
     (let* ((conn (usocket:socket-accept (socket server)))
-           (state (state:create :logger (logger server)
-                                :conn conn))
-           (session (session:create :state state
+           (session (session:create :conn conn
                                     :logger (logger server))))
 
         (session:add-listener session

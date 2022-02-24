@@ -5,8 +5,7 @@
              :listener
              :start
              :stop)
-    (:local-nicknames (:state :alive/state)
-                      (:did-open :alive/lsp/message/document/did-open)
+    (:local-nicknames (:did-open :alive/lsp/message/document/did-open)
                       (:did-change :alive/lsp/message/document/did-change)
                       (:init :alive/lsp/message/initialize)
                       (:logger :alive/logger)
@@ -26,16 +25,19 @@
               :initarg :on-done)))
 
 
-(defclass message-handler ()
+(defclass state ()
     ((logger :accessor logger
              :initform nil
              :initarg :logger)
-     (state :accessor state
-            :initform nil
-            :initarg :state)
      (running :accessor running
               :initform T
               :initarg :running)
+     (initialized :accessor initialized
+                  :initform nil
+                  :initarg :initialized)
+     (files :accessor files
+            :initform (make-hash-table :test 'equalp)
+            :initarg :files)
      (listeners :accessor listeners
                 :initform nil
                 :initarg :listeners)
@@ -44,129 +46,154 @@
                   :initarg :read-thread)))
 
 
-(defun create (&key logger state)
-    (make-instance 'message-handler
+(defclass network-state (state)
+    ((conn :accessor conn
+           :initform nil
+           :initarg :conn)))
+
+
+(defun create (&key logger conn)
+    (make-instance 'network-state
                    :logger logger
-                   :state state
+                   :conn conn
                    :running nil
                    :listeners nil
                    :read-thread nil))
 
 
-(defmethod add-listener ((obj message-handler) (to-add listener))
+(defmethod destroy ((obj network-state))
+    (when (conn obj)
+          (usocket:socket-close (conn obj))
+          (setf (conn obj) NIL)))
+
+
+(defmethod add-listener ((obj state) (to-add listener))
     (push to-add (listeners obj)))
 
 
-(defgeneric handle-msg (session msg))
+(defmethod set-initialized ((obj state) value)
+    (setf (initialized obj) value))
 
 
-(defun send-msg (session msg)
-    (logger:trace-msg (logger session) "<-- ~A~%" (json:encode-json-to-string msg))
-
-    (state:send-msg (state session)
-                    (packet:to-wire msg)))
+(defmethod set-file-text ((obj state) uri text)
+    (setf (gethash uri (files obj)) text))
 
 
-(defmethod handle-msg (session (msg init:request))
+(defmethod get-file-text ((obj state) uri)
+    (gethash uri (files obj)))
+
+
+(defmethod get-input-stream ((obj network-state))
+    (usocket:socket-stream (conn obj)))
+
+
+(defun send-msg (state msg)
+    (logger:trace-msg (logger state) "<-- ~A~%" (json:encode-json-to-string msg))
+
+    (write-string (packet:to-wire msg) (usocket:socket-stream (conn state)))
+    (force-output (usocket:socket-stream (conn state))))
+
+
+(defmethod handle-msg ((obj state) (msg init:request))
     (let* ((resp (init:create-response (message:id msg))))
-        (send-msg session resp)))
+        (send-msg obj resp)))
 
 
-(defmethod handle-msg (session (msg init:initialized))
-    (state:set-initialized session T))
+(defmethod handle-msg ((obj state) (msg init:initialized))
+    (set-initialized obj T))
 
 
-(defmethod handle-msg (session (msg did-open:did-open))
+(defmethod handle-msg ((obj state) (msg did-open:did-open))
     (let ((uri (did-open:get-uri msg))
           (text (did-open:get-text msg)))
 
         (when text
-              (state:set-file-text session uri text))))
+              (set-file-text obj uri text))))
 
 
-(defmethod handle-msg (session (msg did-change:did-change))
+(defmethod handle-msg (state (msg did-change:did-change))
     (let ((uri (did-change:get-uri msg))
           (text (did-change:get-text msg)))
 
         (when text
-              (state:set-file-text session uri text))))
+              (set-file-text state uri text))))
 
 
-(defmethod handle-msg (session (msg sem-tokens:request))
+(defmethod handle-msg (state (msg sem-tokens:request))
     (let* ((params (message:params msg))
            (doc (sem-tokens:text-document params))
            (uri (text-doc:uri doc))
-           (text (state:get-file-text session uri)))
+           (text (get-file-text state uri)))
 
         (when text
-              (send-msg session (sem-tokens:create-response (message:id msg) text)))))
+              (send-msg state (sem-tokens:create-response (message:id msg) text)))))
 
 
-(defun read-message (session)
+(defun read-message (state)
     (handler-case
 
-            (parse:from-stream (state:get-input-stream (state session)))
+            (parse:from-stream (get-input-stream state))
 
         (end-of-file (c)
                      (declare (ignore c))
-                     (logger:error-msg (logger session) "EOF caught, assuming socket is closed")
-                     (stop session))
+                     (logger:error-msg (logger state) "EOF caught, assuming socket is closed")
+                     (stop state))
 
         (errors:unhandled-request (c)
-                                  (logger:error-msg (logger session) "read-message: ~A" c)
-                                  (send-msg session
+                                  (logger:error-msg (logger state) "read-message: ~A" c)
+                                  (send-msg state
                                             (message:create-error-resp :id (errors:id c)
                                                                        :code errors:*method-not-found*
                                                                        :message (format nil "Unhandled request: ~A" (errors:method-name c)))))
 
         (errors:server-error (c)
-                             (logger:error-msg (logger session) "read-message: ~A" c)
-                             (send-msg session
+                             (logger:error-msg (logger state) "read-message: ~A" c)
+                             (send-msg state
                                        (message:create-error-resp :id (errors:id c)
                                                                   :code errors:*internal-error*
                                                                   :message (format nil "Server error: ~A" (errors:message c)))))
 
         (error (c)
-               (logger:error-msg (logger session) "read-message: ~A" c)
-               (send-msg session (message:create-error-resp
-                                  :id (errors:id c)
-                                  :code errors:*internal-error*
-                                  :message "Internal Server Error")))))
+               (logger:error-msg (logger state) "read-message: ~A" c)
+               (send-msg state (message:create-error-resp
+                                :id (errors:id c)
+                                :code errors:*internal-error*
+                                :message "Internal Server Error")))))
 
 
-(defun read-messages (session)
-    (loop :while (running session)
-          :do (let ((msg (read-message session)))
-                  (logger:debug-msg (logger session) "MSG ~A" (json:encode-json-to-string msg))
+(defun read-messages (state)
+    (loop :while (running state)
+          :do (let ((msg (read-message state)))
+                  (logger:debug-msg (logger state) "MSG ~A" (json:encode-json-to-string msg))
                   (when msg
-                        (logger:trace-msg (logger session) "--> ~A~%" (json:encode-json-to-string msg))
-                        (handle-msg session msg)))))
+                        (logger:trace-msg (logger state) "--> ~A~%" (json:encode-json-to-string msg))
+                        (handle-msg state msg)))))
 
 
-(defun start-read-thread (session)
+(defun start-read-thread (state)
     (let ((stdout *standard-output*))
-        (setf (read-thread session)
+        (setf (read-thread state)
               (bt:make-thread (lambda ()
                                   (let ((*standard-output* stdout))
-                                      (read-messages session)))
-                              :name "Session Message Reader"))))
+                                      (read-messages state)))
+                              :name "state Message Reader"))))
 
 
-(defun start (session)
-    (setf (running session) T)
+(defun start (state)
+    (setf (running state) T)
 
-    (start-read-thread session)
+    (start-read-thread state)
 
-    (logger:info-msg (logger session) "Started session ~A" session))
+    (logger:info-msg (logger state) "Started state ~A" state))
 
 
-(defun stop (session)
-    (logger:info-msg (logger session) "Stopping session ~A" session)
+(defun stop (state)
+    (logger:info-msg (logger state) "Stopping state ~A" state)
 
-    (setf (running session) NIL)
+    (setf (running state) NIL)
 
-    (state:destroy (state session))
+    (destroy state)
 
-    (loop :for listener :in (listeners session) :do
+    (loop :for listener :in (listeners state) :do
               (when (on-done listener)
                     (funcall (on-done listener)))))
