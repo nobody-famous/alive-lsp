@@ -136,10 +136,10 @@
 
 
 (defmethod handle-msg (state (msg load-file:request))
-    (let* ((path (load-file:get-path msg)))
-        (file:do-load path
-                      (lambda (arg)
-                          (format T "out-fn called~%")))))
+    (let* ((path (load-file:get-path msg))
+           (msgs (file:do-load path)))
+
+        (format T "MSGS ~A~%" msgs)))
 
 
 (defun read-message (state)
