@@ -1,14 +1,46 @@
 (defpackage :alive/file
     (:use :cl)
     (:export :do-compile
-             :do-load))
+             :do-load)
+    (:local-nicknames (:astreams :alive/streams)))
 
 (in-package :alive/file)
 
 
-(defun do-compile (path out-fn)
-    (error "do-compile not done yet"))
+(defun do-cmd (cmd path &key stdout-fn stderr-fn)
+    (let* ((orig-stdout *standard-output*)
+           (orig-stderr *error-output*)
+           (out-stream (astreams:make-stream))
+           (err-stream (astreams:make-stream))
+           (*standard-output* out-stream)
+           (*error-output* err-stream))
+
+        (astreams:add-listener out-stream
+                               (lambda (data)
+                                   (when stdout-fn
+                                         (let ((*standard-output* orig-stdout)
+                                               (*error-output* orig-stderr))
+                                             (funcall stdout-fn data)))))
+
+        (astreams:add-listener err-stream
+                               (lambda (data)
+                                   (when stderr-fn
+                                         (let ((*standard-output* orig-stdout)
+                                               (*error-output* orig-stderr))
+                                             (funcall stderr-fn data)))))
+
+        (funcall cmd path)))
 
 
-(defun do-load (path out-fn)
-    #+sbcl (alive/sbcl/file:do-load path out-fn))
+(defun do-compile (path &key stdout-fn stderr-fn)
+    (do-cmd #+sbcl 'alive/sbcl/file:do-compile
+            path
+            :stdout-fn stdout-fn
+            :stderr-fn stderr-fn))
+
+
+(defun do-load (path &key stdout-fn stderr-fn)
+    (do-cmd #+sbcl 'alive/sbcl/file:do-load
+            path
+            :stdout-fn stdout-fn
+            :stderr-fn stderr-fn))

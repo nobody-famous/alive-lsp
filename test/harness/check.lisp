@@ -24,6 +24,12 @@
          (string-equal a b)))
 
 
+
+(defmethod types:deep-equal-p ((a integer) b)
+    (and (equal (type-of a) (type-of b))
+         (eq a b)))
+
+
 (defun are-equal (expected actual)
     (unless (types:deep-equal-p expected actual)
             (error 'err:test-failed

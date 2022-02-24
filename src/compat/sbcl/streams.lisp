@@ -14,9 +14,6 @@
      (listeners :accessor listeners
                 :initform nil
                 :initarg :listeners)
-     (stdout :accessor stdout
-             :initform nil
-             :initarg :stdout)
      (closed-p :accessor closed-p
                :initform nil
                :initarg :closed-p)
