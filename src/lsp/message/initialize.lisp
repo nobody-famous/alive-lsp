@@ -219,8 +219,16 @@
                    :initarg :capabilities)))
 
 
+(defmethod print-object ((obj response-body) out)
+    (format out "{capabilities: ~A}" (capabilities obj)))
+
+
 (defclass response (message:result-response)
     ((message:result :initform (make-instance 'response-body))))
+
+
+(defmethod print-object ((obj response) out)
+    (format out "{result: ~A}" (message:result obj)))
 
 
 (defclass initialized (message:notification)

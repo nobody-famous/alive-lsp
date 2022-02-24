@@ -87,11 +87,11 @@
     (usocket:socket-stream (conn obj)))
 
 
-(defun send-msg (state msg)
-    (logger:trace-msg (logger state) "<-- ~A~%" (json:encode-json-to-string msg))
+(defmethod send-msg ((obj network-state) msg)
+    (logger:trace-msg (logger obj) "<-- ~A~%" (json:encode-json-to-string msg))
 
-    (write-string (packet:to-wire msg) (usocket:socket-stream (conn state)))
-    (force-output (usocket:socket-stream (conn state))))
+    (write-string (packet:to-wire msg) (usocket:socket-stream (conn obj)))
+    (force-output (usocket:socket-stream (conn obj))))
 
 
 (defmethod handle-msg ((obj state) (msg init:request))
