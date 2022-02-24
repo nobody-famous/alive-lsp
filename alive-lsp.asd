@@ -16,11 +16,11 @@
                  "alive-lsp/src/parse/token"
                  "alive-lsp/src/parse/tokenizer"
 
-                 "alive-lsp/src/compat/sbcl/compile"
+                 "alive-lsp/src/compat/sbcl/file"
                  "alive-lsp/src/compat/sbcl/streams"
                  "alive-lsp/src/compat/sbcl/symbols"
 
-                 "alive-lsp/src/compile"
+                 "alive-lsp/src/file"
                  "alive-lsp/src/streams"
                  "alive-lsp/src/symbols"
 
@@ -80,11 +80,11 @@
 (register-system-packages "alive-lsp/src/parse/token" '(:alive/parse/token))
 (register-system-packages "alive-lsp/src/parse/tokenizer" '(:alive/parse/tokenizer))
 
-(register-system-packages "alive-lsp/src/compile" '(:alive/compile))
+(register-system-packages "alive-lsp/src/file" '(:alive/file))
 (register-system-packages "alive-lsp/src/streams" '(:alive/streams))
 (register-system-packages "alive-lsp/src/symbols" '(:alive/symbols))
 
-(register-system-packages "alive-lsp/src/compat/sbcl/compile" '(:alive/sbcl/compat))
+(register-system-packages "alive-lsp/src/compat/sbcl/file" '(:alive/sbcl/file))
 (register-system-packages "alive-lsp/src/compat/sbcl/streams" '(:alive/sbcl/streams))
 (register-system-packages "alive-lsp/src/compat/sbcl/symbols" '(:alive/sbcl/symbols))
 

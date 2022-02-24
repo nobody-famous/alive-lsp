@@ -3,15 +3,15 @@
     (:export :run-all)
 
     (:local-nicknames (:astreams :alive/streams)
-                      (:compile :alive/compile)))
+                      (:file :alive/file)))
 
 (in-package :alive/test/compat/sbcl/compile)
 
 
 (defun compile-foo (stdout)
-    (compile:file (lambda (msg)
-                      (format stdout "~&CALLBACK: ~A~%" msg))
-                  "test/files/compile/foo.lisp"))
+    (file:do-compile (lambda (msg)
+                         (format stdout "~&CALLBACK: ~A~%" msg))
+                     "test/files/compile/foo.lisp"))
 
 
 (defun read-stuff (stdout out-stream)
@@ -45,11 +45,7 @@
     (let* ((orig-output *standard-output*)
            (orig-err *error-output*)
            (out-stream (astreams:make-stream :stdout orig-output))
-           (err-stream (astreams:make-stream :stdout orig-err))
-        ;    (out-stream (make-instance 'astreams:rt-stream :stdout orig-output))
-        ;    (err-stream (make-instance 'astreams:rt-stream :stdout orig-err))
-           (*standard-output* out-stream)
-           (*error-output* err-stream))
+           (err-stream (astreams:make-stream :stdout orig-err));    (out-stream (make-instance 'astreams:rt-stream :stdout orig-output));    (err-stream (make-instance 'astreams:rt-stream :stdout orig-err))(*standard-output* out-stream)(*error-output* err-stream))
         ; (compile-file "test/compat/sbcl/files/foo.lisp")
         ; (astreams:add-listener out-stream (report-output "OUT" orig-output))
         ; (astreams:add-listener err-stream (report-output "ERR" orig-err))
@@ -57,4 +53,4 @@
         (compile-foo orig-output)
 
         (close out-stream)
-        (close err-stream)))
+        (close err-stream))))

@@ -2,24 +2,26 @@
     (:use :cl)
     (:export :create-params
              :create-request
-             :from-wire)
+             :from-wire
+             :get-path
+             :request)
     (:local-nicknames (:message :alive/lsp/message/abstract)
                       (:types :alive/types)))
 
 (in-package :alive/lsp/message/alive/load-file)
 
 
-(defclass load-file (message:request)
+(defclass request (message:request)
     ((message::method :initform "$/alive/loadFile")))
 
 
-(defmethod print-object ((obj load-file) out)
+(defmethod print-object ((obj request) out)
     (format out "{method: ~A; params: ~A}"
             (message:method-name obj)
             (message:params obj)))
 
 
-(defmethod types:deep-equal-p ((a load-file) b)
+(defmethod types:deep-equal-p ((a request) b)
     (and (equal (type-of a) (type-of b))
          (types:deep-equal-p (message:params a) (message:params b))))
 
@@ -40,8 +42,13 @@
          (string= (path a) (path b))))
 
 
+(defun get-path (obj)
+    (let ((params (message:params obj)))
+        (path params)))
+
+
 (defun create-request (params)
-    (make-instance 'load-file :params params))
+    (make-instance 'request :params params))
 
 
 (defun create-params (&key path)

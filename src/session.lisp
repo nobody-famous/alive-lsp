@@ -7,7 +7,9 @@
              :stop)
     (:local-nicknames (:did-open :alive/lsp/message/document/did-open)
                       (:did-change :alive/lsp/message/document/did-change)
+                      (:file :alive/file)
                       (:init :alive/lsp/message/initialize)
+                      (:load-file :alive/lsp/message/alive/load-file)
                       (:logger :alive/logger)
                       (:message :alive/lsp/message/abstract)
                       (:packet :alive/lsp/packet)
@@ -87,6 +89,10 @@
     (usocket:socket-stream (conn obj)))
 
 
+(defmethod get-output-stream ((obj network-state))
+    (usocket:socket-stream (conn obj)))
+
+
 (defmethod send-msg ((obj network-state) msg)
     (logger:trace-msg (logger obj) "<-- ~A~%" (json:encode-json-to-string msg))
 
@@ -127,6 +133,13 @@
 
         (when text
               (send-msg state (sem-tokens:create-response (message:id msg) text)))))
+
+
+(defmethod handle-msg (state (msg load-file:request))
+    (let* ((path (load-file:get-path msg)))
+        (file:do-load path
+                      (lambda (arg)
+                          (format T "out-fn called~%")))))
 
 
 (defun read-message (state)
