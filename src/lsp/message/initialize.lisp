@@ -83,6 +83,7 @@
 
 (defmethod types:deep-equal-p ((a request) b)
     (and (equal (type-of a) (type-of b))
+         (equalp (message:id a) (message:id b))
          (types:deep-equal-p (message::params a) (message::params b))))
 
 

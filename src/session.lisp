@@ -137,9 +137,10 @@
 
 (defmethod handle-msg (state (msg load-file:request))
     (let* ((path (load-file:get-path msg))
-           (msgs (file:do-load path)))
+           (msgs (file:do-load path))
+           (resp (load-file:create-response (message:id msg) msgs)))
 
-        (format T "MSGS ~A~%" msgs)))
+        (send-msg state resp)))
 
 
 (defun read-message (state)

@@ -4,6 +4,7 @@
     (:local-nicknames (:logger :alive/logger)
                       (:init :alive/lsp/message/initialize)
                       (:utils :alive/test/utils)
+                      (:check :alive/test/harness/check)
                       (:run :alive/test/harness/run)
                       (:session :alive/session)))
 
@@ -45,7 +46,7 @@
         (make-string-input-stream (utils:create-msg content))))
 
 
-(defmethod session::send-msg ((obj test-state) msg)
+(defmethod session::send-msg ((obj init-msg-state) msg)
     (setf (send-called obj) T))
 
 
@@ -55,8 +56,7 @@
                   (lambda ()
                       (session::handle-msg state
                                            (session::read-message state))
-                      (unless (send-called state)
-                              (error "Message send not called"))))))
+                      (check:are-equal T (send-called state))))))
 
 
 (defmethod session::get-input-stream ((obj load-file-state))
@@ -72,12 +72,18 @@
         (make-string-input-stream (utils:create-msg content))))
 
 
+(defmethod session::send-msg ((obj load-file-state) msg)
+    (format T "send-msg ~A~%" (json:encode-json-to-string msg))
+    (setf (send-called obj) T))
+
+
 (defun load-file-msg ()
     (let ((state (create-state 'load-file-state)))
         (run:test "Load File Message"
                   (lambda ()
                       (session::handle-msg state
-                                           (session::read-message state))))))
+                                           (session::read-message state))
+                      (check:are-equal t (send-called state))))))
 
 
 (defun run-all ()

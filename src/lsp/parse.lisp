@@ -145,7 +145,9 @@
                                      :params (params fields)))
 
               ((string= "$/alive/loadfile" name)
-               (load-file:from-wire (params fields)))
+               (load-file:from-wire :jsonrpc (jsonrpc fields)
+                                    :id (id fields)
+                                    :params (params fields)))
 
               (T (error (make-condition 'errors:unhandled-request
                                         :id msg-id

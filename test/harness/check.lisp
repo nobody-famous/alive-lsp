@@ -24,8 +24,12 @@
          (string-equal a b)))
 
 
-
 (defmethod types:deep-equal-p ((a integer) b)
+    (and (equal (type-of a) (type-of b))
+         (eq a b)))
+
+
+(defmethod types:deep-equal-p ((a T) b)
     (and (equal (type-of a) (type-of b))
          (eq a b)))
 

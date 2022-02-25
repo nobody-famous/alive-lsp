@@ -24,7 +24,7 @@
                   (with-output-to-string (str)
                       (format str "{~A" utils:*end-line*)
                       (format str "  \"jsonrpc\": \"2.0\",~A" utils:*end-line*)
-                      (format str "  \"id\": 0,~A" utils:*end-line*)
+                      (format str "  \"id\": 5,~A" utils:*end-line*)
                       (format str "  \"method\": \"initialize\",~A" utils:*end-line*)
                       (format str "  \"params\": {~A" utils:*end-line*)
                       (format str "    \"clientInfo\": {~A" utils:*end-line*)
@@ -39,7 +39,7 @@
                       (let* ((msg (utils:create-msg (create-content)))
                              (parsed (parse:from-stream (make-string-input-stream msg))))
                           (check:are-equal (alive/lsp/message/initialize:create-request
-                                            :id 1
+                                            :id 5
                                             :params (alive/lsp/message/initialize:create-request-params
                                                      :client-info (alive/lsp/message/initialize:create-client-info
                                                                    :name "Visual Studio Code"
@@ -77,7 +77,7 @@
                   (with-output-to-string (str)
                       (format str "{~A" utils:*end-line*)
                       (format str "  \"jsonrpc\": \"2.0\",~A" utils:*end-line*)
-                      (format str "  \"id\": 0,~A" utils:*end-line*)
+                      (format str "  \"id\": 5,~A" utils:*end-line*)
                       (format str "  \"method\": \"textDocument/didOpen\",~A" utils:*end-line*)
                       (format str "  \"params\": {~A" utils:*end-line*)
                       (format str "    \"textDocument\": {~A" utils:*end-line*)
@@ -107,7 +107,7 @@
                   (with-output-to-string (str)
                       (format str "{~A" utils:*end-line*)
                       (format str "  \"jsonrpc\": \"2.0\",~A" utils:*end-line*)
-                      (format str "  \"id\": 0,~A" utils:*end-line*)
+                      (format str "  \"id\": 5,~A" utils:*end-line*)
                       (format str "  \"method\": \"textDocument/didChange\",~A" utils:*end-line*)
                       (format str "  \"params\": {~A" utils:*end-line*)
                       (format str "    \"textDocument\": {~A" utils:*end-line*)
@@ -138,7 +138,7 @@
                   (with-output-to-string (str)
                       (format str "{~A" utils:*end-line*)
                       (format str "  \"jsonrpc\": \"2.0\",~A" utils:*end-line*)
-                      (format str "  \"id\": 0,~A" utils:*end-line*)
+                      (format str "  \"id\": 5,~A" utils:*end-line*)
                       (format str "  \"method\": \"textDocument/semanticTokens/full\",~A" utils:*end-line*)
                       (format str "  \"params\": {~A" utils:*end-line*)
                       (format str "    \"textDocument\": {~A" utils:*end-line*)
@@ -153,8 +153,9 @@
                              (parsed (parse:from-stream (make-string-input-stream msg))))
                           (check:are-equal
                            (sem-tokens:create-request
-                            (sem-tokens:create-params
-                             (text-doc:create :uri "file:///some/file.txt")))
+                            :id 5
+                            :params (sem-tokens:create-params
+                                     (text-doc:create :uri "file:///some/file.txt")))
                            parsed))))))
 
 
@@ -163,7 +164,7 @@
                   (with-output-to-string (str)
                       (format str "{~A" utils:*end-line*)
                       (format str "  \"jsonrpc\": \"2.0\",~A" utils:*end-line*)
-                      (format str "  \"id\": 0,~A" utils:*end-line*)
+                      (format str "  \"id\": 5,~A" utils:*end-line*)
                       (format str "  \"method\": \"$/alive/loadFile\",~A" utils:*end-line*)
                       (format str "  \"params\": {~A" utils:*end-line*)
                       (format str "    \"path\": \"file:///some/file.txt\"~A" utils:*end-line*)
@@ -176,7 +177,8 @@
                              (parsed (parse:from-stream (make-string-input-stream msg))))
                           (check:are-equal
                            (load-file:create-request
-                            (load-file:create-params :path "file:///some/file.txt"))
+                            :id 5
+                            :params (load-file:create-params :path "file:///some/file.txt"))
                            parsed))))))
 
 

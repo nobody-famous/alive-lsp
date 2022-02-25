@@ -30,12 +30,15 @@
 
 (defmethod types:deep-equal-p ((a request) b)
     (and (equal (type-of a) (type-of b))
+         (equalp (message:id a) (message:id b))
          (types:deep-equal-p (message:method-name a) (message:method-name b))
          (types:deep-equal-p (message:params a) (message:params b))))
 
 
-(defun create-request (params)
+(defun create-request (&key id (jsonrpc "2.0") params)
     (make-instance 'request
+                   :id id
+                   :jsonrpc jsonrpc
                    :params params))
 
 
