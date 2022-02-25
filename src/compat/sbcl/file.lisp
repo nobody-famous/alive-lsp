@@ -3,7 +3,8 @@
     (:export :do-compile
              :do-load)
     (:local-nicknames (:parse :alive/parse/stream)
-                      (:types :alive/types)))
+                      (:types :alive/types)
+                      (:comp-msg :alive/compile-message)))
 
 (in-package :alive/sbcl/file)
 
@@ -24,9 +25,9 @@
 
 (defun send-message (out-fn forms sev err)
     (let* ((loc (get-err-location forms))
-           (msg (types:make-compile-message :severity sev
-                                            :location loc
-                                            :message (format nil "~A" err))))
+           (msg (comp-msg:create :severity sev
+                                 :location loc
+                                 :message (format nil "~A" err))))
         (funcall out-fn msg)))
 
 

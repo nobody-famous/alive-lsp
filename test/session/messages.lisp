@@ -66,14 +66,14 @@
                        (format str "  \"id\": 0,~A" utils:*end-line*)
                        (format str "  \"method\": \"$/alive/loadFile\",~A" utils:*end-line*)
                        (format str "  \"params\": {~A" utils:*end-line*)
-                       (format str "    \"path\": \"test/files/compile/foo.lisp\"~A" utils:*end-line*)
+                       (format str "    \"path\": \"test/files/compile/foo.lisp\",~A" utils:*end-line*)
+                       (format str "    \"showStdout\": false~A" utils:*end-line*)
                        (format str "  }~A" utils:*end-line*)
                        (format str "}~A" utils:*end-line*))))
         (make-string-input-stream (utils:create-msg content))))
 
 
 (defmethod session::send-msg ((obj load-file-state) msg)
-    (format T "send-msg ~A~%" (json:encode-json-to-string msg))
     (setf (send-called obj) T))
 
 

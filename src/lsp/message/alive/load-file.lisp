@@ -32,17 +32,27 @@
 (defclass params ()
     ((path :accessor path
            :initform nil
-           :initarg :path)))
+           :initarg :path)
+     (show-stdout :accessor show-stdout
+                  :initform T
+                  :initarg :show-stdout)
+     (show-stderr :accessor show-stderr
+                  :initform T
+                  :initarg :show-stderr)))
 
 
 (defmethod print-object ((obj params) out)
-    (format out "{path: ~A}"
-            (path obj)))
+    (format out "{path: ~A; showStdout: ~A; showStderr: ~A}"
+            (path obj)
+            (show-stdout obj)
+            (show-stderr obj)))
 
 
 (defmethod types:deep-equal-p ((a params) b)
     (and (equal (type-of a) (type-of b))
-         (string= (path a) (path b))))
+         (string= (path a) (path b))
+         (equalp (show-stdout a) (show-stdout b))
+         (equalp (show-stderr a) (show-stderr b))))
 
 
 (defclass response (message:result-response)
@@ -83,13 +93,17 @@
                    :params params))
 
 
-(defun create-params (&key path)
-    (make-instance 'params :path path))
+(defun create-params (&key path (show-stdout T) (show-stderr T))
+    (make-instance 'params :path path
+                   :show-stdout show-stdout
+                   :show-stderr show-stderr))
 
 
 (defun from-wire (&key jsonrpc id params)
     (labels ((add-param (params key value)
-                  (cond ((eq key :path) (setf (path params) value)))))
+                  (cond ((eq key :path) (setf (path params) value))
+                        ((eq key :show-stdout) (setf (show-stdout params) value))
+                        ((eq key :show-stderr) (setf (show-stderr params) value)))))
 
         (loop :with out-params := (make-instance 'params)
               :for param :in params :do

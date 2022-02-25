@@ -167,7 +167,8 @@
                       (format str "  \"id\": 5,~A" utils:*end-line*)
                       (format str "  \"method\": \"$/alive/loadFile\",~A" utils:*end-line*)
                       (format str "  \"params\": {~A" utils:*end-line*)
-                      (format str "    \"path\": \"file:///some/file.txt\"~A" utils:*end-line*)
+                      (format str "    \"path\": \"file:///some/file.txt\",~A" utils:*end-line*)
+                      (format str "    \"showStdout\": false~A" utils:*end-line*)
                       (format str "  }~A" utils:*end-line*)
                       (format str "}~A" utils:*end-line*))))
 
@@ -178,7 +179,8 @@
                           (check:are-equal
                            (load-file:create-request
                             :id 5
-                            :params (load-file:create-params :path "file:///some/file.txt"))
+                            :params (load-file:create-params :path "file:///some/file.txt"
+                                                             :show-stdout nil))
                            parsed))))))
 
 
