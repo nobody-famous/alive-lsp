@@ -10,6 +10,7 @@
                       (:file :alive/file)
                       (:init :alive/lsp/message/initialize)
                       (:load-file :alive/lsp/message/alive/load-file)
+                      (:stderr :alive/lsp/message/alive/stderr)
                       (:logger :alive/logger)
                       (:message :alive/lsp/message/abstract)
                       (:packet :alive/lsp/packet)
@@ -137,7 +138,11 @@
 
 (defmethod handle-msg (state (msg load-file:request))
     (let* ((path (load-file:get-path msg))
-           (msgs (file:do-load path))
+           (msgs (file:do-load path
+                               :stdout-fn (lambda (data)
+                                              (format T "handle-msg stdout ~A~%" data))
+                               :stderr-fn (lambda (data)
+                                              (send-msg state (stderr:create data)))))
            (resp (load-file:create-response (message:id msg) msgs)))
 
         (send-msg state resp)))
