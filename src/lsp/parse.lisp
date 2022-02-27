@@ -127,7 +127,7 @@
           (msg-id (id fields)))
         (cond ((string= "initialize" name)
                (init:request-from-wire :jsonrpc (jsonrpc fields)
-                                       :id (id fields)
+                                       :id msg-id
                                        :params (params fields)))
 
               ((string= "initialized" name)
@@ -141,12 +141,12 @@
 
               ((string= "textdocument/semantictokens/full" name)
                (sem-tokens:from-wire :jsonrpc (jsonrpc fields)
-                                     :id (id fields)
+                                     :id msg-id
                                      :params (params fields)))
 
               ((string= "$/alive/loadfile" name)
                (load-file:from-wire :jsonrpc (jsonrpc fields)
-                                    :id (id fields)
+                                    :id msg-id
                                     :params (params fields)))
 
               (T (error (make-condition 'errors:unhandled-request
@@ -156,8 +156,12 @@
 (defun build-message (payload)
     (let ((fields (get-msg-fields payload)))
         (cond ((request-p fields) (build-request fields))
-              ((response-p fields) (format T "GOT RESPONSE~%"))
-              (T (error (format nil "Unknown payload type ~A" payload))))))
+              ((response-p fields) (error (make-condition 'errors:server-error
+                                                          :id (id fields)
+                                                          :message "Got response")))
+              (T (error (make-condition 'errors:server-error
+                                        :id (id fields)
+                                        :message "Unknown payload type"))))))
 
 
 (defun from-stream (input)

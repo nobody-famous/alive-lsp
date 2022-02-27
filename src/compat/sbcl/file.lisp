@@ -28,43 +28,31 @@
            (msg (comp-msg:create :severity sev
                                  :location loc
                                  :message (format nil "~A" err))))
+
         (funcall out-fn msg)))
-
-
-(defun fatal-error (out-fn forms)
-    (lambda (err)
-        (send-message out-fn forms types:*sev-error* err)))
-
-
-(defun compiler-error (out-fn forms)
-    (lambda (err)
-        (send-message out-fn forms types:*sev-error* err)))
-
-
-(defun compiler-note (out-fn forms)
-    (lambda (err)
-        (send-message out-fn forms types:*sev-info* err)))
-
-
-(defun handle-error (out-fn forms)
-    (lambda (err)
-        (send-message out-fn forms types:*sev-error* err)))
-
-
-(defun handle-warning (out-fn forms)
-    (lambda (err)
-        (send-message out-fn forms types:*sev-warn* err)))
 
 
 (defun do-cmd (path cmd out)
     (with-open-file (f path)
         (let ((forms (parse:from f)))
-            (handler-bind ((sb-c:fatal-compiler-error (fatal-error out forms))
-                           (sb-c:compiler-error (compiler-error out forms))
-                           (sb-ext:compiler-note (compiler-note out forms))
-                           (error (handle-error out forms))
-                           (warning (handle-warning out forms)))
-                (funcall cmd path)))))
+            (handler-case
+
+                    (funcall cmd path)
+
+                (sb-c:fatal-compiler-error (e)
+                                           (send-message out forms types:*sev-error* e))
+
+                (sb-c:compiler-error (e)
+                                     (send-message out forms types:*sev-error* e))
+
+                (sb-ext:compiler-note (e)
+                                      (send-message out forms types:*sev-info* e))
+
+                (error (e)
+                       (send-message out forms types:*sev-error* e))
+
+                (warning (e)
+                         (send-message out forms types:*sev-warn* e))))))
 
 
 (defun do-compile (path)

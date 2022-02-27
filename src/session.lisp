@@ -148,6 +148,18 @@
         (send-msg state resp)))
 
 
+(defun stop (state)
+    (logger:info-msg (logger state) "Stopping state ~A" state)
+
+    (setf (running state) NIL)
+
+    (destroy state)
+
+    (loop :for listener :in (listeners state) :do
+              (when (on-done listener)
+                    (funcall (on-done listener)))))
+
+
 (defun read-message (state)
     (handler-case
 
@@ -172,21 +184,28 @@
                                                                   :code errors:*internal-error*
                                                                   :message (format nil "Server error: ~A" (errors:message c)))))
 
-        (error (c)
-               (logger:error-msg (logger state) "read-message: ~A" c)
-               (send-msg state (message:create-error-resp
-                                :id (errors:id c)
-                                :code errors:*internal-error*
-                                :message "Internal Server Error")))))
+        (T (c)
+           (logger:error-msg (logger state) "read-message: ~A" c)
+           (stop state))))
 
 
 (defun read-messages (state)
     (loop :while (running state)
           :do (let ((msg (read-message state)))
-                  (logger:debug-msg (logger state) "MSG ~A" (json:encode-json-to-string msg))
-                  (when msg
-                        (logger:trace-msg (logger state) "--> ~A~%" (json:encode-json-to-string msg))
-                        (handle-msg state msg)))))
+                  (handler-case
+                          (progn
+                           (logger:debug-msg (logger state) "MSG ~A" (json:encode-json-to-string msg))
+
+                           (when msg
+                                 (logger:trace-msg (logger state) "--> ~A~%" (json:encode-json-to-string msg))
+                                 (handle-msg state msg)))
+
+                      (T (c)
+                         (logger:error-msg (logger state) "read-messages: ~A" c)
+                         (send-msg state (message:create-error-resp
+                                          :id (message:id msg)
+                                          :code errors:*internal-error*
+                                          :message "Internal Server Error")))))))
 
 
 (defun start-read-thread (state)
@@ -204,15 +223,3 @@
     (start-read-thread state)
 
     (logger:info-msg (logger state) "Started state ~A" state))
-
-
-(defun stop (state)
-    (logger:info-msg (logger state) "Stopping state ~A" state)
-
-    (setf (running state) NIL)
-
-    (destroy state)
-
-    (loop :for listener :in (listeners state) :do
-              (when (on-done listener)
-                    (funcall (on-done listener)))))

@@ -195,9 +195,18 @@
                                    (not item-token)
                                    (is-type item-token types:*close-paren*))
 
-                        :do (cond ((char= #\& (char (string item) 0)) (finish-list state)
+                        :do (cond ((equal (type-of item) 'cons) (process-list state item-token))
+
+                                  ((char= #\& (char (string item) 0)) (finish-list state)
                                                                       (setf done T))
+
+                                  ((char= #\( (char (string item) 0)) (process-list state item-token))
+
                                   ((string= "LAMBDA-LIST" (string item)) (process-lambda-list state))
+
+                                  ((and (string= "BINDINGS" (string item))
+                                        (is-type item-token types:*open-paren*)) (process-list state item-token))
+
                                   (t (process-expr state)))
 
                             (skip-ws state)
