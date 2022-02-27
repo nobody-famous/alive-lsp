@@ -29,6 +29,7 @@
                                                            (declare (ignore data)))
                                             :stderr-fn (lambda (data)
                                                            (declare (ignore data))))))
+
                       (check:are-equal 5 (length msgs))))))
 
 

@@ -11,6 +11,7 @@
                       (:init :alive/lsp/message/initialize)
                       (:load-file :alive/lsp/message/alive/load-file)
                       (:stderr :alive/lsp/message/alive/stderr)
+                      (:stdout :alive/lsp/message/alive/stdout)
                       (:logger :alive/logger)
                       (:message :alive/lsp/message/abstract)
                       (:packet :alive/lsp/packet)
@@ -140,9 +141,11 @@
     (let* ((path (load-file:get-path msg))
            (msgs (file:do-load path
                                :stdout-fn (lambda (data)
-                                              (format T "handle-msg stdout ~A~%" data))
+                                              (when (load-file:show-stdout-p msg)
+                                                    (send-msg state (stdout:create data))))
                                :stderr-fn (lambda (data)
-                                              (send-msg state (stderr:create data)))))
+                                              (when (load-file:show-stderr-p msg)
+                                                    (send-msg state (stderr:create data))))))
            (resp (load-file:create-response (message:id msg) msgs)))
 
         (send-msg state resp)))
@@ -192,20 +195,17 @@
 (defun read-messages (state)
     (loop :while (running state)
           :do (let ((msg (read-message state)))
-                  (handler-case
-                          (progn
-                           (logger:debug-msg (logger state) "MSG ~A" (json:encode-json-to-string msg))
 
-                           (when msg
-                                 (logger:trace-msg (logger state) "--> ~A~%" (json:encode-json-to-string msg))
-                                 (handle-msg state msg)))
+                  (logger:debug-msg (logger state) "MSG ~A" (if msg T NIL))
 
-                      (T (c)
-                         (logger:error-msg (logger state) "read-messages: ~A" c)
-                         (send-msg state (message:create-error-resp
-                                          :id (message:id msg)
-                                          :code errors:*internal-error*
-                                          :message "Internal Server Error")))))))
+                  ;;
+                  ;; It makes no sense, but if a signal is caught here then
+                  ;; load/compile commands halt processing.
+                  ;;
+
+                  (when msg
+                        (logger:trace-msg (logger state) "--> ~A~%" (json:encode-json-to-string msg))
+                        (handle-msg state msg)))))
 
 
 (defun start-read-thread (state)

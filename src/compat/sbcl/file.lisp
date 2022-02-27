@@ -32,27 +32,62 @@
         (funcall out-fn msg)))
 
 
+(defun fatal-error (out-fn forms)
+    (lambda (err)
+        (send-message out-fn forms types:*sev-error* err)))
+
+
+(defun compiler-error (out-fn forms)
+    (lambda (err)
+        (send-message out-fn forms types:*sev-error* err)))
+
+
+(defun compiler-note (out-fn forms)
+    (lambda (err)
+        (send-message out-fn forms types:*sev-info* err)))
+
+
+(defun handle-error (out-fn forms)
+    (lambda (err)
+        (send-message out-fn forms types:*sev-error* err)))
+
+
+(defun handle-warning (out-fn forms)
+    (lambda (err)
+        (send-message out-fn forms types:*sev-warn* err)))
+
+
+; (defun do-cmd (path cmd out)
+;     (with-open-file (f path)
+;         (let ((forms (parse:from f)))
+;             (handler-case
+
+;                     (funcall cmd path)
+
+;                 (sb-c:fatal-compiler-error (e)
+;                                            (send-message out forms types:*sev-error* e))
+;                 (sb-c:compiler-error (e)
+;                                      (send-message out forms types:*sev-error* e))
+;                 (sb-ext:compiler-note (e)
+;                                       (send-message out forms types:*sev-info* e))
+;                 (error (e)
+;                        (send-message out forms types:*sev-error* e))
+;                 (warning (e)
+;                          (format T "GOT WARNING ~A~%" e)
+;                          (send-message out forms types:*sev-warn* e))))))
+
+
+
 (defun do-cmd (path cmd out)
     (with-open-file (f path)
         (let ((forms (parse:from f)))
-            (handler-case
-
-                    (funcall cmd path)
-
-                (sb-c:fatal-compiler-error (e)
-                                           (send-message out forms types:*sev-error* e))
-
-                (sb-c:compiler-error (e)
-                                     (send-message out forms types:*sev-error* e))
-
-                (sb-ext:compiler-note (e)
-                                      (send-message out forms types:*sev-info* e))
-
-                (error (e)
-                       (send-message out forms types:*sev-error* e))
-
-                (warning (e)
-                         (send-message out forms types:*sev-warn* e))))))
+            (handler-bind ((sb-c:fatal-compiler-error (fatal-error out forms))
+                           (sb-c:compiler-error (compiler-error out forms))
+                           (sb-ext:compiler-note (compiler-note out forms))
+                           (sb-ext::simple-style-warning (handle-warning out forms))
+                           (error (handle-error out forms))
+                           (warning (handle-warning out forms)))
+                (funcall cmd path)))))
 
 
 (defun do-compile (path)
@@ -65,7 +100,21 @@
 
 (defun do-load (path)
     (let ((msgs nil))
-        (do-cmd path 'load
+        (do-cmd path 'compile-file
                 (lambda (msg)
                     (setf msgs (cons msg msgs))))
+
+        (with-open-file (f path)
+            (let ((forms (parse:from f)))
+                (handler-case
+
+                        (load path)
+
+                    (error (e)
+                           (send-message (lambda (msg)
+                                             (setf msgs (cons msg msgs)))
+                                         forms
+                                         types:*sev-error*
+                                         e)))))
+
         msgs))

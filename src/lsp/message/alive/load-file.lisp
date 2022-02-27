@@ -5,7 +5,9 @@
              :create-response
              :from-wire
              :get-path
-             :request)
+             :request
+             :show-stdout-p
+             :show-stderr-p)
     (:local-nicknames (:message :alive/lsp/message/abstract)
                       (:types :alive/types)))
 
@@ -53,6 +55,15 @@
          (string= (path a) (path b))
          (equalp (show-stdout a) (show-stdout b))
          (equalp (show-stderr a) (show-stderr b))))
+
+
+(defmethod show-stdout-p ((obj request))
+    (show-stdout (message:params obj)))
+
+
+
+(defmethod show-stderr-p ((obj request))
+    (show-stderr (message:params obj)))
 
 
 (defclass response (message:result-response)
