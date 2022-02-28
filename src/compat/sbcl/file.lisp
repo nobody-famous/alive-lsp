@@ -57,27 +57,6 @@
         (send-message out-fn forms types:*sev-warn* err)))
 
 
-; (defun do-cmd (path cmd out)
-;     (with-open-file (f path)
-;         (let ((forms (parse:from f)))
-;             (handler-case
-
-;                     (funcall cmd path)
-
-;                 (sb-c:fatal-compiler-error (e)
-;                                            (send-message out forms types:*sev-error* e))
-;                 (sb-c:compiler-error (e)
-;                                      (send-message out forms types:*sev-error* e))
-;                 (sb-ext:compiler-note (e)
-;                                       (send-message out forms types:*sev-info* e))
-;                 (error (e)
-;                        (send-message out forms types:*sev-error* e))
-;                 (warning (e)
-;                          (format T "GOT WARNING ~A~%" e)
-;                          (send-message out forms types:*sev-warn* e))))))
-
-
-
 (defun do-cmd (path cmd out)
     (with-open-file (f path)
         (let ((forms (parse:from f)))
@@ -104,17 +83,8 @@
                 (lambda (msg)
                     (setf msgs (cons msg msgs))))
 
-        (with-open-file (f path)
-            (let ((forms (parse:from f)))
-                (handler-case
-
-                        (load path)
-
-                    (error (e)
-                           (send-message (lambda (msg)
-                                             (setf msgs (cons msg msgs)))
-                                         forms
-                                         types:*sev-error*
-                                         e)))))
+        (do-cmd path 'load
+                (lambda (msg)
+                    (setf msgs (cons msg msgs))))
 
         msgs))

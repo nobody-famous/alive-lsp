@@ -1,7 +1,9 @@
 (defpackage :alive/sbcl/symbols
     (:use :cl)
     (:export :callable-p
-             :get-lambda-list)
+             :get-lambda-list
+             :function-p
+             :macro-p)
     (:local-nicknames (:parse :alive/parse/stream)
                       (:types :alive/types)))
 
@@ -21,7 +23,32 @@
                         (find-symbol (string-upcase fn-name))))))
 
 
+(defun macro-p (sym-name &optional pkg-name)
+    (let* ((pkg-str (if pkg-name
+                        pkg-name
+                        "CL-USER"))
+           (pkg (find-package (string-upcase pkg-str)))
+           (sym (when pkg
+                      (find-symbol (string-upcase sym-name) pkg))))
+
+        (if (macro-function sym)
+            T
+            NIL)))
+
+
+(defun function-p (sym-name &optional pkg-name)
+    (let* ((pkg-str (if pkg-name
+                        pkg-name
+                        "CL-USER"))
+           (pkg (find-package (string-upcase pkg-str)))
+           (sym (when pkg
+                      (find-symbol (string-upcase sym-name) pkg))))
+
+        (if (sb-introspect:function-type sym)
+            T
+            NIL)))
+
+
 (defun callable-p (sym-name &optional pkg-name)
-    (if (get-lambda-list sym-name pkg-name)
-        T
-        NIL))
+    (or (function-p sym-name pkg-name)
+        (macro-p sym-name pkg-name)))

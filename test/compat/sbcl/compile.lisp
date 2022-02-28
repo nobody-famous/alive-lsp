@@ -30,7 +30,7 @@
                                             :stderr-fn (lambda (data)
                                                            (declare (ignore data))))))
 
-                      (check:are-equal 5 (length msgs))))))
+                      (check:are-equal 10 (length msgs))))))
 
 
 (defun run-all ()

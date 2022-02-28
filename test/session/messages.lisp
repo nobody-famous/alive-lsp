@@ -66,7 +66,7 @@
                        (format str "  \"id\": 0,~A" utils:*end-line*)
                        (format str "  \"method\": \"$/alive/loadFile\",~A" utils:*end-line*)
                        (format str "  \"params\": {~A" utils:*end-line*)
-                       (format str "    \"path\": \"test/files/compile/test.lisp\",~A" utils:*end-line*)
+                       (format str "    \"path\": \"test/files/compile/foo.lisp\",~A" utils:*end-line*)
                        (format str "    \"showStdout\": false~A" utils:*end-line*)
                        (format str "  }~A" utils:*end-line*)
                        (format str "}~A" utils:*end-line*))))

@@ -198,14 +198,15 @@
 
                   (logger:debug-msg (logger state) "MSG ~A" (if msg T NIL))
 
-                  ;;
-                  ;; It makes no sense, but if a signal is caught here then
-                  ;; load/compile commands halt processing.
-                  ;;
-
-                  (when msg
-                        (logger:trace-msg (logger state) "--> ~A~%" (json:encode-json-to-string msg))
-                        (handle-msg state msg)))))
+                  (handler-case (when msg
+                                      (logger:trace-msg (logger state) "--> ~A~%" (json:encode-json-to-string msg))
+                                      (handle-msg state msg))
+                      (error (c)
+                             (logger:error-msg (logger state) "~A" c)
+                             (send-msg state
+                                       (message:create-error-resp :code errors:*internal-error*
+                                                                  :message "Internal Server Error"
+                                                                  :id (message:id msg))))))))
 
 
 (defun start-read-thread (state)
