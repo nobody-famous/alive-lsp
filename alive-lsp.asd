@@ -37,6 +37,7 @@
                  "alive-lsp/src/lsp/message/payload"
                  "alive-lsp/src/lsp/message/initialize"
                  "alive-lsp/src/lsp/message/alive/load-file"
+                 "alive-lsp/src/lsp/message/alive/try-compile"
                  "alive-lsp/src/lsp/message/alive/stderr"
                  "alive-lsp/src/lsp/message/alive/stdout"
                  "alive-lsp/src/lsp/message/document/did-change"
@@ -104,6 +105,7 @@
 (register-system-packages "alive-lsp/src/lsp/message/payload" '(:alive/lsp/message/payload))
 (register-system-packages "alive-lsp/src/lsp/message/initialize" '(:alive/lsp/message/initialize))
 (register-system-packages "alive-lsp/src/lsp/message/alive/load-file" '(:alive/lsp/message/alive/load-file))
+(register-system-packages "alive-lsp/src/lsp/message/alive/try-compile" '(:alive/lsp/message/alive/try-compile))
 (register-system-packages "alive-lsp/src/lsp/message/alive/stderr" '(:alive/lsp/message/alive/stderr))
 (register-system-packages "alive-lsp/src/lsp/message/alive/stdout" '(:alive/lsp/message/alive/stdout))
 (register-system-packages "alive-lsp/src/lsp/message/document/did-change" '(:alive/lsp/message/document/did-change))

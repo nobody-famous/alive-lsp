@@ -16,6 +16,12 @@
     #+sbcl (alive/sbcl/symbols:get-lambda-list fn-name pkg-name))
 
 
+(defun has-lambda-list-p (sym-name &optional pkg-name)
+    (if (get-lambda-list sym-name pkg-name)
+        T
+        NIL))
+
+
 (defun macro-p (sym-name &optional pkg-name)
     (let* ((pkg-str (if pkg-name
                         pkg-name
@@ -31,4 +37,5 @@
 
 (defun callable-p (sym-name &optional pkg-name)
     (or (function-p sym-name pkg-name)
-        (macro-p sym-name pkg-name)))
+        (macro-p sym-name pkg-name)
+        (has-lambda-list-p sym-name pkg-name)))

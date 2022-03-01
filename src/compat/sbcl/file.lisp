@@ -1,7 +1,8 @@
 (defpackage :alive/sbcl/file
     (:use :cl)
     (:export :do-compile
-             :do-load)
+             :do-load
+             :try-compile)
     (:local-nicknames (:parse :alive/parse/stream)
                       (:types :alive/types)
                       (:comp-msg :alive/compile-message)))
@@ -87,4 +88,33 @@
                 (lambda (msg)
                     (setf msgs (cons msg msgs))))
 
+        msgs))
+
+
+(defun try-compile (path)
+    (let ((msgs nil))
+
+        ;;
+        ;; Compiling a file corrupts the environment. The goal here is to compile without
+        ;; that happening and just get a list of compiler messages for the file.
+        ;;
+        ;; One idea was to fork and have the child process do the compile. That would keep
+        ;; the parent from getting corrupted. That approach hit some problems.
+        ;;   1. sbcl won't fork if there's multiple threads active
+        ;;   2. sbcl only implements fork for unix, anyway, so wouldn't work on Windows
+        ;;
+        ;; One possible solution to the fork issue would be to use FFI to call the C fork
+        ;; function directly. That seems problematic.
+        ;;
+        ;; The only issue I've seen so far is that defpackage forms will update the
+        ;; packages, which results in annoying "package also exports" warnings.
+        ;;  1. parse the file before compiling, get a list of packages, and drop them
+        ;;  2. get the list of packages, along with their aliases, rename them to temp names,
+        ;;     delete the version compile creates, and rename the temp ones back to their
+        ;;     original names. This seems like the most feasible option right now.
+        ;;
+
+        (do-cmd path 'compile-file
+                (lambda (msg)
+                    (setf msgs (cons msg msgs))))
         msgs))

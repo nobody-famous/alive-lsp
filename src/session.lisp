@@ -10,6 +10,7 @@
                       (:file :alive/file)
                       (:init :alive/lsp/message/initialize)
                       (:load-file :alive/lsp/message/alive/load-file)
+                      (:try-compile :alive/lsp/message/alive/try-compile)
                       (:stderr :alive/lsp/message/alive/stderr)
                       (:stdout :alive/lsp/message/alive/stdout)
                       (:logger :alive/logger)
@@ -147,6 +148,14 @@
                                               (when (load-file:show-stderr-p msg)
                                                     (send-msg state (stderr:create data))))))
            (resp (load-file:create-response (message:id msg) msgs)))
+
+        (send-msg state resp)))
+
+
+(defmethod handle-msg (state (msg try-compile:request))
+    (let* ((path (try-compile:get-path msg))
+           (msgs (file:do-load path))
+           (resp (try-compile:create-response (message:id msg) msgs)))
 
         (send-msg state resp)))
 
