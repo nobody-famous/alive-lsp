@@ -47,6 +47,8 @@
             :stderr-fn stderr-fn))
 
 
-(defun try-compile (path)
+(defun try-compile (path &key stdout-fn stderr-fn)
     (do-cmd #+sbcl 'alive/sbcl/file:try-compile
-            path))
+            path
+            :stdout-fn stdout-fn
+            :stderr-fn stderr-fn))

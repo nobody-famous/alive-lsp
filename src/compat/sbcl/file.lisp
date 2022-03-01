@@ -19,9 +19,10 @@
     (let* ((context (sb-c::find-error-context nil))
            (source-path (when context (reverse (sb-c::compiler-error-context-original-source-path context)))))
 
-        (loop :for ndx :in source-path :do
-                  (setf forms (get-form forms ndx))
-              :finally (return (subseq forms 0 2)))))
+        (when source-path
+              (loop :for ndx :in source-path :do
+                        (setf forms (get-form forms ndx))
+                    :finally (return (subseq forms 0 2))))))
 
 
 (defun send-message (out-fn forms sev err)
@@ -30,7 +31,8 @@
                                  :location loc
                                  :message (format nil "~A" err))))
 
-        (funcall out-fn msg)))
+        (when loc
+              (funcall out-fn msg))))
 
 
 (defun fatal-error (out-fn forms)
@@ -115,13 +117,13 @@
             ;;     delete the version compile creates, and rename the temp ones back to their
             ;;     original names. This seems like the most feasible option right now.
             ;;
-            ;; OK, that's not the only issue. Functions get redefined, which causes a warning.
-            ;;
 
             (handler-case
+
                     (do-cmd path 'compile-file
                             (lambda (msg)
                                 (setf msgs (cons msg msgs))))
+
                 (error (e)
                        (send-message (lambda (msg)
                                          (setf msgs (cons msg msgs)))
