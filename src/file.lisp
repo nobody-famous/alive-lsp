@@ -1,7 +1,8 @@
 (defpackage :alive/file
     (:use :cl)
     (:export :do-compile
-             :do-load)
+             :do-load
+             :try-compile)
     (:local-nicknames (:astreams :alive/streams)))
 
 (in-package :alive/file)
@@ -44,3 +45,8 @@
             path
             :stdout-fn stdout-fn
             :stderr-fn stderr-fn))
+
+
+(defun try-compile (path)
+    (do-cmd #+sbcl 'alive/sbcl/file:try-compile
+            path))

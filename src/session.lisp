@@ -154,7 +154,7 @@
 
 (defmethod handle-msg (state (msg try-compile:request))
     (let* ((path (try-compile:get-path msg))
-           (msgs (file:do-load path))
+           (msgs (file:try-compile path))
            (resp (try-compile:create-response (message:id msg) msgs)))
 
         (send-msg state resp)))
