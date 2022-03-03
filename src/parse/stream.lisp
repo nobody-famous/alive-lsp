@@ -42,6 +42,8 @@
 (defun parse-expr (input)
     (flet ((parse-list ()
                 (discard input *open-parens*)
+                (skip-ws input)
+
                 (loop :until (or (not (look-ahead input))
                                  (char= (look-ahead input) *close-parens*))
                       :collect (parse-expr input) :into parts

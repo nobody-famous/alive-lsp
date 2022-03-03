@@ -1,3 +1,4 @@
 (require 'sb-introspect)
 
-(foo)
+(defun foo ( )
+    nil)
