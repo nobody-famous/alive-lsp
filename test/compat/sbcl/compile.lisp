@@ -36,9 +36,9 @@
 (defun compile-broken ()
     (run:test "Compile broken.lisp Test"
               (lambda ()
-                  (let ((msgs (file:try-compile "test/files/compile/broken.lisp"
+                  (let ((msgs (file:try-compile "test/files/compile/parens.lisp"
                                                 :stdout-fn (lambda (data)
-                                                               (declare (ignore data)))
+                                                               (format T "~A~%" data))
                                                 :stderr-fn (lambda (data)
                                                                (declare (ignore data))))))
 

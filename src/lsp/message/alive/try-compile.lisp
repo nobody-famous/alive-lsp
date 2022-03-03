@@ -91,9 +91,7 @@
 
 (defun from-wire (&key jsonrpc id params)
     (labels ((add-param (params key value)
-                  (cond ((eq key :path) (setf (path params) value))
-                        ((eq key :show-stdout) (setf (show-stdout params) value))
-                        ((eq key :show-stderr) (setf (show-stderr params) value)))))
+                  (cond ((eq key :path) (setf (path params) value)))))
 
         (loop :with out-params := (make-instance 'params)
               :for param :in params :do

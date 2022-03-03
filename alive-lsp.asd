@@ -10,6 +10,7 @@
                  "alive-lsp/src/logger"
 
                  "alive-lsp/src/types"
+                 "alive-lsp/src/errors"
                  "alive-lsp/src/compile-message"
 
                  "alive-lsp/src/parse/stream"
@@ -78,6 +79,7 @@
 (register-system-packages "alive-lsp/src/logger" '(:alive/logger))
 
 (register-system-packages "alive-lsp/src/types" '(:alive/types))
+(register-system-packages "alive-lsp/src/errors" '(:alive/errors))
 (register-system-packages "alive-lsp/src/compile-message" '(:alive/compile-message))
 
 (register-system-packages "alive-lsp/src/parse/stream" '(:alive/parse/stream))

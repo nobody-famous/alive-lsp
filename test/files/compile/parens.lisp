@@ -1,0 +1,3 @@
+(require 'sb-introspect)
+
+(foo)
