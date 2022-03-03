@@ -55,17 +55,26 @@
     (car (lex-tokens state)))
 
 
+(defun eat-token (state)
+    (setf (lex-tokens state) (cdr (lex-tokens state))))
+
+
 (defun next-token (state)
     (let ((token (car (lex-tokens state))))
-        (setf (lex-tokens state) (cdr (lex-tokens state)))
-        token))
+
+        (eat-token state)
+
+        (if (and token
+                 (eq types:*ws* (token:type-value token)))
+            (next-token state)
+            token)))
 
 
 (defun skip-ws (state)
     (when (and (peek-token state)
-               (eq types:*ws*
-                   (token:type-value (peek-token state))))
-          (next-token state)))
+               (eq types:*ws* (token:type-value (peek-token state))))
+
+          (eat-token state)))
 
 
 (defun is-type (token target)
@@ -136,7 +145,9 @@
 
 (defun process-expr (state)
     (labels ((finish-list (state)
-                  (loop :for token := (peek-token state)
+                  (skip-ws state)
+                  (loop :for token := (progn (skip-ws state)
+                                             (peek-token state))
 
                         :until (or (not token)
                                    (is-type token types:*close-paren*))
@@ -147,6 +158,7 @@
                                   (next-token state))))
 
              (process-nested-param (state)
+                  (skip-ws state)
                   (let ((token (peek-token state)))
                       (cond ((is-type token types:*symbol*) (add-sem-token state token sem-types:*parameter*)
                                                             (next-token state)
@@ -170,12 +182,15 @@
                   (if (is-type (peek-token state) types:*open-paren*)
                       (progn (add-sem-token state (peek-token state) sem-types:*parenthesis*)
                              (next-token state)
-                             (loop :for token := (peek-token state)
+
+                             (loop :for token := (progn (skip-ws state)
+                                                        (peek-token state))
 
                                    :until (or (not token)
                                               (is-type token types:*close-paren*))
 
                                    :do (process-param state)
+                                       (skip-ws state)
 
                                    :finally (progn (add-sem-token state token sem-types:*parenthesis*)
                                                    (next-token state))))
