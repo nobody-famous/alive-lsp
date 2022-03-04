@@ -181,6 +181,14 @@
                    :full full))
 
 
+(defclass completion-opts ()
+    ())
+
+
+(defmethod types:deep-equal-p ((a completion-opts) b)
+    (equal (type-of a) (type-of b)))
+
+
 (defclass server-capabilities ()
     ((text-document-sync :accessor text-document-sync
                          :initform *doc-sync-full*
@@ -190,7 +198,10 @@
                      :initarg :hover-provider)
      (semantic-tokens-provider :accessor semantic-tokens-provider
                                :initform (make-instance 'sem-tokens-opts)
-                               :initarg :semantic-tokens-provider)))
+                               :initarg :semantic-tokens-provider)
+     (completion-provider :accessor completion-provider
+                          :initform (make-instance 'completion-opts)
+                          :initarg :completion-provider)))
 
 
 (defmethod print-object ((obj server-capabilities) out)

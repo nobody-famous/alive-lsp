@@ -140,6 +140,10 @@
               ((string= "textdocument/didchange" name)
                (did-change:from-wire (params fields)))
 
+              ((string= "textdocument/completion" name)
+               (format T "COMPLETION ~A~%" (json:encode-json-to-string fields))
+               (error "Not done yet"))
+
               ((string= "textdocument/semantictokens/full" name)
                (sem-tokens:from-wire :jsonrpc (jsonrpc fields)
                                      :id msg-id
