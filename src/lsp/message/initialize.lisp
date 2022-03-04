@@ -186,7 +186,7 @@
                          :initform *doc-sync-full*
                          :initarg :text-document-sync)
      (hover-provider :accessor hover-provider
-                     :initform T
+                     :initform nil
                      :initarg :hover-provider)
      (semantic-tokens-provider :accessor semantic-tokens-provider
                                :initform (make-instance 'sem-tokens-opts)
