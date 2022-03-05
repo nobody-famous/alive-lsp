@@ -2,10 +2,10 @@
     (:use :cl)
     (:export :create
              :end
+             :get-type-value
              :start
-             :text
-             :type-value)
-    (:local-nicknames (:pos :alive/parse/pos)
+             :text)
+    (:local-nicknames (:pos :alive/position)
                       (:types :alive/types)))
 
 (in-package :alive/parse/token)
@@ -42,6 +42,10 @@
          (types:deep-equal-p (end a) (end b))
          (string-equal (text a) (text b))
          (eq (type-value a) (type-value b))))
+
+
+(defun get-type-value (obj)
+    (when obj (type-value obj)))
 
 
 (defun create (&key type-value start end text)

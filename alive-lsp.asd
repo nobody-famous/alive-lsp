@@ -12,9 +12,9 @@
                  "alive-lsp/src/types"
                  "alive-lsp/src/errors"
                  "alive-lsp/src/compile-message"
+                 "alive-lsp/src/position"
 
                  "alive-lsp/src/parse/stream"
-                 "alive-lsp/src/parse/pos"
                  "alive-lsp/src/parse/token"
                  "alive-lsp/src/parse/tokenizer"
 
@@ -27,6 +27,7 @@
                  "alive-lsp/src/symbols"
 
                  "alive-lsp/src/lsp/errors"
+                 "alive-lsp/src/lsp/completions"
 
                  "alive-lsp/src/lsp/types/sem-tokens"
                  "alive-lsp/src/lsp/types/text-doc"
@@ -36,7 +37,6 @@
 
                  "alive-lsp/src/lsp/message/abstract"
                  "alive-lsp/src/lsp/message/payload"
-                 "alive-lsp/src/lsp/message/position"
                  "alive-lsp/src/lsp/message/initialize"
                  "alive-lsp/src/lsp/message/alive/load-file"
                  "alive-lsp/src/lsp/message/alive/try-compile"
@@ -70,6 +70,7 @@
                  "alive-lsp/test/parse"
                  "alive-lsp/test/parse/tokens"
 
+                 "alive-lsp/test/lsp/completions"
                  "alive-lsp/test/lsp/message"
                  "alive-lsp/test/lsp/sem-tokens"
 
@@ -83,9 +84,9 @@
 (register-system-packages "alive-lsp/src/types" '(:alive/types))
 (register-system-packages "alive-lsp/src/errors" '(:alive/errors))
 (register-system-packages "alive-lsp/src/compile-message" '(:alive/compile-message))
+(register-system-packages "alive-lsp/src/position" '(:alive/position))
 
 (register-system-packages "alive-lsp/src/parse/stream" '(:alive/parse/stream))
-(register-system-packages "alive-lsp/src/parse/pos" '(:alive/parse/pos))
 (register-system-packages "alive-lsp/src/parse/token" '(:alive/parse/token))
 (register-system-packages "alive-lsp/src/parse/tokenizer" '(:alive/parse/tokenizer))
 
@@ -98,6 +99,7 @@
 (register-system-packages "alive-lsp/src/compat/sbcl/symbols" '(:alive/sbcl/symbols))
 
 (register-system-packages "alive-lsp/src/lsp/errors" '(:alive/lsp/errors))
+(register-system-packages "alive-lsp/src/lsp/completions" '(:alive/lsp/completions))
 
 (register-system-packages "alive-lsp/src/lsp/types/sem-tokens" '(:alive/lsp/types/sem-tokens))
 (register-system-packages "alive-lsp/src/lsp/types/text-doc" '(:alive/lsp/types/text-doc))
@@ -107,7 +109,6 @@
 
 (register-system-packages "alive-lsp/src/lsp/message/abstract" '(:alive/lsp/message/abstract))
 (register-system-packages "alive-lsp/src/lsp/message/payload" '(:alive/lsp/message/payload))
-(register-system-packages "alive-lsp/src/lsp/message/position" '(:alive/lsp/message/position))
 (register-system-packages "alive-lsp/src/lsp/message/initialize" '(:alive/lsp/message/initialize))
 (register-system-packages "alive-lsp/src/lsp/message/alive/load-file" '(:alive/lsp/message/alive/load-file))
 (register-system-packages "alive-lsp/src/lsp/message/alive/try-compile" '(:alive/lsp/message/alive/try-compile))
@@ -140,6 +141,7 @@
 (register-system-packages "alive-lsp/test/parse" '(:alive/test/parse))
 (register-system-packages "alive-lsp/test/parse/tokens" '(:alive/test/parse/tokens))
 
+(register-system-packages "alive-lsp/test/lsp/completions" '(:alive/test/lsp/completions))
 (register-system-packages "alive-lsp/test/lsp/message" '(:alive/test/lsp/message))
 (register-system-packages "alive-lsp/test/lsp/sem-tokens" '(:alive/test/lsp/sem-tokens))
 

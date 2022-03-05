@@ -7,7 +7,7 @@
              :request
              :text-document)
     (:local-nicknames (:message :alive/lsp/message/abstract)
-                      (:pos :alive/lsp/message/position)
+                      (:pos :alive/position)
                       (:text-doc :alive/lsp/types/text-doc)
                       (:types :alive/types)))
 

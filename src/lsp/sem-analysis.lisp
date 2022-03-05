@@ -1,7 +1,7 @@
 (defpackage :alive/lsp/sem-analysis
     (:use :cl)
     (:export :to-sem-tokens)
-    (:local-nicknames (:pos :alive/parse/pos)
+    (:local-nicknames (:pos :alive/position)
                       (:sem-types :alive/lsp/types/sem-tokens)
                       (:symbols :alive/symbols)
                       (:token :alive/parse/token)
@@ -65,28 +65,28 @@
         (eat-token state)
 
         (if (and token
-                 (eq types:*ws* (token:type-value token)))
+                 (eq types:*ws* (token:get-type-value token)))
             (next-token state)
             token)))
 
 
 (defun skip-ws (state)
     (when (and (peek-token state)
-               (eq types:*ws* (token:type-value (peek-token state))))
+               (eq types:*ws* (token:get-type-value (peek-token state))))
 
           (eat-token state)))
 
 
 (defun is-type (token target)
     (and token
-         (eq (token:type-value token)
+         (eq (token:get-type-value token)
              target)))
 
 
 (defun is-next-type (state target)
     (let ((peeked (peek-token state)))
         (and peeked
-             (eq (token:type-value peeked) target))))
+             (eq (token:get-type-value peeked) target))))
 
 
 (defun add-sem-token (state token sem-type)

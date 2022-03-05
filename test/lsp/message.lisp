@@ -9,7 +9,7 @@
                       (:text-doc-item :alive/lsp/types/text-doc-item)
                       (:sem-tokens :alive/lsp/message/document/sem-tokens-full)
                       (:init :alive/lsp/message/initialize)
-                      (:pos :alive/lsp/message/position)
+                      (:pos :alive/position)
                       (:message :alive/lsp/message/abstract)
                       (:packet :alive/lsp/packet)
                       (:parse :alive/lsp/parse)
