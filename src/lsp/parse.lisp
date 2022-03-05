@@ -2,7 +2,8 @@
     (:use :cl)
     (:export :from-stream)
 
-    (:local-nicknames (:did-open :alive/lsp/message/document/did-open)
+    (:local-nicknames (:completion :alive/lsp/message/document/completion)
+                      (:did-open :alive/lsp/message/document/did-open)
                       (:did-change :alive/lsp/message/document/did-change)
                       (:load-file :alive/lsp/message/alive/load-file)
                       (:try-compile :alive/lsp/message/alive/try-compile)
@@ -141,8 +142,9 @@
                (did-change:from-wire (params fields)))
 
               ((string= "textdocument/completion" name)
-               (format T "COMPLETION ~A~%" (json:encode-json-to-string fields))
-               (error "Not done yet"))
+               (completion:from-wire :jsonrpc (jsonrpc fields)
+                                     :id msg-id
+                                     :params (params fields)))
 
               ((string= "textdocument/semantictokens/full" name)
                (sem-tokens:from-wire :jsonrpc (jsonrpc fields)

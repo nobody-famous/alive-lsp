@@ -5,7 +5,8 @@
              :listener
              :start
              :stop)
-    (:local-nicknames (:did-open :alive/lsp/message/document/did-open)
+    (:local-nicknames (:completion :alive/lsp/message/document/completion)
+                      (:did-open :alive/lsp/message/document/did-open)
                       (:did-change :alive/lsp/message/document/did-change)
                       (:file :alive/file)
                       (:init :alive/lsp/message/initialize)
@@ -15,6 +16,7 @@
                       (:stdout :alive/lsp/message/alive/stdout)
                       (:logger :alive/logger)
                       (:message :alive/lsp/message/abstract)
+                      (:comps :alive/lsp/completions)
                       (:packet :alive/lsp/packet)
                       (:parse :alive/lsp/parse)
                       (:errors :alive/lsp/errors)
@@ -132,10 +134,10 @@
     (let* ((params (message:params msg))
            (doc (sem-tokens:text-document params))
            (uri (text-doc:uri doc))
-           (text (get-file-text state uri)))
+           (file-text (get-file-text state uri))
+           (text (if file-text file-text "")))
 
-        (when text
-              (send-msg state (sem-tokens:create-response (message:id msg) text)))))
+        (send-msg state (sem-tokens:create-response (message:id msg) text))))
 
 
 (defmethod handle-msg (state (msg load-file:request))
@@ -158,6 +160,19 @@
            (resp (try-compile:create-response (message:id msg) msgs)))
 
         (send-msg state resp)))
+
+
+(defmethod handle-msg (state (msg completion:request))
+    (let* ((params (message:params msg))
+           (doc (completion:text-document params))
+           (pos (completion:pos params))
+           (uri (text-doc:uri doc))
+           (file-text (get-file-text state uri))
+           (text (if file-text file-text ""))
+           (results (comps:simple :text text :pos pos)))
+
+        (format T "RESULTS ~A~%" results)
+        (error "Handle completions not done")))
 
 
 (defun stop (state)

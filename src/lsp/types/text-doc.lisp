@@ -41,6 +41,8 @@
                         ((eq key :version) (setf (version id) value)))))
 
         (loop :with id := (make-instance 'text-document)
+
               :for field :in fields :do
                   (add-field id (car field) (cdr field))
+
               :finally (return id))))

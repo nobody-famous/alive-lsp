@@ -1,12 +1,10 @@
-(defpackage :alive/parse/pos
+(defpackage :alive/lsp/message/position
     (:use :cl)
     (:export :create
-             :from-wire
-             :line
-             :col)
+             :from-wire)
     (:local-nicknames (:types :alive/types)))
 
-(in-package :alive/parse/pos)
+(in-package :alive/lsp/message/position)
 
 
 (defclass pos ()
@@ -28,10 +26,20 @@
          (eq (col a) (col b))))
 
 
-(defun create (&key (line 0) (col 0))
+(defun create (&key line col)
     (make-instance 'pos
                    :line line
                    :col col))
 
 
+(defun from-wire (fields)
+    (labels ((add-field (id key value)
+                  (cond ((eq key :line) (setf (line id) value))
+                        ((eq key :character) (setf (col id) value)))))
 
+        (loop :with id := (make-instance 'pos)
+
+              :for field :in fields :do
+                  (add-field id (car field) (cdr field))
+
+              :finally (return id))))
