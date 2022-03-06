@@ -3,8 +3,8 @@
     (:export :create
              :end
              :get-type-value
-             :start
-             :text)
+             :get-text
+             :start)
     (:local-nicknames (:pos :alive/position)
                       (:types :alive/types)))
 
@@ -46,6 +46,10 @@
 
 (defun get-type-value (obj)
     (when obj (type-value obj)))
+
+
+(defun get-text (obj)
+    (when obj (text obj)))
 
 
 (defun create (&key type-value start end text)

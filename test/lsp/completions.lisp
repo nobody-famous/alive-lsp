@@ -12,9 +12,13 @@
 (defun basic ()
     (run:test "Basic Completions Test"
               (lambda ()
-                  (comps:simple :text "some text alive/symbols::foo  "
+                  (format T "~A~%" (comps:simple :text "some text alive/symbols:c"
+                                                 :pos (pos:create :line 0
+                                                                  :col 27)))
+
+                  (comps:simple :text "some text cl-user:foo  "
                                 :pos (pos:create :line 0
-                                                 :col 28))
+                                                 :col 21))
 
                   (comps:simple :text ":foo"
                                 :pos (pos:create :line 0
