@@ -3,6 +3,7 @@
     (:export :callable-p
              :get-lambda-list
              :function-p
+             :lookup
              :macro-p))
 
 (in-package :alive/symbols)
@@ -39,3 +40,9 @@
     (or (function-p sym-name pkg-name)
         (macro-p sym-name pkg-name)
         (has-lambda-list-p sym-name pkg-name)))
+
+
+(defun lookup (name pkg-name)
+    (let ((pkg (find-package (string-upcase pkg-name))))
+        (when pkg
+              (find-symbol (string-upcase name) pkg))))

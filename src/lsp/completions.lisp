@@ -1,12 +1,96 @@
 (defpackage :alive/lsp/completions
     (:use :cl)
-    (:export :simple)
+    (:export :simple
+
+             :*kind-text*
+             :*kind-method*
+             :*kind-function*
+             :*kind-constructor*
+             :*kind-field*
+             :*kind-variable*
+             :*kind-class*
+             :*kind-interface*
+             :*kind-module*
+             :*kind-property*
+             :*kind-unit*
+             :*kind-value*
+             :*kind-enum*
+             :*kind-keyword*
+             :*kind-snippet*
+             :*kind-color*
+             :*kind-file*
+             :*kind-reference*
+             :*kind-folder*
+             :*kind-enum-member*
+             :*kind-constant*
+             :*kind-struct*
+             :*kind-event*
+             :*kind-operator*
+             :*kind-type-parameter*)
     (:local-nicknames (:pos :alive/position)
+                      (:symbols :alive/symbols)
                       (:token :alive/parse/token)
                       (:tokenizer :alive/parse/tokenizer)
                       (:types :alive/types)))
 
 (in-package :alive/lsp/completions)
+
+
+(defparameter *kind-text* 1)
+(defparameter *kind-method* 2)
+(defparameter *kind-function* 3)
+(defparameter *kind-constructor* 4)
+(defparameter *kind-field* 5)
+(defparameter *kind-variable* 6)
+(defparameter *kind-class* 7)
+(defparameter *kind-interface* 8)
+(defparameter *kind-module* 9)
+(defparameter *kind-property* 10)
+(defparameter *kind-unit* 11)
+(defparameter *kind-value* 12)
+(defparameter *kind-enum* 13)
+(defparameter *kind-keyword* 14)
+(defparameter *kind-snippet* 15)
+(defparameter *kind-color* 16)
+(defparameter *kind-file* 17)
+(defparameter *kind-reference* 18)
+(defparameter *kind-folder* 19)
+(defparameter *kind-enum-member* 20)
+(defparameter *kind-constant* 21)
+(defparameter *kind-struct* 22)
+(defparameter *kind-event* 23)
+(defparameter *kind-operator* 24)
+(defparameter *kind-type-parameter* 25)
+
+
+(defclass item ()
+    ((label :accessor label
+            :initform nil
+            :initarg :label)
+     (insert-text :accessor insert-text
+                  :initform nil
+                  :initarg :insert-text)
+     (kind :accessor kind
+           :initform nil
+           :initarg :kind)
+     (documentation :accessor doc-string
+                    :initform nil
+                    :initarg :doc-string)))
+
+
+(defmethod print-object ((obj item) out)
+    (format out "{label: ~A; insertText: ~A; kind: ~A; documentation: ~A}"
+            (label obj)
+            (insert-text obj)
+            (kind obj)
+            (doc-string obj)))
+
+
+(defun create-item (&key label kind doc-string)
+    (make-instance 'item
+                   :label label
+                   :kind kind
+                   :doc-string doc-string))
 
 
 (defun find-tokens (tokens pos)
@@ -43,17 +127,58 @@
             (push (string-downcase (string s)) syms))))
 
 
+(defun to-snippet (name lambda-list)
+    (loop :with is-keys := nil
+          :with skip-rest := nil
+          :with ndx := 1
+          :with items := '()
+
+          :for item :in lambda-list :do
+              (cond ((string= "&KEY" item) (setf is-keys T))
+                    ((char= #\& (char (string item) 0)) (setf skip-rest T))
+                    ((not skip-rest) (setf items
+                                           (cons
+                                            (let ((item-text (string-downcase item)))
+                                                (if is-keys
+                                                    (format nil ":~A ${~A:~A}" item-text ndx item-text)
+                                                    (format nil "${~A:~A}" ndx (string-downcase item))))
+
+                                            items))
+                                     (incf ndx)))
+
+          :finally (return (cons name (reverse items)))))
+
+
+(defun to-item (name pkg-name)
+    (let* ((lambda-list (symbols:get-lambda-list name pkg-name))
+           (kind (if lambda-list
+                     *kind-snippet*
+                     *kind-text*))
+           (text (if lambda-list
+                     (to-snippet name lambda-list)
+                     name))
+           (doc-string (when lambda-list
+                             (documentation (symbols:lookup name pkg-name) 'function))))
+
+        (make-instance 'item
+                       :label name
+                       :insert-text text
+                       :kind kind
+                       :doc-string doc-string)))
+
+
 (defun symbol-with-pkg (&key name num-colons pkg-name)
     (let* ((pref (string-downcase name))
            (req-pkg (find-package (string-upcase pkg-name)))
            (pkg (if req-pkg req-pkg *package*)))
 
-        (remove-if-not (lambda (str)
-                           (and (< (length pref) (length str))
-                                (string= pref (subseq str 0 (length pref)))))
-                       (if (eq 1 num-colons)
-                           (get-ext-symbols pkg)
-                           (get-all-symbols pkg)))))
+        (mapcar (lambda (name) (to-item name (package-name pkg)))
+                (remove-if-not (lambda (str)
+                                   (and (< (length pref) (length str))
+                                        (string= pref (subseq str 0 (length pref)))))
+                               (if (eq 1 num-colons)
+                                   (get-ext-symbols pkg)
+                                   (get-all-symbols pkg))))))
 
 
 (defun simple (&key text pos)

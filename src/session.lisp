@@ -169,9 +169,9 @@
            (uri (text-doc:uri doc))
            (file-text (get-file-text state uri))
            (text (if file-text file-text ""))
-           (results (comps:simple :text text :pos pos)))
+           (items (comps:simple :text text :pos pos)))
 
-        (format T "RESULTS ~A~%" results)
+        (format T "RESULTS ~A~%" items)
         (error "Handle completions not done")))
 
 

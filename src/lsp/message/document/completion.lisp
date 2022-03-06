@@ -2,6 +2,7 @@
     (:use :cl)
     (:export :create-params
              :create-request
+             :create-response
              :from-wire
              :pos
              :request
@@ -29,6 +30,25 @@
          (equalp (message:id a) (message:id b))
          (types:deep-equal-p (message:method-name a) (message:method-name b))
          (types:deep-equal-p (message:params a) (message:params b))))
+
+
+(defclass response-body ()
+    ((is-incomplete :accessor is-incomplete
+                    :initform T
+                    :initarg :is-incomplete)
+     (items :accessor items
+            :initform nil
+            :initarg :items)))
+
+
+(defclass response (message:result-response)
+    ())
+
+
+(defun create-response (&key id items)
+    (make-instance 'response
+                   :id id
+                   :result (make-instance 'response-body :items items)))
 
 
 (defun create-request (&key id (jsonrpc "2.0") params)
