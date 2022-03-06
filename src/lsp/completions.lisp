@@ -63,6 +63,10 @@
 (defparameter *kind-type-parameter* 25)
 
 
+(defparameter *insert-plain* 1)
+(defparameter *insert-snippet* 2)
+
+
 (defclass item ()
     ((label :accessor label
             :initform nil
@@ -70,6 +74,9 @@
      (insert-text :accessor insert-text
                   :initform nil
                   :initarg :insert-text)
+     (insert-text-format :accessor insert-text-format
+                         :initform 1
+                         :initarg :insert-text-format)
      (kind :accessor kind
            :initform nil
            :initarg :kind)
@@ -86,11 +93,13 @@
             (doc-string obj)))
 
 
-(defun create-item (&key label kind doc-string)
+(defun create-item (&key label kind doc-string insert-text insert-format)
     (make-instance 'item
                    :label label
                    :kind kind
-                   :doc-string doc-string))
+                   :doc-string doc-string
+                   :insert-text insert-text
+                   :insert-text-format insert-format))
 
 
 (defun find-tokens (tokens pos)
@@ -127,14 +136,17 @@
             (push (string-downcase (string s)) syms))))
 
 
-(defun to-snippet (name lambda-list)
+(defun list-to-snippet (name lambda-list)
     (loop :with is-keys := nil
           :with skip-rest := nil
           :with ndx := 1
           :with items := '()
 
           :for item :in lambda-list :do
-              (cond ((string= "&KEY" item) (setf is-keys T))
+              (cond ((not (eq 'symbol (type-of item)))
+                     (string-downcase (format NIL "${~A:~A}~%" ndx item))
+                     (incf ndx))
+                    ((string= "&KEY" item) (setf is-keys T))
                     ((char= #\& (char (string item) 0)) (setf skip-rest T))
                     ((not skip-rest) (setf items
                                            (cons
@@ -146,25 +158,34 @@
                                             items))
                                      (incf ndx)))
 
-          :finally (return (cons name (reverse items)))))
+          :finally (return (format nil "~{~A~^ ~}" (cons name (reverse items))))))
+
+
+(defun to-snippet (name lambda-list)
+    (when (and (eq (type-of lambda-list) 'cons)
+               (eq (type-of (cdr lambda-list)) 'cons))
+          (list-to-snippet name lambda-list)))
 
 
 (defun to-item (name pkg-name)
     (let* ((lambda-list (symbols:get-lambda-list name pkg-name))
            (kind (if lambda-list
-                     *kind-snippet*
+                     *kind-function*
                      *kind-text*))
            (text (if lambda-list
                      (to-snippet name lambda-list)
                      name))
+           (insert-format (if lambda-list
+                              *insert-snippet*
+                              *insert-plain*))
            (doc-string (when lambda-list
                              (documentation (symbols:lookup name pkg-name) 'function))))
 
-        (make-instance 'item
-                       :label name
-                       :insert-text text
-                       :kind kind
-                       :doc-string doc-string)))
+        (create-item :label name
+                     :insert-text text
+                     :kind kind
+                     :doc-string doc-string
+                     :insert-format insert-format)))
 
 
 (defun symbol-with-pkg (&key name num-colons pkg-name)
@@ -172,7 +193,8 @@
            (req-pkg (find-package (string-upcase pkg-name)))
            (pkg (if req-pkg req-pkg *package*)))
 
-        (mapcar (lambda (name) (to-item name (package-name pkg)))
+        (mapcar (lambda (name)
+                    (to-item name (package-name pkg)))
                 (remove-if-not (lambda (str)
                                    (and (< (length pref) (length str))
                                         (string= pref (subseq str 0 (length pref)))))

@@ -171,8 +171,9 @@
            (text (if file-text file-text ""))
            (items (comps:simple :text text :pos pos)))
 
-        (format T "RESULTS ~A~%" items)
-        (error "Handle completions not done")))
+        (send-msg state (completion:create-response
+                         :id (message:id msg)
+                         :items items))))
 
 
 (defun stop (state)
