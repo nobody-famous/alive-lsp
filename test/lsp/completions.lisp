@@ -16,9 +16,9 @@
                                                  :pos (pos:create :line 0
                                                                   :col 27)))
 
-                  (comps:simple :text "some text cl-user:foo  "
+                  (comps:simple :text "some text cl-user:f"
                                 :pos (pos:create :line 0
-                                                 :col 21))
+                                                 :col 19))
 
                   (comps:simple :text ":foo"
                                 :pos (pos:create :line 0

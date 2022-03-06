@@ -21,9 +21,8 @@
                                  ((= 1 (length found-tokens)) (list (first found-tokens) nil nil))))))
 
 
-(defun get-ext-symbols (&key prefix pkg)
-    (let ((pref (string-downcase prefix))
-          (inherited (list))
+(defun get-ext-symbols (&key pkg)
+    (let ((inherited (list))
           (external (list)))
 
         (do-symbols (s pkg (if (< 0 (length external))
@@ -38,7 +37,7 @@
                       ((eq status :inherited) (push name inherited)))))))
 
 
-(defun get-all-symbols (&key prefix pkg)
+(defun get-all-symbols (&key pkg)
     (let ((syms (list)))
         (do-symbols (s pkg syms)
             (format T "SYM ~A~%" s))))
@@ -50,10 +49,11 @@
            (pkg (if req-pkg req-pkg *package*)))
 
         (remove-if-not (lambda (str)
-                           (string= pref (subseq str 0 (length pref))))
+                           (and (< (length pref) (length str))
+                                (string= pref (subseq str 0 (length pref)))))
                        (if (eq 1 num-colons)
-                           (get-ext-symbols :prefix name :pkg pkg)
-                           (get-all-symbols :prefix name :pkg pkg)))))
+                           (get-ext-symbols :pkg pkg)
+                           (get-all-symbols :pkg pkg)))))
 
 
 (defun simple (&key text pos)

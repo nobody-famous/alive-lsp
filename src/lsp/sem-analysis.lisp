@@ -199,8 +199,8 @@
              (process-fn (state obj)
                   (skip-ws state)
 
-                  (loop :with fn-name := (if (sym obj) (token:text (sym obj)) nil)
-                        :with pkg-name := (if (pkg obj) (token:text (pkg obj)) nil)
+                  (loop :with fn-name := (if (sym obj) (token:get-text (sym obj)) nil)
+                        :with pkg-name := (if (pkg obj) (token:get-text (pkg obj)) nil)
                         :with done := nil
 
                         :for item :in (symbols:get-lambda-list fn-name pkg-name)
@@ -238,10 +238,10 @@
                       (cond ((is-type token types:*close-paren*) (add-sem-token state token sem-types:*parenthesis*))
                             ((is-type token types:*symbol*) (let* ((obj (get-symbol-pkg state token))
                                                                    (pkg-name (if (pkg obj)
-                                                                                 (token:text (pkg obj))
+                                                                                 (token:get-text (pkg obj))
                                                                                  (package-name *package*)))
                                                                    (sym-name (if (sym obj)
-                                                                                 (token:text (sym obj))
+                                                                                 (token:get-text (sym obj))
                                                                                  nil)))
 
                                                                 (if (symbols:callable-p sym-name pkg-name)
@@ -252,8 +252,8 @@
                             (t (process-expr state)))))
 
              (get-symbol-type (token)
-                  (cond ((is-keyword (token:text token)) sem-types:*keyword*)
-                        ((is-number (token:text token)) sem-types:*number*)
+                  (cond ((is-keyword (token:get-text token)) sem-types:*keyword*)
+                        ((is-number (token:get-text token)) sem-types:*number*)
                         (t sem-types:*symbol*)))
 
              (get-symbol-pkg (state token)
