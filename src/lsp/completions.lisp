@@ -188,19 +188,51 @@
                      :insert-format insert-format)))
 
 
-(defun symbol-with-pkg (&key name num-colons pkg-name)
-    (let* ((pref (string-downcase name))
-           (req-pkg (find-package (string-upcase pkg-name)))
-           (pkg (if req-pkg req-pkg *package*)))
+(defun strict-match (pref str)
+    (string= pref (subseq str 0 (length pref))))
 
+
+(defun get-found-chars (str)
+    (loop :with found := (make-hash-table)
+          :for ch :across str :do
+              (setf (gethash ch found) T)
+          :finally (return found)))
+
+
+(defun fuzzy-match (pref str)
+    (let ((found (get-found-chars str)))
+        (loop :with match := (char= (char pref 0) (char str 0))
+              :for ch :across pref :do
+                  (setf match
+                        (and match
+                             (gethash ch found)))
+              :finally (return match))))
+
+
+(defun symbols-to-items (&key name symbols pkg)
+    (format T "symbols-to-items ~A~%" name)
+    (let ((pref (string-downcase name)))
         (mapcar (lambda (name)
                     (to-item name (package-name pkg)))
                 (remove-if-not (lambda (str)
                                    (and (< (length pref) (length str))
-                                        (string= pref (subseq str 0 (length pref)))))
-                               (if (eq 1 num-colons)
-                                   (get-ext-symbols pkg)
-                                   (get-all-symbols pkg))))))
+                                        (fuzzy-match pref str)))
+                               symbols))))
+
+
+(defun symbol-with-pkg (&key name num-colons pkg-name)
+    (let* ((req-pkg (find-package (string-upcase pkg-name)))
+           (pkg (if req-pkg req-pkg *package*)))
+
+        (symbols-to-items :name name
+                          :pkg pkg
+                          :symbols (if (eq 1 num-colons)
+                                       (get-ext-symbols pkg)
+                                       (get-all-symbols pkg)))))
+
+
+(defun symbol-no-pkg (&key name pkg-name)
+    (format T "no package ~A~%" name))
 
 
 (defun simple (&key text pos)
@@ -227,8 +259,7 @@
                                         :pkg-name (package-name *package*)))
 
                       ((eq (token:get-type-value token1) types:*symbol*)
-                       (symbol-with-pkg :name (token:get-text token1)
-                                        :num-colons 0
-                                        :pkg-name (package-name *package*)))
+                       (symbol-no-pkg :name (token:get-text token1)
+                                      :pkg-name (package-name *package*)))
 
-                      (T (format T "~A ~A ~A~%" token3 token2 token1)))))))
+                      (T (error (format NIL "simple completions: ~A ~A ~A~%" token3 token2 token1))))))))

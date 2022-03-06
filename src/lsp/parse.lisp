@@ -156,6 +156,8 @@
                                     :id msg-id
                                     :params (params fields)))
 
+              ((string= "textdocument/didsave" name) nil)
+
               ((string= "$/alive/trycompile" name)
                (try-compile:from-wire :jsonrpc (jsonrpc fields)
                                       :id msg-id
