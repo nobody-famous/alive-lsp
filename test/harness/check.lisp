@@ -20,8 +20,7 @@
 
 
 (defmethod types:deep-equal-p ((a string) b)
-    (and (equal (type-of a) (type-of b))
-         (string-equal a b)))
+    (and (string-equal a b)))
 
 
 (defmethod types:deep-equal-p ((a integer) b)

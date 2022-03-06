@@ -17,11 +17,11 @@
           :while (pos:less-than (token:end token) pos)
 
           :finally (return (cond ((<= 3 (length found-tokens)) (subseq (reverse found-tokens) 0 3))
-                                 ((= 2 (length found-tokens)) (cons nil (reverse found-tokens)))
+                                 ((= 2 (length found-tokens)) (reverse (cons nil found-tokens)))
                                  ((= 1 (length found-tokens)) (list (first found-tokens) nil nil))))))
 
 
-(defun get-ext-symbols (&key pkg)
+(defun get-ext-symbols (pkg)
     (let ((inherited (list))
           (external (list)))
 
@@ -37,10 +37,10 @@
                       ((eq status :inherited) (push name inherited)))))))
 
 
-(defun get-all-symbols (&key pkg)
+(defun get-all-symbols (pkg)
     (let ((syms (list)))
         (do-symbols (s pkg syms)
-            (format T "SYM ~A~%" s))))
+            (push (string-downcase (string s)) syms))))
 
 
 (defun symbol-with-pkg (&key name num-colons pkg-name)
@@ -52,25 +52,36 @@
                            (and (< (length pref) (length str))
                                 (string= pref (subseq str 0 (length pref)))))
                        (if (eq 1 num-colons)
-                           (get-ext-symbols :pkg pkg)
-                           (get-all-symbols :pkg pkg)))))
+                           (get-ext-symbols pkg)
+                           (get-all-symbols pkg)))))
 
 
 (defun simple (&key text pos)
     (let ((tokens (tokenizer:from-stream (make-string-input-stream text))))
-        (destructuring-bind (token1 token2 token3) (find-tokens tokens pos)
-            (cond ((and (eq (token:get-type-value token1) types:*symbol*)
-                        (eq (token:get-type-value token2) types:*colons*)
-                        (eq (token:get-type-value token3) types:*symbol*))
-                   (symbol-with-pkg :name (token:get-text token1)
-                                    :num-colons (length (token:get-text token2))
-                                    :pkg-name (token:get-text token3)))
+        (if (zerop (length tokens))
+            '()
+            (destructuring-bind (token1 token2 token3) (find-tokens tokens pos)
+                (cond ((and (eq (token:get-type-value token1) types:*symbol*)
+                            (eq (token:get-type-value token2) types:*colons*)
+                            (eq (token:get-type-value token3) types:*symbol*))
+                       (symbol-with-pkg :name (token:get-text token1)
+                                        :num-colons (length (token:get-text token2))
+                                        :pkg-name (token:get-text token3)))
 
-                  ((and (eq (token:get-type-value token1) types:*colons*)
-                        (eq (token:get-type-value token2) types:*symbol*))
-                   (format T "PACKAGE WITHOUT NAME~%"))
+                      ((and (eq (token:get-type-value token1) types:*colons*)
+                            (eq (token:get-type-value token2) types:*symbol*))
+                       (symbol-with-pkg :name ""
+                                        :num-colons (length (token:get-text token1))
+                                        :pkg-name (token:get-text token2)))
 
-                  ((eq (token:get-type-value token1) types:*colons*)
-                   (format T "COLONS WITHOUT PACKAGE~%"))
+                      ((eq (token:get-type-value token1) types:*colons*)
+                       (symbol-with-pkg :name ""
+                                        :num-colons (length (token:get-text token1))
+                                        :pkg-name (package-name *package*)))
 
-                  (T (format T "~A ~A ~A~%" token3 token2 token1))))))
+                      ((eq (token:get-type-value token1) types:*symbol*)
+                       (symbol-with-pkg :name (token:get-text token1)
+                                        :num-colons 0
+                                        :pkg-name (package-name *package*)))
+
+                      (T (format T "~A ~A ~A~%" token3 token2 token1)))))))
