@@ -241,8 +241,7 @@
                                                   nil)))
 
                                  (if (symbols:callable-p sym-name pkg-name)
-                                     (progn (format T "~A ~A~%" sym-name pkg-name)
-                                            (process-symbol state obj (cond ((symbols:function-p sym-name pkg-name) sem-types:*function*)
+                                     (progn (process-symbol state obj (cond ((symbols:function-p sym-name pkg-name) sem-types:*function*)
                                                                             ((symbols:macro-p sym-name pkg-name) sem-types:*macro*)
                                                                             (T sem-types:*keyword*)))
                                             (process-fn state obj))
