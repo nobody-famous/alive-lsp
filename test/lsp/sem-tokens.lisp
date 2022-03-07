@@ -168,6 +168,26 @@
                                                      :line 0
                                                      :start 5
                                                      :end 8)))
+                      (check-combo "( :bar )" (list (sem-types:create
+                                                     :token-type sem-types:*parenthesis*
+                                                     :line 0
+                                                     :start 0
+                                                     :end 1)
+                                                    (sem-types:create
+                                                     :token-type sem-types:*symbol*
+                                                     :line 0
+                                                     :start 2
+                                                     :end 3)
+                                                    (sem-types:create
+                                                     :token-type sem-types:*symbol*
+                                                     :line 0
+                                                     :start 3
+                                                     :end 6)
+                                                    (sem-types:create
+                                                     :token-type sem-types:*parenthesis*
+                                                     :line 0
+                                                     :start 7
+                                                     :end 8)))
                       (check-combo "( let ( ( a b ) ) nil )" (list (sem-types:create
                                                                     :token-type sem-types:*parenthesis*
                                                                     :line 0
@@ -234,7 +254,7 @@
                                                        :start 3
                                                        :end 4)
                                                       (sem-types:create
-                                                       :token-type sem-types:*function*
+                                                       :token-type sem-types:*macro*
                                                        :line 0
                                                        :start 4
                                                        :end 9)
@@ -249,15 +269,10 @@
                                                                   :start 0
                                                                   :end 1)
                                                                  (sem-types:create
-                                                                  :token-type sem-types:*keyword*
+                                                                  :token-type sem-types:*macro*
                                                                   :line 0
                                                                   :start 1
                                                                   :end 6)
-                                                                 (sem-types:create
-                                                                  :token-type sem-types:*symbol*
-                                                                  :line 0
-                                                                  :start 7
-                                                                  :end 10)
                                                                  (sem-types:create
                                                                   :token-type sem-types:*parenthesis*
                                                                   :line 0
@@ -294,7 +309,7 @@
                                                                 :start 0
                                                                 :end 1)
                                                                (sem-types:create
-                                                                :token-type sem-types:*keyword*
+                                                                :token-type sem-types:*macro*
                                                                 :line 0
                                                                 :start 1
                                                                 :end 6)
@@ -329,7 +344,7 @@
                                                                         :start 0
                                                                         :end 1)
                                                                        (sem-types:create
-                                                                        :token-type sem-types:*keyword*
+                                                                        :token-type sem-types:*macro*
                                                                         :line 0
                                                                         :start 2
                                                                         :end 7)
@@ -384,7 +399,7 @@
                                                                   :start 0
                                                                   :end 1)
                                                                  (sem-types:create
-                                                                  :token-type sem-types:*keyword*
+                                                                  :token-type sem-types:*macro*
                                                                   :line 0
                                                                   :start 1
                                                                   :end 6)

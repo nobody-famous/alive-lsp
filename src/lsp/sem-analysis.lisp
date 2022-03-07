@@ -231,7 +231,8 @@
                   (let ((token (next-token state)))
                       (cond ((is-type token types:*close-paren*) (add-sem-token state token sem-types:*parenthesis*))
 
-                            ((is-type token types:*symbol*)
+                            ((or (is-type token types:*symbol*)
+                                 (is-type token types:*colons*))
                              (let* ((obj (get-symbol-pkg state token))
                                     (pkg-name (if (pkg obj)
                                                   (token:get-text (pkg obj))
@@ -249,9 +250,9 @@
 
                             (t (process-expr state)))))
 
-             (get-symbol-type (token)
+             (get-symbol-type (token has-colons)
                   (cond ((is-number (token:get-text token)) sem-types:*number*)
-                        (t sem-types:*symbol*)))
+                        (t (when has-colons sem-types:*symbol*))))
 
              (get-symbol-pkg (state token)
                   (if (is-next-type state types:*colons*)
@@ -273,6 +274,7 @@
                                      :sym token)))
 
              (process-symbol (state obj &optional (sym-type nil))
+                  (format T "process-symbol ~A~%" obj)
                   (if (colons obj)
                       (progn (add-sem-token state (pkg obj) sem-types:*namespace*)
                              (add-sem-token state (colons obj) sem-types:*symbol*)
@@ -281,10 +283,16 @@
                                                   (sym obj)
                                                   (if sym-type
                                                       sym-type
-                                                      (get-symbol-type (sym obj))))))
-                      (add-sem-token state (sym obj) (if sym-type
-                                                         sym-type
-                                                         (get-symbol-type (sym obj)))))))
+                                                      (get-symbol-type (sym obj) T)))))
+
+                      (let ((target-type (if sym-type
+                                             sym-type
+                                             (get-symbol-type (sym obj) NIL))))
+
+                          (when target-type
+                                (add-sem-token state (sym obj) (if sym-type
+                                                                   sym-type
+                                                                   (get-symbol-type (sym obj) NIL))))))))
 
         (let ((token (next-token state)))
             (cond ((is-type token types:*comment*) (add-sem-token state token sem-types:*comment*))
