@@ -1,13 +1,18 @@
 (defpackage :alive/streams
     (:use :cl)
-    (:export :eof-p
+    (:export :add-listener
+             :eof-p
              :make-stream))
 
 (in-package :alive/streams)
 
 
-(defun make-stream (&key stdout)
-    #+sbcl (make-instance 'alive/sbcl/streams:rt-stream :stdout stdout))
+(defun make-stream ()
+    #+sbcl (make-instance 'alive/sbcl/streams:rt-stream))
+
+
+(defun add-listener (obj listener)
+    #+sbcl (alive/sbcl/streams:add-listener obj listener))
 
 
 (defun eof-p (obj)

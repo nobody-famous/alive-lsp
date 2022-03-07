@@ -83,6 +83,7 @@
 
 (defmethod types:deep-equal-p ((a request) b)
     (and (equal (type-of a) (type-of b))
+         (equalp (message:id a) (message:id b))
          (types:deep-equal-p (message::params a) (message::params b))))
 
 
@@ -180,16 +181,29 @@
                    :full full))
 
 
+(defclass completion-opts ()
+    ((trigger-characters :accessor trigger-characters
+                         :initform (list #\:)
+                         :initarg :trigger-characters)))
+
+
+(defmethod types:deep-equal-p ((a completion-opts) b)
+    (equal (type-of a) (type-of b)))
+
+
 (defclass server-capabilities ()
     ((text-document-sync :accessor text-document-sync
                          :initform *doc-sync-full*
                          :initarg :text-document-sync)
      (hover-provider :accessor hover-provider
-                     :initform T
+                     :initform nil
                      :initarg :hover-provider)
      (semantic-tokens-provider :accessor semantic-tokens-provider
                                :initform (make-instance 'sem-tokens-opts)
-                               :initarg :semantic-tokens-provider)))
+                               :initarg :semantic-tokens-provider)
+     (completion-provider :accessor completion-provider
+                          :initform (make-instance 'completion-opts)
+                          :initarg :completion-provider)))
 
 
 (defmethod print-object ((obj server-capabilities) out)
@@ -219,8 +233,16 @@
                    :initarg :capabilities)))
 
 
+(defmethod print-object ((obj response-body) out)
+    (format out "{capabilities: ~A}" (capabilities obj)))
+
+
 (defclass response (message:result-response)
     ((message:result :initform (make-instance 'response-body))))
+
+
+(defmethod print-object ((obj response) out)
+    (format out "{result: ~A}" (message:result obj)))
 
 
 (defclass initialized (message:notification)

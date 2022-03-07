@@ -1,7 +1,6 @@
 (defpackage :alive/types
     (:use :cl)
-    (:export :make-compile-message
-             :*sev-error*
+    (:export :*sev-error*
              :*sev-warn*
              :*sev-info*
 
@@ -48,12 +47,6 @@
 (defparameter *colons* 13)
 (defparameter *ifdef-true* 14)
 (defparameter *ifdef-false* 15)
-
-
-(defstruct compile-message
-    severity
-    location
-    message)
 
 
 (defgeneric deep-equal-p (a b))

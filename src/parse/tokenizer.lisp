@@ -1,7 +1,7 @@
 (defpackage :alive/parse/tokenizer
     (:use :cl)
     (:export :from-stream)
-    (:local-nicknames (:pos :alive/parse/pos)
+    (:local-nicknames (:pos :alive/position)
                       (:token :alive/parse/token)
                       (:types :alive/types)))
 

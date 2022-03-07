@@ -108,16 +108,16 @@
 
         (run:test "Combos"
                   (lambda ()
-                      (check-combo "()" (list (sem-types:create
-                                               :token-type sem-types:*parenthesis*
-                                               :line 0
-                                               :start 0
-                                               :end 1)
-                                              (sem-types:create
-                                               :token-type sem-types:*parenthesis*
-                                               :line 0
-                                               :start 1
-                                               :end 2)))
+                      (check-combo "(  )" (list (sem-types:create
+                                                 :token-type sem-types:*parenthesis*
+                                                 :line 0
+                                                 :start 0
+                                                 :end 1)
+                                                (sem-types:create
+                                                 :token-type sem-types:*parenthesis*
+                                                 :line 0
+                                                 :start 3
+                                                 :end 4)))
                       (check-combo "(123" (list (sem-types:create
                                                  :token-type sem-types:*parenthesis*
                                                  :line 0
@@ -168,6 +168,56 @@
                                                      :line 0
                                                      :start 5
                                                      :end 8)))
+                      (check-combo "( let ( ( a b ) ) nil )" (list (sem-types:create
+                                                                    :token-type sem-types:*parenthesis*
+                                                                    :line 0
+                                                                    :start 0
+                                                                    :end 1)
+                                                                   (sem-types:create
+                                                                    :token-type sem-types:*keyword*
+                                                                    :line 0
+                                                                    :start 2
+                                                                    :end 5)
+                                                                   (sem-types:create
+                                                                    :token-type sem-types:*parenthesis*
+                                                                    :line 0
+                                                                    :start 6
+                                                                    :end 7)
+                                                                   (sem-types:create
+                                                                    :token-type sem-types:*parenthesis*
+                                                                    :line 0
+                                                                    :start 8
+                                                                    :end 9)
+                                                                   (sem-types:create
+                                                                    :token-type sem-types:*symbol*
+                                                                    :line 0
+                                                                    :start 10
+                                                                    :end 11)
+                                                                   (sem-types:create
+                                                                    :token-type sem-types:*symbol*
+                                                                    :line 0
+                                                                    :start 12
+                                                                    :end 13)
+                                                                   (sem-types:create
+                                                                    :token-type sem-types:*parenthesis*
+                                                                    :line 0
+                                                                    :start 14
+                                                                    :end 15)
+                                                                   (sem-types:create
+                                                                    :token-type sem-types:*parenthesis*
+                                                                    :line 0
+                                                                    :start 16
+                                                                    :end 17)
+                                                                   (sem-types:create
+                                                                    :token-type sem-types:*symbol*
+                                                                    :line 0
+                                                                    :start 18
+                                                                    :end 21)
+                                                                   (sem-types:create
+                                                                    :token-type sem-types:*parenthesis*
+                                                                    :line 0
+                                                                    :start 22
+                                                                    :end 23)))
                       (check-combo "(cl:defun)" (list (sem-types:create
                                                        :token-type sem-types:*parenthesis*
                                                        :line 0
@@ -238,61 +288,96 @@
                                                                   :line 0
                                                                   :start 20
                                                                   :end 21)))
-                      (check-combo "(defun foo ((a b) c))" (list (sem-types:create
-                                                                  :token-type sem-types:*parenthesis*
-                                                                  :line 0
-                                                                  :start 0
-                                                                  :end 1)
-                                                                 (sem-types:create
-                                                                  :token-type sem-types:*keyword*
-                                                                  :line 0
-                                                                  :start 1
-                                                                  :end 6)
-                                                                 (sem-types:create
-                                                                  :token-type sem-types:*symbol*
-                                                                  :line 0
-                                                                  :start 7
-                                                                  :end 10)
-                                                                 (sem-types:create
-                                                                  :token-type sem-types:*parenthesis*
-                                                                  :line 0
-                                                                  :start 11
-                                                                  :end 12)
-                                                                 (sem-types:create
-                                                                  :token-type sem-types:*parenthesis*
-                                                                  :line 0
-                                                                  :start 12
-                                                                  :end 13)
-                                                                 (sem-types:create
-                                                                  :token-type sem-types:*parameter*
-                                                                  :line 0
-                                                                  :start 13
-                                                                  :end 14)
-                                                                 (sem-types:create
-                                                                  :token-type sem-types:*symbol*
-                                                                  :line 0
-                                                                  :start 15
-                                                                  :end 16)
-                                                                 (sem-types:create
-                                                                  :token-type sem-types:*parenthesis*
-                                                                  :line 0
-                                                                  :start 16
-                                                                  :end 17)
-                                                                 (sem-types:create
-                                                                  :token-type sem-types:*parameter*
-                                                                  :line 0
-                                                                  :start 18
-                                                                  :end 19)
-                                                                 (sem-types:create
-                                                                  :token-type sem-types:*parenthesis*
-                                                                  :line 0
-                                                                  :start 19
-                                                                  :end 20)
-                                                                 (sem-types:create
-                                                                  :token-type sem-types:*parenthesis*
-                                                                  :line 0
-                                                                  :start 20
-                                                                  :end 21)))
+                      (check-combo "(defun foo ( ) bar)" (list (sem-types:create
+                                                                :token-type sem-types:*parenthesis*
+                                                                :line 0
+                                                                :start 0
+                                                                :end 1)
+                                                               (sem-types:create
+                                                                :token-type sem-types:*keyword*
+                                                                :line 0
+                                                                :start 1
+                                                                :end 6)
+                                                               (sem-types:create
+                                                                :token-type sem-types:*symbol*
+                                                                :line 0
+                                                                :start 7
+                                                                :end 10)
+                                                               (sem-types:create
+                                                                :token-type sem-types:*parenthesis*
+                                                                :line 0
+                                                                :start 11
+                                                                :end 12)
+                                                               (sem-types:create
+                                                                :token-type sem-types:*parenthesis*
+                                                                :line 0
+                                                                :start 13
+                                                                :end 14)
+                                                               (sem-types:create
+                                                                :token-type sem-types:*symbol*
+                                                                :line 0
+                                                                :start 15
+                                                                :end 18)
+                                                               (sem-types:create
+                                                                :token-type sem-types:*parenthesis*
+                                                                :line 0
+                                                                :start 18
+                                                                :end 19)))
+                      (check-combo "( defun foo ( ( a b ) c ) )" (list (sem-types:create
+                                                                        :token-type sem-types:*parenthesis*
+                                                                        :line 0
+                                                                        :start 0
+                                                                        :end 1)
+                                                                       (sem-types:create
+                                                                        :token-type sem-types:*keyword*
+                                                                        :line 0
+                                                                        :start 2
+                                                                        :end 7)
+                                                                       (sem-types:create
+                                                                        :token-type sem-types:*symbol*
+                                                                        :line 0
+                                                                        :start 8
+                                                                        :end 11)
+                                                                       (sem-types:create
+                                                                        :token-type sem-types:*parenthesis*
+                                                                        :line 0
+                                                                        :start 12
+                                                                        :end 13)
+                                                                       (sem-types:create
+                                                                        :token-type sem-types:*parenthesis*
+                                                                        :line 0
+                                                                        :start 14
+                                                                        :end 15)
+                                                                       (sem-types:create
+                                                                        :token-type sem-types:*parameter*
+                                                                        :line 0
+                                                                        :start 16
+                                                                        :end 17)
+                                                                       (sem-types:create
+                                                                        :token-type sem-types:*symbol*
+                                                                        :line 0
+                                                                        :start 18
+                                                                        :end 19)
+                                                                       (sem-types:create
+                                                                        :token-type sem-types:*parenthesis*
+                                                                        :line 0
+                                                                        :start 20
+                                                                        :end 21)
+                                                                       (sem-types:create
+                                                                        :token-type sem-types:*parameter*
+                                                                        :line 0
+                                                                        :start 22
+                                                                        :end 23)
+                                                                       (sem-types:create
+                                                                        :token-type sem-types:*parenthesis*
+                                                                        :line 0
+                                                                        :start 24
+                                                                        :end 25)
+                                                                       (sem-types:create
+                                                                        :token-type sem-types:*parenthesis*
+                                                                        :line 0
+                                                                        :start 26
+                                                                        :end 27)))
                       (check-combo "(defun foo (a b) nil)" (list (sem-types:create
                                                                   :token-type sem-types:*parenthesis*
                                                                   :line 0

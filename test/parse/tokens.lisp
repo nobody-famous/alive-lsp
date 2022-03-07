@@ -4,7 +4,7 @@
     (:local-nicknames (:run :alive/test/harness/run)
                       (:check :alive/test/harness/check)
 
-                      (:pos :alive/parse/pos)
+                      (:pos :alive/position)
                       (:token :alive/parse/token)
                       (:tokens :alive/parse/tokenizer)))
 

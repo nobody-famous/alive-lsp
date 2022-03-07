@@ -35,12 +35,17 @@
 
 (defun accept-conn (server)
     (let* ((conn (usocket:socket-accept (socket server)))
-           (session (session:start (logger server) conn)))
+           (session (session:create :conn conn
+                                    :logger (logger server))))
+
         (session:add-listener session
                               (make-instance 'session:listener
                                              :on-done (lambda ()
+                                                          (usocket:socket-close conn)
                                                           (setf (sessions server)
                                                                 (remove session (sessions server))))))
+        (session:start session)
+
         (push session (sessions server))))
 
 
@@ -93,7 +98,7 @@
                                 (listen-for-conns server port)))
                         :name "Main Loop")
 
-        (setf (logger server) (logger:create *standard-output* logger:*trace*))
+        (setf (logger server) (logger:create *standard-output* logger:*error*))
 
         server))
 

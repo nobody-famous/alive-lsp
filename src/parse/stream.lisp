@@ -1,6 +1,7 @@
 (defpackage :alive/parse/stream
     (:use :cl)
-    (:export :from))
+    (:export :from)
+    (:local-nicknames (:errors :alive/errors)))
 
 (in-package :alive/parse/stream)
 
@@ -24,8 +25,10 @@
 
 (defun discard (input &optional expected)
     (let ((ch (read-char input nil nil)))
+        (unless ch
+                (error (format nil "End of input")))
+
         (when (and expected
-                   ch
                    (not (char= ch expected)))
               (error (format nil "Expected ~A, found ~A" expected ch)))))
 
@@ -39,21 +42,30 @@
 (defun parse-expr (input)
     (flet ((parse-list ()
                 (discard input *open-parens*)
+                (skip-ws input)
+
                 (loop :until (or (not (look-ahead input))
                                  (char= (look-ahead input) *close-parens*))
                       :collect (parse-expr input) :into parts
                       :finally (progn (discard input *close-parens*)
                                       (return parts))))
 
-           (parse-atom () (read-next input)))
+           (parse-atom ()
+                (read-next input)))
 
         (skip-ws input)
 
         (when (look-ahead input)
-              (let ((start (file-position input))
-                    (expr (cond ((char= (look-ahead input) *open-parens*) (parse-list))
-                                (t (parse-atom))))
-                    (end (1- (file-position input))))
+              (let* ((start (file-position input))
+                     (expr (handler-case
+                                   (cond ((char= (look-ahead input) *open-parens*) (parse-list))
+                                         (t (parse-atom)))
+                               (T (c)
+                                  (error (make-instance 'errors:input-error
+                                                        :start start
+                                                        :end (file-position input)
+                                                        :message (format nil "~A" c))))))
+                     (end (1- (file-position input))))
                   (skip-ws input)
                   (list start end expr)))))
 

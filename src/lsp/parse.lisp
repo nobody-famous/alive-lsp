@@ -2,11 +2,15 @@
     (:use :cl)
     (:export :from-stream)
 
-    (:local-nicknames (:did-open :alive/lsp/message/document/did-open)
+    (:local-nicknames (:completion :alive/lsp/message/document/completion)
+                      (:did-open :alive/lsp/message/document/did-open)
                       (:did-change :alive/lsp/message/document/did-change)
+                      (:load-file :alive/lsp/message/alive/load-file)
+                      (:try-compile :alive/lsp/message/alive/try-compile)
                       (:init :alive/lsp/message/initialize)
                       (:message :alive/lsp/message/abstract)
                       (:packet :alive/lsp/packet)
+                      (:errors :alive/lsp/errors)
                       (:sem-tokens :alive/lsp/message/document/sem-tokens-full)))
 
 (in-package :alive/lsp/parse)
@@ -121,10 +125,11 @@
 
 
 (defun build-request (fields)
-    (let ((name (string-downcase (method-name fields))))
+    (let ((name (string-downcase (method-name fields)))
+          (msg-id (id fields)))
         (cond ((string= "initialize" name)
                (init:request-from-wire :jsonrpc (jsonrpc fields)
-                                       :id (id fields)
+                                       :id msg-id
                                        :params (params fields)))
 
               ((string= "initialized" name)
@@ -136,18 +141,41 @@
               ((string= "textdocument/didchange" name)
                (did-change:from-wire (params fields)))
 
-              ((string= "textdocument/semantictokens/full" name)
-               (sem-tokens:from-wire :jsonrpc (jsonrpc fields)
-                                     :id (id fields)
+              ((string= "textdocument/completion" name)
+               (completion:from-wire :jsonrpc (jsonrpc fields)
+                                     :id msg-id
                                      :params (params fields)))
 
-              (T (error (format nil "Unhandled request ~A" name))))))
+              ((string= "textdocument/semantictokens/full" name)
+               (sem-tokens:from-wire :jsonrpc (jsonrpc fields)
+                                     :id msg-id
+                                     :params (params fields)))
+
+              ((string= "$/alive/loadfile" name)
+               (load-file:from-wire :jsonrpc (jsonrpc fields)
+                                    :id msg-id
+                                    :params (params fields)))
+
+              ((string= "textdocument/didsave" name) nil)
+
+              ((string= "$/alive/trycompile" name)
+               (try-compile:from-wire :jsonrpc (jsonrpc fields)
+                                      :id msg-id
+                                      :params (params fields)))
+
+              (T (error (make-condition 'errors:unhandled-request
+                                        :id msg-id
+                                        :method-name name))))))
 
 (defun build-message (payload)
     (let ((fields (get-msg-fields payload)))
         (cond ((request-p fields) (build-request fields))
-              ((response-p fields) (format T "GOT RESPONSE~%"))
-              (T (error (format nil "Unknown payload type ~A" payload))))))
+              ((response-p fields) (error (make-condition 'errors:server-error
+                                                          :id (id fields)
+                                                          :message "Got response")))
+              (T (error (make-condition 'errors:server-error
+                                        :id (id fields)
+                                        :message "Unknown payload type"))))))
 
 
 (defun from-stream (input)

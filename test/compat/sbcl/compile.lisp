@@ -3,58 +3,52 @@
     (:export :run-all)
 
     (:local-nicknames (:astreams :alive/streams)
-                      (:compile :alive/compile)))
+                      (:file :alive/file)
+                      (:run :alive/test/harness/run)
+                      (:check :alive/test/harness/check)))
 
 (in-package :alive/test/compat/sbcl/compile)
 
 
-(defun compile-foo (stdout)
-    (compile:file (lambda (msg)
-                      (format stdout "~&CALLBACK: ~A~%" msg))
-                  "test/files/compile/foo.lisp"))
+(defun compile-foo ()
+    (run:test "Compile foo.lisp Test"
+              (lambda ()
+                  (let ((msgs (file:do-compile "test/files/compile/foo.lisp"
+                                               :stdout-fn (lambda (data)
+                                                              (declare (ignore data)))
+                                               :stderr-fn (lambda (data)
+                                                              (declare (ignore data))))))
+                      (check:are-equal 5 (length msgs))))))
 
 
-(defun read-stuff (stdout out-stream)
-    (lambda ()
-        (handler-case
-                (loop :until (astreams:eof-p out-stream)
-                      :do (let ((line (read-line out-stream)))
-                              (unless (eq line :eof)
-                                      (format stdout "OUT ~A~%" line))))
-            (t (c) (format stdout "~&OUT CAUGHT: ~A~%" c)))))
+(defun load-foo ()
+    (run:test "Load foo.lisp Test"
+              (lambda ()
+                  (let ((msgs (file:do-load "test/files/compile/foo.lisp"
+                                            :stdout-fn (lambda (data)
+                                                           (declare (ignore data)))
+                                            :stderr-fn (lambda (data)
+                                                           (declare (ignore data))))))
+
+                      (check:are-equal 9 (length msgs))))))
 
 
-(defun read-err-stuff (stdout out-stream)
-    (lambda ()
-        (handler-case
-                (loop :until (astreams:eof-p out-stream)
-                      :do (let ((line (read-line out-stream)))
-                              (unless (eq line :eof)
-                                      (format stdout "ERR ~A~%" (string-upcase line)))))
-            (t (c) (format stdout "~&ERR CAUGHT: ~A~%" c)))))
+(defun compile-broken ()
+    (run:test "Compile broken.lisp Test"
+              (lambda ()
+                  (let ((msgs (file:try-compile "test/files/compile/parens.lisp"
+                                                :stdout-fn (lambda (data)
+                                                               (format T "~A~%" data))
+                                                :stderr-fn (lambda (data)
+                                                               (declare (ignore data))))))
 
-
-(defun report-output (label orig-stdout)
-    (lambda (data)
-        (format orig-stdout "~A ~A~&" label data)))
+                      (loop :for msg :in msgs :do
+                                (format T "~A~%" msg))
+                      (check:are-equal 5 (length msgs))))))
 
 
 (defun run-all ()
-    (format T "SBCL Compile Tests~%")
-
-    (let* ((orig-output *standard-output*)
-           (orig-err *error-output*)
-           (out-stream (astreams:make-stream :stdout orig-output))
-           (err-stream (astreams:make-stream :stdout orig-err))
-        ;    (out-stream (make-instance 'astreams:rt-stream :stdout orig-output))
-        ;    (err-stream (make-instance 'astreams:rt-stream :stdout orig-err))
-           (*standard-output* out-stream)
-           (*error-output* err-stream))
-        ; (compile-file "test/compat/sbcl/files/foo.lisp")
-        ; (astreams:add-listener out-stream (report-output "OUT" orig-output))
-        ; (astreams:add-listener err-stream (report-output "ERR" orig-err))
-
-        (compile-foo orig-output)
-
-        (close out-stream)
-        (close err-stream)))
+    (run:suite "SBCL Compile Tests"
+               (lambda ()
+                   (compile-foo)
+                   (load-foo))))

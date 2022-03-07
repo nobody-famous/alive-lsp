@@ -13,9 +13,10 @@
 
 
 (defun test (label fn)
-    (let ((result (handler-case (progn
-                                 (funcall fn)
-                                 nil)
+    (let ((result (handler-case
+
+                          (funcall fn)
+
                       (error (c) (format nil "~A" c)))))
 
         (format T "~A [~A]~%" label (if result

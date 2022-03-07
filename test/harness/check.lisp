@@ -20,8 +20,17 @@
 
 
 (defmethod types:deep-equal-p ((a string) b)
+    (and (string-equal a b)))
+
+
+(defmethod types:deep-equal-p ((a integer) b)
     (and (equal (type-of a) (type-of b))
-         (string-equal a b)))
+         (eq a b)))
+
+
+(defmethod types:deep-equal-p ((a T) b)
+    (and (equal (type-of a) (type-of b))
+         (eq a b)))
 
 
 (defun are-equal (expected actual)
