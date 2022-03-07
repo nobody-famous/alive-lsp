@@ -200,17 +200,18 @@
 
 
 (defun fuzzy-match (pref str)
-    (let ((found (get-found-chars str)))
-        (loop :with match := (char= (char pref 0) (char str 0))
-              :for ch :across pref :do
-                  (setf match
-                        (and match
-                             (gethash ch found)))
-              :finally (return match))))
+    (cond ((zerop (length pref)) T)
+          ((zerop (length str)) NIL)
+          (T (let ((found (get-found-chars str)))
+                 (loop :with match := (char= (char pref 0) (char str 0))
+                       :for ch :across pref :do
+                           (setf match
+                                 (and match
+                                      (gethash ch found)))
+                       :finally (return match))))))
 
 
 (defun symbols-to-items (&key name symbols pkg)
-    (format T "symbols-to-items ~A~%" name)
     (let ((pref (string-downcase name)))
         (mapcar (lambda (name)
                     (to-item name (package-name pkg)))
@@ -231,8 +232,28 @@
                                        (get-all-symbols pkg)))))
 
 
+(defun get-pkg-matches (&key name pkg-name)
+    (let* ((pref (string-downcase name))
+           (req-pkg (find-package (string-upcase pkg-name)))
+           (pkg (if req-pkg req-pkg *package*)))
+
+        (symbols-to-items :name pref
+                          :pkg pkg
+                          :symbols (mapcar #'string-downcase
+                                           (mapcar #'package-name
+                                                   (list-all-packages))))))
+
+
 (defun symbol-no-pkg (&key name pkg-name)
-    (format T "no package ~A~%" name))
+    (let ((pkgs (get-pkg-matches
+                 :name name
+                 :pkg-name pkg-name))
+          (symbols (symbol-with-pkg
+                    :name name
+                    :num-colons 0
+                    :pkg-name pkg-name)))
+
+        (concatenate 'cons pkgs symbols)))
 
 
 (defun simple (&key text pos)

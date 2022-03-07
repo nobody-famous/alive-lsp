@@ -182,7 +182,9 @@
 
 
 (defclass completion-opts ()
-    ())
+    ((trigger-characters :accessor trigger-characters
+                         :initform (list #\:)
+                         :initarg :trigger-characters)))
 
 
 (defmethod types:deep-equal-p ((a completion-opts) b)
