@@ -274,7 +274,6 @@
                                      :sym token)))
 
              (process-symbol (state obj &optional (sym-type nil))
-                  (format T "process-symbol ~A~%" obj)
                   (if (colons obj)
                       (progn (add-sem-token state (pkg obj) sem-types:*namespace*)
                              (add-sem-token state (colons obj) sem-types:*symbol*)
