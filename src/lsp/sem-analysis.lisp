@@ -110,12 +110,6 @@
                     (push new-token (sem-tokens state)))))
 
 
-(defun is-keyword (name)
-    (if (find-symbol (string-upcase name) :common-lisp)
-        T
-        nil))
-
-
 (defun is-number (text)
     (loop :with is-valid := T
           :with have-decimal := nil
@@ -236,24 +230,28 @@
 
                   (let ((token (next-token state)))
                       (cond ((is-type token types:*close-paren*) (add-sem-token state token sem-types:*parenthesis*))
-                            ((is-type token types:*symbol*) (let* ((obj (get-symbol-pkg state token))
-                                                                   (pkg-name (if (pkg obj)
-                                                                                 (token:get-text (pkg obj))
-                                                                                 (package-name *package*)))
-                                                                   (sym-name (if (sym obj)
-                                                                                 (token:get-text (sym obj))
-                                                                                 nil)))
 
-                                                                (if (symbols:callable-p sym-name pkg-name)
-                                                                    (progn (process-symbol state obj sem-types:*function*)
-                                                                           (process-fn state obj))
-                                                                    (process-symbol state obj))))
+                            ((is-type token types:*symbol*)
+                             (let* ((obj (get-symbol-pkg state token))
+                                    (pkg-name (if (pkg obj)
+                                                  (token:get-text (pkg obj))
+                                                  (package-name *package*)))
+                                    (sym-name (if (sym obj)
+                                                  (token:get-text (sym obj))
+                                                  nil)))
+
+                                 (if (symbols:callable-p sym-name pkg-name)
+                                     (progn (format T "~A ~A~%" sym-name pkg-name)
+                                            (process-symbol state obj (cond ((symbols:function-p sym-name pkg-name) sem-types:*function*)
+                                                                            ((symbols:macro-p sym-name pkg-name) sem-types:*macro*)
+                                                                            (T sem-types:*keyword*)))
+                                            (process-fn state obj))
+                                     (process-symbol state obj))))
 
                             (t (process-expr state)))))
 
              (get-symbol-type (token)
-                  (cond ((is-keyword (token:get-text token)) sem-types:*keyword*)
-                        ((is-number (token:get-text token)) sem-types:*number*)
+                  (cond ((is-number (token:get-text token)) sem-types:*number*)
                         (t sem-types:*symbol*)))
 
              (get-symbol-pkg (state token)
@@ -285,7 +283,9 @@
                                                   (if sym-type
                                                       sym-type
                                                       (get-symbol-type (sym obj))))))
-                      (add-sem-token state (sym obj) (get-symbol-type (sym obj))))))
+                      (add-sem-token state (sym obj) (if sym-type
+                                                         sym-type
+                                                         (get-symbol-type (sym obj)))))))
 
         (let ((token (next-token state)))
             (cond ((is-type token types:*comment*) (add-sem-token state token sem-types:*comment*))

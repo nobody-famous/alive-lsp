@@ -9,8 +9,8 @@
 (in-package :alive/symbols)
 
 
-(defun function-p (name &optional pkg)
-    #+sbcl (alive/sbcl/symbols:function-p name pkg))
+(defun function-p (name &optional pkg-name)
+    #+sbcl (alive/sbcl/symbols:function-p name pkg-name))
 
 
 (defun get-lambda-list (fn-name &optional pkg-name)
