@@ -20,7 +20,10 @@
 (defun symbols ()
     (labels ((check-symbol (text expected)
                   (let ((tokens (get-sem-tokens text)))
-                      (check:are-equal (list expected) tokens))))
+                      (check:are-equal (if expected
+                                           (list expected)
+                                           nil)
+                                       tokens))))
 
         (run:test "Symbols"
                   (lambda ()
@@ -69,16 +72,8 @@
                                               :line 0
                                               :start 0
                                               :end 6))
-                      (check-symbol "123/" (sem-types:create
-                                            :token-type sem-types:*symbol*
-                                            :line 0
-                                            :start 0
-                                            :end 4))
-                      (check-symbol "123." (sem-types:create
-                                            :token-type sem-types:*symbol*
-                                            :line 0
-                                            :start 0
-                                            :end 4))
+                      (check-symbol "123/" nil)
+                      (check-symbol "123." nil)
                       (check-symbol "(" (sem-types:create
                                          :token-type sem-types:*parenthesis*
                                          :line 0
@@ -89,13 +84,9 @@
                                          :line 0
                                          :start 0
                                          :end 1))
-                      (check-symbol "foo" (sem-types:create
-                                           :token-type sem-types:*symbol*
-                                           :line 0
-                                           :start 0
-                                           :end 3))
+                      (check-symbol "foo" nil)
                       (check-symbol "defun" (sem-types:create
-                                             :token-type sem-types:*keyword*
+                                             :token-type sem-types:*macro*
                                              :line 0
                                              :start 0
                                              :end 5))))))
@@ -188,6 +179,51 @@
                                                      :line 0
                                                      :start 7
                                                      :end 8)))
+                      (check-combo "( + ( #=n a a ) b ) ( c )" (list (sem-types:create
+                                                                      :token-type sem-types:*parenthesis*
+                                                                      :line 0
+                                                                      :start 0
+                                                                      :end 1)
+                                                                     (sem-types:create
+                                                                      :token-type sem-types:*function*
+                                                                      :line 0
+                                                                      :start 2
+                                                                      :end 3)
+                                                                     (sem-types:create
+                                                                      :token-type sem-types:*parenthesis*
+                                                                      :line 0
+                                                                      :start 4
+                                                                      :end 5)
+                                                                     (sem-types:create
+                                                                      :token-type sem-types:*comment*
+                                                                      :line 0
+                                                                      :start 6
+                                                                      :end 9)
+                                                                     (sem-types:create
+                                                                      :token-type sem-types:*comment*
+                                                                      :line 0
+                                                                      :start 10
+                                                                      :end 11)
+                                                                     (sem-types:create
+                                                                      :token-type sem-types:*parenthesis*
+                                                                      :line 0
+                                                                      :start 8
+                                                                      :end 9)
+                                                                     (sem-types:create
+                                                                      :token-type sem-types:*parenthesis*
+                                                                      :line 0
+                                                                      :start 12
+                                                                      :end 13)
+                                                                     (sem-types:create
+                                                                      :token-type sem-types:*parenthesis*
+                                                                      :line 0
+                                                                      :start 14
+                                                                      :end 15)
+                                                                     (sem-types:create
+                                                                      :token-type sem-types:*parenthesis*
+                                                                      :line 0
+                                                                      :start 18
+                                                                      :end 19)))
                       (check-combo "( let ( ( a b ) ) NIL )" (list (sem-types:create
                                                                     :token-type sem-types:*parenthesis*
                                                                     :line 0
