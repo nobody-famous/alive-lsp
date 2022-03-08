@@ -291,4 +291,4 @@
                        (symbol-no-pkg :name (token:get-text token1)
                                       :pkg-name (package-name *package*)))
 
-                      (T (error (format NIL "simple completions: ~A ~A ~A~%" token3 token2 token1))))))))
+                      (T '()))))))
