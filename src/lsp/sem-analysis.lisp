@@ -63,13 +63,7 @@
     (let ((token (car (lex-tokens state))))
 
         (eat-token state)
-
-        (format T "next-token ~A~%" token)
-        (if (and token
-                 (eq types:*ws* (token:get-type-value token)))
-            (progn (format T "HAVE WHITESPACE~%" )
-            (next-token state))
-            token)))
+        token))
 
 
 (defun skip-ws (state)
@@ -147,18 +141,23 @@
 
                         :until (or (not token)
                                    (is-type token types:*close-paren*))
-                        :do (process-expr state)
-
-                        :finally (progn
-                                  (add-sem-token state token sem-types:*parenthesis*)
-                                  (next-token state))))
+                        :do (process-expr state)))
 
              (process-nested-param (state)
+                  (add-sem-token state (peek-token state) sem-types:*parenthesis*)
+                  (next-token state)
                   (skip-ws state)
-                  (let ((token (peek-token state)))
-                      (cond ((is-type token types:*symbol*) (add-sem-token state token sem-types:*parameter*)
-                                                            (next-token state)
-                                                            (finish-list state)))))
+
+                  (when (is-type (peek-token state) types:*symbol*)
+                        (add-sem-token state (peek-token state) sem-types:*parameter*)
+                        (next-token state)
+                        (skip-ws state))
+
+                  (finish-list state)
+                  (when (is-type (peek-token state) types:*close-paren*)
+                        (add-sem-token state (peek-token state) sem-types:*parenthesis*)
+                        (next-token state)
+                        (skip-ws state)))
 
              (process-param (state)
                   (skip-ws state)
@@ -166,17 +165,13 @@
                   (let ((token (peek-token state)))
                       (cond ((is-type token types:*symbol*) (add-sem-token state token sem-types:*parameter*)
                                                             (next-token state))
-                            ((is-type token types:*open-paren*) (add-sem-token state token sem-types:*parenthesis*)
-                                                                (next-token state)
-                                                                (process-nested-param state))
+                            ((is-type token types:*open-paren*) (process-nested-param state))
                             ((is-type token types:*ifdef-false*) (process-expr state))
                             ((is-type token types:*ifdef-true*) (next-token state))
                             (T (format T "UNHANDLED PARAM ~A~%" token)
                                (next-token state)))))
 
              (process-lambda-list (state)
-                  (next-token state)
-
                   (if (is-type (peek-token state) types:*open-paren*)
                       (progn (add-sem-token state (peek-token state) sem-types:*parenthesis*)
                              (next-token state)
@@ -267,15 +262,11 @@
                         (t (when has-colons sem-types:*symbol*))))
 
              (get-symbol-pkg (state token)
-                  (format T "get-symbol-pkg ~A~%" (peek-token state))
                   (cond ((is-type (peek-token state) types:*colons*)
                          (let ((token1 (next-token state)))
-                             (format T "get-symbol-pkg ~A ~A~%" token1 (peek-token state))
                              (let ((after (peek-token state)))
                                  (if (is-type after types:*symbol*)
-                                     (progn (format T "BEFORE ~A~%" (peek-token state))
-                                            (next-token state)
-                                            (format T "get-symbol-pkg ~A ~A~%" token1 (peek-token state))
+                                     (progn (next-token state)
                                             (make-instance 'symbol-with-pkg
                                                            :pkg nil
                                                            :colons token1
@@ -308,10 +299,8 @@
                                           :sym token))))
 
              (process-symbol (state obj &optional (sym-type nil))
-                  (format T "process-symbol ~A ~A~%" (peek-token state) obj)
                   (if (colons obj)
-                      (progn (format T "have colons ~A~%" obj)
-                             (add-sem-token state (pkg obj) sem-types:*namespace*)
+                      (progn (add-sem-token state (pkg obj) sem-types:*namespace*)
                              (add-sem-token state (colons obj) sem-types:*symbol*)
                              (when (sym obj)
                                    (add-sem-token state
@@ -331,7 +320,6 @@
                                                                    (get-symbol-type (sym obj) NIL))))))))
 
         (let ((token (peek-token state)))
-            (format T "process-expr ~A~%" token)
             (cond ((is-type token types:*comment*) (next-token state)
                                                    (add-sem-token state token sem-types:*comment*))
 
