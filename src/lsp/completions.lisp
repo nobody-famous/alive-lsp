@@ -1,6 +1,7 @@
 (defpackage :alive/lsp/completions
     (:use :cl)
-    (:export :simple
+    (:export :create-item
+             :simple
 
              :*kind-text*
              :*kind-method*
@@ -83,6 +84,13 @@
      (documentation :accessor doc-string
                     :initform nil
                     :initarg :doc-string)))
+
+
+(defmethod types:deep-equal-p ((a item) b)
+    (and (equal (type-of a) (type-of b))
+         (string-equal (label a) (label b))
+         (string-equal (insert-text a) (insert-text b))
+         (eq (kind a) (kind b))))
 
 
 (defmethod print-object ((obj item) out)
@@ -216,7 +224,7 @@
         (mapcar (lambda (name)
                     (to-item name (package-name pkg)))
                 (remove-if-not (lambda (str)
-                                   (and (< (length pref) (length str))
+                                   (and (<= (length pref) (length str))
                                         (fuzzy-match pref str)))
                                symbols))))
 
