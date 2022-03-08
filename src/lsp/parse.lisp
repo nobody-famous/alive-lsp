@@ -6,6 +6,7 @@
                       (:did-open :alive/lsp/message/document/did-open)
                       (:did-change :alive/lsp/message/document/did-change)
                       (:load-file :alive/lsp/message/alive/load-file)
+                      (:top-form :alive/lsp/message/alive/top-form)
                       (:try-compile :alive/lsp/message/alive/try-compile)
                       (:init :alive/lsp/message/initialize)
                       (:message :alive/lsp/message/abstract)
@@ -162,6 +163,11 @@
                (try-compile:from-wire :jsonrpc (jsonrpc fields)
                                       :id msg-id
                                       :params (params fields)))
+
+              ((string= "$/alive/topformbounds" name)
+               (top-form:from-wire :jsonrpc (jsonrpc fields)
+                                   :id msg-id
+                                   :params (params fields)))
 
               (T (error (make-condition 'errors:unhandled-request
                                         :id msg-id

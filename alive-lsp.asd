@@ -42,6 +42,7 @@
                  "alive-lsp/src/lsp/message/alive/try-compile"
                  "alive-lsp/src/lsp/message/alive/stderr"
                  "alive-lsp/src/lsp/message/alive/stdout"
+                 "alive-lsp/src/lsp/message/alive/top-form"
                  "alive-lsp/src/lsp/message/document/completion"
                  "alive-lsp/src/lsp/message/document/did-change"
                  "alive-lsp/src/lsp/message/document/did-open"
@@ -114,6 +115,7 @@
 (register-system-packages "alive-lsp/src/lsp/message/alive/try-compile" '(:alive/lsp/message/alive/try-compile))
 (register-system-packages "alive-lsp/src/lsp/message/alive/stderr" '(:alive/lsp/message/alive/stderr))
 (register-system-packages "alive-lsp/src/lsp/message/alive/stdout" '(:alive/lsp/message/alive/stdout))
+(register-system-packages "alive-lsp/src/lsp/message/alive/top-form" '(:alive/lsp/message/alive/top-form))
 (register-system-packages "alive-lsp/src/lsp/message/document/completion" '(:alive/lsp/message/document/completion))
 (register-system-packages "alive-lsp/src/lsp/message/document/did-change" '(:alive/lsp/message/document/did-change))
 (register-system-packages "alive-lsp/src/lsp/message/document/did-open" '(:alive/lsp/message/document/did-open))

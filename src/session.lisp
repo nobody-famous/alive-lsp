@@ -14,6 +14,7 @@
                       (:try-compile :alive/lsp/message/alive/try-compile)
                       (:stderr :alive/lsp/message/alive/stderr)
                       (:stdout :alive/lsp/message/alive/stdout)
+                      (:top-form :alive/lsp/message/alive/top-form)
                       (:logger :alive/logger)
                       (:message :alive/lsp/message/abstract)
                       (:comps :alive/lsp/completions)
@@ -174,6 +175,20 @@
         (send-msg state (completion:create-response
                          :id (message:id msg)
                          :items items))))
+
+
+(defmethod handle-msg (state (msg top-form:request))
+    (let* ((params (message:params msg))
+           (doc (top-form:text-document params))
+           (pos (top-form:pos params))
+           (uri (text-doc:uri doc))
+           (file-text (get-file-text state uri))
+           (text (if file-text file-text "")))
+
+        (send-msg state
+                  (message:create-error-resp :code errors:*internal-error*
+                                             :message "Not Done Yet"
+                                             :id (message:id msg)))))
 
 
 (defun stop (state)
