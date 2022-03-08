@@ -261,7 +261,10 @@
                     :num-colons 0
                     :pkg-name pkg-name)))
 
-        (concatenate 'cons pkgs symbols)))
+        (cond ((and pkgs (not symbols)) pkgs)
+              ((and (not pkgs) symbols) symbols)
+              ((and pkgs symbols) (concatenate 'cons pkgs symbols))
+              (T '()))))
 
 
 (defun simple (&key text pos)
