@@ -8,6 +8,7 @@
     (:local-nicknames (:completion :alive/lsp/message/document/completion)
                       (:did-open :alive/lsp/message/document/did-open)
                       (:did-change :alive/lsp/message/document/did-change)
+                      (:formatting :alive/lsp/message/document/range-format)
                       (:file :alive/file)
                       (:init :alive/lsp/message/initialize)
                       (:parse-tokens :alive/parse/stream)
@@ -209,6 +210,10 @@
                            (send-msg state (top-form:create-response :id (message:id msg)
                                                                      :start -1
                                                                      :end -1))))))
+
+
+(defmethod handle-msg (state (msg formatting:request))
+    (format T "FORMAT ~A~%" msg))
 
 
 (defun stop (state)

@@ -9,6 +9,7 @@
                       (:text-doc :alive/lsp/types/text-doc)
                       (:text-doc-item :alive/lsp/types/text-doc-item)
                       (:sem-tokens :alive/lsp/message/document/sem-tokens-full)
+                      (:formatting :alive/lsp/message/document/range-format)
                       (:init :alive/lsp/message/initialize)
                       (:pos :alive/position)
                       (:message :alive/lsp/message/abstract)
@@ -247,6 +248,45 @@
                            parsed))))))
 
 
+(defun formatting-msg ()
+    (labels ((create-content ()
+                  (with-output-to-string (str)
+                      (format str "{~A" utils:*end-line*)
+                      (format str "  \"jsonrpc\": \"2.0\",~A" utils:*end-line*)
+                      (format str "  \"id\": 5,~A" utils:*end-line*)
+                      (format str "  \"method\": \"textdocument/rangeformatting\",~A" utils:*end-line*)
+                      (format str "  \"params\": {~A" utils:*end-line*)
+                      (format str "    \"textDocument\": {~A" utils:*end-line*)
+                      (format str "      \"uri\":\"file:///some/file.txt\"~A" utils:*end-line*)
+                      (format str "    },~A" utils:*end-line*)
+                      (format str "    \"range\": {~A" utils:*end-line*)
+                      (format str "      \"start\": {~A" utils:*end-line*)
+                      (format str "        \"line\": 0,~A" utils:*end-line*)
+                      (format str "        \"character\": 0~A" utils:*end-line*)
+                      (format str "      },~A" utils:*end-line*)
+                      (format str "      \"end\": {~A" utils:*end-line*)
+                      (format str "        \"line\": 10,~A" utils:*end-line*)
+                      (format str "        \"character\": 10~A" utils:*end-line*)
+                      (format str "      }~A" utils:*end-line*)
+                      (format str "    },~A" utils:*end-line*)
+                      (format str "    \"options\": {~A" utils:*end-line*)
+                      (format str "      \"tabSize\": 4,~A" utils:*end-line*)
+                      (format str "      \"insertSpaces\": true~A" utils:*end-line*)
+                      (format str "    }~A" utils:*end-line*)
+                      (format str "  }~A" utils:*end-line*)
+                      (format str "}~A" utils:*end-line*))))
+
+        (run:test "Formatting Message"
+                  (lambda ()
+                      (let* ((msg (utils:create-msg (create-content)))
+                             (parsed (parse:from-stream (make-string-input-stream msg))))
+                          (check:are-equal
+                           (formatting:create-request
+                            :id 5
+                            :params (formatting:create-params :text-document (text-doc:create :uri "file:///some/file.txt")))
+                           parsed))))))
+
+
 (defun run-all ()
     (run:suite "LSP Messages"
                (lambda ()
@@ -257,4 +297,5 @@
                    (sem-tokens-msg)
                    (load-file-msg)
                    (completion-msg)
-                   (top-form-msg))))
+                   (top-form-msg)
+                   (formatting-msg))))

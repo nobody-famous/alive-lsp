@@ -46,6 +46,7 @@
                  "alive-lsp/src/lsp/message/document/completion"
                  "alive-lsp/src/lsp/message/document/did-change"
                  "alive-lsp/src/lsp/message/document/did-open"
+                 "alive-lsp/src/lsp/message/document/range-format"
                  "alive-lsp/src/lsp/message/document/sem-tokens-full"
 
                  "alive-lsp/src/lsp/packet"
@@ -119,6 +120,7 @@
 (register-system-packages "alive-lsp/src/lsp/message/document/completion" '(:alive/lsp/message/document/completion))
 (register-system-packages "alive-lsp/src/lsp/message/document/did-change" '(:alive/lsp/message/document/did-change))
 (register-system-packages "alive-lsp/src/lsp/message/document/did-open" '(:alive/lsp/message/document/did-open))
+(register-system-packages "alive-lsp/src/lsp/message/document/range-format" '(:alive/lsp/message/document/range-format))
 (register-system-packages "alive-lsp/src/lsp/message/document/sem-tokens-full" '(:alive/lsp/message/document/sem-tokens-full))
 
 (register-system-packages "alive-lsp/src/lsp/packet" '(:alive/lsp/packet))

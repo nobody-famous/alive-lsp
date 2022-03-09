@@ -5,6 +5,7 @@
     (:local-nicknames (:completion :alive/lsp/message/document/completion)
                       (:did-open :alive/lsp/message/document/did-open)
                       (:did-change :alive/lsp/message/document/did-change)
+                      (:formatting :alive/lsp/message/document/range-format)
                       (:load-file :alive/lsp/message/alive/load-file)
                       (:top-form :alive/lsp/message/alive/top-form)
                       (:try-compile :alive/lsp/message/alive/try-compile)
@@ -144,6 +145,11 @@
 
               ((string= "textdocument/completion" name)
                (completion:from-wire :jsonrpc (jsonrpc fields)
+                                     :id msg-id
+                                     :params (params fields)))
+
+              ((string= "textdocument/rangeformatting" name)
+               (formatting:from-wire :jsonrpc (jsonrpc fields)
                                      :id msg-id
                                      :params (params fields)))
 
