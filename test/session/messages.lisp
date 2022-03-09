@@ -29,6 +29,10 @@
     ())
 
 
+(defclass top-form-state (test-state)
+    ())
+
+
 (defun create-state (cls)
     (make-instance cls
                    :logger (logger:create *standard-output* logger:*error*)))
@@ -125,9 +129,42 @@
                       (check:are-equal t (send-called state))))))
 
 
+(defmethod session::get-input-stream ((obj top-form-state))
+    (let ((content (with-output-to-string (str)
+                       (format str "{~A" utils:*end-line*)
+                       (format str "  \"jsonrpc\": \"2.0\",~A" utils:*end-line*)
+                       (format str "  \"id\": 5,~A" utils:*end-line*)
+                       (format str "  \"method\": \"$/alive/topFormBounds\",~A" utils:*end-line*)
+                       (format str "  \"params\": {~A" utils:*end-line*)
+                       (format str "    \"textDocument\": {~A" utils:*end-line*)
+                       (format str "      \"uri\":\"file:///some/file.txt\"~A" utils:*end-line*)
+                       (format str "    },~A" utils:*end-line*)
+                       (format str "    \"position\": {~A" utils:*end-line*)
+                       (format str "      \"line\": 3,~A" utils:*end-line*)
+                       (format str "      \"character\": 11~A" utils:*end-line*)
+                       (format str "    }~A" utils:*end-line*)
+                       (format str "  }~A" utils:*end-line*)
+                       (format str "}~A" utils:*end-line*))))
+        (make-string-input-stream (utils:create-msg content))))
+
+
+(defmethod session::send-msg ((obj top-form-state) msg)
+    (setf (send-called obj) T))
+
+
+(defun top-form-msg ()
+    (let ((state (create-state 'top-form-state)))
+        (run:test "Top Form Message"
+                  (lambda ()
+                      (session::handle-msg state
+                                           (session::read-message state))
+                      (check:are-equal t (send-called state))))))
+
+
 (defun run-all ()
     (run:suite "Session Message Tests"
                (lambda ()
                    (init-msg)
                    (load-file-msg)
-                   (completion-msg))))
+                   (completion-msg)
+                   (top-form-msg))))

@@ -10,10 +10,12 @@
                       (:did-change :alive/lsp/message/document/did-change)
                       (:file :alive/file)
                       (:init :alive/lsp/message/initialize)
+                      (:parse-tokens :alive/parse/stream)
                       (:load-file :alive/lsp/message/alive/load-file)
                       (:try-compile :alive/lsp/message/alive/try-compile)
                       (:stderr :alive/lsp/message/alive/stderr)
                       (:stdout :alive/lsp/message/alive/stdout)
+                      (:top-form :alive/lsp/message/alive/top-form)
                       (:logger :alive/logger)
                       (:message :alive/lsp/message/abstract)
                       (:comps :alive/lsp/completions)
@@ -174,6 +176,39 @@
         (send-msg state (completion:create-response
                          :id (message:id msg)
                          :items items))))
+
+
+(defmethod handle-msg (state (msg top-form:request))
+    (let* ((params (message:params msg))
+           (doc (top-form:text-document params))
+           (offset (top-form:offset params))
+           (uri (text-doc:uri doc))
+           (file-text (get-file-text state uri))
+           (text (if file-text file-text ""))
+           (forms (parse-tokens:from (make-string-input-stream text)))
+           (kids (nth 2 forms)))
+
+        (loop :with start := nil
+              :with end := nil
+
+              :for kid :in kids :do
+                  (destructuring-bind (kid-start kid-end body)
+
+                          kid
+
+                      (declare (ignore body))
+
+                      (when (<= kid-start offset (+ 1 kid-end))
+                            (setf start kid-start)
+                            (setf end kid-end)))
+
+              :finally (if (and start end)
+                           (send-msg state (top-form:create-response :id (message:id msg)
+                                                                     :start start
+                                                                     :end (+ 1 end)))
+                           (send-msg state (top-form:create-response :id (message:id msg)
+                                                                     :start -1
+                                                                     :end -1))))))
 
 
 (defun stop (state)

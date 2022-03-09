@@ -11,22 +11,57 @@
 (defun basic ()
     (run:test "Basic Completions Test"
               (lambda ()
-                  (check:are-equal (list "macro-p")
+                  (check:are-equal (list (comps:create-item :label "macro-p"
+                                                            :kind 3
+                                                            :insert-text "macro-p ${1:sym-name}"))
                                    (comps:simple :text "some text alive/symbols:m"
                                                  :pos (pos:create :line 0
                                                                   :col 27)))
 
-                  (check:are-equal (list "defmethod" "defmacro")
-                                   (comps:simple :text "some text cl-user:defm"
+                  (check:are-equal (list (comps:create-item :label "defmacro"
+                                                            :kind 3
+                                                            :insert-text "defmacro ${1:name} ${2:lambda-list}")
+                                         (comps:create-item :label "define-modify-macro"
+                                                            :kind 3
+                                                            :insert-text "define-modify-macro ${1:name} ${2:lambda-list} ${3:function}")
+                                         (comps:create-item :label "define-compiler-macro"
+                                                            :kind 3
+                                                            :insert-text "define-compiler-macro ${1:name} ${2:lambda-list}")
+                                         (comps:create-item :label "define-symbol-macro"
+                                                            :kind 3
+                                                            :insert-text "define-symbol-macro ${1:name} ${2:expansion}"))
+                                   (comps:simple :text "some text cl-user:defmacro"
                                                  :pos (pos:create :line 0
-                                                                  :col 22)))
+                                                                  :col 26)))
 
-                  (check:are-equal (list "callable-p" "function-p" "macro-p" "get-lambda-list")
+                  (check:are-equal (list (comps:create-item :label "get-lambda-list"
+                                                            :kind 3
+                                                            :insert-text "get-lambda-list ${1:fn-name}")
+                                         (comps:create-item :label "callable-p"
+                                                            :kind 3
+                                                            :insert-text "callable-p ${1:sym-name}")
+                                         (comps:create-item :label "function-p"
+                                                            :kind 3
+                                                            :insert-text "function-p ${1:name}")
+                                         (comps:create-item :label "macro-p"
+                                                            :kind 3
+                                                            :insert-text "macro-p ${1:sym-name}")
+                                         (comps:create-item :label "lookup"
+                                                            :kind 3
+                                                            :insert-text "lookup ${1:name} ${2:pkg-name}"))
                                    (comps:simple :text "alive/symbols:"
                                                  :pos (pos:create :line 0
                                                                   :col 14)))
 
-                  (check:are-equal (list "*debug-io*")
+                  (check:are-equal (list (comps:create-item :label "*invoke-debugger-hook*"
+                                                            :kind 1
+                                                            :insert-text "*invoke-debugger-hook*")
+                                         (comps:create-item :label "*debug-condition*"
+                                                            :kind 1
+                                                            :insert-text "*debug-condition*")
+                                         (comps:create-item :label "*debug-io*"
+                                                            :kind 1
+                                                            :insert-text "*debug-io*"))
                                    (comps:simple :text "*debug-io"
                                                  :pos (pos:create :line 0
                                                                   :col 9))))))
