@@ -198,17 +198,17 @@
 
                       (declare (ignore body))
 
-                      (when (and (<= offset kid-end)
-                                 (<= kid-start offset))
+                      (when (<= kid-start offset (+ 1 kid-end))
                             (setf start kid-start)
                             (setf end kid-end)))
+
               :finally (if (and start end)
                            (send-msg state (top-form:create-response :id (message:id msg)
                                                                      :start start
                                                                      :end (+ 1 end)))
-                           (send-msg state (message:create-error-resp :id (message:id msg)
-                                                                      :code errors:*request-failed*
-                                                                      :message (format nil "Form not found")))))))
+                           (send-msg state (top-form:create-response :id (message:id msg)
+                                                                     :start -1
+                                                                     :end -1))))))
 
 
 (defun stop (state)
