@@ -49,13 +49,13 @@
 
 
 (defun from-wire (fields)
-    (labels ((add-field (id key value)
-                  (cond ((eq key :line) (setf (line id) value))
-                        ((eq key :character) (setf (col id) value)))))
+    (labels ((add-field (obj key value)
+                  (cond ((eq key :line) (setf (line obj) value))
+                        ((eq key :character) (setf (col obj) value)))))
 
-        (loop :with id := (make-instance 'pos)
+        (loop :with obj := (make-instance 'pos)
 
               :for field :in fields :do
-                  (add-field id (car field) (cdr field))
+                  (add-field obj (car field) (cdr field))
 
-              :finally (return id))))
+              :finally (return obj))))

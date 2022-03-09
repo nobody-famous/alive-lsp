@@ -194,6 +194,10 @@
         (make-string-input-stream (utils:create-msg content))))
 
 
+(defmethod session::send-msg ((obj formatting-state) msg)
+    (setf (send-called obj) T))
+
+
 (defun formatting-msg ()
     (let ((state (create-state 'formatting-state)))
         (run:test "Range Format Message"

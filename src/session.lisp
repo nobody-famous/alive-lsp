@@ -213,7 +213,16 @@
 
 
 (defmethod handle-msg (state (msg formatting:request))
-    (format T "FORMAT ~A~%" msg))
+    (let* ((params (message:params msg))
+           (range (formatting:range params))
+           (doc (formatting:text-document params))
+           (uri (text-doc:uri doc))
+           (file-text (get-file-text state uri))
+           (text (if file-text file-text "")))
+
+        (send-msg state (message:create-error-resp :code errors:*request-failed*
+                                                   :message "Not Done Yet"
+                                                   :id (message:id msg)))))
 
 
 (defun stop (state)

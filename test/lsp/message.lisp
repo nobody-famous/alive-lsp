@@ -12,6 +12,7 @@
                       (:formatting :alive/lsp/message/document/range-format)
                       (:init :alive/lsp/message/initialize)
                       (:pos :alive/position)
+                      (:range :alive/range)
                       (:message :alive/lsp/message/abstract)
                       (:packet :alive/lsp/packet)
                       (:parse :alive/lsp/parse)
@@ -283,7 +284,9 @@
                           (check:are-equal
                            (formatting:create-request
                             :id 5
-                            :params (formatting:create-params :text-document (text-doc:create :uri "file:///some/file.txt")))
+                            :params (formatting:create-params :range (range:create :start (pos:create :line 0 :col 0)
+                                                                                   :end (pos:create :line 10 :col 10))
+                                                              :text-document (text-doc:create :uri "file:///some/file.txt")))
                            parsed))))))
 
 

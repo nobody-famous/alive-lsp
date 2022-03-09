@@ -4,9 +4,11 @@
              :create-request
              :create-response
              :from-wire
+             :text-document
+             :range
              :request)
     (:local-nicknames (:message :alive/lsp/message/abstract)
-                      (:pos :alive/position)
+                      (:range :alive/range)
                       (:text-doc :alive/lsp/types/text-doc)
                       (:types :alive/types)))
 
@@ -17,33 +19,27 @@
     ((text-document :accessor text-document
                     :initform nil
                     :initarg :text-document)
-     (start :accessor start
+     (range :accessor range
             :initform nil
-            :initarg :start)
-     (end :accessor end
-          :initform nil
-          :initarg :end)))
+            :initarg :range)))
 
 
 (defmethod print-object ((obj req-params) out)
-    (format out "{text-document: ~A; start: ~A; end: ~A}"
+    (format out "{text-document: ~A; range: ~A}"
             (text-document obj)
-            (start obj)
-            (end obj)))
+            (range obj)))
 
 
 (defmethod types:deep-equal-p ((a req-params) b)
     (and (equal (type-of a) (type-of b))
          (types:deep-equal-p (text-document a) (text-document b))
-         (types:deep-equal-p (start a) (start b))
-         (types:deep-equal-p (end a) (end b))))
+         (types:deep-equal-p (range a) (range b))))
 
 
-(defun create-params (&key text-document start end)
+(defun create-params (&key text-document range)
     (make-instance 'req-params
                    :text-document text-document
-                   :start start
-                   :end end))
+                   :range range))
 
 
 (defclass request (message:request)
@@ -77,8 +73,7 @@
 (defun from-wire (&key jsonrpc id params)
     (labels ((add-param (out-params key value)
                   (cond ((eq key :text-document) (setf (text-document out-params) (text-doc:from-wire value)))
-                        ((eq key :start) (setf (start out-params) (pos:from-wire value)))
-                        ((eq key :end) (setf (end out-params) (pos:from-wire value))))))
+                        ((eq key :range) (setf (range out-params) (range:from-wire value))))))
 
         (loop :with out-params := (make-instance 'req-params)
 
