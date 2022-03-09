@@ -10,6 +10,7 @@
                       (:did-change :alive/lsp/message/document/did-change)
                       (:file :alive/file)
                       (:init :alive/lsp/message/initialize)
+                      (:parse-tokens :alive/parse/stream)
                       (:load-file :alive/lsp/message/alive/load-file)
                       (:try-compile :alive/lsp/message/alive/try-compile)
                       (:stderr :alive/lsp/message/alive/stderr)
@@ -180,15 +181,34 @@
 (defmethod handle-msg (state (msg top-form:request))
     (let* ((params (message:params msg))
            (doc (top-form:text-document params))
-           (pos (top-form:pos params))
+           (offset (top-form:offset params))
            (uri (text-doc:uri doc))
            (file-text (get-file-text state uri))
-           (text (if file-text file-text "")))
+           (text (if file-text file-text ""))
+           (forms (parse-tokens:from (make-string-input-stream text)))
+           (kids (nth 2 forms)))
 
-        (send-msg state
-                  (message:create-error-resp :code errors:*internal-error*
-                                             :message "Not Done Yet"
-                                             :id (message:id msg)))))
+        (loop :with start := nil
+              :with end := nil
+
+              :for kid :in kids :do
+                  (destructuring-bind (kid-start kid-end body)
+
+                          kid
+
+                      (declare (ignore body))
+
+                      (when (and (<= offset kid-end)
+                                 (<= kid-start offset))
+                            (setf start kid-start)
+                            (setf end kid-end)))
+              :finally (if (and start end)
+                           (send-msg state (top-form:create-response :id (message:id msg)
+                                                                     :start start
+                                                                     :end (+ 1 end)))
+                           (send-msg state (message:create-error-resp :id (message:id msg)
+                                                                      :code errors:*request-failed*
+                                                                      :message (format nil "Form not found")))))))
 
 
 (defun stop (state)

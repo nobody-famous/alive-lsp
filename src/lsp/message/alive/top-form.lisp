@@ -2,8 +2,9 @@
     (:use :cl)
     (:export :create-params
              :create-request
+             :create-response
              :from-wire
-             :pos
+             :offset
              :request
              :text-document)
     (:local-nicknames (:message :alive/lsp/message/abstract)
@@ -42,33 +43,66 @@
     ((text-document :accessor text-document
                     :initform nil
                     :initarg :text-document)
-     (pos :accessor pos
-          :initform nil
-          :initarg :pos)))
+     (offset :accessor offset
+             :initform nil
+             :initarg :offset)))
 
 
 (defmethod print-object ((obj params) out)
     (format out "{text-document: ~A; position: ~A}"
             (text-document obj)
-            (pos obj)))
+            (offset obj)))
 
 
 (defmethod types:deep-equal-p ((a params) b)
     (and (equal (type-of a) (type-of b))
          (types:deep-equal-p (text-document a) (text-document b))
-         (types:deep-equal-p (pos a) (pos b))))
+         (types:deep-equal-p (offset a) (offset b))))
 
 
-(defun create-params (&key text-document pos)
+(defun create-params (&key text-document offset)
     (make-instance 'params
                    :text-document text-document
-                   :pos pos))
+                   :offset offset))
+
+
+(defclass response (message:result-response)
+    ())
+
+
+(defmethod print-object ((obj response) out)
+    (format out "{id: ~A; result: ~A}"
+            (message:id obj)
+            (message:result obj)))
+
+
+(defclass response-body ()
+    ((start :accessor start
+            :initform nil
+            :initarg :start)
+     (end :accessor end
+          :initform nil
+          :initarg :end)))
+
+
+(defmethod print-object ((obj response-body) out)
+    (format out "{start: ~A; end: ~A}"
+            (start obj)
+            (end obj)))
+
+
+(defun create-response (&key id start end)
+    (make-instance 'response
+                   :id id
+                   :result (make-instance 'response-body
+                                          :start start
+                                          :end end)))
 
 
 (defun from-wire (&key jsonrpc id params)
     (labels ((add-param (out-params key value)
                   (cond ((eq key :text-document) (setf (text-document out-params) (text-doc:from-wire value)))
-                        ((eq key :position) (setf (pos out-params) (pos:from-wire value))))))
+                        ((eq key :offset) (setf (offset out-params) value)))))
 
         (loop :with out-params := (make-instance 'params)
 
