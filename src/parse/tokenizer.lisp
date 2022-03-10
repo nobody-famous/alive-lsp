@@ -28,7 +28,7 @@
 
 (defun start-token (state)
     (setf (start state)
-          (pos:create :line (line state) :col (col state)))
+          (pos:create (line state) (col state)))
     (setf (buffer state)
           (make-string-output-stream)))
 
@@ -61,8 +61,7 @@
 
 
 (defun new-token (state token-type &optional text)
-    (let ((end (pos:create :line (line state)
-                           :col (col state))))
+    (let ((end (pos:create (line state) (col state))))
 
         (token:create :type-value token-type
                       :start (start state)

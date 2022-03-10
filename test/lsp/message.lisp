@@ -218,7 +218,7 @@
                            (completion:create-request
                             :id 5
                             :params (completion:create-params :text-document (text-doc:create :uri "file:///some/file.txt")
-                                                              :pos (pos:create :line 3 :col 11)))
+                                                              :pos (pos:create 3 11)))
                            parsed))))))
 
 
@@ -284,8 +284,7 @@
                           (check:are-equal
                            (formatting:create-request
                             :id 5
-                            :params (formatting:create-params :range (range:create :start (pos:create :line 0 :col 0)
-                                                                                   :end (pos:create :line 10 :col 10))
+                            :params (formatting:create-params :range (range:create (pos:create 0 0) (pos:create 10 10))
                                                               :text-document (text-doc:create :uri "file:///some/file.txt")))
                            parsed))))))
 

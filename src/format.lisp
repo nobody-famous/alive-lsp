@@ -1,7 +1,8 @@
 (defpackage :alive/format
     (:use :cl)
     (:export :range)
-    (:local-nicknames (:pos :alive/position)
+    (:local-nicknames (:edit :alive/text-edit)
+                      (:pos :alive/position)
                       (:range :alive/range)
                       (:token :alive/parse/token)
                       (:tokenizer :alive/parse/tokenizer)
@@ -13,7 +14,7 @@
 (defstruct parse-state
     tokens
     (indent (list 0))
-    diffs
+    edits
     out-list)
 
 
@@ -46,15 +47,20 @@
         (setf (parse-state-indent state) (cdr (parse-state-indent state)))))
 
 
-(defun add-delete-edit (state token)
-    (format T "delete ~A~%" (token:get-start token)))
+(defun replace-token (state token text)
+    (let* ((range (range:create (token:get-start token)
+                                (token:get-end token)))
+           (edit (edit:create :range range
+                              :text text)))
+        (setf (parse-state-edits state)
+              (cons edit (parse-state-edits state)))))
 
 
 (defun process-ws (state token)
     (let ((prev (car (parse-state-out-list state))))
         (cond ((or (not prev)
                    (= types:*open-paren* (token:get-type-value prev)))
-               (add-delete-edit state token))
+               (replace-token state token ""))
 
               (() ())
 
@@ -78,4 +84,5 @@
                             ((= types:*ws* (token:get-type-value token)) (process-ws state token))
                             (T (add-to-out-list state token)))
                       (pop-token state))
-              :finally (format T "end state ~A~%" state))))
+              :finally (progn (format T "end state ~A~%" state)
+                              (return (reverse (parse-state-edits state)))))))

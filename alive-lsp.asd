@@ -14,6 +14,7 @@
                  "alive-lsp/src/compile-message"
                  "alive-lsp/src/position"
                  "alive-lsp/src/range"
+                 "alive-lsp/src/text-edit"
 
                  "alive-lsp/src/parse/stream"
                  "alive-lsp/src/parse/token"
@@ -92,6 +93,7 @@
 (register-system-packages "alive-lsp/src/compile-message" '(:alive/compile-message))
 (register-system-packages "alive-lsp/src/position" '(:alive/position))
 (register-system-packages "alive-lsp/src/range" '(:alive/range))
+(register-system-packages "alive-lsp/src/text-edit" '(:alive/text-edit))
 
 (register-system-packages "alive-lsp/src/parse/stream" '(:alive/parse/stream))
 (register-system-packages "alive-lsp/src/parse/token" '(:alive/parse/token))

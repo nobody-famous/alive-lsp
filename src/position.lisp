@@ -42,7 +42,7 @@
              (= (col pos1) (col pos2)))))
 
 
-(defun create (&key line col)
+(defun create (line col)
     (make-instance 'pos
                    :line line
                    :col col))

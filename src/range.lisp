@@ -29,7 +29,7 @@
          (types:deep-equal-p (end a) (end b))))
 
 
-(defun create (&key start end)
+(defun create (start end)
     (make-instance 'range
                    :start start
                    :end end))
