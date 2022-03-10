@@ -115,7 +115,7 @@
 
           :collect token :into found-tokens
 
-          :while (pos:less-than (token:end token) pos)
+          :while (pos:less-than (token:get-end token) pos)
 
           :finally (return (cond ((<= 3 (length found-tokens)) (subseq (reverse found-tokens) 0 3))
                                  ((= 2 (length found-tokens)) (reverse (cons nil found-tokens)))

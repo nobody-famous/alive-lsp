@@ -89,8 +89,8 @@
     (when token
           (loop :with new-type := (or (forced-type state)
                                       sem-type)
-                :with start := (token:start token)
-                :with end := (token:end token)
+                :with start := (token:get-start token)
+                :with end := (token:get-end token)
 
                 :for line :from (pos:line start) :to (pos:line end)
                 :for start-col := (if (eq line (pos:line start))

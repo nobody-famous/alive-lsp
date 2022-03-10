@@ -18,8 +18,8 @@
 (defun spaces ()
     (run:test "Remove Spaces Test"
               (lambda ()
-                  (do-format " ( a b ) " (range:create :start (pos:create :line 0 :col 4)
-                                                       :end (pos:create :line 0 :col 9))))))
+                  (do-format " ( a   b ) " (range:create :start (pos:create :line 0 :col 4)
+                                                       :end (pos:create :line 0 :col 11))))))
 
 
 (defun run-all ()

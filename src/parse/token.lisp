@@ -1,10 +1,10 @@
 (defpackage :alive/parse/token
     (:use :cl)
     (:export :create
-             :end
+             :get-end
              :get-type-value
              :get-text
-             :start)
+             :get-start)
     (:local-nicknames (:pos :alive/position)
                       (:types :alive/types)))
 
@@ -50,6 +50,14 @@
 
 (defun get-text (obj)
     (when obj (text obj)))
+
+
+(defun get-start (obj)
+    (when obj (start obj)))
+
+
+(defun get-end (obj)
+    (when obj (end obj)))
 
 
 (defun create (&key type-value start end text)
