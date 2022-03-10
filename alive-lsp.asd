@@ -26,6 +26,7 @@
                  "alive-lsp/src/file"
                  "alive-lsp/src/streams"
                  "alive-lsp/src/symbols"
+                 "alive-lsp/src/format"
 
                  "alive-lsp/src/lsp/errors"
                  "alive-lsp/src/lsp/completions"
@@ -97,6 +98,7 @@
 (register-system-packages "alive-lsp/src/file" '(:alive/file))
 (register-system-packages "alive-lsp/src/streams" '(:alive/streams))
 (register-system-packages "alive-lsp/src/symbols" '(:alive/symbols))
+(register-system-packages "alive-lsp/src/format" '(:alive/format))
 
 (register-system-packages "alive-lsp/src/compat/sbcl/file" '(:alive/sbcl/file))
 (register-system-packages "alive-lsp/src/compat/sbcl/streams" '(:alive/sbcl/streams))

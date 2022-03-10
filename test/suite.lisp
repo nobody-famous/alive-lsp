@@ -14,4 +14,5 @@
                    (alive/test/lsp/sem-tokens:run-all)
                    (alive/test/parse/tokens:run-all)
                    (alive/test/session/messages:run-all)
-                   (alive/test/compat/sbcl/compile:run-all))))
+                   (alive/test/compat/sbcl/compile:run-all)
+                   (alive/test/format/range:run-all))))
