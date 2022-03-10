@@ -1,6 +1,8 @@
 (defpackage :alive/text-edit
     (:use :cl)
-    (:export :create)
+    (:export :create
+             :range
+             :text)
     (:local-nicknames (:types :alive/types)))
 
 (in-package :alive/text-edit)

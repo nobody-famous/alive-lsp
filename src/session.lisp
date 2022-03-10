@@ -10,6 +10,9 @@
                       (:did-change :alive/lsp/message/document/did-change)
                       (:formatting :alive/lsp/message/document/range-format)
                       (:file :alive/file)
+                      (:formatter :alive/format)
+                      (:tokenizer :alive/parse/tokenizer)
+                      (:analysis :alive/lsp/sem-analysis)
                       (:init :alive/lsp/message/initialize)
                       (:parse-tokens :alive/parse/stream)
                       (:load-file :alive/lsp/message/alive/load-file)
@@ -138,9 +141,12 @@
            (doc (sem-tokens:text-document params))
            (uri (text-doc:uri doc))
            (file-text (get-file-text state uri))
-           (text (if file-text file-text "")))
+           (text (if file-text file-text ""))
+           (sem-tokens (analysis:to-sem-tokens
+                        (tokenizer:from-stream
+                         (make-string-input-stream text)))))
 
-        (send-msg state (sem-tokens:create-response (message:id msg) text))))
+        (send-msg state (sem-tokens:create-response (message:id msg) sem-tokens))))
 
 
 (defmethod handle-msg (state (msg load-file:request))
@@ -218,11 +224,11 @@
            (doc (formatting:text-document params))
            (uri (text-doc:uri doc))
            (file-text (get-file-text state uri))
-           (text (if file-text file-text "")))
+           (text (if file-text file-text ""))
+           (edits (formatter:range (make-string-input-stream text)
+                                   range)))
 
-        (send-msg state (message:create-error-resp :code errors:*request-failed*
-                                                   :message "Not Done Yet"
-                                                   :id (message:id msg)))))
+        (send-msg state (formatting:create-response (message:id msg) edits))))
 
 
 (defun stop (state)

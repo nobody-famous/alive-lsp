@@ -10,8 +10,6 @@
     (:local-nicknames (:message :alive/lsp/message/abstract)
                       (:types :alive/types)
                       (:token :alive/parse/token)
-                      (:tokenizer :alive/parse/tokenizer)
-                      (:analysis :alive/lsp/sem-analysis)
                       (:text-doc :alive/lsp/types/text-doc)
                       (:sem-types :alive/lsp/types/sem-tokens)))
 
@@ -73,11 +71,6 @@
            :initarg :data)))
 
 
-(defun read-tokens (path)
-    (with-open-file (f path :if-does-not-exist nil)
-        (tokenizer:from-stream f)))
-
-
 (defun to-sem-array (sem-tokens)
     (loop :with line := 0
           :with col := 0
@@ -101,15 +94,11 @@
           :finally (return (reverse out-list))))
 
 
-(defun create-response (id text)
-    (let* ((input (make-string-input-stream text))
-           (tokens (tokenizer:from-stream input))
-           (sem-tokens (analysis:to-sem-tokens tokens)))
-
-        (make-instance 'response
-                       :id id
-                       :result (make-instance 'sem-tokens
-                                              :data (to-sem-array sem-tokens)))))
+(defun create-response (id sem-tokens)
+    (make-instance 'response
+                   :id id
+                   :result (make-instance 'sem-tokens
+                                          :data (to-sem-array sem-tokens))))
 
 
 (defun from-wire (&key jsonrpc id params)
