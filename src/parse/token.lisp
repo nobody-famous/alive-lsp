@@ -44,19 +44,19 @@
          (eq (type-value a) (type-value b))))
 
 
-(defun get-type-value (obj)
+(defmethod get-type-value ((obj token))
     (when obj (type-value obj)))
 
 
-(defun get-text (obj)
+(defmethod get-text ((obj token))
     (when obj (text obj)))
 
 
-(defun get-start (obj)
+(defmethod get-start ((obj token))
     (when obj (start obj)))
 
 
-(defun get-end (obj)
+(defmethod get-end ((obj token))
     (when obj (end obj)))
 
 
