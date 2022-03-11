@@ -64,13 +64,7 @@
 
               (() ())
 
-              (() ()))
-
-        (format T "ws ~A ~A ~A ~A~%"
-                (length (parse-state-tokens state))
-                prev
-                (token:get-start token)
-                (token:get-end token))))
+              (() ()))))
 
 
 (defun range (input range)
@@ -78,11 +72,12 @@
            (state (make-parse-state :tokens tokens)))
 
         (loop :while (parse-state-tokens state)
+
               :do (let ((token (next-token state)))
                       (cond ((= types:*open-paren* (token:get-type-value token)) (process-open state token))
                             ((= types:*close-paren* (token:get-type-value token)) (process-close state token))
                             ((= types:*ws* (token:get-type-value token)) (process-ws state token))
                             (T (add-to-out-list state token)))
                       (pop-token state))
-              :finally (progn (format T "end state ~A~%" state)
-                              (return (reverse (parse-state-edits state)))))))
+
+              :finally (return (reverse (parse-state-edits state))))))
