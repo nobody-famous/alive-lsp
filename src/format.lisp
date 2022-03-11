@@ -110,7 +110,9 @@
                          (push new-token opens)
                          (push new-token converted)))
 
-                    (() ())
+                    ((= types:*close-paren* (token:get-type-value token))
+                     (pop opens)
+                     (push token converted))
 
                     (T (push token converted)))
 
