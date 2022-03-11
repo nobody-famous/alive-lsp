@@ -21,7 +21,7 @@
     (run:test "Remove Spaces Test"
               (lambda ()
                   (check-format " ( a   b ) "
-                                (range:create (pos:create 0 4) (pos:create 0 11))
+                                (range:create (pos:create 0 0) (pos:create 0 11))
                                 (list (edit:create :range (range:create (pos:create 0 0) (pos:create 0 1))
                                                    :text "")
                                       (edit:create :range (range:create (pos:create 0 2) (pos:create 0 3))
