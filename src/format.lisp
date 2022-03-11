@@ -114,6 +114,8 @@
                      (pop opens)
                      (push token converted))
 
+                    ((= types:*ws* (token:get-type-value token)) (push token converted))
+
                     (T (push token converted)))
 
           :finally (return (reverse converted))))
