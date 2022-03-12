@@ -132,9 +132,12 @@
 
 
 (defun process-close (state token)
-    (let ((prev (car (parse-state-seen state))))
+    (let ((prev (car (parse-state-seen state)))
+          (prev-prev (cadr (parse-state-seen state))))
         (when (and prev
                    (not (out-of-range (parse-state-range state) prev))
+                   (not (eq types:*line-comment* (token:get-type-value prev-prev)))
+                   (not (eq types:*block-comment* (token:get-type-value prev-prev)))
                    (eq types:*ws* (token:get-type-value prev)))
               (replace-token state prev "")
               (pop (parse-state-out-list state)))
@@ -155,33 +158,28 @@
     (= 1 (length (parse-state-tokens state))))
 
 
-(defun process-ws (state token)
-    (let ((prev (car (parse-state-out-list state))))
-        (cond ((or (not prev)
-                   (= *start-form* (token:get-type-value prev))
-                   (last-token-p state))
-               (replace-token state token ""))
-
-              ((and (= (pos:line (token:get-start token))
-                       (pos:line (token:get-end token)))
-                    (not (string= " " (token:get-text token))))
-               (replace-token state token " "))
-
-              (T (add-to-out-list state token)))))
-
-
 (defun process-token (state token)
     (let ((prev (car (parse-state-seen state))))
 
-        (when (= types:*ws* (token:get-type-value prev))
-              (fix-indent state))
+        (cond ((or (= types:*line-comment* (token:get-type-value token))
+                   (= types:*block-comment* (token:get-type-value token)))
+               (when (and (= types:*ws* (token:get-type-value prev))
+                          (= (pos:line (token:get-start prev))
+                             (pos:line (token:get-start token)))
+                          (not (string= " " (token:get-text prev))))
+                     (replace-token state prev " ")))
+
+              ((= types:*ws* (token:get-type-value prev)) (fix-indent state))
+
+              (() ()))
 
         (add-to-out-list state token)))
 
 
 (defun check-end-space (state)
     (let ((token (car (parse-state-seen state))))
-        (when (and (not (out-of-range (parse-state-range state) token))
+        (when (and token
+                   (not (out-of-range (parse-state-range state) token))
                    (= types:*ws* (token:get-type-value token)))
               (replace-token state token ""))))
 

@@ -34,7 +34,7 @@
                                    (token-for-string "defun"))
 
                   (check:are-equal (list (token:create
-                                          :type-value alive/types:*comment*
+                                          :type-value alive/types:*line-comment*
                                           :start (pos:create 0 0)
                                           :end (pos:create 0 9)
                                           :text "; Comment"))

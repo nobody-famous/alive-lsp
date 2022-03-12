@@ -320,8 +320,9 @@
                                                                    (get-symbol-type (sym obj) NIL))))))))
 
         (let ((token (peek-token state)))
-            (cond ((is-type token types:*comment*) (next-token state)
-                                                   (add-sem-token state token sem-types:*comment*))
+            (cond ((or (is-type token types:*line-comment*)
+                       (is-type token types:*block-comment*)) (next-token state)
+                                                        (add-sem-token state token sem-types:*comment*))
 
                   ((is-type token types:*string*) (next-token state)
                                                   (add-sem-token state token sem-types:*string*))
@@ -334,7 +335,7 @@
 
                   ((is-type token types:*ifdef-false*) (next-token state)
                                                        (add-sem-token state token sem-types:*comment*)
-                                                       (setf (forced-type state) types:*comment*)
+                                                       (setf (forced-type state) sem-types:*comment*)
                                                        (skip-ws state)
                                                        (process-expr state)
                                                        (setf (forced-type state) nil))

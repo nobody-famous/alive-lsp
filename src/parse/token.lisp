@@ -46,19 +46,35 @@
 
 
 (defmethod get-type-value ((obj token))
-    (when obj (type-value obj)))
+    (type-value obj))
+
+
+(defmethod get-type-value ((obj T))
+    nil)
 
 
 (defmethod get-text ((obj token))
-    (when obj (text obj)))
+    (text obj))
+
+
+(defmethod get-text ((obj T))
+    nil)
 
 
 (defmethod get-start ((obj token))
-    (when obj (start obj)))
+    (start obj))
+
+
+(defmethod get-start ((obj T))
+    nil)
 
 
 (defmethod get-end ((obj token))
-    (when obj (end obj)))
+    (end obj))
+
+
+(defmethod get-end ((obj T))
+    nil)
 
 
 (defun create (&key type-value start end text)

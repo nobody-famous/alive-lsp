@@ -125,7 +125,7 @@
 
 (defun read-comment-token (state)
     (read-text-token :state state
-                     :token-type types:*comment*
+                     :token-type types:*line-comment*
                      :predicate (lambda (ch)
                                     (and ch
                                          (not (char= ch #\newline))))))
@@ -187,7 +187,7 @@
                                         (setf have-pound t))))
               (next-char state)
 
-          :finally (return (new-token state types:*comment*))))
+          :finally (return (new-token state types:*block-comment*))))
 
 
 (defun read-macro-generic-token (state)

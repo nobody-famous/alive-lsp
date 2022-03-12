@@ -286,6 +286,7 @@
                                         :pkg-name (token:get-text token2)))
 
                       ((eq (token:get-type-value token1) types:*colons*)
+                       (format T "SHOULD BE HERE~%")
                        (symbol-with-pkg :name ""
                                         :num-colons (length (token:get-text token1))
                                         :pkg-name (package-name *package*)))
