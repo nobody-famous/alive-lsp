@@ -101,8 +101,30 @@
         (pos:less-than (range:end range) (token:get-start token))))
 
 
+(defun fix-indent (state)
+    (let* ((indent (car (parse-state-indent state)))
+           (token (car (parse-state-seen state)))
+           (prev (cadr (parse-state-seen state)))
+           (start (token:get-start token))
+           (end (token:get-end token)))
+
+        (when (= types:*ws* (token:get-type-value token))
+
+              (cond ((or (not prev)
+                         (= *start-form* (token:get-type-value prev)))
+                     (replace-token state token ""))
+
+                    ((= (pos:line start) (pos:line end))
+                     (unless (string= " " (token:get-text token))
+                             (replace-token state token " ")))
+
+                    (T (format T "fix-indent ~A~%" token))))))
+
+
 (defun process-open (state token)
     (let* ((end (token:get-end token)))
+        (when (= types:*ws* (token:get-type-value (car (parse-state-seen state))))
+              (fix-indent state))
         (add-to-out-list state token)
         (push (pos:col end) (parse-state-indent state))))
 
@@ -145,6 +167,21 @@
               (T (add-to-out-list state token)))))
 
 
+(defun process-token (state token)
+    (let ((prev (car (parse-state-seen state))))
+
+        (when (= types:*ws* (token:get-type-value prev))
+              (fix-indent state))
+
+        (add-to-out-list state token)))
+
+
+(defun check-end-space (state)
+    (let ((token (car (parse-state-seen state))))
+        (when (= types:*ws* (token:get-type-value token))
+              (replace-token state token ""))))
+
+
 (defun convert-tokens (tokens)
     (loop :with converted := '()
           :with opens = '()
@@ -179,10 +216,11 @@
               :do (let ((token (next-token state)))
                       (cond ((= *start-form* (token:get-type-value token)) (process-open state token))
                             ((= types:*close-paren* (token:get-type-value token)) (process-close state token))
-                            ((= types:*ws* (token:get-type-value token)) (process-ws state token))
-                            (T (add-to-out-list state token)))
+                            ((= types:*ws* (token:get-type-value token)) (add-to-out-list state token))
+                            (T (process-token state token)))
 
                       (push token (parse-state-seen state))
                       (pop-token state))
 
-              :finally (return (reverse (parse-state-edits state))))))
+              :finally (progn (check-end-space state)
+                              (return (reverse (parse-state-edits state)))))))
