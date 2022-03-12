@@ -134,6 +134,7 @@
 (defun process-close (state token)
     (let ((prev (car (parse-state-seen state))))
         (when (and prev
+                   (not (out-of-range (parse-state-range state) prev))
                    (eq types:*ws* (token:get-type-value prev)))
               (replace-token state prev "")
               (pop (parse-state-out-list state)))
