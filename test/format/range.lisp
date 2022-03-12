@@ -28,6 +28,8 @@
                                                    :text "")
                                       (edit:create :range (range:create (pos:create 0 4) (pos:create 0 6))
                                                    :text " ")
+                                      (edit:create :range (range:create (pos:create 0 7) (pos:create 0 8))
+                                                   :text "")
                                       (edit:create :range (range:create (pos:create 0 9) (pos:create 0 11))
                                                    :text ""))))))
 

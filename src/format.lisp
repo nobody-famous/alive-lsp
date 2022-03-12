@@ -63,7 +63,8 @@
     tokens
     (indent (list 0))
     edits
-    out-list)
+    out-list
+    seen)
 
 
 (defun next-token (state)
@@ -107,7 +108,12 @@
 
 
 (defun process-close (state token)
-    (let* ((end (token:get-end token)))
+    (let ((prev (car (parse-state-seen state))))
+        (when (and prev
+                   (eq types:*ws* (token:get-type-value prev)))
+              (replace-token state prev "")
+              (pop (parse-state-out-list state)))
+
         (add-to-out-list state token)
         (pop (parse-state-indent state))))
 
@@ -175,6 +181,8 @@
                             ((= types:*close-paren* (token:get-type-value token)) (process-close state token))
                             ((= types:*ws* (token:get-type-value token)) (process-ws state token))
                             (T (add-to-out-list state token)))
+
+                      (push token (parse-state-seen state))
                       (pop-token state))
 
               :finally (return (reverse (parse-state-edits state))))))
