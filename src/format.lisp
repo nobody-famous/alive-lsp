@@ -26,6 +26,13 @@
                    :initarg :is-multiline)))
 
 
+(defmethod print-object ((obj start-form) out)
+    (format out "{[~A:~A]~A}"
+            (start obj)
+            (end obj)
+            (is-multiline obj)))
+
+
 (defun new-start-form (token)
     (make-instance 'start-form
                    :start (token:get-start token)
@@ -45,6 +52,13 @@
     (end obj))
 
 
+(defmethod token:clone ((obj start-form) new-start new-end)
+    (make-instance 'start-form
+                   :start new-start
+                   :end new-end
+                   :is-multiline (is-multiline obj)))
+
+
 (defstruct parse-state
     tokens
     (indent (list 0))
@@ -60,8 +74,25 @@
     (pop (parse-state-tokens state)))
 
 
+(defun adjust-out-token (start token)
+    (let* ((tok-start (token:get-start token))
+           (tok-end (token:get-end token))
+           (line-diff (- (pos:line start) (pos:line tok-start)))
+           (col-diff (- (pos:col start) (pos:col tok-start)))
+           (new-line (+ line-diff (pos:line tok-end)))
+           (new-col (+ col-diff (pos:col tok-end)))
+           (new-end (pos:create new-line new-col)))
+
+        (token:clone token start new-end)))
+
+
 (defun add-to-out-list (state token)
-    (push token (parse-state-out-list state)))
+    (let* ((start (if (car (parse-state-out-list state))
+                      (token:get-end (car (parse-state-out-list state)))
+                      (pos:create 0 0)))
+           (adjusted (adjust-out-token start token)))
+
+        (push adjusted (parse-state-out-list state))))
 
 
 (defun out-of-range (range token)
@@ -89,15 +120,23 @@
         (push edit (parse-state-edits state))))
 
 
+(defun last-token-p (state)
+    (= 1 (length (parse-state-tokens state))))
+
+
 (defun process-ws (state token)
     (let ((prev (car (parse-state-out-list state))))
         (cond ((or (not prev)
-                   (= *start-form* (token:get-type-value prev)))
+                   (= *start-form* (token:get-type-value prev))
+                   (last-token-p state))
                (replace-token state token ""))
 
-              (() ())
+              ((and (= (pos:line (token:get-start token))
+                       (pos:line (token:get-end token)))
+                    (not (string= " " (token:get-text token))))
+               (replace-token state token " "))
 
-              (() ()))))
+              (T (add-to-out-list state token)))))
 
 
 (defun convert-tokens (tokens)
@@ -116,7 +155,11 @@
 
                     ((= types:*ws* (token:get-type-value token)) (push token converted))
 
-                    (T (push token converted)))
+                    (T (when (and (car opens)
+                                  (not (= (pos:line (token:get-start (car opens)))
+                                          (pos:line (token:get-end token)))))
+                             (setf (is-multiline (car opens)) T))
+                       (push token converted)))
 
           :finally (return (reverse converted))))
 
@@ -128,7 +171,6 @@
         (loop :while (parse-state-tokens state)
 
               :do (let ((token (next-token state)))
-                      (format T "~A~%" token)
                       (cond ((= *start-form* (token:get-type-value token)) (process-open state token))
                             ((= types:*close-paren* (token:get-type-value token)) (process-close state token))
                             ((= types:*ws* (token:get-type-value token)) (process-ws state token))

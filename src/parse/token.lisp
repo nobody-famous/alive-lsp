@@ -1,6 +1,7 @@
 (defpackage :alive/parse/token
     (:use :cl)
-    (:export :create
+    (:export :clone
+             :create
              :get-end
              :get-type-value
              :get-text
@@ -66,3 +67,10 @@
                    :end end
                    :text text
                    :type-value type-value))
+
+
+(defmethod clone ((obj token) new-start new-end)
+    (create :type-value (get-type-value obj)
+            :text (get-text obj)
+            :start new-start
+            :end new-end))

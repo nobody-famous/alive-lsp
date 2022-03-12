@@ -20,11 +20,15 @@
 (defun spaces ()
     (run:test "Remove Spaces Test"
               (lambda ()
-                  (check-format " ( a   b ) "
+                  (check-format (format nil " ( a  b )  ")
                                 (range:create (pos:create 0 0) (pos:create 0 11))
                                 (list (edit:create :range (range:create (pos:create 0 0) (pos:create 0 1))
                                                    :text "")
                                       (edit:create :range (range:create (pos:create 0 2) (pos:create 0 3))
+                                                   :text "")
+                                      (edit:create :range (range:create (pos:create 0 4) (pos:create 0 6))
+                                                   :text " ")
+                                      (edit:create :range (range:create (pos:create 0 9) (pos:create 0 11))
                                                    :text ""))))))
 
 
