@@ -31,7 +31,12 @@
                                       (edit:create :range (range:create (pos:create 0 7) (pos:create 0 9))
                                                    :text "")
                                       (edit:create :range (range:create (pos:create 0 10) (pos:create 0 12))
-                                                   :text ""))))))
+                                                   :text "")))
+
+                  (check-format (format nil " ( a  b  )  ")
+                                (range:create (pos:create 0 3) (pos:create 0 7))
+                                (list (edit:create :range (range:create (pos:create 0 4) (pos:create 0 6))
+                                                   :text " "))))))
 
 
 (defun run-all ()

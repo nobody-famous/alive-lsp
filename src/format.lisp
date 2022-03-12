@@ -61,6 +61,7 @@
 
 (defstruct parse-state
     tokens
+    range
     (indent (list 0))
     edits
     out-list
@@ -108,7 +109,8 @@
            (start (token:get-start token))
            (end (token:get-end token)))
 
-        (when (= types:*ws* (token:get-type-value token))
+        (when (and (not (out-of-range (parse-state-range state) token))
+                   (= types:*ws* (token:get-type-value token)))
 
               (cond ((or (not prev)
                          (= *start-form* (token:get-type-value prev)))
@@ -178,7 +180,8 @@
 
 (defun check-end-space (state)
     (let ((token (car (parse-state-seen state))))
-        (when (= types:*ws* (token:get-type-value token))
+        (when (and (not (out-of-range (parse-state-range state) token))
+                   (= types:*ws* (token:get-type-value token)))
               (replace-token state token ""))))
 
 
@@ -209,15 +212,17 @@
 
 (defun range (input range)
     (let* ((tokens (convert-tokens (tokenizer:from-stream input)))
-           (state (make-parse-state :tokens tokens)))
+           (state (make-parse-state :tokens tokens
+                                    :range range)))
 
         (loop :while (parse-state-tokens state)
 
               :do (let ((token (next-token state)))
-                      (cond ((= *start-form* (token:get-type-value token)) (process-open state token))
-                            ((= types:*close-paren* (token:get-type-value token)) (process-close state token))
-                            ((= types:*ws* (token:get-type-value token)) (add-to-out-list state token))
-                            (T (process-token state token)))
+                      (unless (out-of-range range token)
+                              (cond ((= *start-form* (token:get-type-value token)) (process-open state token))
+                                    ((= types:*close-paren* (token:get-type-value token)) (process-close state token))
+                                    ((= types:*ws* (token:get-type-value token)) (add-to-out-list state token))
+                                    (T (process-token state token))))
 
                       (push token (parse-state-seen state))
                       (pop-token state))
