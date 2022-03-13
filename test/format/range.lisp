@@ -74,7 +74,28 @@
                                                    :text ""))))))
 
 
+(defun indent ()
+    (run:test "Indent Test"
+              (lambda ()
+                  ;   (check-format (format nil "(    a b~%c d)")
+                  ;                 (range:create (pos:create 0 0) (pos:create 1 3))
+                  ;                 (list (edit:create :range (range:create (pos:create 0 1) (pos:create 0 5))
+                  ;                                    :text "")
+                  ;                       (edit:create :range (range:create (pos:create 0 8) (pos:create 1 0))
+                  ;                                    :text (format nil "~% "))))
+
+                  (check-format (format nil "(    a (b~%c)   ~%   d)")
+                                (range:create (pos:create 0 0) (pos:create 1 3))
+                                (list (edit:create :range (range:create (pos:create 0 1) (pos:create 0 5))
+                                                   :text "")
+                                      (edit:create :range (range:create (pos:create 0 9) (pos:create 1 0))
+                                                   :text (format nil "~%    "))
+                                      (edit:create :range (range:create (pos:create 1 2) (pos:create 2 3))
+                                                   :text (format nil "~% ")))))))
+
+
 (defun run-all ()
     (run:suite "Range Format Tests"
                (lambda ()
-                   (spaces))))
+                   (spaces)
+                   (indent))))

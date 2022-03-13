@@ -13,6 +13,16 @@
 
 (defparameter *start-form* 100)
 
+(defparameter *always* 0)
+(defparameter *never* 1)
+(defparameter *multiline* 2)
+
+
+(defstruct options
+    (indent-width 2)
+    (max-blank-lines 2)
+    (parens-own-line *never*))
+
 
 (defclass start-form ()
     ((start :accessor start
@@ -65,7 +75,8 @@
     (indent (list 0))
     edits
     out-list
-    seen)
+    seen
+    (options (make-options)))
 
 
 (defun next-token (state)
@@ -82,7 +93,7 @@
            (line-diff (- (pos:line start) (pos:line tok-start)))
            (col-diff (- (pos:col start) (pos:col tok-start)))
            (new-line (+ line-diff (pos:line tok-end)))
-           (new-col (+ col-diff (pos:col tok-end)))
+           (new-col (max 0 (+ col-diff (pos:col tok-end))))
            (new-end (pos:create new-line new-col)))
 
         (token:clone token start new-end)))
@@ -102,6 +113,18 @@
         (pos:less-than (range:end range) (token:get-start token))))
 
 
+(defun new-line-count (token)
+    (let ((start (token:get-start token))
+          (end (token:get-end token)))
+        (- (pos:line end) (pos:line start))))
+
+
+(defun indent-string (nl-count space-count)
+    (format nil "~A~A"
+            (format nil "~v@{~A~:*~}" nl-count (format nil "~%"))
+            (format nil "~v@{~A~:*~}" space-count " ")))
+
+
 (defun fix-indent (state)
     (let* ((indent (car (parse-state-indent state)))
            (token (car (parse-state-seen state)))
@@ -117,18 +140,36 @@
                      (replace-token state token ""))
 
                     ((= (pos:line start) (pos:line end))
-                     (unless (string= " " (token:get-text token))
-                             (replace-token state token " ")))
+                     (if (string= " " (token:get-text token))
+                         (add-to-out-list state token)
+                         (progn (add-to-out-list state
+                                                 (token:create :type-value types:*ws*
+                                                               :start (token:get-start token)
+                                                               :end (pos:create (pos:line start) (+ 1 (pos:col start)))
+                                                               :text " "))
+                                (replace-token state token " "))))
 
-                    (T (format T "fix-indent ~A~%" token))))))
+                    (T
+                     (let* ((str (indent-string (new-line-count token) indent))
+                            (new-token (token:create :type-value types:*ws*
+                                                     :start (token:get-start token)
+                                                     :end (token:get-end token)
+                                                     :text str)))
+                         (add-to-out-list state new-token)
+                         (replace-token state token str)))))))
 
 
 (defun process-open (state token)
-    (let* ((end (token:get-end token)))
-        (when (= types:*ws* (token:get-type-value (car (parse-state-seen state))))
+    (let* ((prev (car (parse-state-seen state))))
+
+        (when (and prev
+                   (= types:*ws* (token:get-type-value prev)))
               (fix-indent state))
+
         (add-to-out-list state token)
-        (push (pos:col end) (parse-state-indent state))))
+
+        (push (pos:col (token:get-end (car (parse-state-out-list state))))
+              (parse-state-indent state))))
 
 
 (defun process-close (state token)
@@ -169,9 +210,7 @@
                           (not (string= " " (token:get-text prev))))
                      (replace-token state prev " ")))
 
-              ((= types:*ws* (token:get-type-value prev)) (fix-indent state))
-
-              (() ()))
+              ((= types:*ws* (token:get-type-value prev)) (fix-indent state)))
 
         (add-to-out-list state token)))
 
@@ -220,7 +259,7 @@
                       (unless (out-of-range range token)
                               (cond ((= *start-form* (token:get-type-value token)) (process-open state token))
                                     ((= types:*close-paren* (token:get-type-value token)) (process-close state token))
-                                    ((= types:*ws* (token:get-type-value token)) (add-to-out-list state token))
+                                    ((= types:*ws* (token:get-type-value token)) nil)
                                     (T (process-token state token))))
 
                       (push token (parse-state-seen state))
