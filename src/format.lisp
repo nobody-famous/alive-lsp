@@ -67,6 +67,8 @@
 
 
 (defmethod token:clone ((obj start-form) new-start new-end &optional new-text)
+    (declare (ignore new-text))
+
     (make-instance 'start-form
                    :start new-start
                    :end new-end

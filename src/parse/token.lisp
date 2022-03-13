@@ -14,10 +14,10 @@
 
 (defclass token ()
     ((start :accessor start
-            :initform (pos:create)
+            :initform (pos:create 0 0)
             :initarg :start)
      (end :accessor end
-          :initform (pos:create)
+          :initform (pos:create 0 0)
           :initarg :end)
      (text :accessor text
            :initform nil
