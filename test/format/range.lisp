@@ -91,7 +91,23 @@
                                       (edit:create :range (range:create (pos:create 0 9) (pos:create 1 0))
                                                    :text (format nil "~%    "))
                                       (edit:create :range (range:create (pos:create 1 2) (pos:create 2 3))
-                                                   :text (format nil "~% ")))))))
+                                                   :text (format nil "~% "))))
+
+                  (check-format (format nil "(a~%    (b~%        (c)))")
+                                (range:create (pos:create 0 0) (pos:create 3 0))
+                                (list (edit:create :range (range:create (pos:create 0 2) (pos:create 1 4))
+                                                   :text (format nil "~% "))
+                                      (edit:create :range (range:create (pos:create 1 6) (pos:create 2 8))
+                                                   :text (format nil "~%  "))))
+
+                  (check-format (format nil "  (a~%(b~%c))")
+                                (range:create (pos:create 0 0) (pos:create 3 0))
+                                (list (edit:create :range (range:create (pos:create 0 0) (pos:create 0 2))
+                                                   :text (format nil ""))
+                                      (edit:create :range (range:create (pos:create 0 4) (pos:create 1 0))
+                                                   :text (format nil "~% "))
+                                      (edit:create :range (range:create (pos:create 1 2) (pos:create 2 0))
+                                                   :text (format nil "~%  ")))))))
 
 
 (defun run-all ()

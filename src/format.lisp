@@ -62,7 +62,11 @@
     (end obj))
 
 
-(defmethod token:clone ((obj start-form) new-start new-end)
+(defmethod token:get-text ((obj start-form))
+    "(")
+
+
+(defmethod token:clone ((obj start-form) new-start new-end &optional new-text)
     (make-instance 'start-form
                    :start new-start
                    :end new-end
@@ -87,23 +91,31 @@
     (pop (parse-state-tokens state)))
 
 
-(defun adjust-out-token (start token)
-    (let* ((tok-start (token:get-start token))
-           (tok-end (token:get-end token))
-           (line-diff (- (pos:line start) (pos:line tok-start)))
-           (col-diff (- (pos:col start) (pos:col tok-start)))
-           (new-line (+ line-diff (pos:line tok-end)))
-           (new-col (max 0 (+ col-diff (pos:col tok-end))))
-           (new-end (pos:create new-line new-col)))
+(defun make-new-token (token start &optional new-str)
+    (loop :with line := (pos:line start)
+          :with col := (pos:col start)
+          :with str := (if new-str
+                           new-str
+                           (token:get-text token))
 
-        (token:clone token start new-end)))
+          :for ch :across str :do
+              (cond ((char= #\newline ch)
+                     (incf line)
+                     (setf col 0))
+
+                    (T (incf col)))
+
+          :finally (return (token:clone token
+                                        start
+                                        (pos:create line col)
+                                        str))))
 
 
 (defun add-to-out-list (state token)
     (let* ((start (if (car (parse-state-out-list state))
                       (token:get-end (car (parse-state-out-list state)))
                       (pos:create 0 0)))
-           (adjusted (adjust-out-token start token)))
+           (adjusted (make-new-token token start)))
 
         (push adjusted (parse-state-out-list state))))
 
@@ -151,10 +163,8 @@
 
                     (T
                      (let* ((str (indent-string (new-line-count token) indent))
-                            (new-token (token:create :type-value types:*ws*
-                                                     :start (token:get-start token)
-                                                     :end (token:get-end token)
-                                                     :text str)))
+                            (new-token (make-new-token token (token:get-start token) str)))
+
                          (add-to-out-list state new-token)
                          (replace-token state token str)))))))
 

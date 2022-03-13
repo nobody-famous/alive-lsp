@@ -85,8 +85,10 @@
                    :type-value type-value))
 
 
-(defmethod clone ((obj token) new-start new-end)
+(defmethod clone ((obj token) new-start new-end &optional new-text)
     (create :type-value (get-type-value obj)
-            :text (get-text obj)
+            :text (if new-text
+                      new-text
+                      (get-text obj))
             :start new-start
             :end new-end))
