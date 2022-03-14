@@ -4,6 +4,7 @@
     (:local-nicknames (:edit :alive/text-edit)
                       (:pos :alive/position)
                       (:range :alive/range)
+                      (:symbols :alive/symbols)
                       (:token :alive/parse/token)
                       (:tokenizer :alive/parse/tokenizer)
                       (:types :alive/types)))
@@ -64,6 +65,18 @@
 
 (defmethod token:get-text ((obj start-form))
     "(")
+
+
+(defun is-type (type token)
+    (and token
+         (= type (token:get-type-value token))))
+
+
+(defun same-line (token1 token2)
+    (and token1
+         token2
+         (= (pos:line (token:get-start token1))
+            (pos:line (token:get-start token2)))))
 
 
 (defmethod token:clone ((obj start-form) new-start new-end &optional new-text)
@@ -204,6 +217,7 @@
                                 (token:get-end token)))
            (edit (edit:create :range range
                               :text text)))
+
         (push edit (parse-state-edits state))))
 
 
@@ -211,30 +225,48 @@
     (= 1 (length (parse-state-tokens state))))
 
 
-(defun process-token (state token)
-    (let ((prev (car (parse-state-seen state))))
+(defun start-of-last-placed (state)
+    (let* ((item (car (parse-state-out-list state))))
+        (if item
+            (pos:col (token:get-start item))
+            0)))
 
-        (cond ((or (= types:*line-comment* (token:get-type-value token))
-                   (= types:*block-comment* (token:get-type-value token)))
-               (when (and prev
-                          (= types:*ws* (token:get-type-value prev))
-                          (= (pos:line (token:get-start prev))
-                             (pos:line (token:get-start token)))
+
+(defun process-token (state token)
+    (let ((prev (car (parse-state-seen state)))
+          (prev-prev (cadr (parse-state-seen state))))
+
+        (cond ((or (is-type types:*line-comment* token)
+                   (is-type types:*block-comment* token))
+               (when (and (is-type types:*ws* prev)
+                          (same-line prev token)
                           (not (string= " " (token:get-text prev))))
                      (replace-token state prev " ")))
 
-              ((and prev
-                    (= types:*ws* (token:get-type-value prev)))
-               (fix-indent state)))
+              ((is-type types:*ws* prev) (fix-indent state)))
 
-        (add-to-out-list state token)))
+        (add-to-out-list state token)
+
+        (cond ((or (is-type *start-form* prev)
+                   (and (is-type types:*ws* prev)
+                        (is-type *start-form* prev-prev)))
+               (let* ((indent (car (parse-state-indent state)))
+                      (opts (parse-state-options state))
+                      (width (options-indent-width opts)))
+
+                   (pop (parse-state-indent state))
+                   (push (+ width indent) (parse-state-indent state))))
+
+              ((same-line prev token) (format T "set align ~A~%" token))
+
+              (() ()))))
 
 
 (defun check-end-space (state)
     (let ((token (car (parse-state-seen state))))
         (when (and token
                    (not (out-of-range (parse-state-range state) token))
-                   (= types:*ws* (token:get-type-value token)))
+                   (is-type types:*ws* token))
               (replace-token state token ""))))
 
 
@@ -243,7 +275,7 @@
           :with opens = '()
 
           :for token :in tokens :do
-              (cond ((= types:*open-paren* (token:get-type-value token))
+              (cond ((is-type types:*open-paren* token)
                      (let ((new-token (new-start-form token)))
                          (push new-token opens)
                          (push new-token converted)))
@@ -252,7 +284,7 @@
                      (pop opens)
                      (push token converted))
 
-                    ((= types:*ws* (token:get-type-value token)) (push token converted))
+                    ((is-type types:*ws* token) (push token converted))
 
                     (T (when (and (car opens)
                                   (not (= (pos:line (token:get-start (car opens)))
@@ -272,9 +304,9 @@
 
               :do (let ((token (next-token state)))
                       (unless (out-of-range range token)
-                              (cond ((= *start-form* (token:get-type-value token)) (process-open state token))
-                                    ((= types:*close-paren* (token:get-type-value token)) (process-close state token))
-                                    ((= types:*ws* (token:get-type-value token)) nil)
+                              (cond ((is-type *start-form* token) (process-open state token))
+                                    ((is-type types:*close-paren* token) (process-close state token))
+                                    ((is-type types:*ws* token) nil)
                                     (T (process-token state token))))
 
                       (push token (parse-state-seen state))
