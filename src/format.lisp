@@ -32,16 +32,20 @@
      (end :accessor end
           :initform nil
           :initarg :end)
+     (aligned :accessor aligned
+              :initform nil
+              :initarg :aligned)
      (is-multiline :accessor is-multiline
                    :initform nil
                    :initarg :is-multiline)))
 
 
 (defmethod print-object ((obj start-form) out)
-    (format out "{[~A:~A]~A}"
+    (format out "{[~A:~A] ML: ~A; aligned: ~A}"
             (start obj)
             (end obj)
-            (is-multiline obj)))
+            (is-multiline obj)
+            (aligned obj)))
 
 
 (defun new-start-form (token)
@@ -95,6 +99,7 @@
     edits
     out-list
     seen
+    opens
     (options (make-options)))
 
 
@@ -152,6 +157,23 @@
             (format nil "~v@{~A~:*~}" space-count " ")))
 
 
+(defun update-aligned (state)
+    (let* ((prev (car (parse-state-seen state)))
+           (prev-prev (cadr (parse-state-seen state)))
+           (form-open (car (parse-state-opens state)))
+           (token (car (parse-state-out-list state))))
+
+        (unless (or (and form-open (aligned form-open))
+                    (is-type *start-form* prev)
+                    (and (is-type types:*ws* prev)
+                         (is-type *start-form* prev-prev)))
+
+                (when form-open
+                      (setf (aligned form-open) T))
+                (pop (parse-state-indent state))
+                (push (pos:col (token:get-start token)) (parse-state-indent state)))))
+
+
 (defun fix-indent (state)
     (let* ((indent (car (parse-state-indent state)))
            (token (car (parse-state-seen state)))
@@ -192,6 +214,9 @@
               (fix-indent state))
 
         (add-to-out-list state token)
+        (update-aligned state)
+
+        (push (car (parse-state-out-list state)) (parse-state-opens state))
 
         (push (pos:col (token:get-end (car (parse-state-out-list state))))
               (parse-state-indent state))))
@@ -209,6 +234,7 @@
               (pop (parse-state-out-list state)))
 
         (add-to-out-list state token)
+        (pop (parse-state-opens state))
         (pop (parse-state-indent state))))
 
 
@@ -234,7 +260,8 @@
 
 (defun process-token (state token)
     (let ((prev (car (parse-state-seen state)))
-          (prev-prev (cadr (parse-state-seen state))))
+          (prev-prev (cadr (parse-state-seen state)))
+          (form-open (car (parse-state-opens state))))
 
         (cond ((or (is-type types:*line-comment* token)
                    (is-type types:*block-comment* token))
@@ -247,19 +274,7 @@
 
         (add-to-out-list state token)
 
-        (cond ((or (is-type *start-form* prev)
-                   (and (is-type types:*ws* prev)
-                        (is-type *start-form* prev-prev)))
-               (let* ((indent (car (parse-state-indent state)))
-                      (opts (parse-state-options state))
-                      (width (options-indent-width opts)))
-
-                   (pop (parse-state-indent state))
-                   (push (+ width indent) (parse-state-indent state))))
-
-              ((same-line prev token) (format T "set align ~A~%" token))
-
-              (() ()))))
+        (update-aligned state)))
 
 
 (defun check-end-space (state)
