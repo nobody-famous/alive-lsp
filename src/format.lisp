@@ -223,7 +223,9 @@
                           (not (string= " " (token:get-text prev))))
                      (replace-token state prev " ")))
 
-              ((= types:*ws* (token:get-type-value prev)) (fix-indent state)))
+              ((and prev
+                    (= types:*ws* (token:get-type-value prev)))
+               (fix-indent state)))
 
         (add-to-out-list state token)))
 
