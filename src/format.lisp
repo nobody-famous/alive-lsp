@@ -259,9 +259,7 @@
 
 
 (defun process-token (state token)
-    (let ((prev (car (parse-state-seen state)))
-          (prev-prev (cadr (parse-state-seen state)))
-          (form-open (car (parse-state-opens state))))
+    (let ((prev (car (parse-state-seen state))))
 
         (cond ((or (is-type types:*line-comment* token)
                    (is-type types:*block-comment* token))
