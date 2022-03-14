@@ -216,7 +216,8 @@
 
         (cond ((or (= types:*line-comment* (token:get-type-value token))
                    (= types:*block-comment* (token:get-type-value token)))
-               (when (and (= types:*ws* (token:get-type-value prev))
+               (when (and prev
+                          (= types:*ws* (token:get-type-value prev))
                           (= (pos:line (token:get-start prev))
                              (pos:line (token:get-start token)))
                           (not (string= " " (token:get-text prev))))
