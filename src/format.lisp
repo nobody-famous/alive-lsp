@@ -316,11 +316,10 @@
         (loop :while (parse-state-tokens state)
 
               :do (let ((token (next-token state)))
-                      (unless (out-of-range range token)
-                              (cond ((is-type *start-form* token) (process-open state token))
-                                    ((is-type types:*close-paren* token) (process-close state token))
-                                    ((is-type types:*ws* token) nil)
-                                    (T (process-token state token))))
+                      (cond ((is-type *start-form* token) (process-open state token))
+                            ((is-type types:*close-paren* token) (process-close state token))
+                            ((is-type types:*ws* token) nil)
+                            (T (process-token state token)))
 
                       (push token (parse-state-seen state))
                       (pop-token state))
