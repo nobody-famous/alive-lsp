@@ -146,7 +146,7 @@
         (and (is-type types:*ws* token)
              (pos:less-or-equal (range:start range) (token:get-start token))
              (pos:less-or-equal (token:get-start token) (range:end range))
-             (pos:less-or-equal (range:end range) (token:get-end token)))))
+             (pos:less-than (range:end range) (token:get-end token)))))
 
 
 (defun new-line-count (token)

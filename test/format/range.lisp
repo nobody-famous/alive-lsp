@@ -21,17 +21,17 @@
     (run:test "Remove Spaces Test"
               (lambda ()
                   (check-format (format nil "; Do not remove~%  ")
-                                (range:create (pos:create 0 0) (pos:create 1 3))
+                                (range:create (pos:create 0 0) (pos:create 1 2))
                                 (list (edit:create :range (range:create (pos:create 0 15) (pos:create 1 2))
                                                    :text "")))
 
                   (check-format (format nil "'(1 2 3 4~%   5 6 7 8)")
-                                (range:create (pos:create 0 0) (pos:create 1 4))
+                                (range:create (pos:create 0 0) (pos:create 1 3))
                                 (list (edit:create :range (range:create (pos:create 0 9) (pos:create 1 3))
                                                    :text (format nil "~%    "))))
 
                   (check-format (format nil " ( ; Do not remove~%)  ")
-                                (range:create (pos:create 0 0) (pos:create 2 0))
+                                (range:create (pos:create 0 0) (pos:create 1 3))
                                 (list (edit:create :range (range:create (pos:create 0 0) (pos:create 0 1))
                                                    :text "")
                                       (edit:create :range (range:create (pos:create 1 1) (pos:create 1 3))
