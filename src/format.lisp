@@ -142,7 +142,11 @@
 
 (defun out-of-range (range token)
     (or (pos:less-or-equal (token:get-end token) (range:start range))
-        (pos:less-than (range:end range) (token:get-start token))))
+        (pos:less-than (range:end range) (token:get-start token))
+        (and (is-type types:*ws* token)
+             (pos:less-or-equal (range:start range) (token:get-start token))
+             (pos:less-or-equal (token:get-start token) (range:end range))
+             (pos:less-or-equal (range:end range) (token:get-end token)))))
 
 
 (defun new-line-count (token)
@@ -157,21 +161,34 @@
             (format nil "~v@{~A~:*~}" space-count " ")))
 
 
+(defun replace-indent (state value)
+    (pop (parse-state-indent state))
+    (push value (parse-state-indent state)))
+
+
+(defun prev-is-start-form (state)
+    (loop :with tokens := (parse-state-seen state)
+
+          :while (and tokens
+                      (or (is-type types:*ws* (car tokens))
+                          (is-type types:*line-comment* (car tokens))
+                          (is-type types:*block-comment* (car tokens))))
+
+          :do (pop tokens)
+
+          :finally (return (and tokens
+                                (is-type *start-form* (car tokens))))))
+
+
 (defun update-aligned (state)
-    (let* ((prev (car (parse-state-seen state)))
-           (prev-prev (cadr (parse-state-seen state)))
-           (form-open (car (parse-state-opens state)))
+    (let* ((form-open (car (parse-state-opens state)))
            (token (car (parse-state-out-list state))))
 
-        (unless (or (and form-open (aligned form-open))
-                    (is-type *start-form* prev)
-                    (and (is-type types:*ws* prev)
-                         (is-type *start-form* prev-prev)))
-
-                (when form-open
-                      (setf (aligned form-open) T))
-                (pop (parse-state-indent state))
-                (push (pos:col (token:get-start token)) (parse-state-indent state)))))
+        (if (prev-is-start-form state)
+            (replace-indent state (pos:col (token:get-start token)))
+            (when (and form-open (not (aligned form-open)))
+                  (setf (aligned form-open) T)
+                  (replace-indent state (pos:col (token:get-start token)))))))
 
 
 (defun fix-indent (state)
@@ -181,29 +198,29 @@
            (start (token:get-start token))
            (end (token:get-end token)))
 
-        (when (and (not (out-of-range (parse-state-range state) token))
-                   (= types:*ws* (token:get-type-value token)))
+        (when (is-type types:*ws* token)
+              (if (out-of-range (parse-state-range state) token)
+                  (add-to-out-list state token)
+                  (cond ((or (not prev)
+                             (= *start-form* (token:get-type-value prev)))
+                         (replace-token state token ""))
 
-              (cond ((or (not prev)
-                         (= *start-form* (token:get-type-value prev)))
-                     (replace-token state token ""))
+                        ((= (pos:line start) (pos:line end))
+                         (if (string= " " (token:get-text token))
+                             (add-to-out-list state token)
+                             (progn (add-to-out-list state
+                                                     (token:create :type-value types:*ws*
+                                                                   :start (token:get-start token)
+                                                                   :end (pos:create (pos:line start) (+ 1 (pos:col start)))
+                                                                   :text " "))
+                                    (replace-token state token " "))))
 
-                    ((= (pos:line start) (pos:line end))
-                     (if (string= " " (token:get-text token))
-                         (add-to-out-list state token)
-                         (progn (add-to-out-list state
-                                                 (token:create :type-value types:*ws*
-                                                               :start (token:get-start token)
-                                                               :end (pos:create (pos:line start) (+ 1 (pos:col start)))
-                                                               :text " "))
-                                (replace-token state token " "))))
+                        (T
+                         (let* ((str (indent-string (new-line-count token) indent))
+                                (new-token (make-new-token token (token:get-start token) str)))
 
-                    (T
-                     (let* ((str (indent-string (new-line-count token) indent))
-                            (new-token (make-new-token token (token:get-start token) str)))
-
-                         (add-to-out-list state new-token)
-                         (replace-token state token str)))))))
+                             (add-to-out-list state new-token)
+                             (replace-token state token str))))))))
 
 
 (defun process-open (state token)
