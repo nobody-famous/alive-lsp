@@ -8,6 +8,7 @@
 
 (defparameter *open-parens* #\()
 (defparameter *close-parens* #\))
+(defparameter *semi-colon* #\;)
 
 
 (defun not-ws (ch)
@@ -39,6 +40,14 @@
           :do (discard input)))
 
 
+(defun skip-line-comment (input)
+    (loop :with ch := (look-ahead input)
+          :until (or (not ch)
+                     (char= ch #\newline))
+          :do (discard input)
+              (setf ch (look-ahead input))))
+
+
 (defun parse-expr (input)
     (flet ((parse-list ()
                 (discard input *open-parens*)
@@ -56,9 +65,11 @@
         (skip-ws input)
 
         (when (look-ahead input)
+              (format T "parse-expr ~A~%" (look-ahead input))
               (let* ((start (file-position input))
                      (expr (handler-case
                                    (cond ((char= (look-ahead input) *open-parens*) (parse-list))
+                                         ((char= (look-ahead input) *semi-colon*) (skip-line-comment input))
                                          (t (parse-atom)))
                                (T (c)
                                   (error (make-instance 'errors:input-error
@@ -67,6 +78,7 @@
                                                         :message (format nil "~A" c))))))
                      (end (1- (file-position input))))
                   (skip-ws input)
+                  (format T "expr ~A~%" expr)
                   (list start end expr)))))
 
 
