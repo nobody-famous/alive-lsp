@@ -65,7 +65,6 @@
         (skip-ws input)
 
         (when (look-ahead input)
-              (format T "parse-expr ~A~%" (look-ahead input))
               (let* ((start (file-position input))
                      (expr (handler-case
                                    (cond ((char= (look-ahead input) *open-parens*) (parse-list))
@@ -78,7 +77,6 @@
                                                         :message (format nil "~A" c))))))
                      (end (1- (file-position input))))
                   (skip-ws input)
-                  (format T "expr ~A~%" expr)
                   (list start end expr)))))
 
 

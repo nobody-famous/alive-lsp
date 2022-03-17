@@ -4,6 +4,7 @@
              :do-load
              :try-compile)
     (:local-nicknames (:parse :alive/parse/stream)
+                      (:forms :alive/parse/forms)
                       (:errors :alive/errors)
                       (:types :alive/types)
                       (:comp-msg :alive/compile-message)))
@@ -20,6 +21,7 @@
     (let* ((context (sb-c::find-error-context nil))
            (source-path (when context (reverse (sb-c::compiler-error-context-original-source-path context)))))
 
+        (format T "~&source-path ~A~%" source-path)
         (when source-path
               (loop :for ndx :in source-path :do
                         (setf forms (get-form forms ndx))
@@ -32,6 +34,7 @@
                                  :location loc
                                  :message (format nil "~A" err))))
 
+        (format T "send-message ~A ~A~%" loc err)
         (when loc
               (funcall out-fn msg))))
 
@@ -63,6 +66,7 @@
 
 (defun do-cmd (path cmd out)
     (with-open-file (f path)
+        (format T "CHECKING ~A~%" (forms:from-stream f))
         (let ((forms (parse:from f)))
             (handler-bind ((sb-c:fatal-compiler-error (fatal-error out forms))
                            (sb-c:compiler-error (compiler-error out forms))
@@ -100,7 +104,7 @@
 
             (handler-case
 
-                ;;
+                    ;;
                 ;; Compiling a file corrupts the environment. The goal here is to compile without
                 ;; that happening and just get a list of compiler messages for the file.
                 ;;
@@ -112,12 +116,8 @@
                 ;; One possible solution to the fork issue would be to use FFI to call the C fork
                 ;; function directly. That seems problematic.
                 ;;
-                ;; The only issue I've seen so far is that defpackage forms will update the
-                ;; packages, which results in annoying "package also exports" warnings.
-                ;;  1. parse the file before compiling, get a list of packages, and drop them
-                ;;  2. get the list of packages, along with their aliases, rename them to temp names,
-                ;;     delete the version compile creates, and rename the temp ones back to their
-                ;;     original names. This seems like the most feasible option right now.
+                ;; The main issue is that def* calls will update the environment. There may be some
+                ;; way to account for that. I haven't figured it out, yet.
                 ;;
 
                 (progn (do-cmd path 'compile-file

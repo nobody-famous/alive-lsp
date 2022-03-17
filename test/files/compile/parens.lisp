@@ -1,4 +1,3 @@
-(require 'sb-introspect)
-
-(defun foo ( )
-    nil)
+(+ 1 2)
+#+n (form-2)
+(form-3)

@@ -19,6 +19,7 @@
                  "alive-lsp/src/parse/stream"
                  "alive-lsp/src/parse/token"
                  "alive-lsp/src/parse/tokenizer"
+                 "alive-lsp/src/parse/forms"
 
                  "alive-lsp/src/compat/sbcl/file"
                  "alive-lsp/src/compat/sbcl/streams"
@@ -98,6 +99,7 @@
 (register-system-packages "alive-lsp/src/parse/stream" '(:alive/parse/stream))
 (register-system-packages "alive-lsp/src/parse/token" '(:alive/parse/token))
 (register-system-packages "alive-lsp/src/parse/tokenizer" '(:alive/parse/tokenizer))
+(register-system-packages "alive-lsp/src/parse/forms" '(:alive/parse/forms))
 
 (register-system-packages "alive-lsp/src/file" '(:alive/file))
 (register-system-packages "alive-lsp/src/streams" '(:alive/streams))
