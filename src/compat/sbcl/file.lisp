@@ -66,7 +66,6 @@
 
 (defun do-cmd (path cmd out)
     (with-open-file (f path)
-        (format T "CHECKING ~A~%" (forms:from-stream f))
         (let ((forms (parse:from f)))
             (handler-bind ((sb-c:fatal-compiler-error (fatal-error out forms))
                            (sb-c:compiler-error (compiler-error out forms))

@@ -158,6 +158,7 @@
                                :stderr-fn (lambda (data)
                                               (when (load-file:show-stderr-p msg)
                                                     (send-msg state (stderr:create data))))))
+           (format T "handle-msg msgs ~A~%" msgs)
            (resp (load-file:create-response (message:id msg) msgs)))
 
         (send-msg state resp)))

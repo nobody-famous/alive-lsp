@@ -5,7 +5,8 @@
              :get-end
              :get-type-value
              :get-text
-             :get-start)
+             :get-start
+             :is-type)
     (:local-nicknames (:pos :alive/position)
                       (:types :alive/types)))
 
@@ -75,6 +76,11 @@
 
 (defmethod get-end ((obj T))
     nil)
+
+
+(defun is-type (type token)
+    (and token
+         (= type (get-type-value token))))
 
 
 (defun create (&key type-value start end text)
