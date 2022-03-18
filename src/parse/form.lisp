@@ -1,7 +1,8 @@
 (defpackage :alive/parse/form
     (:use :cl)
     (:export :add-kid
-             :create)
+             :create
+             :set-end)
     (:local-nicknames (:types :alive/types)))
 
 (in-package :alive/parse/form)
@@ -20,7 +21,7 @@
 
 
 (defmethod print-object ((obj form) out)
-    (format out "{~A:~A~{~A~}}"
+    (format out "{~A:~A kids:~{~A~}}"
             (start obj)
             (end obj)
             (kids obj)))
@@ -35,11 +36,15 @@
 
 (defun add-kid (kid form)
     (let* ((rev-kids (reverse (kids form))))
-        (push kid rev-kids)
         (setf (kids form) (reverse (push kid rev-kids)))))
 
 
-(defun create (start end)
+(defun set-end (form pos)
+    (setf (end form) pos))
+
+
+(defun create (start &optional end kids)
     (make-instance 'form
                    :start start
-                   :end end))
+                   :end end
+                   :kids kids))

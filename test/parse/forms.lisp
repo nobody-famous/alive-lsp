@@ -21,24 +21,27 @@
 (defun basic ()
     (run:test "Basic Forms Test"
               (lambda ()
-                ;   (check-forms ""
-                ;                (list))
+                  (check-forms ""
+                               (list))
 
-                ;   (check-forms "foo"
-                ;                (list (form:create (pos:create 0 0)
-                ;                                   (pos:create 0 3))))
+                  (check-forms "foo"
+                               (list (form:create (pos:create 0 0)
+                                                  (pos:create 0 3))))
 
-                ;   (check-forms "()"
-                ;                (list (form:create (pos:create 0 0)
-                ;                                   (pos:create 0 2))))
+                  (check-forms "()"
+                               (list (form:create (pos:create 0 0)
+                                                  (pos:create 0 2))))
 
-                ;   (check-forms (format nil "(~%)")
-                ;                (list (form:create (pos:create 0 0)
-                ;                                   (pos:create 1 1))))
-                  
+                  (check-forms (format nil "(~%)")
+                               (list (form:create (pos:create 0 0)
+                                                  (pos:create 1 1))))
+
                   (check-forms (format nil "(a bb cccc)")
                                (list (form:create (pos:create 0 0)
-                                                  (pos:create 1 1)))))))
+                                                  (pos:create 0 11)
+                                                  (list (form:create (pos:create 0 1) (pos:create 0 2))
+                                                        (form:create (pos:create 0 3) (pos:create 0 5))
+                                                        (form:create (pos:create 0 6) (pos:create 0 10)))))))))
 
 
 (defun run-all ()

@@ -21,8 +21,9 @@
 
           :for token :in (tokenizer:from-stream input) :do
 
-              (format T "token ~A~%" token)
-              (cond ((token:is-type types:*open-paren* token) (push token opens))
+              (cond ((token:is-type types:*open-paren* token)
+                     (push (form:create (token:get-start token))
+                           opens))
 
                     ((token:is-type types:*close-paren* token)
                      (unless opens
@@ -31,12 +32,12 @@
                                                    :end (token:get-end token)
                                                    :message "Unmatched close parenthesis")))
 
-                     (let* ((open-paren (pop opens))
-                            (new-form (form:create (token:get-start open-paren)
-                                                   (token:get-end token))))
+                     (let* ((open-form (pop opens)))
+                         (form:set-end open-form (token:get-end token))
+
                          (if opens
-                             (form:add-kid new-form (car opens))
-                             (push new-form forms))))
+                             (form:add-kid open-form (car opens))
+                             (push open-form forms))))
 
                     ((token:is-type types:*ws* token) NIL)
 
