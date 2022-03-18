@@ -11,8 +11,10 @@
 
 
 (defun token-to-form (token)
-    (form:create (token:get-start token)
-                 (token:get-end token)))
+    (let ((form (form:create (token:get-start token)
+                             (token:get-end token))))
+        (form:set-token form token)
+        form))
 
 
 (defun from-stream (input)

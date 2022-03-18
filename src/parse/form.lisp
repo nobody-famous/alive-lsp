@@ -2,7 +2,8 @@
     (:use :cl)
     (:export :add-kid
              :create
-             :set-end)
+             :set-end
+             :set-token)
     (:local-nicknames (:types :alive/types)))
 
 (in-package :alive/parse/form)
@@ -15,15 +16,19 @@
      (end :accessor end
           :initform nil
           :initarg :end)
+     (token :accessor token
+            :initform nil
+            :initarg :token)
      (kids :accessor kids
            :initform nil
            :initarg :kids)))
 
 
 (defmethod print-object ((obj form) out)
-    (format out "{~A:~A kids:~{~A~}}"
+    (format out "{~A:~A token: ~A kids:~{~A~}}"
             (start obj)
             (end obj)
+            (token obj)
             (kids obj)))
 
 
@@ -41,6 +46,10 @@
 
 (defun set-end (form pos)
     (setf (end form) pos))
+
+
+(defun set-token (form item)
+    (setf (token form) item))
 
 
 (defun create (start &optional end kids)
