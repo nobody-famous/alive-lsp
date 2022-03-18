@@ -66,6 +66,10 @@
 
 (defun do-cmd (path cmd out)
     (with-open-file (f path)
+        (loop :for form :in (forms:from-stream f) :do
+                  (format T "FORM ~A~%" form)))
+
+    (with-open-file (f path)
         (let ((forms (parse:from f)))
             (handler-bind ((sb-c:fatal-compiler-error (fatal-error out forms))
                            (sb-c:compiler-error (compiler-error out forms))
