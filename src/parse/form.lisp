@@ -2,6 +2,10 @@
     (:use :cl)
     (:export :add-kid
              :create
+             :get-end
+             :get-kids
+             :get-start
+             :get-token
              :set-end
              :set-token)
     (:local-nicknames (:types :alive/types)))
@@ -50,6 +54,26 @@
 
 (defun set-token (form item)
     (setf (token form) item))
+
+
+(defun get-end (form)
+    (when form
+          (end form)))
+
+
+(defun get-kids (form)
+    (when form
+          (kids form)))
+
+
+(defun get-start (form)
+    (when form
+          (start form)))
+
+
+(defun get-token (form)
+    (when form
+          (token form)))
 
 
 (defun create (start &optional end kids)

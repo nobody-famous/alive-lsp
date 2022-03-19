@@ -4,28 +4,48 @@
              :do-load
              :try-compile)
     (:local-nicknames (:parse :alive/parse/stream)
+                      (:form :alive/parse/form)
                       (:forms :alive/parse/forms)
+                      (:token :alive/parse/token)
                       (:errors :alive/errors)
+                      (:range :alive/range)
                       (:types :alive/types)
                       (:comp-msg :alive/compile-message)))
 
 (in-package :alive/sbcl/file)
 
 
-(defun get-form (forms ndx)
-    (let ((kids (elt forms 2)))
-        (elt kids ndx)))
+(defun should-skip (token)
+    (and token
+         (or (token:is-type types:*ifdef-false* token)
+             (token:is-type types:*line-comment* token)
+             (token:is-type types:*block-comment* token))))
 
 
 (defun get-err-location (forms)
     (let* ((context (sb-c::find-error-context nil))
            (source-path (when context (reverse (sb-c::compiler-error-context-original-source-path context)))))
 
-        (format T "~&source-path ~A~%" source-path)
         (when source-path
-              (loop :for ndx :in source-path :do
-                        (setf forms (get-form forms ndx))
-                    :finally (return (subseq forms 0 2))))))
+              (loop :with indicies := source-path
+                    :with ndx := nil
+                    :with form := nil
+
+                    :while indicies
+                    :do (setf ndx (pop indicies))
+                        (setf form (elt forms ndx))
+
+                        (loop :while (and form (should-skip (form:get-token form)))
+                              :do (incf ndx (if (token:is-type types:*ifdef-false*
+                                                               (form:get-token form))
+                                                2
+                                                1))
+                                  (setf form (elt forms ndx)))
+
+                        (setf forms (form:get-kids form))
+
+                    :finally (return (range:create (form:get-start form)
+                                                   (form:get-end form)))))))
 
 
 (defun send-message (out-fn forms sev err)
@@ -34,7 +54,6 @@
                                  :location loc
                                  :message (format nil "~A" err))))
 
-        (format T "send-message ~A ~A~%" loc err)
         (when loc
               (funcall out-fn msg))))
 
@@ -66,11 +85,7 @@
 
 (defun do-cmd (path cmd out)
     (with-open-file (f path)
-        (loop :for form :in (forms:from-stream f) :do
-                  (format T "FORM ~A~%" form)))
-
-    (with-open-file (f path)
-        (let ((forms (parse:from f)))
+        (let ((forms (forms:from-stream f)))
             (handler-bind ((sb-c:fatal-compiler-error (fatal-error out forms))
                            (sb-c:compiler-error (compiler-error out forms))
                            (sb-ext:compiler-note (compiler-note out forms))
@@ -105,29 +120,28 @@
     (with-open-file (f path)
         (let ((msgs nil))
 
+            ;;
+            ;; Compiling a file corrupts the environment. The goal here is to compile without
+            ;; that happening and just get a list of compiler messages for the file.
+            ;;
+            ;; One idea was to fork and have the child process do the compile. That would keep
+            ;; the parent from getting corrupted. That approach hit some problems.
+            ;;   1. sbcl won't fork if there's multiple threads active
+            ;;   2. sbcl only implements fork for unix, anyway, so wouldn't work on Windows
+            ;;
+            ;; One possible solution to the fork issue would be to use FFI to call the C fork
+            ;; function directly. That seems problematic.
+            ;;
+            ;; The main issue is that def* calls will update the environment. There may be some
+            ;; way to account for that. I haven't figured it out, yet.
+            ;;
+
             (handler-case
+                    (progn (do-cmd path 'compile-file
+                                   (lambda (msg)
+                                       (setf msgs (cons msg msgs))))
 
-                    ;;
-                ;; Compiling a file corrupts the environment. The goal here is to compile without
-                ;; that happening and just get a list of compiler messages for the file.
-                ;;
-                ;; One idea was to fork and have the child process do the compile. That would keep
-                ;; the parent from getting corrupted. That approach hit some problems.
-                ;;   1. sbcl won't fork if there's multiple threads active
-                ;;   2. sbcl only implements fork for unix, anyway, so wouldn't work on Windows
-                ;;
-                ;; One possible solution to the fork issue would be to use FFI to call the C fork
-                ;; function directly. That seems problematic.
-                ;;
-                ;; The main issue is that def* calls will update the environment. There may be some
-                ;; way to account for that. I haven't figured it out, yet.
-                ;;
-
-                (progn (do-cmd path 'compile-file
-                               (lambda (msg)
-                                   (setf msgs (cons msg msgs))))
-
-                       msgs)
+                           msgs)
                 (errors:input-error (e)
                                     (setf msgs (cons
                                                 (comp-msg:create :severity types:*sev-error*
