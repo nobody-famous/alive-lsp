@@ -76,8 +76,9 @@
           (token form)))
 
 
-(defun create (start &optional end kids)
+(defun create (start &optional end token kids)
     (make-instance 'form
                    :start start
                    :end end
+                   :token token
                    :kids kids))

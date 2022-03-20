@@ -21,6 +21,8 @@
              :*colons*
              :*ifdef-true*
              :*ifdef-false*
+             :*quote*
+             :*back-quote*
 
              :deep-equal-p))
 
@@ -49,6 +51,8 @@
 (defparameter *colons* 14)
 (defparameter *ifdef-true* 15)
 (defparameter *ifdef-false* 16)
+(defparameter *quote* 17)
+(defparameter *back-quote* 18)
 
 
 (defgeneric deep-equal-p (a b))

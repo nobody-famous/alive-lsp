@@ -214,6 +214,8 @@
     (let ((ch (look-ahead state)))
         (cond ((char= ch #\() (read-ch-token state types:*open-paren*))
               ((char= ch #\)) (read-ch-token state types:*close-paren*))
+              ((char= ch #\') (read-ch-token state types:*quote*))
+              ((char= ch #\`) (read-ch-token state types:*back-quote*))
               ((char= ch #\") (read-string-token state))
               ((char= ch #\;) (read-comment-token state))
               ((char= ch #\:) (read-colons-token state))
