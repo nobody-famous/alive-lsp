@@ -350,7 +350,7 @@
                                                       token
                                                       (forced-type state)))
 
-                  (T nil)))))
+                  (T (next-token state))))))
 
 
 (defun to-sem-tokens (tokens)

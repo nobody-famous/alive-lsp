@@ -99,6 +99,16 @@
 
         (run:test "Combos"
                   (lambda ()
+                      (check-combo (format nil "'foo") (list (sem-types:create
+                                                              :token-type sem-types:*symbol*
+                                                              :line 0
+                                                              :start 0
+                                                              :end 1)
+                                                             (sem-types:create
+                                                              :token-type sem-types:*symbol*
+                                                              :line 0
+                                                              :start 1
+                                                              :end 4)))
                       (check-combo "(  )" (list (sem-types:create
                                                  :token-type sem-types:*parenthesis*
                                                  :line 0
@@ -180,55 +190,55 @@
                                                      :start 7
                                                      :end 8)))
                       (check-combo "#+n (+ (+ 1)) (foo)" (list (sem-types:create
-                                                                      :token-type sem-types:*comment*
-                                                                      :line 0
-                                                                      :start 0
-                                                                      :end 3)
-                                                                     (sem-types:create
-                                                                      :token-type sem-types:*comment*
-                                                                      :line 0
-                                                                      :start 4
-                                                                      :end 5)
-                                                                      (sem-types:create
-                                                                      :token-type sem-types:*comment*
-                                                                      :line 0
-                                                                      :start 5
-                                                                      :end 6)
-                                                                     (sem-types:create
-                                                                      :token-type sem-types:*comment*
-                                                                      :line 0
-                                                                      :start 7
-                                                                      :end 8)
-                                                                     (sem-types:create
-                                                                      :token-type sem-types:*comment*
-                                                                      :line 0
-                                                                      :start 8
-                                                                      :end 9)
-                                                                     (sem-types:create
-                                                                      :token-type sem-types:*comment*
-                                                                      :line 0
-                                                                      :start 10
-                                                                      :end 11)
-                                                                     (sem-types:create
-                                                                      :token-type sem-types:*comment*
-                                                                      :line 0
-                                                                      :start 11
-                                                                      :end 12)
-                                                                     (sem-types:create
-                                                                      :token-type sem-types:*comment*
-                                                                      :line 0
-                                                                      :start 12
-                                                                      :end 13)
-                                                                     (sem-types:create
-                                                                      :token-type sem-types:*parenthesis*
-                                                                      :line 0
-                                                                      :start 14
-                                                                      :end 15)
-                                                                     (sem-types:create
-                                                                      :token-type sem-types:*parenthesis*
-                                                                      :line 0
-                                                                      :start 18
-                                                                      :end 19)))
+                                                                :token-type sem-types:*comment*
+                                                                :line 0
+                                                                :start 0
+                                                                :end 3)
+                                                               (sem-types:create
+                                                                :token-type sem-types:*comment*
+                                                                :line 0
+                                                                :start 4
+                                                                :end 5)
+                                                               (sem-types:create
+                                                                :token-type sem-types:*comment*
+                                                                :line 0
+                                                                :start 5
+                                                                :end 6)
+                                                               (sem-types:create
+                                                                :token-type sem-types:*comment*
+                                                                :line 0
+                                                                :start 7
+                                                                :end 8)
+                                                               (sem-types:create
+                                                                :token-type sem-types:*comment*
+                                                                :line 0
+                                                                :start 8
+                                                                :end 9)
+                                                               (sem-types:create
+                                                                :token-type sem-types:*comment*
+                                                                :line 0
+                                                                :start 10
+                                                                :end 11)
+                                                               (sem-types:create
+                                                                :token-type sem-types:*comment*
+                                                                :line 0
+                                                                :start 11
+                                                                :end 12)
+                                                               (sem-types:create
+                                                                :token-type sem-types:*comment*
+                                                                :line 0
+                                                                :start 12
+                                                                :end 13)
+                                                               (sem-types:create
+                                                                :token-type sem-types:*parenthesis*
+                                                                :line 0
+                                                                :start 14
+                                                                :end 15)
+                                                               (sem-types:create
+                                                                :token-type sem-types:*parenthesis*
+                                                                :line 0
+                                                                :start 18
+                                                                :end 19)))
                       (check-combo "( + ( #+n a a ) b ) ( c )" (list (sem-types:create
                                                                       :token-type sem-types:*parenthesis*
                                                                       :line 0
