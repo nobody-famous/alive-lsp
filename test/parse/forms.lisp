@@ -123,18 +123,59 @@
 
                   (check-forms (format nil "'foo")
                                (list (form:create (pos:create 0 0)
-                                                  (pos:create 0 4))))
+                                                  (pos:create 0 4)
+                                                  (token:create :type-value types:*quote*
+                                                                :start (pos:create 0 0)
+                                                                :end (pos:create 0 1)
+                                                                :text "'")
+                                                  (list (form:create (pos:create 0 1)
+                                                                     (pos:create 0 4)
+                                                                     (token:create :type-value types:*symbol*
+                                                                                   :start (pos:create 0 1)
+                                                                                   :end (pos:create 0 4)
+                                                                                   :text "foo")
+                                                                     (list))))))
 
                   (check-forms (format nil "`foo")
                                (list (form:create (pos:create 0 0)
-                                                  (pos:create 0 4))))
+                                                  (pos:create 0 4)
+                                                  (token:create :type-value types:*back-quote*
+                                                                :start (pos:create 0 0)
+                                                                :end (pos:create 0 1)
+                                                                :text "`")
+                                                  (list (form:create (pos:create 0 1)
+                                                                     (pos:create 0 4)
+                                                                     (token:create :type-value types:*symbol*
+                                                                                   :start (pos:create 0 1)
+                                                                                   :end (pos:create 0 4)
+                                                                                   :text "foo")
+                                                                     (list))))))
 
                   (check-forms (format nil "(a bb cccc)")
                                (list (form:create (pos:create 0 0)
                                                   (pos:create 0 11)
-                                                  (list (form:create (pos:create 0 1) (pos:create 0 2))
-                                                        (form:create (pos:create 0 3) (pos:create 0 5))
-                                                        (form:create (pos:create 0 6) (pos:create 0 10)))))))))
+                                                  (token:create :type-value types:*open-paren*
+                                                                :start (pos:create 0 0)
+                                                                :end (pos:create 0 1)
+                                                                :text "(")
+                                                  (list (form:create (pos:create 0 1)
+                                                                     (pos:create 0 2)
+                                                                     (token:create :type-value types:*symbol*
+                                                                                   :start (pos:create 0 1)
+                                                                                   :end (pos:create 0 2)
+                                                                                   :text "a"))
+                                                        (form:create (pos:create 0 3)
+                                                                     (pos:create 0 5)
+                                                                     (token:create :type-value types:*symbol*
+                                                                                   :start (pos:create 0 3)
+                                                                                   :end (pos:create 0 5)
+                                                                                   :text "bb"))
+                                                        (form:create (pos:create 0 6)
+                                                                     (pos:create 0 10)
+                                                                     (token:create :type-value types:*symbol*
+                                                                                   :start (pos:create 0 6)
+                                                                                   :end (pos:create 0 10)
+                                                                                   :text "cccc")))))))))
 
 
 (defun run-all ()

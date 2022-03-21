@@ -72,6 +72,8 @@
     (let ((open-form (car (parse-state-opens state))))
         (cond ((is-quote open-form)
                (form:add-kid (token-to-form token) open-form)
+               (form:set-end open-form (token:get-end token))
+               (push open-form (parse-state-forms state))
                (pop (parse-state-opens state)))
 
               ((is-open-paren open-form)
@@ -81,9 +83,7 @@
 
 
 (defun from-stream (input)
-    (loop :with forms := '()
-          :with opens := '()
-          :with state := (make-parse-state)
+    (loop :with state := (make-parse-state)
 
           :for token :in (tokenizer:from-stream input) :do
 
