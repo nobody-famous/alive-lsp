@@ -343,6 +343,10 @@
                   ((token:is-type types:*close-paren* token) (next-token state)
                                                              (add-sem-token state token sem-types:*parenthesis*))
 
+                  ((or (token:is-type types:*quote* token)
+                       (token:is-type types:*back-quote* token)) (next-token state)
+                                                                 (add-sem-token state token sem-types:*symbol*))
+
                   ((token:is-type types:*ws* token) (next-token state))
 
                   ((forced-type state) (next-token state)

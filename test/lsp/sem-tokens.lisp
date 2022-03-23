@@ -99,16 +99,12 @@
 
         (run:test "Combos"
                   (lambda ()
+                      (check-combo (format nil "foo") (list))
                       (check-combo (format nil "'foo") (list (sem-types:create
                                                               :token-type sem-types:*symbol*
                                                               :line 0
                                                               :start 0
-                                                              :end 1)
-                                                             (sem-types:create
-                                                              :token-type sem-types:*symbol*
-                                                              :line 0
-                                                              :start 1
-                                                              :end 4)))
+                                                              :end 1)))
                       (check-combo "(  )" (list (sem-types:create
                                                  :token-type sem-types:*parenthesis*
                                                  :line 0
