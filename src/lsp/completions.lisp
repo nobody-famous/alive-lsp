@@ -267,6 +267,14 @@
               (T '()))))
 
 
+(defun prefix-symbols (pref items)
+    (loop :for item :in items :do
+              (setf (label item) (format nil "~A~A" pref (label item)))
+              (setf (insert-text item) (format nil "~A~A" pref (insert-text item)))
+
+          :finally (return items)))
+
+
 (defun simple (&key text pos)
     (let ((tokens (tokenizer:from-stream (make-string-input-stream text))))
         (if (zerop (length tokens))
@@ -286,10 +294,19 @@
                                         :pkg-name (token:get-text token2)))
 
                       ((eq (token:get-type-value token1) types:*colons*)
-                       (format T "SHOULD BE HERE~%")
                        (symbol-with-pkg :name ""
                                         :num-colons (length (token:get-text token1))
                                         :pkg-name (package-name *package*)))
+
+                      ((and (eq (token:get-type-value token1) types:*symbol*)
+                            (eq (token:get-type-value token2) types:*quote*))
+                       (prefix-symbols "'" (symbol-no-pkg :name (token:get-text token1)
+                                                          :pkg-name (package-name *package*))))
+
+                      ((and (eq (token:get-type-value token1) types:*symbol*)
+                            (eq (token:get-type-value token2) types:*back-quote*))
+                       (prefix-symbols "`" (symbol-no-pkg :name (token:get-text token1)
+                                                          :pkg-name (package-name *package*))))
 
                       ((eq (token:get-type-value token1) types:*symbol*)
                        (symbol-no-pkg :name (token:get-text token1)
