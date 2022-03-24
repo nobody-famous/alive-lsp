@@ -14,7 +14,7 @@
                       (:tokenizer :alive/parse/tokenizer)
                       (:analysis :alive/lsp/sem-analysis)
                       (:init :alive/lsp/message/initialize)
-                      (:parse-tokens :alive/parse/stream)
+                      (:parse-tokens :alive/parse/forms)
                       (:load-file :alive/lsp/message/alive/load-file)
                       (:try-compile :alive/lsp/message/alive/try-compile)
                       (:stderr :alive/lsp/message/alive/stderr)
@@ -188,34 +188,39 @@
 (defmethod handle-msg (state (msg top-form:request))
     (let* ((params (message:params msg))
            (doc (top-form:text-document params))
-           (offset (top-form:offset params))
+           (pos (top-form:pos params))
            (uri (text-doc:uri doc))
            (file-text (get-file-text state uri))
            (text (if file-text file-text ""))
-           (forms (parse-tokens:from (make-string-input-stream text)))
-           (kids (nth 2 forms)))
+           (forms (parse-tokens:from-stream (make-string-input-stream text))))
 
-        (loop :with start := nil
-              :with end := nil
+        (format T "forms ~A~%" pos)
+        (send-msg state
+                  (message:create-error-resp :id (message:id msg)
+                                             :code errors:*internal-error*
+                                             :message (format nil "Still working on it")))
+        ; (loop :with start := nil
+        ;       :with end := nil
 
-              :for kid :in kids :do
-                  (destructuring-bind (kid-start kid-end body)
+        ;       :for kid :in kids :do
+        ;           (destructuring-bind (kid-start kid-end body)
 
-                          kid
+        ;                   kid
 
-                      (declare (ignore body))
+        ;               (declare (ignore body))
 
-                      (when (<= kid-start offset (+ 1 kid-end))
-                            (setf start kid-start)
-                            (setf end kid-end)))
+        ;               (when (<= kid-start offset (+ 1 kid-end))
+        ;                     (setf start kid-start)
+        ;                     (setf end kid-end)))
 
-              :finally (if (and start end)
-                           (send-msg state (top-form:create-response :id (message:id msg)
-                                                                     :start start
-                                                                     :end (+ 1 end)))
-                           (send-msg state (top-form:create-response :id (message:id msg)
-                                                                     :start -1
-                                                                     :end -1))))))
+        ;       :finally (if (and start end)
+        ;                    (send-msg state (top-form:create-response :id (message:id msg)
+        ;                                                              :start start
+        ;                                                              :end (+ 1 end)))
+        ;                    (send-msg state (top-form:create-response :id (message:id msg)
+        ;                                                              :start -1
+        ;                                                              :end -1))))
+    ))
 
 
 (defmethod handle-msg (state (msg formatting:request))

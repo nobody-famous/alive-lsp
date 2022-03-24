@@ -233,7 +233,10 @@
                       (format str "    \"textDocument\": {~A" utils:*end-line*)
                       (format str "      \"uri\":\"file:///some/file.txt\"~A" utils:*end-line*)
                       (format str "    },~A" utils:*end-line*)
-                      (format str "    \"offset\": 15~A" utils:*end-line*)
+                      (format str "    \"position\": {~A" utils:*end-line*)
+                      (format str "      \"line\": 5,~A" utils:*end-line*)
+                      (format str "      \"character\": 10~A" utils:*end-line*)
+                      (format str "    }~A" utils:*end-line*)
                       (format str "  }~A" utils:*end-line*)
                       (format str "}~A" utils:*end-line*))))
 
@@ -245,7 +248,7 @@
                            (top-form:create-request
                             :id 5
                             :params (top-form:create-params :text-document (text-doc:create :uri "file:///some/file.txt")
-                                                            :offset 15))
+                                                            :pos (pos:create 5 10)))
                            parsed))))))
 
 
