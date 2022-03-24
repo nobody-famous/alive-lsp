@@ -26,26 +26,29 @@
     (let* ((context (sb-c::find-error-context nil))
            (source-path (when context (reverse (sb-c::compiler-error-context-original-source-path context)))))
 
-        (when source-path
-              (loop :with indicies := source-path
-                    :with ndx := nil
-                    :with form := nil
+        (if (not source-path)
+            (range:create (form:get-start (car forms))
+                          (form:get-end (car (reverse forms))))
 
-                    :while indicies
-                    :do (setf ndx (pop indicies))
-                        (setf form (elt forms ndx))
+            (loop :with indicies := source-path
+                  :with ndx := nil
+                  :with form := nil
 
-                        (loop :while (and form (should-skip (form:get-token form)))
-                              :do (incf ndx (if (token:is-type types:*ifdef-false*
-                                                               (form:get-token form))
-                                                2
-                                                1))
-                                  (setf form (elt forms ndx)))
+                  :while indicies
+                  :do (setf ndx (pop indicies))
+                      (setf form (elt forms ndx))
 
-                        (setf forms (form:get-kids form))
+                      (loop :while (and form (should-skip (form:get-token form)))
+                            :do (incf ndx (if (token:is-type types:*ifdef-false*
+                                                             (form:get-token form))
+                                              2
+                                              1))
+                                (setf form (elt forms ndx)))
 
-                    :finally (return (range:create (form:get-start form)
-                                                   (form:get-end form)))))))
+                      (setf forms (form:get-kids form))
+
+                  :finally (return (range:create (form:get-start form)
+                                                 (form:get-end form)))))))
 
 
 (defun send-message (out-fn forms sev err)

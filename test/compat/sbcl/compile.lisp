@@ -54,7 +54,7 @@
                                                 :stdout-fn (lambda (data)
                                                                (format T "~A~%" data))
                                                 :stderr-fn (lambda (data)
-                                                               (declare (ignore data))))))
+                                                               (format T "ERROR: ~A~%" data)))))
 
                       (loop :for msg :in msgs :do
                                 (format T "~A~%" msg))

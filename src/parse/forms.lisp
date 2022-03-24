@@ -72,14 +72,25 @@
     (let ((open-form (car (parse-state-opens state))))
         (cond ((is-quote open-form)
                (form:add-kid (token-to-form token) open-form)
-               (form:set-end open-form (token:get-end token))
-               (push open-form (parse-state-forms state))
-               (pop (parse-state-opens state)))
+               (form:set-end open-form (token:get-end token)))
 
               ((is-open-paren open-form)
-               (form:add-kid (token-to-form token) (car (parse-state-opens state))))
+               (form:add-kid (token-to-form token) open-form))
 
               (T (push (token-to-form token) (parse-state-forms state))))))
+
+
+(defun end-form (state)
+    (let ((open-form (car (parse-state-opens state))))
+        (when open-form
+              (push open-form (parse-state-forms state))
+              (pop (parse-state-opens state)))))
+
+
+(defun white-space (state)
+    (let ((open-form (car (parse-state-opens state))))
+        (when (is-quote open-form)
+              (end-form state))))
 
 
 (defun from-stream (input)
@@ -94,8 +105,9 @@
                     ((or (token:is-type types:*quote* token)
                          (token:is-type types:*back-quote* token)) (start-quote state token))
 
-                    ((token:is-type types:*ws* token) NIL)
+                    ((token:is-type types:*ws* token) (white-space state))
 
                     (T (symbol-token state token)))
 
-          :finally (return (reverse (parse-state-forms state)))))
+          :finally (progn (end-form state)
+                          (return (reverse (parse-state-forms state))))))
