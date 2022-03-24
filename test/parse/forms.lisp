@@ -33,177 +33,113 @@
                   (check-forms (format nil "'foo:bar")
                                (list (form:create (pos:create 0 0)
                                                   (pos:create 0 8)
-                                                  (token:create :type-value types:*quote*
-                                                                :start (pos:create 0 0)
-                                                                :end (pos:create 0 1)
-                                                                :text "'")
+                                                  types:*quote*
                                                   (list (form:create (pos:create 0 1)
-                                                                     (pos:create 0 4)
-                                                                     (token:create :type-value types:*symbol*
-                                                                                   :start (pos:create 0 1)
-                                                                                   :end (pos:create 0 4)
-                                                                                   :text "foo")
-                                                                     (list))
-                                                        (form:create (pos:create 0 4)
-                                                                     (pos:create 0 5)
-                                                                     (token:create :type-value types:*colons*
-                                                                                   :start (pos:create 0 4)
-                                                                                   :end (pos:create 0 5)
-                                                                                   :text ":")
-                                                                     (list))
-                                                        (form:create (pos:create 0 5)
                                                                      (pos:create 0 8)
-                                                                     (token:create :type-value types:*symbol*
-                                                                                   :start (pos:create 0 5)
-                                                                                   :end (pos:create 0 8)
-                                                                                   :text "bar")
+                                                                     types:*symbol*
                                                                      (list))))))
+
+                  (check-forms (format nil "foo:bar")
+                               (list (form:create (pos:create 0 0)
+                                                  (pos:create 0 7)
+                                                  types:*symbol*
+                                                  (list))))
+
                   (check-forms ""
                                (list))
 
                   (check-forms "foo"
                                (list (form:create (pos:create 0 0)
-                                                  (pos:create 0 3))))
+                                                  (pos:create 0 3)
+                                                  types:*symbol*)))
 
                   (check-forms "()"
                                (list (form:create (pos:create 0 0)
-                                                  (pos:create 0 2))))
+                                                  (pos:create 0 2)
+                                                  types:*open-paren*)))
 
                   (check-forms (format nil "(~%)")
                                (list (form:create (pos:create 0 0)
-                                                  (pos:create 1 1))))
+                                                  (pos:create 1 1)
+                                                  types:*open-paren*)))
 
                   (check-forms (format nil "'(foo)")
                                (list (form:create (pos:create 0 0)
                                                   (pos:create 0 6)
-                                                  (token:create :type-value types:*quote*
-                                                                :start (pos:create 0 0)
-                                                                :end (pos:create 0 1)
-                                                                :text "'")
+                                                  types:*quote*
                                                   (list (form:create (pos:create 0 1)
                                                                      (pos:create 0 6)
-                                                                     (token:create :type-value types:*quote*
-                                                                                   :start (pos:create 0 1)
-                                                                                   :end (pos:create 0 2)
-                                                                                   :text "(")
+                                                                     types:*open-paren*
                                                                      (list (form:create (pos:create 0 2)
                                                                                         (pos:create 0 5)
-                                                                                        (token:create :type-value types:*symbol*
-                                                                                                      :start (pos:create 0 2)
-                                                                                                      :end (pos:create 0 5)
-                                                                                                      :text "foo"))))))))
+                                                                                        types:*symbol*)))))))
 
                   (check-forms (format nil "`(foo ,bar)")
                                (list (form:create (pos:create 0 0)
                                                   (pos:create 0 11)
-                                                  (token:create :type-value types:*back-quote*
-                                                                :start (pos:create 0 0)
-                                                                :end (pos:create 0 1)
-                                                                :text "`")
+                                                  types:*back-quote*
                                                   (list (form:create (pos:create 0 1)
                                                                      (pos:create 0 11)
-                                                                     (token:create :type-value types:*open-paren*
-                                                                                   :start (pos:create 0 1)
-                                                                                   :end (pos:create 0 2)
-                                                                                   :text "(")
+                                                                     types:*open-paren*
                                                                      (list (form:create (pos:create 0 2)
                                                                                         (pos:create 0 5)
-                                                                                        (token:create :type-value types:*symbol*
-                                                                                                      :start (pos:create 0 2)
-                                                                                                      :end (pos:create 0 5)
-                                                                                                      :text "foo")
+                                                                                        types:*symbol*
                                                                                         (list))
                                                                            (form:create (pos:create 0 6)
                                                                                         (pos:create 0 10)
-                                                                                        (token:create :type-value types:*symbol*
-                                                                                                      :start (pos:create 0 2)
-                                                                                                      :end (pos:create 0 5)
-                                                                                                      :text ",bar")
+                                                                                        types:*symbol*
                                                                                         (list))))))))
 
                   (check-forms (format nil "''(foo ,bar)")
                                (list (form:create (pos:create 0 0)
                                                   (pos:create 0 12)
-                                                  (token:create :type-value types:*quote*
-                                                                :start (pos:create 0 0)
-                                                                :end (pos:create 0 1)
-                                                                :text "'")
+                                                  types:*quote*
                                                   (list (form:create (pos:create 0 2)
                                                                      (pos:create 0 12)
-                                                                     (token:create :type-value types:*open-paren*
-                                                                                   :start (pos:create 0 2)
-                                                                                   :end (pos:create 0 3)
-                                                                                   :text "(")
+                                                                     types:*open-paren*
                                                                      (list (form:create (pos:create 0 3)
                                                                                         (pos:create 0 6)
-                                                                                        (token:create :type-value types:*symbol*
-                                                                                                      :start (pos:create 0 2)
-                                                                                                      :end (pos:create 0 5)
-                                                                                                      :text "foo")
+                                                                                        types:*symbol*
                                                                                         (list))
                                                                            (form:create (pos:create 0 7)
                                                                                         (pos:create 0 11)
-                                                                                        (token:create :type-value types:*symbol*
-                                                                                                      :start (pos:create 0 2)
-                                                                                                      :end (pos:create 0 5)
-                                                                                                      :text ",bar")
+                                                                                        types:*symbol*
                                                                                         (list))))))))
 
                   (check-forms (format nil "'foo")
                                (list (form:create (pos:create 0 0)
                                                   (pos:create 0 4)
-                                                  (token:create :type-value types:*quote*
-                                                                :start (pos:create 0 0)
-                                                                :end (pos:create 0 1)
-                                                                :text "'")
+                                                  types:*quote*
                                                   (list (form:create (pos:create 0 1)
                                                                      (pos:create 0 4)
-                                                                     (token:create :type-value types:*symbol*
-                                                                                   :start (pos:create 0 1)
-                                                                                   :end (pos:create 0 4)
-                                                                                   :text "foo")
+                                                                     types:*symbol*
                                                                      (list))))))
 
                   (check-forms (format nil "`foo")
                                (list (form:create (pos:create 0 0)
                                                   (pos:create 0 4)
-                                                  (token:create :type-value types:*back-quote*
-                                                                :start (pos:create 0 0)
-                                                                :end (pos:create 0 1)
-                                                                :text "`")
+                                                  types:*back-quote*
                                                   (list (form:create (pos:create 0 1)
                                                                      (pos:create 0 4)
-                                                                     (token:create :type-value types:*symbol*
-                                                                                   :start (pos:create 0 1)
-                                                                                   :end (pos:create 0 4)
-                                                                                   :text "foo")
+                                                                     types:*symbol*
                                                                      (list))))))
 
                   (check-forms (format nil "(a bb cccc)")
                                (list (form:create (pos:create 0 0)
                                                   (pos:create 0 11)
-                                                  (token:create :type-value types:*open-paren*
-                                                                :start (pos:create 0 0)
-                                                                :end (pos:create 0 1)
-                                                                :text "(")
+                                                  types:*open-paren*
                                                   (list (form:create (pos:create 0 1)
                                                                      (pos:create 0 2)
-                                                                     (token:create :type-value types:*symbol*
-                                                                                   :start (pos:create 0 1)
-                                                                                   :end (pos:create 0 2)
-                                                                                   :text "a"))
+                                                                     types:*symbol*
+                                                                     (list))
                                                         (form:create (pos:create 0 3)
                                                                      (pos:create 0 5)
-                                                                     (token:create :type-value types:*symbol*
-                                                                                   :start (pos:create 0 3)
-                                                                                   :end (pos:create 0 5)
-                                                                                   :text "bb"))
+                                                                     types:*symbol*
+                                                                     (list))
                                                         (form:create (pos:create 0 6)
                                                                      (pos:create 0 10)
-                                                                     (token:create :type-value types:*symbol*
-                                                                                   :start (pos:create 0 6)
-                                                                                   :end (pos:create 0 10)
-                                                                                   :text "cccc")))))))))
+                                                                     types:*symbol*
+                                                                     (list)))))))))
 
 
 (defun run-all ()

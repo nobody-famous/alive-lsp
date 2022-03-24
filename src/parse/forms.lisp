@@ -18,25 +18,25 @@
 (defun token-to-form (token)
     (form:create (token:get-start token)
                  (token:get-end token)
-                 token))
+                 (token:get-type-value token)))
 
 
 (defun open-paren (state token)
     (push (form:create (token:get-start token)
                        nil
-                       token)
+                       types:*open-paren*)
           (parse-state-opens state)))
 
 
 (defun is-open-paren (open-form)
     (and open-form
-         (token:is-type types:*open-paren* (form:get-token open-form))))
+         (= types:*open-paren* (form:get-form-type open-form))))
 
 
 (defun is-quote (open-form)
     (and open-form
-         (or (token:is-type types:*quote* (form:get-token open-form))
-             (token:is-type types:*back-quote* (form:get-token open-form)))))
+         (or (= types:*quote* (form:get-form-type open-form))
+             (= types:*back-quote* (form:get-form-type open-form)))))
 
 
 (defun close-paren (state token)
@@ -64,7 +64,7 @@
 (defun start-quote (state token)
     (let ((open-form (car (parse-state-opens state))))
         (cond ((is-quote open-form) NIL)
-              (T (push (form:create (token:get-start token) nil token)
+              (T (push (form:create (token:get-start token) nil (token:get-type-value token))
                        (parse-state-opens state))))))
 
 

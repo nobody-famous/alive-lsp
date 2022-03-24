@@ -15,11 +15,11 @@
 (in-package :alive/sbcl/file)
 
 
-(defun should-skip (token)
-    (and token
-         (or (token:is-type types:*ifdef-false* token)
-             (token:is-type types:*line-comment* token)
-             (token:is-type types:*block-comment* token))))
+(defun should-skip (form-type)
+    (and form-type
+         (or (= types:*ifdef-false* form-type)
+             (= types:*line-comment* form-type)
+             (= types:*block-comment* form-type))))
 
 
 (defun get-err-location (forms)
@@ -38,9 +38,9 @@
                   :do (setf ndx (pop indicies))
                       (setf form (elt forms ndx))
 
-                      (loop :while (and form (should-skip (form:get-token form)))
-                            :do (incf ndx (if (token:is-type types:*ifdef-false*
-                                                             (form:get-token form))
+                      (loop :while (and form (should-skip (form:get-form-type form)))
+                            :do (incf ndx (if (= types:*ifdef-false*
+                                                 (form:get-form-type form))
                                               2
                                               1))
                                 (setf form (elt forms ndx)))

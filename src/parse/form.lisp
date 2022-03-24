@@ -5,7 +5,7 @@
              :get-end
              :get-kids
              :get-start
-             :get-token
+             :get-form-type
              :set-end
              :set-token)
     (:local-nicknames (:types :alive/types)))
@@ -20,24 +20,25 @@
      (end :accessor end
           :initform nil
           :initarg :end)
-     (token :accessor token
-            :initform nil
-            :initarg :token)
+     (form-type :accessor form-type
+                :initform nil
+                :initarg :form-type)
      (kids :accessor kids
            :initform nil
            :initarg :kids)))
 
 
 (defmethod print-object ((obj form) out)
-    (format out "{~A:~A token: ~A kids:~{~A~}}"
+    (format out "{~A:~A type: ~A kids:~{~A~}}"
             (start obj)
             (end obj)
-            (token obj)
+            (form-type obj)
             (kids obj)))
 
 
 (defmethod types:deep-equal-p ((a form) b)
     (and (equal (type-of a) (type-of b))
+         (types:deep-equal-p (form-type a) (form-type b))
          (types:deep-equal-p (start a) (start b))
          (types:deep-equal-p (end a) (end b))
          (types:deep-equal-p (kids a) (kids b))))
@@ -52,8 +53,8 @@
     (setf (end form) pos))
 
 
-(defun set-token (form item)
-    (setf (token form) item))
+(defun set-form-type (form value)
+    (setf (form-type form) value))
 
 
 (defun get-end (form)
@@ -71,14 +72,14 @@
           (start form)))
 
 
-(defun get-token (form)
+(defun get-form-type (form)
     (when form
-          (token form)))
+          (form-type form)))
 
 
-(defun create (start &optional end token kids)
+(defun create (start &optional end form-type kids)
     (make-instance 'form
                    :start start
                    :end end
-                   :token token
+                   :form-type form-type
                    :kids kids))
