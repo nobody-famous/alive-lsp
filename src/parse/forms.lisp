@@ -33,13 +33,41 @@
          (= types:*open-paren* (form:get-form-type open-form))))
 
 
+(defun is-symbol (open-form)
+    (and open-form
+         (= types:*symbol* (form:get-form-type open-form))))
+
+
 (defun is-quote (open-form)
     (and open-form
          (or (= types:*quote* (form:get-form-type open-form))
              (= types:*back-quote* (form:get-form-type open-form)))))
 
 
+(defun collapse-opens (state &optional target)
+    (loop :with prev := nil
+
+          :for cur := (pop (parse-state-opens state)) :do
+              (when (and cur prev)
+                    (form:add-kid cur prev)
+                    (form:set-end cur (form:get-end prev)))
+
+              (when cur
+                    (setf prev cur))
+
+          :while (and cur
+                      (not (eq target (form:get-form-type cur))))
+
+          :finally (progn (when (eq target (form:get-form-type cur))
+                                (push cur (parse-state-opens state)))
+
+                          (when prev
+                                (push prev (parse-state-forms state))))))
+
+
 (defun close-paren (state token)
+    (collapse-opens state types:*open-paren*)
+
     (let ((open-form (pop (parse-state-opens state))))
         (unless (is-open-paren open-form)
                 (error (make-instance 'errors:input-error
@@ -51,12 +79,12 @@
 
         (let ((next-open (car (parse-state-opens state))))
             (cond ((is-quote next-open)
-                   (form:add-kid open-form (car (parse-state-opens state)))
+                   (form:add-kid (car (parse-state-opens state)) open-form)
                    (form:set-end next-open (token:get-end token))
                    (push (pop (parse-state-opens state)) (parse-state-forms state)))
 
                   ((is-open-paren next-open)
-                   (form:add-kid open-form (car (parse-state-opens state))))
+                   (form:add-kid (car (parse-state-opens state)) open-form))
 
                   (T (push open-form (parse-state-forms state)))))))
 
@@ -70,14 +98,21 @@
 
 (defun symbol-token (state token)
     (let ((open-form (car (parse-state-opens state))))
-        (cond ((is-quote open-form)
-               (form:add-kid (token-to-form token) open-form)
+        (cond ((or (is-open-paren open-form)
+                   (is-quote open-form))
+               (form:set-end open-form (token:get-end token))
+               (push (form:create (token:get-start token)
+                                  (token:get-end token)
+                                  types:*symbol*)
+                     (parse-state-opens state)))
+
+              ((is-symbol open-form)
                (form:set-end open-form (token:get-end token)))
 
-              ((is-open-paren open-form)
-               (form:add-kid (token-to-form token) open-form))
-
-              (T (push (token-to-form token) (parse-state-forms state))))))
+              (T (push (form:create (token:get-start token)
+                                    (token:get-end token)
+                                    types:*symbol*)
+                       (parse-state-opens state))))))
 
 
 (defun end-form (state)
@@ -89,7 +124,8 @@
 
 (defun white-space (state)
     (let ((open-form (car (parse-state-opens state))))
-        (when (is-quote open-form)
+        (when (or (is-symbol open-form)
+                  (is-quote open-form))
               (end-form state))))
 
 
@@ -109,5 +145,5 @@
 
                     (T (symbol-token state token)))
 
-          :finally (progn (end-form state)
+          :finally (progn (collapse-opens state)
                           (return (reverse (parse-state-forms state))))))

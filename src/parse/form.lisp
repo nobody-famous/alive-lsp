@@ -44,7 +44,7 @@
          (types:deep-equal-p (kids a) (kids b))))
 
 
-(defun add-kid (kid form)
+(defun add-kid (form kid)
     (let* ((rev-kids (reverse (kids form))))
         (setf (kids form) (reverse (push kid rev-kids)))))
 
