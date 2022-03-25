@@ -44,29 +44,29 @@
              (= types:*back-quote* (form:get-form-type open-form)))))
 
 
-(defun collapse-opens (state &optional target)
+(defun collapse-opens (state &optional targets)
     (loop :with prev := nil
 
-          :for cur := (pop (parse-state-opens state)) :do
-              (when (and cur prev)
-                    (form:add-kid cur prev)
-                    (form:set-end cur (form:get-end prev)))
-
+          :for cur := (car (parse-state-opens state)) :do
               (when cur
-                    (setf prev cur))
+                    (when prev
+                          (form:add-kid cur prev)
+                          (form:set-end cur (form:get-end prev)))
+
+                    (unless (member (form:get-form-type cur) targets)
+                            (pop (parse-state-opens state))
+                            (setf prev cur)))
 
           :while (and cur
-                      (not (eq target (form:get-form-type cur))))
+                      (not (member (form:get-form-type cur) targets)))
 
-          :finally (progn (when (eq target (form:get-form-type cur))
-                                (push cur (parse-state-opens state)))
-
-                          (when prev
-                                (push prev (parse-state-forms state))))))
+          :finally (when (and prev
+                              (not (parse-state-opens state)))
+                         (push prev (parse-state-forms state)))))
 
 
 (defun close-paren (state token)
-    (collapse-opens state types:*open-paren*)
+    (collapse-opens state (list types:*open-paren*))
 
     (let ((open-form (pop (parse-state-opens state))))
         (unless (is-open-paren open-form)
@@ -124,9 +124,9 @@
 
 (defun white-space (state)
     (let ((open-form (car (parse-state-opens state))))
-        (when (or (is-symbol open-form)
-                  (is-quote open-form))
-              (end-form state))))
+        (collapse-opens state (list types:*open-paren*
+                                    types:*quote*
+                                    types:*back-quote*))))
 
 
 (defun from-stream (input)
