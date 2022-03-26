@@ -133,6 +133,10 @@
 
                     ((token:is-type types:*ws* token) (white-space state))
 
+                    ((or (token:is-type types:*line-comment* token)
+                         (token:is-type types:*block-comment* token))
+                     NIL)
+
                     (T (symbol-token state token)))
 
           :finally (progn (collapse-opens state)
