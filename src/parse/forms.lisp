@@ -79,9 +79,9 @@
 
         (let ((next-open (car (parse-state-opens state))))
             (cond ((is-quote next-open)
-                   (form:add-kid (car (parse-state-opens state)) open-form)
-                   (form:set-end next-open (token:get-end token))
-                   (push (pop (parse-state-opens state)) (parse-state-forms state)))
+                   (form:add-kid next-open open-form)
+                   (form:set-end next-open (form:get-end open-form))
+                   (collapse-opens state types:*open-paren*))
 
                   ((is-open-paren next-open)
                    (form:add-kid (car (parse-state-opens state)) open-form))
@@ -113,13 +113,6 @@
                                     (token:get-end token)
                                     types:*symbol*)
                        (parse-state-opens state))))))
-
-
-(defun end-form (state)
-    (let ((open-form (car (parse-state-opens state))))
-        (when open-form
-              (push open-form (parse-state-forms state))
-              (pop (parse-state-opens state)))))
 
 
 (defun white-space (state)

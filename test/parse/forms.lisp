@@ -30,6 +30,21 @@
 (defun basic ()
     (run:test "Basic Forms Test"
               (lambda ()
+                  (check-forms (format nil "('(1))")
+                               (list (form:create (pos:create 0 0)
+                                                  (pos:create 0 6)
+                                                  types:*open-paren*
+                                                  (list (form:create (pos:create 0 1)
+                                                                     (pos:create 0 5)
+                                                                     types:*quote*
+                                                                     (list (form:create (pos:create 0 2)
+                                                                                        (pos:create 0 5)
+                                                                                        types:*open-paren*
+                                                                                        (list (form:create (pos:create 0 3)
+                                                                                                           (pos:create 0 4)
+                                                                                                           types:*symbol*
+                                                                                                           (list))))))))))
+
                   (check-forms (format nil "'foo:bar")
                                (list (form:create (pos:create 0 0)
                                                   (pos:create 0 8)
