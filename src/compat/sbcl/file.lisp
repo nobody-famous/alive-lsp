@@ -26,6 +26,9 @@
     (let* ((context (sb-c::find-error-context nil))
            (source-path (when context (reverse (sb-c::compiler-error-context-original-source-path context)))))
 
+        (format T "source-path ~A~%" source-path)
+        (loop :for form :in forms :do (format T "FORM ~A~%" form))
+
         (if (not source-path)
             (range:create (form:get-start (car forms))
                           (form:get-end (car (reverse forms))))
@@ -36,6 +39,7 @@
 
                   :while indicies
                   :do (setf ndx (pop indicies))
+                      (format T "ndx ~A ~A~%" ndx (length forms))
                       (setf form (elt forms ndx))
 
                       (loop :while (and form (should-skip (form:get-form-type form)))
@@ -52,6 +56,7 @@
 
 
 (defun send-message (out-fn forms sev err)
+    (format T "send-message ~A~%" err)
     (let* ((loc (get-err-location forms))
            (msg (comp-msg:create :severity sev
                                  :location loc
@@ -63,26 +68,31 @@
 
 (defun fatal-error (out-fn forms)
     (lambda (err)
+        (format T "FATAL~%")
         (send-message out-fn forms types:*sev-error* err)))
 
 
 (defun compiler-error (out-fn forms)
     (lambda (err)
+        (format T "COMPILER ERROR~%")
         (send-message out-fn forms types:*sev-error* err)))
 
 
 (defun compiler-note (out-fn forms)
     (lambda (err)
+        (format T "NOTE~%")
         (send-message out-fn forms types:*sev-info* err)))
 
 
 (defun handle-error (out-fn forms)
     (lambda (err)
+        (format T "ERROR~%")
         (send-message out-fn forms types:*sev-error* err)))
 
 
 (defun handle-warning (out-fn forms)
     (lambda (err)
+        (format T "WARNING~%")
         (send-message out-fn forms types:*sev-warn* err)))
 
 

@@ -99,6 +99,16 @@
 
         (run:test "Combos"
                   (lambda ()
+                      (check-combo ":do" (list (sem-types:create
+                                                :token-type sem-types:*symbol*
+                                                :line 0
+                                                :start 0
+                                                :end 1)
+                                               (sem-types:create
+                                                :token-type sem-types:*symbol*
+                                                :line 0
+                                                :start 1
+                                                :end 3)))
                       (check-combo (format nil "foo") (list))
                       (check-combo (format nil "'foo") (list (sem-types:create
                                                               :token-type sem-types:*symbol*
@@ -144,12 +154,7 @@
                                                     :token-type sem-types:*symbol*
                                                     :line 0
                                                     :start 3
-                                                    :end 4)
-                                                   (sem-types:create
-                                                    :token-type sem-types:*symbol*
-                                                    :line 0
-                                                    :start 4
-                                                    :end 7)))
+                                                    :end 4)))
                       (check-combo "foo::bar" (list (sem-types:create
                                                      :token-type sem-types:*namespace*
                                                      :line 0
@@ -159,12 +164,7 @@
                                                      :token-type sem-types:*symbol*
                                                      :line 0
                                                      :start 3
-                                                     :end 5)
-                                                    (sem-types:create
-                                                     :token-type sem-types:*symbol*
-                                                     :line 0
-                                                     :start 5
-                                                     :end 8)))
+                                                     :end 5)))
                       (check-combo "( :bar )" (list (sem-types:create
                                                      :token-type sem-types:*parenthesis*
                                                      :line 0

@@ -1,4 +1,2 @@
-foo: 
-(+ 1 2)
-#+n (form-2)
-(form-3)
+(loop :for i :in '(1 2) :do
+          (form))
