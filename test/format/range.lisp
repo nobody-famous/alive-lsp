@@ -138,7 +138,7 @@
                                 (list (edit:create :range (range:create (pos:create 0 1) (pos:create 0 3))
                                                    :text (format nil ""))
                                       (edit:create :range (range:create (pos:create 0 15) (pos:create 1 6))
-                                                   :text (format nil "~%       ")))))))
+                                                   :text (format nil "~%   ")))))))
 
 
 (defun run-all ()

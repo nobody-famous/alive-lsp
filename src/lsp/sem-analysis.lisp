@@ -322,6 +322,11 @@
                                                             (get-symbol-type (sym obj)
                                                                              (token:get-text (pkg obj))))))
 
+                        ((and (not (pkg obj))
+                              (colons obj)
+                              (not (sym obj)))
+                         (add-sem-token state (colons obj) sem-types:*symbol*))
+
                         (T (error (format T "process-symbol NOT DONE ~A~%" obj))))))
 
         (let ((token (peek-token state)))
