@@ -198,6 +198,16 @@
                                          (not (is-delim ch))))))
 
 
+(defun read-macro-char (state)
+    (next-char state)
+
+    (let ((ch (look-ahead state)))
+        (when (not (is-ws ch))
+              (next-char state))
+
+        (new-token state types:*macro*)))
+
+
 (defun read-macro-token (state)
     (next-char state)
 
@@ -205,6 +215,7 @@
         (cond ((or (char= ch #\+)
                    (char= ch #\-)) (read-ifdef-token state ch))
               ((char= ch #\|) (read-block-comment-token state))
+              ((char= ch #\\) (read-macro-char state))
               (t (read-macro-generic-token state)))))
 
 
