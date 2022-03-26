@@ -44,7 +44,7 @@
              (= types:*back-quote* (form:get-form-type open-form)))))
 
 
-(defun collapse-opens (state &optional targets)
+(defun collapse-opens (state &optional target)
     (loop :with prev := nil
 
           :for cur := (car (parse-state-opens state)) :do
@@ -53,12 +53,12 @@
                           (form:add-kid cur prev)
                           (form:set-end cur (form:get-end prev)))
 
-                    (unless (member (form:get-form-type cur) targets)
+                    (unless (eq (form:get-form-type cur) target)
                             (pop (parse-state-opens state))
                             (setf prev cur)))
 
           :while (and cur
-                      (not (member (form:get-form-type cur) targets)))
+                      (not (eq (form:get-form-type cur) target)))
 
           :finally (when (and prev
                               (not (parse-state-opens state)))
@@ -66,7 +66,7 @@
 
 
 (defun close-paren (state token)
-    (collapse-opens state (list types:*open-paren*))
+    (collapse-opens state types:*open-paren*)
 
     (let ((open-form (pop (parse-state-opens state))))
         (unless (is-open-paren open-form)
@@ -123,10 +123,7 @@
 
 
 (defun white-space (state)
-    (let ((open-form (car (parse-state-opens state))))
-        (collapse-opens state (list types:*open-paren*
-                                    types:*quote*
-                                    types:*back-quote*))))
+    (collapse-opens state types:*open-paren*))
 
 
 (defun from-stream (input)

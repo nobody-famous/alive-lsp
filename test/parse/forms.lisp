@@ -142,7 +142,25 @@
                                                                      (list)))))))))
 
 
+(defun combos ()
+    (run:test "Combo Forms Test"
+              (lambda ()
+                  (check-forms (format nil (format nil "'foo:bar~%fff"))
+                               (list (form:create (pos:create 0 0)
+                                                  (pos:create 0 8)
+                                                  types:*quote*
+                                                  (list (form:create (pos:create 0 1)
+                                                                     (pos:create 0 8)
+                                                                     types:*symbol*
+                                                                     (list))))
+                                     (form:create (pos:create 1 0)
+                                                  (pos:create 1 3)
+                                                  types:*symbol*
+                                                  (list)))))))
+
+
 (defun run-all ()
     (run:suite "Test parse forms"
                (Lambda ()
-                   (basic))))
+                   (basic)
+                   (combos))))
