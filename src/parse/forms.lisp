@@ -86,6 +86,11 @@
                   ((is-open-paren next-open)
                    (form:add-kid (car (parse-state-opens state)) open-form))
 
+                  ((is-symbol next-open) (error (make-instance 'errors:input-error
+                                                               :start (form:get-start next-open)
+                                                               :end (form:get-end next-open)
+                                                               :message (format nil "Invalid next form ~A" next-open))))
+
                   (T (push open-form (parse-state-forms state)))))))
 
 
