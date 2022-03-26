@@ -39,9 +39,7 @@
 
 (defun is-ws (ch)
     (or (char= ch #\space)
-        (char= ch #\tab)
-        (char= ch #\return)
-        (char= ch #\newline)))
+        (not (graphic-char-p ch))))
 
 
 (defun is-delim (ch)
