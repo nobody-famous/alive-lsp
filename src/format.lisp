@@ -175,12 +175,26 @@
                                 (token:is-type *start-form* (car tokens))))))
 
 
+(defun has-body (lambda-list)
+    (reduce (lambda (acc item)
+                (or acc
+                    (and (symbolp item)
+                         (string= item "&BODY"))))
+            lambda-list
+            :initial-value NIL))
+
+
 (defun update-aligned (state)
     (let* ((form-open (car (parse-state-opens state)))
            (token (car (parse-state-out-list state))))
 
         (if (prev-is-start-form state)
-            (replace-indent state (pos:col (token:get-start token)))
+            (if (has-body (symbols:get-lambda-list (token:get-text token)))
+                (progn (setf (aligned form-open) T)
+                       (replace-indent state (+ (options-indent-width (parse-state-options state))
+                                                (pos:col (token:get-start token)))))
+                (replace-indent state (pos:col (token:get-start token))))
+
             (when (and form-open (not (aligned form-open)))
                   (setf (aligned form-open) T)
                   (replace-indent state (pos:col (token:get-start token)))))))
@@ -197,7 +211,7 @@
               (if (out-of-range (parse-state-range state) token)
                   (add-to-out-list state token)
                   (cond ((or (not prev)
-                             (= *start-form* (token:get-type-value prev)))
+                             (token:is-type *start-form* prev))
                          (replace-token state token ""))
 
                         ((= (pos:line start) (pos:line end))
@@ -222,7 +236,7 @@
     (let* ((prev (car (parse-state-seen state))))
 
         (when (and prev
-                   (= types:*ws* (token:get-type-value prev)))
+                   (token:is-type types:*ws* prev))
               (fix-indent state))
 
         (add-to-out-list state token)
