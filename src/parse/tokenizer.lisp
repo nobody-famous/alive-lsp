@@ -200,11 +200,11 @@
     (next-char state)
 
     (let ((ch (look-ahead state)))
-        (loop :while (and ch
-                          (not (alpha-char-p ch))
-                          (not (is-ws ch)))
-              :do (next-char state)
-                  (setf ch (look-ahead state)))
+        (if (alpha-char-p ch)
+            (loop :while (and ch (alpha-char-p ch))
+                  :do (next-char state)
+                      (setf ch (look-ahead state)))
+            (next-char state))
 
         (new-token state types:*macro*)))
 

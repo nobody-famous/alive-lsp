@@ -102,8 +102,11 @@
                                                                                         (list))
                                                                            (form:create (pos:create 0 6)
                                                                                         (pos:create 0 10)
-                                                                                        types:*symbol*
-                                                                                        (list))))))))
+                                                                                        types:*comma*
+                                                                                        (list (form:create (pos:create 0 7)
+                                                                                                           (pos:create 0 10)
+                                                                                                           types:*symbol*
+                                                                                                           (list))))))))))
 
                   (check-forms (format nil "''(foo ,bar)")
                                (list (form:create (pos:create 0 0)
@@ -118,8 +121,11 @@
                                                                                         (list))
                                                                            (form:create (pos:create 0 7)
                                                                                         (pos:create 0 11)
-                                                                                        types:*symbol*
-                                                                                        (list))))))))
+                                                                                        types:*comma*
+                                                                                        (list (form:create (pos:create 0 8)
+                                                                                                           (pos:create 0 11)
+                                                                                                           types:*symbol*
+                                                                                                           (list))))))))))
 
                   (check-forms (format nil "'foo")
                                (list (form:create (pos:create 0 0)

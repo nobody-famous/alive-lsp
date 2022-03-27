@@ -94,8 +94,9 @@
               (lambda ()
                   (check-format (format nil "( ; Foo~%")
                                 (range:create (pos:create 0 0) (pos:create 2 0))
-                                (list))
-                  
+                                (list (edit:create :range (range:create (pos:create 0 7) (pos:create 1 0))
+                                                   :text (format nil ""))))
+
                   (check-format (format nil "( ; Foo~%)")
                                 (range:create (pos:create 0 0) (pos:create 2 0))
                                 (list))
