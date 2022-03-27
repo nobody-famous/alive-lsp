@@ -201,7 +201,8 @@
 
     (let ((ch (look-ahead state)))
         (loop :while (and ch
-                          (not (is-delim ch)))
+                          (not (alpha-char-p ch))
+                          (not (is-ws ch)))
               :do (next-char state)
                   (setf ch (look-ahead state)))
 
