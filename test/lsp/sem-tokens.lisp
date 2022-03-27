@@ -99,6 +99,56 @@
 
         (run:test "Combos"
                   (lambda ()
+                      (check-combo "#+win32 (or (not (not)))" (list (sem-types:create
+                                                                     :token-type sem-types:*comment*
+                                                                     :line 0
+                                                                     :start 0
+                                                                     :end 7)
+                                                                    (sem-types:create
+                                                                     :token-type sem-types:*comment*
+                                                                     :line 0
+                                                                     :start 8
+                                                                     :end 9)
+                                                                    (sem-types:create
+                                                                     :token-type sem-types:*comment*
+                                                                     :line 0
+                                                                     :start 9
+                                                                     :end 11)
+                                                                    (sem-types:create
+                                                                     :token-type sem-types:*comment*
+                                                                     :line 0
+                                                                     :start 12
+                                                                     :end 13)
+                                                                    (sem-types:create
+                                                                     :token-type sem-types:*comment*
+                                                                     :line 0
+                                                                     :start 13
+                                                                     :end 16)
+                                                                    (sem-types:create
+                                                                     :token-type sem-types:*comment*
+                                                                     :line 0
+                                                                     :start 17
+                                                                     :end 18)
+                                                                    (sem-types:create
+                                                                     :token-type sem-types:*comment*
+                                                                     :line 0
+                                                                     :start 18
+                                                                     :end 21)
+                                                                    (sem-types:create
+                                                                     :token-type sem-types:*comment*
+                                                                     :line 0
+                                                                     :start 21
+                                                                     :end 22)
+                                                                    (sem-types:create
+                                                                     :token-type sem-types:*comment*
+                                                                     :line 0
+                                                                     :start 22
+                                                                     :end 23)
+                                                                    (sem-types:create
+                                                                     :token-type sem-types:*comment*
+                                                                     :line 0
+                                                                     :start 23
+                                                                     :end 24)))
                       (check-combo ":do" (list (sem-types:create
                                                 :token-type sem-types:*symbol*
                                                 :line 0
