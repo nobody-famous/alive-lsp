@@ -44,6 +44,12 @@
              (= types:*back-quote* (form:get-form-type open-form)))))
 
 
+(defun is-comma (open-form)
+    (and open-form
+         (or (= types:*comma* (form:get-form-type open-form))
+             (= types:*comma-at* (form:get-form-type open-form)))))
+
+
 (defun collapse-opens (state &optional target)
     (loop :with prev := nil
 
@@ -78,7 +84,8 @@
         (form:set-end open-form (token:get-end token))
 
         (let ((next-open (car (parse-state-opens state))))
-            (cond ((is-quote next-open)
+            (cond ((or (is-comma next-open)
+                       (is-quote next-open))
                    (form:add-kid next-open open-form)
                    (form:set-end next-open (form:get-end open-form))
                    (collapse-opens state types:*open-paren*))
@@ -97,7 +104,18 @@
 (defun start-quote (state token)
     (let ((open-form (car (parse-state-opens state))))
         (cond ((is-quote open-form) NIL)
-              (T (push (form:create (token:get-start token) nil (token:get-type-value token))
+              (T (push (form:create (token:get-start token)
+                                    nil
+                                    (token:get-type-value token))
+                       (parse-state-opens state))))))
+
+
+(defun start-comma (state token)
+    (let ((open-form (car (parse-state-opens state))))
+        (cond ((is-comma open-form) NIL)
+              (T (push (form:create (token:get-start token)
+                                    nil
+                                    (token:get-type-value token))
                        (parse-state-opens state))))))
 
 
@@ -135,6 +153,9 @@
 
                     ((or (token:is-type types:*quote* token)
                          (token:is-type types:*back-quote* token)) (start-quote state token))
+
+                    ((or (token:is-type types:*comma* token)
+                         (token:is-type types:*comma-at* token)) (start-comma state token))
 
                     ((token:is-type types:*ws* token) (white-space state))
 

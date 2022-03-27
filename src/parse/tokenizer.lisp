@@ -200,8 +200,10 @@
     (next-char state)
 
     (let ((ch (look-ahead state)))
-        (when (not (is-ws ch))
-              (next-char state))
+        (loop :while (and ch
+                          (not (is-delim ch)))
+              :do (next-char state)
+                  (setf ch (look-ahead state)))
 
         (new-token state types:*macro*)))
 
@@ -217,6 +219,15 @@
               (t (read-macro-generic-token state)))))
 
 
+(defun read-comma-token (state)
+    (next-char state)
+
+    (if (char= #\@ (look-ahead state))
+        (progn (next-char state)
+               (new-token state types:*comma-at*))
+        (new-token state types:*comma*)))
+
+
 (defun next-token (state)
     (start-token state)
 
@@ -229,6 +240,7 @@
               ((char= ch #\;) (read-comment-token state))
               ((char= ch #\:) (read-colons-token state))
               ((char= ch #\#) (read-macro-token state))
+              ((char= ch #\,) (read-comma-token state))
               ((is-ws ch) (read-ws-token state))
               (T (read-symbol-token state)))))
 
