@@ -36,6 +36,10 @@
 
                   :while indicies
                   :do (setf ndx (pop indicies))
+
+                      (when (<= (length forms) ndx)
+                            (error (format nil "Source ndx ~A, form ~A" ndx form)))
+
                       (setf form (elt forms ndx))
 
                       (loop :while (and form (should-skip (form:get-form-type form)))
