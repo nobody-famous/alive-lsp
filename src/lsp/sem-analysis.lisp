@@ -70,8 +70,8 @@
             (sym obj)))
 
 
-(defun peek-token (state)
-    (car (lex-tokens state)))
+(defun peek-token (state &optional (ndx 0))
+    (elt (lex-tokens state) ndx))
 
 
 (defun eat-token (state)
@@ -439,6 +439,12 @@
 
               ((token:is-type types:*symbol* token)
                (add-sem-token state token (convert-if-comment state sem-types:*symbol*)))
+
+              ((token:is-type types:*colons* token)
+               (add-sem-token state token (convert-if-comment state sem-types:*symbol*))
+               (when (token:is-type types:*symbol* (peek-token state 1))
+                     (next-token state)
+                     (add-sem-token state (peek-token state) (convert-if-comment state sem-types:*symbol*))))
 
               ((token:is-type types:*ws* token) NIL)
 
