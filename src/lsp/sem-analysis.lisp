@@ -14,14 +14,22 @@
     ((form-type :accessor form-type
                 :initform nil
                 :initarg :form-type)
+     (expr-type :accessor expr-type
+                :initform nil
+                :initarg :expr-type)
+     (lambda-list :accessor lambda-list
+                  :initform nil
+                  :initarg :lambda-list)
      (comment-out-p :accessor comment-out-p
                     :initform nil
                     :initarg :comment-out-p)))
 
 
 (defmethod print-object ((obj open-form) out)
-    (format out "{type: ~A; comment-out: ~A}"
+    (format out "{type: ~A; expr-type: ~A; lambda-list: ~A; comment-out: ~A}"
             (form-type obj)
+            (expr-type obj)
+            (lambda-list obj)
             (comment-out-p obj)))
 
 
@@ -170,7 +178,7 @@
           (() ())))
 
 
-(defun process-symbol (state)
+(defun update-symbol-types (state)
     (let ((token1 (peek-token state 0))
           (token2 (peek-token state 1))
           (token3 (peek-token state 2))
@@ -194,7 +202,28 @@
                (add-sem-token state token1 (convert-if-comment state (get-symbol-type (token:get-text token1))))
                (setf lambda-list (symbols:get-lambda-list (token:get-text token1)))))
 
-        (format T "LAMBDA LIST: ~A ~A ~A~%" (token:get-text token1) (token:get-text token3) lambda-list)))
+        lambda-list))
+
+
+(defun update-symbol-state (state lambda-list)
+    (let ((open-form (car (opens state))))
+        (if (eq :expr (form-type open-form))
+
+            (if (not (expr-type open-form))
+                (if lambda-list
+                    (progn (setf (expr-type (car (opens state))) :fn-call)
+                           (setf (lambda-list (car (opens state))) lambda-list))
+                    (setf (expr-type (car (opens state))) :plain-list))
+
+                (format T "SYMBOL EXPR HAS TYPE ~A~%" (expr-type open-form)))
+
+            (format T "SYMBOL NOT AN EXPR ~A~%" (form-type open-form)))))
+
+
+(defun process-symbol (state)
+    (let ((lambda-list (update-symbol-types state)))
+
+        (update-symbol-state state lambda-list)))
 
 
 (defun process-token (state)
@@ -259,6 +288,8 @@
 
 
 (defun to-sem-tokens (tokens)
+    (format T "TO-SEM-TOKENS ~A~%" tokens)
+
     (loop :with state := (make-instance 'analysis-state :lex-tokens tokens)
 
           :while (lex-tokens state)
