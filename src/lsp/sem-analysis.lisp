@@ -460,13 +460,15 @@
                      (pop (opens state))))
 
               ((token:is-type types:*symbol* token)
-               (process-symbol state))
+               (process-symbol state)
+               (setf (comment-next-p state) NIL))
 
               ((token:is-type types:*colons* token)
                (add-sem-token state token (convert-if-comment state sem-types:*symbol*))
                (when (token:is-type types:*symbol* (peek-token state 1))
                      (next-token state)
-                     (add-sem-token state (peek-token state) (convert-if-comment state sem-types:*symbol*))))
+                     (add-sem-token state (peek-token state) (convert-if-comment state sem-types:*symbol*)))
+               (setf (comment-next-p state) NIL))
 
               ((token:is-type types:*ws* token) NIL)
 
