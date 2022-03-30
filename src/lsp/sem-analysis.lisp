@@ -71,7 +71,8 @@
 
 
 (defun peek-token (state &optional (ndx 0))
-    (elt (lex-tokens state) ndx))
+    (when (< ndx (length (lex-tokens state)))
+          (elt (lex-tokens state) ndx)))
 
 
 (defun eat-token (state)
@@ -416,6 +417,27 @@
         token-type))
 
 
+(defun process-symbol (state)
+    (let ((token1 (peek-token state 0))
+          (token2 (peek-token state 1))
+          (token3 (peek-token state 2)))
+
+        (cond ((and (token:is-type types:*symbol* token1)
+                    (token:is-type types:*colons* token2)
+                    (token:is-type types:*symbol* token3))
+               (add-sem-token state token1 (convert-if-comment state sem-types:*namespace*))
+               (add-sem-token state token2 (convert-if-comment state sem-types:*symbol*))
+               (add-sem-token state token3 (convert-if-comment state sem-types:*symbol*))
+               (next-token state)
+               (next-token state))
+
+              ((and (token:is-type types:*symbol* token1)
+                    (not (token:is-type types:*colons* token2)))
+               (add-sem-token state token1 (convert-if-comment state nil)))
+
+              (() ()))))
+
+
 (defun process-token (state)
     (let ((token (peek-token state)))
         (cond ((token:is-type types:*ifdef-false* token)
@@ -438,7 +460,7 @@
                      (pop (opens state))))
 
               ((token:is-type types:*symbol* token)
-               (add-sem-token state token (convert-if-comment state sem-types:*symbol*)))
+               (process-symbol state))
 
               ((token:is-type types:*colons* token)
                (add-sem-token state token (convert-if-comment state sem-types:*symbol*))
