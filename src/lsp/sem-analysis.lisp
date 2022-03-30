@@ -173,7 +173,8 @@
 (defun process-symbol (state)
     (let ((token1 (peek-token state 0))
           (token2 (peek-token state 1))
-          (token3 (peek-token state 2)))
+          (token3 (peek-token state 2))
+          (lambda-list nil))
 
         (cond ((and (token:is-type types:*symbol* token1)
                     (token:is-type types:*colons* token2)
@@ -183,11 +184,17 @@
                (add-sem-token state token3 (convert-if-comment state (get-symbol-type (token:get-text token3)
                                                                                       (token:get-text token1))))
                (next-token state)
-               (next-token state))
+               (next-token state)
+
+               (setf lambda-list (symbols:get-lambda-list (token:get-text token3)
+                                                          (token:get-text token1))))
 
               ((and (token:is-type types:*symbol* token1)
                     (not (token:is-type types:*colons* token2)))
-               (add-sem-token state token1 (convert-if-comment state (get-symbol-type (token:get-text token1))))))))
+               (add-sem-token state token1 (convert-if-comment state (get-symbol-type (token:get-text token1))))
+               (setf lambda-list (symbols:get-lambda-list (token:get-text token1)))))
+
+        (format T "LAMBDA LIST: ~A ~A ~A~%" (token:get-text token1) (token:get-text token3) lambda-list)))
 
 
 (defun process-token (state)
