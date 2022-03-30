@@ -10,6 +10,21 @@
 (in-package :alive/lsp/sem-analysis)
 
 
+(defclass open-form ()
+    ((form-type :accessor form-type
+                :initform nil
+                :initarg :form-type)
+     (comment-out-p :accessor comment-out-p
+                    :initform nil
+                    :initarg :comment-out-p)))
+
+
+(defmethod print-object ((obj open-form) out)
+    (format out "{type: ~A; comment-out: ~A}"
+            (form-type obj)
+            (comment-out-p obj)))
+
+
 (defclass analysis-state ()
     ((lex-tokens :accessor lex-tokens
                  :initform nil
@@ -20,15 +35,19 @@
      (forced-type :accessor forced-type
                   :initform nil
                   :initarg :forced-type)
+     (comment-next-p :accessor comment-next-p
+                     :initform nil
+                     :initarg :comment-next-p)
      (opens :accessor opens
-            :initform nil
+            :initform (list (make-instance 'open-form :form-type :top-level-form))
             :initarg :opens)))
 
 
 (defmethod print-object ((obj analysis-state) out)
-    (format out "{lex ~A sem ~A opens ~A}"
+    (format out "{lex ~A; sem ~A; comment-next ~A; opens ~A}"
             (lex-tokens obj)
             (reverse (sem-tokens obj))
+            (comment-next-p obj)
             (opens obj)))
 
 
@@ -390,20 +409,36 @@
 ;                   (T (next-token state))))))
 
 
+(defun convert-if-comment (state token-type)
+    (if (or (comment-next-p state)
+            (comment-out-p (car (opens state))))
+        sem-types:*comment*
+        token-type))
+
 
 (defun process-token (state)
     (let ((token (peek-token state)))
         (cond ((token:is-type types:*ifdef-false* token)
-               (format T "IFDEF FALSE ~A~%" (opens state)))
+               (add-sem-token state token sem-types:*comment*)
+               (setf (comment-next-p state) T))
 
               ((token:is-type types:*open-paren* token)
-               (format T "OPEN PAREN~%")
-               (push token (opens state)))
+               (add-sem-token state token (convert-if-comment state sem-types:*parenthesis*))
+               (push (make-instance 'open-form
+                                    :form-type :expr
+                                    :comment-out-p (or (comment-next-p state)
+                                                       (comment-out-p (car (opens state)))))
+                     (opens state))
+               (setf (comment-next-p state) NIL))
 
               ((token:is-type types:*close-paren* token)
-               (format T "CLOSE PAREN~%")
-               (when (opens state)
+               (add-sem-token state token (convert-if-comment state sem-types:*parenthesis*))
+               (setf (comment-next-p state) NIL)
+               (when (eq :expr (form-type (car (opens state))))
                      (pop (opens state))))
+
+              ((token:is-type types:*symbol* token)
+               (add-sem-token state token (convert-if-comment state sem-types:*symbol*)))
 
               ((token:is-type types:*ws* token) NIL)
 

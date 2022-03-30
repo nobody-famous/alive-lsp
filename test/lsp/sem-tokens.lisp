@@ -99,7 +99,7 @@
 
         (run:test "Combos"
                   (lambda ()
-                      (check-combo "#+win32 (or (not (not)))" (list (sem-types:create
+                      (check-combo "#+nnnnn (or (not (not)))" (list (sem-types:create
                                                                      :token-type sem-types:*comment*
                                                                      :line 0
                                                                      :start 0
