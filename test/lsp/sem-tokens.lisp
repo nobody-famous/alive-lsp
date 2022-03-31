@@ -94,6 +94,7 @@
 
 (defun combos ()
     (labels ((check-combo (text expected)
+                  (format T "CHECK-COMBO ~A~%" text)
                   (let ((tokens (get-sem-tokens text)))
                       (check:are-equal expected tokens))))
 

@@ -163,7 +163,7 @@
         token-type))
 
 
-(defun get-symbol-type (sym &optional namespace)
+(defun lookup-symbol-type (sym &optional namespace)
     (cond ((is-number sym) sem-types:*number*)
 
           ((or (string= "NIL" (string-upcase sym))
@@ -178,6 +178,16 @@
           (() ())))
 
 
+(defun get-symbol-type (state sym &optional namespace)
+    (format T "GET-SYMBOL-TYPE ~A ~A ~A~%" sym (comment-next-p state) (car (opens state)))
+    (let ((open-form (car (opens state))))
+        (cond ((eq :lambda-list (expr-type open-form)) sem-types:*parameter*)
+
+              (() ())
+
+              (T (lookup-symbol-type sym namespace)))))
+
+
 (defun update-symbol-types (state)
     (let ((token1 (peek-token state 0))
           (token2 (peek-token state 1))
@@ -189,8 +199,8 @@
                     (token:is-type types:*symbol* token3))
                (add-sem-token state token1 (convert-if-comment state sem-types:*namespace*))
                (add-sem-token state token2 (convert-if-comment state sem-types:*symbol*))
-               (add-sem-token state token3 (convert-if-comment state (get-symbol-type (token:get-text token3)
-                                                                                      (token:get-text token1))))
+               (add-sem-token state token3 (convert-if-comment state (lookup-symbol-type (token:get-text token3)
+                                                                                         (token:get-text token1))))
                (next-token state)
                (next-token state)
 
@@ -199,31 +209,89 @@
 
               ((and (token:is-type types:*symbol* token1)
                     (not (token:is-type types:*colons* token2)))
-               (add-sem-token state token1 (convert-if-comment state (get-symbol-type (token:get-text token1))))
+               (add-sem-token state token1 (convert-if-comment state (get-symbol-type state (token:get-text token1))))
                (setf lambda-list (symbols:get-lambda-list (token:get-text token1)))))
 
         lambda-list))
 
 
+(defun update-symbol-lambda-list (open-form)
+    (when (lambda-list open-form)
+          (let ((list-item (car (lambda-list open-form))))
+              (declare (ignore list-item))
+              (pop (lambda-list open-form)))))
+
+
+(defun update-symbol-expr-state (open-form)
+    (let* ((e-type (expr-type open-form)))
+
+        (cond ((eq :fn-call e-type) (update-symbol-lambda-list open-form))
+
+              (() ())
+
+              (T (format T "SYMBOL EXPR HAS TYPE ~A~%" e-type)))))
+
+
 (defun update-symbol-state (state lambda-list)
     (let ((open-form (car (opens state))))
-        (if (eq :expr (form-type open-form))
+        (when (eq :expr (form-type open-form))
 
-            (if (not (expr-type open-form))
-                (if lambda-list
-                    (progn (setf (expr-type (car (opens state))) :fn-call)
-                           (setf (lambda-list (car (opens state))) lambda-list))
-                    (setf (expr-type (car (opens state))) :plain-list))
-
-                (format T "SYMBOL EXPR HAS TYPE ~A~%" (expr-type open-form)))
-
-            (format T "SYMBOL NOT AN EXPR ~A~%" (form-type open-form)))))
+              (if (expr-type open-form)
+                  (update-symbol-expr-state open-form)
+                  (if lambda-list
+                      (progn (setf (expr-type (car (opens state))) :fn-call)
+                             (setf (lambda-list (car (opens state))) lambda-list))
+                      (setf (expr-type (car (opens state))) :plain-list))))))
 
 
 (defun process-symbol (state)
     (let ((lambda-list (update-symbol-types state)))
-
         (update-symbol-state state lambda-list)))
+
+
+(defun add-open-form (state form-type &optional expr-type)
+    (push (make-instance 'open-form
+                         :form-type form-type
+                         :expr-type expr-type
+                         :comment-out-p (or (comment-next-p state)
+                                            (comment-out-p (car (opens state)))))
+          (opens state)))
+
+
+(defun process-open-parens-fn-call (state open-form)
+    (when (lambda-list open-form)
+          (let ((list-item (car (lambda-list open-form))))
+              (cond ((string= list-item "&REST")
+                     (setf (lambda-list open-form) NIL)
+                     (add-open-form state :expr))
+
+                    ((string= list-item "LAMBDA-LIST")
+                     (add-open-form state :expr :lambda-list))
+
+                    (T (format T "OPEN PARENS FN-CALL ~A~%" list-item)
+                       (add-open-form state :expr))))
+
+          (pop (lambda-list open-form))))
+
+
+(defun process-open-parens-expr (state open-form)
+    (let ((e-type (expr-type open-form)))
+        (cond ((eq :fn-call e-type) (process-open-parens-fn-call state open-form))
+
+              (() ())
+
+              (T (format T "OPEN PARENS EXPR ~A~%" open-form)
+                 (add-open-form state :expr)))))
+
+
+(defun process-open-parens (state)
+    (let ((open-form (car (opens state))))
+        (cond ((eq :expr (form-type open-form))
+               (process-open-parens-expr state open-form))
+
+              (() ())
+
+              (T (add-open-form state :expr)))))
 
 
 (defun process-token (state)
@@ -235,20 +303,12 @@
               ((or (token:is-type types:*quote* token)
                    (token:is-type types:*back-quote* token))
                (add-sem-token state token (convert-if-comment state sem-types:*symbol*))
-               (push (make-instance 'open-form
-                                    :form-type :quote
-                                    :comment-out-p (or (comment-next-p state)
-                                                       (comment-out-p (car (opens state)))))
-                     (opens state))
+               (add-open-form state :quote)
                (setf (comment-next-p state) NIL))
 
               ((token:is-type types:*open-paren* token)
                (add-sem-token state token (convert-if-comment state sem-types:*parenthesis*))
-               (push (make-instance 'open-form
-                                    :form-type :expr
-                                    :comment-out-p (or (comment-next-p state)
-                                                       (comment-out-p (car (opens state)))))
-                     (opens state))
+               (process-open-parens state)
                (setf (comment-next-p state) NIL))
 
               ((token:is-type types:*close-paren* token)
@@ -288,8 +348,6 @@
 
 
 (defun to-sem-tokens (tokens)
-    (format T "TO-SEM-TOKENS ~A~%" tokens)
-
     (loop :with state := (make-instance 'analysis-state :lex-tokens tokens)
 
           :while (lex-tokens state)
