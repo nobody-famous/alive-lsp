@@ -49,6 +49,13 @@
         (char= ch #\()))
 
 
+(defun is-macro-ch (ch)
+    (and ch
+         (not (is-ws ch))
+         (not (char= #\( ch))
+         (not (char= #\) ch))))
+
+
 (defun next-char (state)
     (let ((ch (read-char (input state) nil nil)))
         (cond ((char= ch #\newline) (incf (line state))
@@ -200,8 +207,8 @@
     (next-char state)
 
     (let ((ch (look-ahead state)))
-        (if (alpha-char-p ch)
-            (loop :while (and ch (alpha-char-p ch))
+        (if (is-macro-ch ch)
+            (loop :while (is-macro-ch ch)
                   :do (next-char state)
                       (setf ch (look-ahead state)))
             (next-char state))

@@ -20,16 +20,20 @@
      (lambda-list :accessor lambda-list
                   :initform nil
                   :initarg :lambda-list)
+     (expr-ndx :accessor expr-ndx
+               :initform 0
+               :initarg :expr-ndx)
      (comment-out-p :accessor comment-out-p
                     :initform nil
                     :initarg :comment-out-p)))
 
 
 (defmethod print-object ((obj open-form) out)
-    (format out "{type: ~A; expr-type: ~A; lambda-list: ~A; comment-out: ~A}"
+    (format out "{type: ~A; expr-type: ~A; lambda-list: ~A; expr-ndx: ~A; comment-out: ~A}"
             (form-type obj)
             (expr-type obj)
             (lambda-list obj)
+            (expr-ndx obj)
             (comment-out-p obj)))
 
 
@@ -179,11 +183,13 @@
 
 
 (defun get-symbol-type (state sym &optional namespace)
-    (format T "GET-SYMBOL-TYPE ~A ~A ~A~%" sym (comment-next-p state) (car (opens state)))
     (let ((open-form (car (opens state))))
         (cond ((eq :lambda-list (expr-type open-form)) sem-types:*parameter*)
 
-              (() ())
+              ((eq :arg-init (expr-type open-form))
+               (when (zerop (expr-ndx open-form))
+                     (incf (expr-ndx open-form))
+                     sem-types:*parameter*))
 
               (T (lookup-symbol-type sym namespace)))))
 
@@ -212,6 +218,11 @@
                (add-sem-token state token1 (convert-if-comment state (get-symbol-type state (token:get-text token1))))
                (setf lambda-list (symbols:get-lambda-list (token:get-text token1)))))
 
+        (format T "LAMBDA-LIST ~A ~A ~A ~A~%"
+                (token:get-text token1)
+                (token:get-text token2)
+                (token:get-text token3)
+                lambda-list)
         lambda-list))
 
 
@@ -227,7 +238,10 @@
 
         (cond ((eq :fn-call e-type) (update-symbol-lambda-list open-form))
 
-              (() ())
+              ((or (eq :lambda-list e-type)
+                   (eq :plain-list e-type)
+                   (eq :arg-init e-type))
+               nil)
 
               (T (format T "SYMBOL EXPR HAS TYPE ~A~%" e-type)))))
 
@@ -268,8 +282,7 @@
                     ((string= list-item "LAMBDA-LIST")
                      (add-open-form state :expr :lambda-list))
 
-                    (T (format T "OPEN PARENS FN-CALL ~A~%" list-item)
-                       (add-open-form state :expr))))
+                    (T (add-open-form state :expr))))
 
           (pop (lambda-list open-form))))
 
@@ -278,10 +291,9 @@
     (let ((e-type (expr-type open-form)))
         (cond ((eq :fn-call e-type) (process-open-parens-fn-call state open-form))
 
-              (() ())
+              ((eq :lambda-list e-type) (add-open-form state :expr :arg-init))
 
-              (T (format T "OPEN PARENS EXPR ~A~%" open-form)
-                 (add-open-form state :expr)))))
+              (T (add-open-form state :expr)))))
 
 
 (defun process-open-parens (state)
@@ -299,6 +311,8 @@
         (cond ((token:is-type types:*ifdef-false* token)
                (add-sem-token state token sem-types:*comment*)
                (setf (comment-next-p state) T))
+
+              ((token:is-type types:*ifdef-true* token) sem-types:*macro*)
 
               ((or (token:is-type types:*quote* token)
                    (token:is-type types:*back-quote* token))

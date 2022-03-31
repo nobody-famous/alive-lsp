@@ -27,6 +27,11 @@
 
         (run:test "Symbols"
                   (lambda ()
+                      (check-symbol "#\\Replacement_Character" (sem-types:create
+                                                                :token-type sem-types:*macro*
+                                                                :line 0
+                                                                :start 0
+                                                                :end 23))
                       (check-symbol "#| Stuff |#" (sem-types:create
                                                    :token-type sem-types:*comment*
                                                    :line 0
@@ -94,12 +99,13 @@
 
 (defun combos ()
     (labels ((check-combo (text expected)
-                  (format T "CHECK-COMBO ~A~%" text)
                   (let ((tokens (get-sem-tokens text)))
                       (check:are-equal expected tokens))))
 
         (run:test "Combos"
                   (lambda ()
+                      (check-combo "(sb-ext:octets-to-string a b c)" (list))
+
                       (check-combo "#+nnnnn (or (not (not)))" (list (sem-types:create
                                                                      :token-type sem-types:*comment*
                                                                      :line 0
