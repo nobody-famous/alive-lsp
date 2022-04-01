@@ -315,7 +315,7 @@
 
               ((or (token:is-type types:*quote* token)
                    (token:is-type types:*back-quote* token))
-               (add-sem-token state token (convert-if-comment state sem-types:*symbol*))
+               (add-sem-token state token (convert-if-comment state sem-types:*keyword*))
                (add-open-form state :quote)
                (setf (comment-next-p state) NIL))
 
@@ -346,6 +346,10 @@
               ((or (token:is-type types:*line-comment* token)
                    (token:is-type types:*block-comment* token))
                (add-sem-token state token sem-types:*comment*))
+              
+              ((or (token:is-type types:*comma* token)
+                   (token:is-type types:*comma-at* token))
+               (add-sem-token state token sem-types:*keyword*))
 
               ((token:is-type types:*string* token)
                (add-sem-token state token (convert-if-comment state sem-types:*string*)))
