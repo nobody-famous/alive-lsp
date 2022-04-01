@@ -218,11 +218,6 @@
                (add-sem-token state token1 (convert-if-comment state (get-symbol-type state (token:get-text token1))))
                (setf lambda-list (symbols:get-lambda-list (token:get-text token1)))))
 
-        (format T "LAMBDA-LIST ~A ~A ~A ~A~%"
-                (token:get-text token1)
-                (token:get-text token2)
-                (token:get-text token3)
-                lambda-list)
         lambda-list))
 
 
@@ -273,18 +268,22 @@
 
 
 (defun process-open-parens-fn-call (state open-form)
-    (when (lambda-list open-form)
-          (let ((list-item (car (lambda-list open-form))))
-              (cond ((string= list-item "&REST")
-                     (setf (lambda-list open-form) NIL)
-                     (add-open-form state :expr))
+    (if (lambda-list open-form)
+        (progn (let ((list-item (car (lambda-list open-form))))
+                   (cond ((eq 'cons (type-of list-item))
+                          (add-open-form state :expr :arg-init))
 
-                    ((string= list-item "LAMBDA-LIST")
-                     (add-open-form state :expr :lambda-list))
+                         ((string= list-item "&REST")
+                          (setf (lambda-list open-form) NIL)
+                          (add-open-form state :expr))
 
-                    (T (add-open-form state :expr))))
+                         ((string= list-item "LAMBDA-LIST")
+                          (add-open-form state :expr :lambda-list))
 
-          (pop (lambda-list open-form))))
+                         (T (add-open-form state :expr))))
+
+               (pop (lambda-list open-form)))
+        (add-open-form state :expr)))
 
 
 (defun process-open-parens-expr (state open-form)
@@ -301,13 +300,12 @@
         (cond ((eq :expr (form-type open-form))
                (process-open-parens-expr state open-form))
 
-              (() ())
-
               (T (add-open-form state :expr)))))
 
 
 (defun process-token (state)
     (let ((token (peek-token state)))
+
         (cond ((token:is-type types:*ifdef-false* token)
                (add-sem-token state token sem-types:*comment*)
                (setf (comment-next-p state) T))
@@ -329,7 +327,9 @@
                (add-sem-token state token (convert-if-comment state sem-types:*parenthesis*))
                (setf (comment-next-p state) NIL)
                (when (eq :expr (form-type (car (opens state))))
-                     (pop (opens state))))
+                     (pop (opens state))
+                     (loop :while (eq :quote (form-type (car (opens state))))
+                           :do (pop (opens state)))))
 
               ((token:is-type types:*symbol* token)
                (process-symbol state)
