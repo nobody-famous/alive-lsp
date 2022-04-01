@@ -26,19 +26,18 @@
     (loop :with counted := 0
           :with cur-form := nil
 
-          :while (< counted offset)
+          :while (<= counted offset)
 
           :do (setf cur-form (pop forms))
 
-              (when (or (= types:*line-comment*)
-                        (= types:*block-comment*))
-                    (setf cur-form (pop forms)))
+              (cond ((or (= types:*line-comment* (form:get-form-type cur-form))
+                         (= types:*block-comment* (form:get-form-type cur-form)))
+                     NIL)
 
-              (when (= types:*ifdef-false*)
-                    (pop forms)
-                    (setf cur-form (pop forms)))
+                    ((= types:*ifdef-false* (form:get-form-type cur-form))
+                     (pop forms))
 
-              (incf counted)
+                    (T (incf counted)))
 
           :finally (return cur-form)))
 
@@ -61,15 +60,7 @@
                       (when (<= (length forms) ndx)
                             (error (format nil "Source ndx ~A, path ~A, form ~A" ndx source-path form)))
 
-                      ; (setf form (elt forms ndx))
                       (setf form (get-nth-form forms ndx))
-
-                      ;   (loop :while (and form (should-skip (form:get-form-type form)))
-                      ;         :do (incf ndx (if (= types:*ifdef-false*
-                      ;                              (form:get-form-type form))
-                      ;                           2
-                      ;                           1))
-                      ;             (setf form (elt forms ndx)))
 
                       (setf forms (form:get-kids form))
 
