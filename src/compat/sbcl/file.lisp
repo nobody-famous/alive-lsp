@@ -22,6 +22,27 @@
              (= types:*block-comment* form-type))))
 
 
+(defun get-nth-form (forms offset)
+    (loop :with counted := 0
+          :with cur-form := nil
+
+          :while (< counted offset)
+
+          :do (setf cur-form (pop forms))
+
+              (when (or (= types:*line-comment*)
+                        (= types:*block-comment*))
+                    (setf cur-form (pop forms)))
+
+              (when (= types:*ifdef-false*)
+                    (pop forms)
+                    (setf cur-form (pop forms)))
+
+              (incf counted)
+
+          :finally (return cur-form)))
+
+
 (defun get-err-location (forms)
     (let* ((context (sb-c::find-error-context nil))
            (source-path (when context (reverse (sb-c::compiler-error-context-original-source-path context)))))
@@ -38,16 +59,17 @@
                   :do (setf ndx (pop indicies))
 
                       (when (<= (length forms) ndx)
-                            (error (format nil "Source ndx ~A, form ~A" ndx form)))
+                            (error (format nil "Source ndx ~A, path ~A, form ~A" ndx source-path form)))
 
-                      (setf form (elt forms ndx))
+                      ; (setf form (elt forms ndx))
+                      (setf form (get-nth-form forms ndx))
 
-                      (loop :while (and form (should-skip (form:get-form-type form)))
-                            :do (incf ndx (if (= types:*ifdef-false*
-                                                 (form:get-form-type form))
-                                              2
-                                              1))
-                                (setf form (elt forms ndx)))
+                      ;   (loop :while (and form (should-skip (form:get-form-type form)))
+                      ;         :do (incf ndx (if (= types:*ifdef-false*
+                      ;                              (form:get-form-type form))
+                      ;                           2
+                      ;                           1))
+                      ;             (setf form (elt forms ndx)))
 
                       (setf forms (form:get-kids form))
 
