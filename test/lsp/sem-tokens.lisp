@@ -213,7 +213,7 @@
                                       :start 8
                                       :end 24)
                                      (sem-types:create
-                                      :token-type sem-types:*symbol*
+                                      :token-type sem-types:*keyword*
                                       :line 1
                                       :start 0
                                       :end 1)
@@ -340,7 +340,7 @@
                                             :end 3)))
                   (check-combo (format nil "foo") (list))
                   (check-combo (format nil "'foo") (list (sem-types:create
-                                                          :token-type sem-types:*symbol*
+                                                          :token-type sem-types:*keyword*
                                                           :line 0
                                                           :start 0
                                                           :end 1)))
