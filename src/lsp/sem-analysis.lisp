@@ -177,14 +177,15 @@
 
           ((symbols:function-p sym namespace) sem-types:*function*)
 
-          ((symbols:callable-p sym namespace) sem-types:*keyword*)
-
-          (() ())))
+          ((symbols:callable-p sym namespace) sem-types:*keyword*)))
 
 
 (defun get-symbol-type (state sym &optional namespace)
     (let ((open-form (car (opens state))))
-        (cond ((eq :lambda-list (expr-type open-form)) sem-types:*parameter*)
+        (cond ((eq :lambda-list (expr-type open-form))
+               (if (char= #\& (elt sym 0))
+                   sem-types:*keyword*
+                   sem-types:*parameter*))
 
               ((eq :arg-init (expr-type open-form))
                (when (zerop (expr-ndx open-form))
