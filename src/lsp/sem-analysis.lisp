@@ -10,6 +10,9 @@
 (in-package :alive/lsp/sem-analysis)
 
 
+(declaim (optimize (speed 3) (safety 0)))
+
+
 (defclass open-form ()
     ((form-type :accessor form-type
                 :initform nil
@@ -29,6 +32,7 @@
 
 
 (defmethod print-object ((obj open-form) out)
+    (declare (type stream out))
     (format out "{type: ~A; expr-type: ~A; lambda-list: ~A; expr-ndx: ~A; comment-out: ~A}"
             (form-type obj)
             (expr-type obj)
@@ -56,6 +60,7 @@
 
 
 (defmethod print-object ((obj analysis-state) out)
+    (declare (type stream out))
     (format out "{lex ~A; sem ~A; comment-next ~A; opens ~A}"
             (lex-tokens obj)
             (reverse (sem-tokens obj))
@@ -76,15 +81,15 @@
 
 
 (defmethod print-object ((obj symbol-with-pkg) out)
+    (declare (type stream out))
     (format out "{pkg: ~A; colons: ~A; sym: ~A}"
             (pkg obj)
             (colons obj)
             (sym obj)))
 
 
-(defun peek-token (state &optional (ndx 0))
-    (when (< ndx (length (lex-tokens state)))
-          (elt (lex-tokens state) ndx)))
+(defun peek-token (state)
+    (car (lex-tokens state)))
 
 
 (defun eat-token (state)
@@ -118,7 +123,7 @@
                 :with start := (token:get-start token)
                 :with end := (token:get-end token)
 
-                :for line :from (pos:line start) :to (pos:line end)
+                :for line :from (the fixnum (pos:line start)) :to (the fixnum (pos:line end))
                 :for start-col := (if (eq line (pos:line start))
                                       (pos:col start)
                                       0)
@@ -134,6 +139,7 @@
 
 
 (defun is-number (text)
+    (declare (type simple-string text))
     (loop :with is-valid := T
           :with have-decimal := nil
           :with have-after-decimal := nil
@@ -181,24 +187,26 @@
 
 
 (defun get-symbol-type (state sym &optional namespace)
+    (declare (type simple-string sym))
+
     (let ((open-form (car (opens state))))
         (cond ((eq :lambda-list (expr-type open-form))
-               (if (char= #\& (elt sym 0))
+               (if (char= #\& (char sym 0))
                    sem-types:*keyword*
                    sem-types:*parameter*))
 
               ((eq :arg-init (expr-type open-form))
-               (when (zerop (expr-ndx open-form))
-                     (incf (expr-ndx open-form))
+               (when (zerop (the fixnum (expr-ndx open-form)))
+                     (incf (the fixnum (expr-ndx open-form)))
                      sem-types:*parameter*))
 
               (T (lookup-symbol-type sym namespace)))))
 
 
 (defun update-symbol-types (state)
-    (let ((token1 (peek-token state 0))
-          (token2 (peek-token state 1))
-          (token3 (peek-token state 2))
+    (let ((token1 (peek-token state))
+          (token2 (cadr (lex-tokens state)))
+          (token3 (caddr (lex-tokens state)))
           (lambda-list nil))
 
         (cond ((and (token:is-type types:*symbol* token1)
@@ -274,11 +282,11 @@
                    (cond ((eq 'cons (type-of list-item))
                           (add-open-form state :expr :arg-init))
 
-                         ((string= list-item "&REST")
+                         ((string= (the symbol list-item) "&REST")
                           (setf (lambda-list open-form) NIL)
                           (add-open-form state :expr))
 
-                         ((string= list-item "LAMBDA-LIST")
+                         ((string= (the symbol list-item) "LAMBDA-LIST")
                           (add-open-form state :expr :lambda-list))
 
                          (T (add-open-form state :expr))))
@@ -338,7 +346,7 @@
 
               ((token:is-type types:*colons* token)
                (add-sem-token state token (convert-if-comment state sem-types:*symbol*))
-               (when (token:is-type types:*symbol* (peek-token state 1))
+               (when (token:is-type types:*symbol* (cadr (lex-tokens state)))
                      (next-token state)
                      (add-sem-token state (peek-token state) (convert-if-comment state sem-types:*symbol*)))
                (setf (comment-next-p state) NIL))
@@ -346,10 +354,10 @@
               ((or (token:is-type types:*line-comment* token)
                    (token:is-type types:*block-comment* token))
                (add-sem-token state token sem-types:*comment*))
-              
+
               ((or (token:is-type types:*comma* token)
                    (token:is-type types:*comma-at* token))
-               (add-sem-token state token sem-types:*keyword*))
+               (add-sem-token state token (convert-if-comment state sem-types:*keyword*)))
 
               ((token:is-type types:*string* token)
                (add-sem-token state token (convert-if-comment state sem-types:*string*)))
