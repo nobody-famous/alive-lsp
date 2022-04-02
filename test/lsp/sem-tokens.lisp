@@ -610,7 +610,7 @@
                                                                 :start 16
                                                                 :end 17)
                                                                (sem-types:create
-                                                                :token-type sem-types:*symbol*
+                                                                :token-type sem-types:*keyword*
                                                                 :line 0
                                                                 :start 18
                                                                 :end 21)
@@ -785,7 +785,7 @@
                                                               :start 15
                                                               :end 16)
                                                              (sem-types:create
-                                                              :token-type sem-types:*symbol*
+                                                              :token-type sem-types:*keyword*
                                                               :line 0
                                                               :start 17
                                                               :end 20)

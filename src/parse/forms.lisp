@@ -174,7 +174,6 @@
                      NIL)
 
                     ((token:is-type types:*ifdef-false* token)
-                     (format T "IF FALSE ~A ~A~%" token (car (parse-state-opens state)))
                      (if (parse-state-opens state)
                          (form:add-kid (car (parse-state-opens state))
                                        (form:create (token:get-start token)

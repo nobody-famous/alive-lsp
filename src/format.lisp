@@ -135,6 +135,11 @@
         (push adjusted (parse-state-out-list state))))
 
 
+(defun pos-out-of-range (range pos)
+    (or (pos:less-or-equal pos (range:start range))
+        (pos:less-than (range:end range) pos)))
+
+
 (defun out-of-range (range token)
     (or (pos:less-or-equal (token:get-end token) (range:start range))
         (pos:less-than (range:end range) (token:get-start token))
@@ -170,7 +175,8 @@
            (edit (edit:create :range range
                               :text text)))
 
-        (push edit (parse-state-edits state))))
+        (unless (pos-out-of-range (parse-state-range state) pos)
+                (push edit (parse-state-edits state)))))
 
 
 (defun replace-indent (state value)
@@ -209,7 +215,8 @@
             (if (has-body (symbols:get-lambda-list (token:get-text token)))
                 (progn (setf (aligned form-open) T)
                        (replace-indent state (+ (options-indent-width (parse-state-options state))
-                                                (pos:col (token:get-start token)))))
+                                                (pos:col (token:get-start token))
+                                                -1)))
                 (replace-indent state (pos:col (token:get-start token))))
 
             (when (and form-open (not (aligned form-open)))
@@ -249,6 +256,17 @@
                              (replace-token state token str))))))))
 
 
+(defun need-space-p (token)
+    (not (or (token:is-type types:*quote* token)
+             (token:is-type types:*back-quote* token)
+             (token:is-type types:*open-paren* token)
+             (token:is-type types:*colons* token)
+             (token:is-type types:*comma* token)
+             (token:is-type types:*comma-at* token)
+             (token:is-type types:*macro* token)
+             (token:is-type *start-form* token))))
+
+
 (defun process-open (state token)
     (let* ((prev (car (parse-state-seen state))))
 
@@ -256,12 +274,7 @@
               (cond ((token:is-type types:*ws* prev)
                      (fix-indent state))
 
-                    ((not (or (token:is-type types:*line-comment* prev)
-                              (token:is-type types:*block-comment* prev)
-                              (token:is-type types:*quote* prev)
-                              (token:is-type types:*back-quote* prev)
-                              (token:is-type types:*open-paren* prev)
-                              (token:is-type *start-form* prev)))
+                    ((need-space-p prev)
                      (insert-text state (token:get-end prev) " "))))
 
         (add-to-out-list state token)
@@ -303,14 +316,21 @@
 (defun process-token (state token)
     (let ((prev (car (parse-state-seen state))))
 
-        (cond ((or (token:is-type types:*line-comment* token)
-                   (token:is-type types:*block-comment* token))
-               (when (and (token:is-type types:*ws* prev)
-                          (same-line prev token)
-                          (not (string= " " (token:get-text prev))))
-                     (replace-token state prev " ")))
+        (when prev
+              (cond ((or (token:is-type types:*line-comment* token)
+                         (token:is-type types:*block-comment* token))
+                     (if (and (token:is-type types:*ws* prev)
+                              (not (out-of-range (parse-state-range state) prev))
+                              (same-line prev token)
+                              (not (string= " " (token:get-text prev))))
+                         (replace-token state prev " ")
+                         (fix-indent state)))
 
-              ((token:is-type types:*ws* prev) (fix-indent state)))
+                    ((token:is-type types:*ws* prev) (fix-indent state))
+
+                    ((and (not (token:is-type types:*colons* token))
+                          (need-space-p prev))
+                     (insert-text state (token:get-end prev) " "))))
 
         (add-to-out-list state token)
 
