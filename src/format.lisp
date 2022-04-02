@@ -220,8 +220,18 @@
                 (replace-indent state (pos:col (token:get-start token))))
 
             (when (and form-open (not (aligned form-open)))
-                  (setf (aligned form-open) T)
-                  (replace-indent state (pos:col (token:get-start token)))))))
+                  (cond ((and (token:is-type types:*symbol* (car (parse-state-seen state)))
+                              (token:is-type types:*colons* token)
+                              (token:is-type types:*symbol* (cadr (parse-state-tokens state))))
+                         (add-to-out-list state (cadr (parse-state-tokens state)))
+                         (pop-token state))
+
+                        ((and (token:is-type types:*colons* (car (parse-state-seen state)))
+                              (token:is-type types:*symbol* token))
+                         NIL)
+
+                        (T (setf (aligned form-open) T)
+                           (replace-indent state (pos:col (token:get-start token)))))))))
 
 
 (defun fix-indent (state)
@@ -321,9 +331,9 @@
                          (token:is-type types:*block-comment* token))
                      (if (and (token:is-type types:*ws* prev)
                               (not (out-of-range (parse-state-range state) prev))
-                              (same-line prev token)
-                              (not (string= " " (token:get-text prev))))
-                         (replace-token state prev " ")
+                              (same-line prev token))
+                         (when (not (string= " " (token:get-text prev)))
+                               (replace-token state prev " "))
                          (fix-indent state)))
 
                     ((token:is-type types:*ws* prev) (fix-indent state))
