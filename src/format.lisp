@@ -156,6 +156,23 @@
             (format nil "~v@{~A~:*~}" space-count " ")))
 
 
+(defun replace-token (state token text)
+    (let* ((range (range:create (token:get-start token)
+                                (token:get-end token)))
+           (edit (edit:create :range range
+                              :text text)))
+
+        (push edit (parse-state-edits state))))
+
+
+(defun insert-text (state pos text)
+    (let* ((range (range:create pos pos))
+           (edit (edit:create :range range
+                              :text text)))
+
+        (push edit (parse-state-edits state))))
+
+
 (defun replace-indent (state value)
     (pop (parse-state-indent state))
     (push value (parse-state-indent state)))
@@ -235,9 +252,17 @@
 (defun process-open (state token)
     (let* ((prev (car (parse-state-seen state))))
 
-        (when (and prev
-                   (token:is-type types:*ws* prev))
-              (fix-indent state))
+        (when prev
+              (cond ((token:is-type types:*ws* prev)
+                     (fix-indent state))
+
+                    ((not (or (token:is-type types:*line-comment* prev)
+                              (token:is-type types:*block-comment* prev)
+                              (token:is-type types:*quote* prev)
+                              (token:is-type types:*back-quote* prev)
+                              (token:is-type types:*open-paren* prev)
+                              (token:is-type *start-form* prev)))
+                     (insert-text state (token:get-end prev) " "))))
 
         (add-to-out-list state token)
         (update-aligned state)
@@ -262,15 +287,6 @@
         (add-to-out-list state token)
         (pop (parse-state-opens state))
         (pop (parse-state-indent state))))
-
-
-(defun replace-token (state token text)
-    (let* ((range (range:create (token:get-start token)
-                                (token:get-end token)))
-           (edit (edit:create :range range
-                              :text text)))
-
-        (push edit (parse-state-edits state))))
 
 
 (defun last-token-p (state)

@@ -177,7 +177,7 @@
     (cond ((is-number sym) sem-types:*number*)
 
           ((or (string= "NIL" (string-upcase sym))
-               (string= "T" (string-upcase sym))) sem-types:*symbol*)
+               (string= "T" (string-upcase sym))) sem-types:*keyword*)
 
           ((symbols:macro-p sym namespace) sem-types:*macro*)
 
