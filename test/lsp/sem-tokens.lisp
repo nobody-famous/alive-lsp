@@ -106,6 +106,76 @@
 (defun combos ()
     (run:test "Combos"
               (lambda ()
+                  (check-combo "#+n (+ (+ (+ 'foo))) ()" (list (sem-types:create
+                                                                :token-type sem-types:*comment*
+                                                                :line 0
+                                                                :start 0
+                                                                :end 3)
+                                                               (sem-types:create
+                                                                :token-type sem-types:*comment*
+                                                                :line 0
+                                                                :start 4
+                                                                :end 5)
+                                                               (sem-types:create
+                                                                :token-type sem-types:*comment*
+                                                                :line 0
+                                                                :start 5
+                                                                :end 6)
+                                                               (sem-types:create
+                                                                :token-type sem-types:*comment*
+                                                                :line 0
+                                                                :start 7
+                                                                :end 8)
+                                                               (sem-types:create
+                                                                :token-type sem-types:*comment*
+                                                                :line 0
+                                                                :start 8
+                                                                :end 9)
+                                                               (sem-types:create
+                                                                :token-type sem-types:*comment*
+                                                                :line 0
+                                                                :start 10
+                                                                :end 11)
+                                                               (sem-types:create
+                                                                :token-type sem-types:*comment*
+                                                                :line 0
+                                                                :start 11
+                                                                :end 12)
+                                                               (sem-types:create
+                                                                :token-type sem-types:*comment*
+                                                                :line 0
+                                                                :start 13
+                                                                :end 14)
+                                                               (sem-types:create
+                                                                :token-type sem-types:*comment*
+                                                                :line 0
+                                                                :start 14
+                                                                :end 17)
+                                                               (sem-types:create
+                                                                :token-type sem-types:*comment*
+                                                                :line 0
+                                                                :start 17
+                                                                :end 18)
+                                                               (sem-types:create
+                                                                :token-type sem-types:*comment*
+                                                                :line 0
+                                                                :start 18
+                                                                :end 19)
+                                                               (sem-types:create
+                                                                :token-type sem-types:*comment*
+                                                                :line 0
+                                                                :start 19
+                                                                :end 20)
+                                                               (sem-types:create
+                                                                :token-type sem-types:*parenthesis*
+                                                                :line 0
+                                                                :start 21
+                                                                :end 22)
+                                                               (sem-types:create
+                                                                :token-type sem-types:*parenthesis*
+                                                                :line 0
+                                                                :start 22
+                                                                :end 23)))
                   (check-combo "(defun foo (&key a))" (list (sem-types:create
                                                              :token-type sem-types:*parenthesis*
                                                              :line 0

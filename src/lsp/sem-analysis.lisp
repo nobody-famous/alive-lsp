@@ -319,7 +319,8 @@
                (add-sem-token state token sem-types:*comment*)
                (setf (comment-next-p state) T))
 
-              ((token:is-type types:*ifdef-true* token) sem-types:*macro*)
+              ((token:is-type types:*ifdef-true* token)
+               (add-sem-token state token (convert-if-comment state sem-types:*macro*)))
 
               ((or (token:is-type types:*quote* token)
                    (token:is-type types:*back-quote* token))
@@ -335,6 +336,11 @@
               ((token:is-type types:*close-paren* token)
                (add-sem-token state token (convert-if-comment state sem-types:*parenthesis*))
                (setf (comment-next-p state) NIL)
+
+               (loop :while (and (not (eq :top-level-form (form-type (car (opens state)))))
+                                 (not (eq :expr (form-type (car (opens state))))))
+                     :do (pop (opens state)))
+
                (when (eq :expr (form-type (car (opens state))))
                      (pop (opens state))
                      (loop :while (eq :quote (form-type (car (opens state))))
