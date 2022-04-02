@@ -12,6 +12,9 @@
 (in-package :alive/format)
 
 
+(declaim (optimize (speed 3) (safety 0)))
+
+
 (defparameter *start-form* 100)
 
 (defparameter *always* 0)
@@ -41,6 +44,7 @@
 
 
 (defmethod print-object ((obj start-form) out)
+    (declare (type stream out))
     (format out "{[~A:~A] ML: ~A; aligned: ~A}"
             (start obj)
             (end obj)
@@ -74,8 +78,8 @@
 (defun same-line (token1 token2)
     (and token1
          token2
-         (= (pos:line (token:get-start token1))
-            (pos:line (token:get-start token2)))))
+         (= (the fixnum (pos:line (token:get-start token1)))
+            (the fixnum (pos:line (token:get-start token2))))))
 
 
 (defmethod token:clone ((obj start-form) new-start new-end &optional new-text)
@@ -107,13 +111,13 @@
 
 
 (defun make-new-token (token start &optional new-str)
-    (loop :with line := (pos:line start)
-          :with col := (pos:col start)
+    (loop :with line :of-type fixnum := (pos:line start)
+          :with col :of-type fixnum := (pos:col start)
           :with str := (if new-str
                            new-str
                            (token:get-text token))
 
-          :for ch :across str :do
+          :for ch :across (the simple-string str) :do
               (cond ((char= #\newline ch)
                      (incf line)
                      (setf col 0))
@@ -152,7 +156,8 @@
 (defun new-line-count (token)
     (let ((start (token:get-start token))
           (end (token:get-end token)))
-        (- (pos:line end) (pos:line start))))
+        (the fixnum (- (the fixnum (pos:line end))
+                       (the fixnum (pos:line start))))))
 
 
 (defun indent-string (nl-count space-count)
@@ -214,9 +219,9 @@
         (if (prev-is-start-form state)
             (if (has-body (symbols:get-lambda-list (token:get-text token)))
                 (progn (setf (aligned form-open) T)
-                       (replace-indent state (+ (options-indent-width (parse-state-options state))
-                                                (pos:col (token:get-start token))
-                                                -1)))
+                       (replace-indent state (the fixnum (+ (the fixnum (options-indent-width (parse-state-options state)))
+                                                            (the fixnum (pos:col (token:get-start token)))
+                                                            (the fixnum -1)))))
                 (replace-indent state (pos:col (token:get-start token))))
 
             (when (and form-open (not (aligned form-open)))
@@ -248,13 +253,14 @@
                              (token:is-type *start-form* prev))
                          (replace-token state token ""))
 
-                        ((= (pos:line start) (pos:line end))
-                         (if (string= " " (token:get-text token))
+                        ((= (the fixnum (pos:line start)) (the fixnum (pos:line end)))
+                         (if (string= " " (the simple-string (token:get-text token)))
                              (add-to-out-list state token)
                              (progn (add-to-out-list state
                                                      (token:create :type-value types:*ws*
                                                                    :start (token:get-start token)
-                                                                   :end (pos:create (pos:line start) (+ 1 (pos:col start)))
+                                                                   :end (pos:create (pos:line start)
+                                                                                    (+ (the fixnum 1) (the fixnum (pos:col start))))
                                                                    :text " "))
                                     (replace-token state token " "))))
 
@@ -312,10 +318,6 @@
         (pop (parse-state-indent state))))
 
 
-(defun last-token-p (state)
-    (= 1 (length (parse-state-tokens state))))
-
-
 (defun start-of-last-placed (state)
     (let* ((item (car (parse-state-out-list state))))
         (if item
@@ -332,7 +334,7 @@
                      (if (and (token:is-type types:*ws* prev)
                               (not (out-of-range (parse-state-range state) prev))
                               (same-line prev token))
-                         (when (not (string= " " (token:get-text prev)))
+                         (when (not (string= " " (the simple-string (token:get-text prev))))
                                (replace-token state prev " "))
                          (fix-indent state)))
 
@@ -365,15 +367,15 @@
                          (push new-token opens)
                          (push new-token converted)))
 
-                    ((= types:*close-paren* (token:get-type-value token))
+                    ((= (the fixnum types:*close-paren*) (the fixnum (token:get-type-value token)))
                      (pop opens)
                      (push token converted))
 
                     ((token:is-type types:*ws* token) (push token converted))
 
                     (T (when (and (car opens)
-                                  (not (= (pos:line (token:get-start (car opens)))
-                                          (pos:line (token:get-end token)))))
+                                  (not (= (the fixnum (pos:line (token:get-start (car opens))))
+                                          (the fixnum (pos:line (token:get-end token))))))
                              (setf (is-multiline (car opens)) T))
                        (push token converted)))
 
