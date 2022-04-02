@@ -10,6 +10,18 @@
 (in-package :alive/parse/forms)
 
 
+(declaim (optimize (speed 3) (safety 0)))
+
+
+(declaim (type fixnum
+               types:*open-paren*
+               types:*symbol*
+               types:*quote*
+               types:*back-quote*
+               types:*comma*
+               types:*comma-at*))
+
+
 (defstruct parse-state
     forms
     opens)
@@ -30,24 +42,24 @@
 
 (defun is-open-paren (open-form)
     (and open-form
-         (= types:*open-paren* (form:get-form-type open-form))))
+         (= types:*open-paren* (the fixnum (form:get-form-type open-form)))))
 
 
 (defun is-symbol (open-form)
     (and open-form
-         (= types:*symbol* (form:get-form-type open-form))))
+         (= types:*symbol* (the fixnum (form:get-form-type open-form)))))
 
 
 (defun is-quote (open-form)
     (and open-form
-         (or (= types:*quote* (form:get-form-type open-form))
-             (= types:*back-quote* (form:get-form-type open-form)))))
+         (or (= types:*quote* (the fixnum (form:get-form-type open-form)))
+             (= types:*back-quote* (the fixnum (form:get-form-type open-form))))))
 
 
 (defun is-comma (open-form)
     (and open-form
-         (or (= types:*comma* (form:get-form-type open-form))
-             (= types:*comma-at* (form:get-form-type open-form)))))
+         (or (= (the fixnum types:*comma*) (the fixnum (form:get-form-type open-form)))
+             (= (the fixnum types:*comma-at*) (the fixnum (form:get-form-type open-form))))))
 
 
 (defun collapse-opens (state &optional target)
