@@ -56,6 +56,9 @@
      (listeners :accessor listeners
                 :initform nil
                 :initarg :listeners)
+     (thread-name-id :accessor thread-name-id
+                     :initform 1
+                     :initarg :thread-name-id)
      (read-thread :accessor read-thread
                   :initform nil
                   :initarg :read-thread)))
@@ -264,21 +267,30 @@
            (stop state))))
 
 
+(defun next-thread-name (state method-name)
+    (let ((name (format nil "~A - ~A" (thread-name-id state) method-name)))
+        (incf (thread-name-id state))
+        name))
+
+
+(defun spawn-handler (state msg)
+    (bt:make-thread (lambda ()
+                        (handler-case (when msg
+                                            (logger:trace-msg (logger state) "--> ~A~%" (json:encode-json-to-string msg))
+                                            (handle-msg state msg))
+                            (error (c)
+                                   (logger:error-msg (logger state) "Message Handler: ~A"  c)
+                                   (send-msg state
+                                             (message:create-error-resp :code errors:*internal-error*
+                                                                        :message "Internal Server Error"
+                                                                        :id (message:id msg))))))
+                    :name (next-thread-name state (message:method-name msg))))
+
+
 (defun read-messages (state)
     (loop :while (running state)
           :do (let ((msg (read-message state)))
-
-                  (logger:debug-msg (logger state) "MSG ~A" (if msg T NIL))
-
-                  (handler-case (when msg
-                                      (logger:trace-msg (logger state) "--> ~A~%" (json:encode-json-to-string msg))
-                                      (handle-msg state msg))
-                      (error (c)
-                             (logger:error-msg (logger state) "~A" c)
-                             (send-msg state
-                                       (message:create-error-resp :code errors:*internal-error*
-                                                                  :message "Internal Server Error"
-                                                                  :id (message:id msg))))))))
+                  (spawn-handler state msg))))
 
 
 (defun start-read-thread (state)
@@ -287,7 +299,7 @@
               (bt:make-thread (lambda ()
                                   (let ((*standard-output* stdout))
                                       (read-messages state)))
-                              :name "state Message Reader"))))
+                              :name "Session Message Reader"))))
 
 
 (defun start (state)
