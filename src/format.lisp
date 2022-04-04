@@ -38,6 +38,9 @@
      (aligned :accessor aligned
               :initform nil
               :initarg :aligned)
+     (lambda-list :accessor lambda-list
+                  :initform nil
+                  :initarg :lambda-list)
      (is-multiline :accessor is-multiline
                    :initform nil
                    :initarg :is-multiline)))
@@ -45,11 +48,12 @@
 
 (defmethod print-object ((obj start-form) out)
     (declare (type stream out))
-    (format out "{[~A:~A] ML: ~A; aligned: ~A}"
+    (format out "{[~A:~A] ML: ~A; aligned: ~A; lambda-list: ~A}"
             (start obj)
             (end obj)
             (is-multiline obj)
-            (aligned obj)))
+            (aligned obj)
+            (lambda-list obj)))
 
 
 (defun new-start-form (token)
@@ -217,12 +221,19 @@
            (token (car (parse-state-out-list state))))
 
         (if (prev-is-start-form state)
-            (if (has-body (symbols:get-lambda-list (token:get-text token)))
-                (progn (setf (aligned form-open) T)
-                       (replace-indent state (the fixnum (+ (the fixnum (options-indent-width (parse-state-options state)))
-                                                            (the fixnum (pos:col (token:get-start token)))
-                                                            (the fixnum -1)))))
-                (replace-indent state (pos:col (token:get-start token))))
+            (let ((lambda-list (symbols:get-lambda-list (token:get-text token))))
+                (if (has-body lambda-list)
+                    (progn (setf (aligned form-open) T)
+                           (setf (lambda-list form-open) lambda-list)
+                           (replace-indent state (the fixnum (+ (the fixnum (options-indent-width (parse-state-options state)))
+                                                                (the fixnum (pos:col (token:get-start token)))
+                                                                (the fixnum -1))))
+                           (push (the fixnum (+ (the fixnum (* 2
+                                                               (the fixnum (options-indent-width (parse-state-options state)))))
+                                                (the fixnum (pos:col (token:get-start token)))
+                                                (the fixnum -1)))
+                                 (parse-state-indent state)))
+                    (replace-indent state (pos:col (token:get-start token)))))
 
             (when (and form-open (not (aligned form-open)))
                   (cond ((and (token:is-type types:*symbol* (car (parse-state-seen state)))
@@ -389,7 +400,17 @@
 
         (loop :while (parse-state-tokens state)
 
-              :do (let ((token (next-token state)))
+              :do (let ((token (next-token state))
+                        (form-open (car (parse-state-opens state))))
+
+                      (when (and form-open
+                                 (lambda-list form-open)
+                                 (not (token:is-type types:*ws* token)))
+                            (when (and (not (eq 'cons (type-of (car (lambda-list form-open)))))
+                                       (string= (the symbol (car (lambda-list form-open))) "&BODY"))
+                                  (pop (parse-state-indent state)))
+                            (pop (lambda-list form-open)))
+
                       (cond ((token:is-type *start-form* token) (process-open state token))
                             ((token:is-type types:*close-paren* token) (process-close state token))
                             ((token:is-type types:*ws* token) nil)
