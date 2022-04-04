@@ -175,8 +175,22 @@
                                                    :text (format nil "~%  ")))))))
 
 
+(defun lines ()
+    (run:test "Lines Test"
+              (lambda ()
+                  (check-format (format nil "~%~%()")
+                                (range:create (pos:create 0 0) (pos:create 3 0))
+                                (list (edit:create :range (range:create (pos:create 0 0) (pos:create 2 0))
+                                                   :text (format nil ""))))
+                  (check-format (format nil "(~%~%)")
+                                (range:create (pos:create 0 0) (pos:create 3 0))
+                                (list (edit:create :range (range:create (pos:create 0 1) (pos:create 2 0))
+                                                   :text (format nil "")))))))
+
+
 (defun run-all ()
     (run:suite "Range Format Tests"
                (lambda ()
                    (spaces)
-                   (indent))))
+                   (indent)
+                   (lines))))
