@@ -18,7 +18,7 @@
 
 
 (defmethod print-object ((obj compile-message) out)
-    (format T "{severity: ~A; location: ~A; message: ~A}"
+    (format out "{severity: ~A; location: ~A; message: ~A}"
             (severity obj)
             (location obj)
             (message obj)))
