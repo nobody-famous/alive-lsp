@@ -6,6 +6,8 @@
                       (:did-open :alive/lsp/message/document/did-open)
                       (:did-change :alive/lsp/message/document/did-change)
                       (:formatting :alive/lsp/message/document/range-format)
+                      (:list-threads :alive/lsp/message/alive/list-threads)
+                      (:kill-thread :alive/lsp/message/alive/kill-thread)
                       (:load-file :alive/lsp/message/alive/load-file)
                       (:top-form :alive/lsp/message/alive/top-form)
                       (:try-compile :alive/lsp/message/alive/try-compile)
@@ -162,6 +164,16 @@
                (load-file:from-wire :jsonrpc (jsonrpc fields)
                                     :id msg-id
                                     :params (params fields)))
+
+              ((string= "$/alive/listthreads" name)
+               (list-threads:from-wire :jsonrpc (jsonrpc fields)
+                                       :id msg-id
+                                       :params (params fields)))
+
+              ((string= "$/alive/killthread" name)
+               (kill-thread:from-wire :jsonrpc (jsonrpc fields)
+                                      :id msg-id
+                                      :params (params fields)))
 
               ((string= "textdocument/didsave" name) nil)
 

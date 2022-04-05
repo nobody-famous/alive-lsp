@@ -11,12 +11,15 @@
                       (:formatting :alive/lsp/message/document/range-format)
                       (:file :alive/file)
                       (:pos :alive/position)
+                      (:threads :alive/threads)
                       (:formatter :alive/format)
                       (:tokenizer :alive/parse/tokenizer)
                       (:analysis :alive/lsp/sem-analysis)
                       (:init :alive/lsp/message/initialize)
                       (:form :alive/parse/form)
                       (:forms :alive/parse/forms)
+                      (:list-threads :alive/lsp/message/alive/list-threads)
+                      (:kill-thread :alive/lsp/message/alive/kill-thread)
                       (:load-file :alive/lsp/message/alive/load-file)
                       (:try-compile :alive/lsp/message/alive/try-compile)
                       (:stderr :alive/lsp/message/alive/stderr)
@@ -226,6 +229,23 @@
         (send-msg state (formatting:create-response (message:id msg) edits))))
 
 
+(defmethod handle-msg (state (msg list-threads:request))
+    (send-msg state (list-threads:create-response (message:id msg)
+                                                  (threads:list-all))))
+
+
+(defmethod handle-msg (state (msg kill-thread:request))
+    (handler-case
+            (progn
+             (threads:kill (kill-thread:get-id msg))
+             (send-msg state (kill-thread:create-response (message:id msg))))
+        (threads:thread-not-found (c)
+                                  (send-msg state
+                                            (message:create-error-resp :id (message:id msg)
+                                                                       :code errors:*request-failed*
+                                                                       :message (format nil "Thread ~A not found" (threads:id c)))))))
+
+
 (defun stop (state)
     (logger:info-msg (logger state) "Stopping state ~A" state)
 
@@ -279,7 +299,7 @@
                                             (logger:trace-msg (logger state) "--> ~A~%" (json:encode-json-to-string msg))
                                             (handle-msg state msg))
                             (error (c)
-                                   (logger:error-msg (logger state) "Message Handler: ~A"  c)
+                                   (logger:error-msg (logger state) "Message Handler: ~A" c)
                                    (send-msg state
                                              (message:create-error-resp :code errors:*internal-error*
                                                                         :message "Internal Server Error"

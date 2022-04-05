@@ -4,6 +4,8 @@
     (:local-nicknames (:completion :alive/lsp/message/document/completion)
                       (:did-change :alive/lsp/message/document/did-change)
                       (:did-open :alive/lsp/message/document/did-open)
+                      (:list-threads :alive/lsp/message/alive/list-threads)
+                      (:kill-thread :alive/lsp/message/alive/kill-thread)
                       (:load-file :alive/lsp/message/alive/load-file)
                       (:top-form :alive/lsp/message/alive/top-form)
                       (:text-doc :alive/lsp/types/text-doc)
@@ -292,6 +294,48 @@
                            parsed))))))
 
 
+(defun list-threads-msg ()
+    (labels ((create-content ()
+                  (with-output-to-string (str)
+                      (format str "{~A" utils:*end-line*)
+                      (format str "  \"jsonrpc\": \"2.0\",~A" utils:*end-line*)
+                      (format str "  \"id\": 5,~A" utils:*end-line*)
+                      (format str "  \"method\": \"$/alive/listThreads\"~A" utils:*end-line*)
+                      (format str "}~A" utils:*end-line*))))
+
+        (run:test "List Threads Message"
+                  (lambda ()
+                      (let* ((msg (utils:create-msg (create-content)))
+                             (parsed (parse:from-stream (make-string-input-stream msg))))
+                          (check:are-equal
+                           (list-threads:create-request
+                            :id 5)
+                           parsed))))))
+
+
+(defun kill-thread-msg ()
+    (labels ((create-content ()
+                  (with-output-to-string (str)
+                      (format str "{~A" utils:*end-line*)
+                      (format str "  \"jsonrpc\": \"2.0\",~A" utils:*end-line*)
+                      (format str "  \"id\": 5,~A" utils:*end-line*)
+                      (format str "  \"method\": \"$/alive/killThread\",~A" utils:*end-line*)
+                      (format str "  \"params\": {~A" utils:*end-line*)
+                      (format str "    \"id\": 10~A" utils:*end-line*)
+                      (format str "  }~A" utils:*end-line*)
+                      (format str "}~A" utils:*end-line*))))
+
+        (run:test "Kill Thread Message"
+                  (lambda ()
+                      (let* ((msg (utils:create-msg (create-content)))
+                             (parsed (parse:from-stream (make-string-input-stream msg))))
+                          (check:are-equal
+                           (kill-thread:create-request
+                            :id 5
+                            :params (kill-thread:create-params :id 10))
+                           parsed))))))
+
+
 (defun run-all ()
     (run:suite "LSP Messages"
                (lambda ()
@@ -303,4 +347,6 @@
                    (load-file-msg)
                    (completion-msg)
                    (top-form-msg)
-                   (formatting-msg))))
+                   (formatting-msg)
+                   (list-threads-msg)
+                   (kill-thread-msg))))
