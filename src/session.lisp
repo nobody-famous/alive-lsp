@@ -8,9 +8,15 @@
     (:local-nicknames (:completion :alive/lsp/message/document/completion)
                       (:did-open :alive/lsp/message/document/did-open)
                       (:did-change :alive/lsp/message/document/did-change)
+                      (:formatting :alive/lsp/message/document/range-format)
                       (:file :alive/file)
+                      (:pos :alive/position)
+                      (:formatter :alive/format)
+                      (:tokenizer :alive/parse/tokenizer)
+                      (:analysis :alive/lsp/sem-analysis)
                       (:init :alive/lsp/message/initialize)
-                      (:parse-tokens :alive/parse/stream)
+                      (:form :alive/parse/form)
+                      (:forms :alive/parse/forms)
                       (:load-file :alive/lsp/message/alive/load-file)
                       (:try-compile :alive/lsp/message/alive/try-compile)
                       (:stderr :alive/lsp/message/alive/stderr)
@@ -50,6 +56,9 @@
      (listeners :accessor listeners
                 :initform nil
                 :initarg :listeners)
+     (thread-name-id :accessor thread-name-id
+                     :initform 1
+                     :initarg :thread-name-id)
      (read-thread :accessor read-thread
                   :initform nil
                   :initarg :read-thread)))
@@ -137,9 +146,12 @@
            (doc (sem-tokens:text-document params))
            (uri (text-doc:uri doc))
            (file-text (get-file-text state uri))
-           (text (if file-text file-text "")))
+           (text (if file-text file-text ""))
+           (sem-tokens (analysis:to-sem-tokens
+                        (tokenizer:from-stream
+                         (make-string-input-stream text)))))
 
-        (send-msg state (sem-tokens:create-response (message:id msg) text))))
+        (send-msg state (sem-tokens:create-response (message:id msg) sem-tokens))))
 
 
 (defmethod handle-msg (state (msg load-file:request))
@@ -181,34 +193,37 @@
 (defmethod handle-msg (state (msg top-form:request))
     (let* ((params (message:params msg))
            (doc (top-form:text-document params))
-           (offset (top-form:offset params))
+           (pos (top-form:pos params))
            (uri (text-doc:uri doc))
            (file-text (get-file-text state uri))
            (text (if file-text file-text ""))
-           (forms (parse-tokens:from (make-string-input-stream text)))
-           (kids (nth 2 forms)))
+           (forms (forms:from-stream (make-string-input-stream text))))
 
         (loop :with start := nil
               :with end := nil
 
-              :for kid :in kids :do
-                  (destructuring-bind (kid-start kid-end body)
+              :for form :in forms :do
+                  (when (and (pos:less-or-equal (form:get-start form) pos)
+                             (pos:less-or-equal pos (form:get-end form)))
+                        (setf start (form:get-start form))
+                        (setf end (form:get-end form)))
 
-                          kid
+              :finally (send-msg state (top-form:create-response :id (message:id msg)
+                                                                 :start start
+                                                                 :end end)))))
 
-                      (declare (ignore body))
 
-                      (when (<= kid-start offset (+ 1 kid-end))
-                            (setf start kid-start)
-                            (setf end kid-end)))
+(defmethod handle-msg (state (msg formatting:request))
+    (let* ((params (message:params msg))
+           (range (formatting:range params))
+           (doc (formatting:text-document params))
+           (uri (text-doc:uri doc))
+           (file-text (get-file-text state uri))
+           (text (if file-text file-text ""))
+           (edits (formatter:range (make-string-input-stream text)
+                                   range)))
 
-              :finally (if (and start end)
-                           (send-msg state (top-form:create-response :id (message:id msg)
-                                                                     :start start
-                                                                     :end (+ 1 end)))
-                           (send-msg state (top-form:create-response :id (message:id msg)
-                                                                     :start -1
-                                                                     :end -1))))))
+        (send-msg state (formatting:create-response (message:id msg) edits))))
 
 
 (defun stop (state)
@@ -252,21 +267,30 @@
            (stop state))))
 
 
+(defun next-thread-name (state method-name)
+    (let ((name (format nil "~A - ~A" (thread-name-id state) method-name)))
+        (incf (thread-name-id state))
+        name))
+
+
+(defun spawn-handler (state msg)
+    (bt:make-thread (lambda ()
+                        (handler-case (when msg
+                                            (logger:trace-msg (logger state) "--> ~A~%" (json:encode-json-to-string msg))
+                                            (handle-msg state msg))
+                            (error (c)
+                                   (logger:error-msg (logger state) "Message Handler: ~A"  c)
+                                   (send-msg state
+                                             (message:create-error-resp :code errors:*internal-error*
+                                                                        :message "Internal Server Error"
+                                                                        :id (message:id msg))))))
+                    :name (next-thread-name state (message:method-name msg))))
+
+
 (defun read-messages (state)
     (loop :while (running state)
           :do (let ((msg (read-message state)))
-
-                  (logger:debug-msg (logger state) "MSG ~A" (if msg T NIL))
-
-                  (handler-case (when msg
-                                      (logger:trace-msg (logger state) "--> ~A~%" (json:encode-json-to-string msg))
-                                      (handle-msg state msg))
-                      (error (c)
-                             (logger:error-msg (logger state) "~A" c)
-                             (send-msg state
-                                       (message:create-error-resp :code errors:*internal-error*
-                                                                  :message "Internal Server Error"
-                                                                  :id (message:id msg))))))))
+                  (spawn-handler state msg))))
 
 
 (defun start-read-thread (state)
@@ -275,7 +299,7 @@
               (bt:make-thread (lambda ()
                                   (let ((*standard-output* stdout))
                                       (read-messages state)))
-                              :name "state Message Reader"))))
+                              :name "Session Message Reader"))))
 
 
 (defun start (state)

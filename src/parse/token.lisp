@@ -1,10 +1,12 @@
 (defpackage :alive/parse/token
     (:use :cl)
-    (:export :create
-             :end
+    (:export :clone
+             :create
+             :get-end
              :get-type-value
              :get-text
-             :start)
+             :get-start
+             :is-type)
     (:local-nicknames (:pos :alive/position)
                       (:types :alive/types)))
 
@@ -13,10 +15,10 @@
 
 (defclass token ()
     ((start :accessor start
-            :initform (pos:create)
+            :initform (pos:create 0 0)
             :initarg :start)
      (end :accessor end
-          :initform (pos:create)
+          :initform (pos:create 0 0)
           :initarg :end)
      (text :accessor text
            :initform nil
@@ -44,12 +46,41 @@
          (eq (type-value a) (type-value b))))
 
 
-(defun get-type-value (obj)
-    (when obj (type-value obj)))
+(defmethod get-type-value ((obj token))
+    (type-value obj))
 
 
-(defun get-text (obj)
-    (when obj (text obj)))
+(defmethod get-type-value ((obj T))
+    nil)
+
+
+(defmethod get-text ((obj token))
+    (text obj))
+
+
+(defmethod get-text ((obj T))
+    nil)
+
+
+(defmethod get-start ((obj token))
+    (start obj))
+
+
+(defmethod get-start ((obj T))
+    nil)
+
+
+(defmethod get-end ((obj token))
+    (end obj))
+
+
+(defmethod get-end ((obj T))
+    nil)
+
+
+(defun is-type (type token)
+    (and token
+         (= type (get-type-value token))))
 
 
 (defun create (&key type-value start end text)
@@ -58,3 +89,12 @@
                    :end end
                    :text text
                    :type-value type-value))
+
+
+(defmethod clone ((obj token) new-start new-end &optional new-text)
+    (create :type-value (get-type-value obj)
+            :text (if new-text
+                      new-text
+                      (get-text obj))
+            :start new-start
+            :end new-end))

@@ -203,7 +203,10 @@
                                :initarg :semantic-tokens-provider)
      (completion-provider :accessor completion-provider
                           :initform (make-instance 'completion-opts)
-                          :initarg :completion-provider)))
+                          :initarg :completion-provider)
+     (document-range-formatting-provider :accessor document-range-formatting-provider
+                                         :initform T
+                                         :initarg :document-range-formatting-provider)))
 
 
 (defmethod print-object ((obj server-capabilities) out)
@@ -217,6 +220,7 @@
     (and (equal (type-of a) (type-of b))
          (eq (text-document-sync a) (text-document-sync b))
          (eq (hover-provider a) (hover-provider b))
+         (eq (document-range-formatting-provider a) (document-range-formatting-provider b))
          (types:deep-equal-p (semantic-tokens-provider a) (semantic-tokens-provider b))))
 
 

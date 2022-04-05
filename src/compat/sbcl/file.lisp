@@ -4,26 +4,68 @@
              :do-load
              :try-compile)
     (:local-nicknames (:parse :alive/parse/stream)
+                      (:form :alive/parse/form)
+                      (:forms :alive/parse/forms)
+                      (:token :alive/parse/token)
                       (:errors :alive/errors)
+                      (:range :alive/range)
                       (:types :alive/types)
                       (:comp-msg :alive/compile-message)))
 
 (in-package :alive/sbcl/file)
 
 
-(defun get-form (forms ndx)
-    (let ((kids (elt forms 2)))
-        (elt kids ndx)))
+(defun should-skip (form-type)
+    (and form-type
+         (or (= types:*ifdef-false* form-type)
+             (= types:*line-comment* form-type)
+             (= types:*block-comment* form-type))))
+
+
+(defun get-nth-form (forms offset)
+    (loop :with counted := 0
+          :with cur-form := nil
+
+          :while (<= counted offset)
+
+          :do (setf cur-form (pop forms))
+
+              (cond ((or (= types:*line-comment* (form:get-form-type cur-form))
+                         (= types:*block-comment* (form:get-form-type cur-form)))
+                     NIL)
+
+                    ((= types:*ifdef-false* (form:get-form-type cur-form))
+                     (pop forms))
+
+                    (T (incf counted)))
+
+          :finally (return cur-form)))
 
 
 (defun get-err-location (forms)
     (let* ((context (sb-c::find-error-context nil))
            (source-path (when context (reverse (sb-c::compiler-error-context-original-source-path context)))))
 
-        (when source-path
-              (loop :for ndx :in source-path :do
-                        (setf forms (get-form forms ndx))
-                    :finally (return (subseq forms 0 2))))))
+        (if (not source-path)
+            (range:create (form:get-start (car forms))
+                          (form:get-end (car (reverse forms))))
+
+            (loop :with indicies := source-path
+                  :with ndx := nil
+                  :with form := nil
+
+                  :while indicies
+                  :do (setf ndx (pop indicies))
+
+                      (when (<= (length forms) ndx)
+                            (error (format nil "Source ndx ~A, path ~A, form ~A" ndx source-path form)))
+
+                      (setf form (get-nth-form forms ndx))
+
+                      (setf forms (form:get-kids form))
+
+                  :finally (return (range:create (form:get-start form)
+                                                 (form:get-end form)))))))
 
 
 (defun send-message (out-fn forms sev err)
@@ -63,7 +105,7 @@
 
 (defun do-cmd (path cmd out)
     (with-open-file (f path)
-        (let ((forms (parse:from f)))
+        (let ((forms (forms:from-stream f)))
             (handler-bind ((sb-c:fatal-compiler-error (fatal-error out forms))
                            (sb-c:compiler-error (compiler-error out forms))
                            (sb-ext:compiler-note (compiler-note out forms))
@@ -98,33 +140,28 @@
     (with-open-file (f path)
         (let ((msgs nil))
 
+            ;;
+            ;; Compiling a file corrupts the environment. The goal here is to compile without
+            ;; that happening and just get a list of compiler messages for the file.
+            ;;
+            ;; One idea was to fork and have the child process do the compile. That would keep
+            ;; the parent from getting corrupted. That approach hit some problems.
+            ;;   1. sbcl won't fork if there's multiple threads active
+            ;;   2. sbcl only implements fork for unix, anyway, so wouldn't work on Windows
+            ;;
+            ;; One possible solution to the fork issue would be to use FFI to call the C fork
+            ;; function directly. That seems problematic.
+            ;;
+            ;; The main issue is that def* calls will update the environment. There may be some
+            ;; way to account for that. I haven't figured it out, yet.
+            ;;
+
             (handler-case
+                    (progn (do-cmd path 'compile-file
+                                   (lambda (msg)
+                                       (setf msgs (cons msg msgs))))
 
-                ;;
-                ;; Compiling a file corrupts the environment. The goal here is to compile without
-                ;; that happening and just get a list of compiler messages for the file.
-                ;;
-                ;; One idea was to fork and have the child process do the compile. That would keep
-                ;; the parent from getting corrupted. That approach hit some problems.
-                ;;   1. sbcl won't fork if there's multiple threads active
-                ;;   2. sbcl only implements fork for unix, anyway, so wouldn't work on Windows
-                ;;
-                ;; One possible solution to the fork issue would be to use FFI to call the C fork
-                ;; function directly. That seems problematic.
-                ;;
-                ;; The only issue I've seen so far is that defpackage forms will update the
-                ;; packages, which results in annoying "package also exports" warnings.
-                ;;  1. parse the file before compiling, get a list of packages, and drop them
-                ;;  2. get the list of packages, along with their aliases, rename them to temp names,
-                ;;     delete the version compile creates, and rename the temp ones back to their
-                ;;     original names. This seems like the most feasible option right now.
-                ;;
-
-                (progn (do-cmd path 'compile-file
-                               (lambda (msg)
-                                   (setf msgs (cons msg msgs))))
-
-                       msgs)
+                           msgs)
                 (errors:input-error (e)
                                     (setf msgs (cons
                                                 (comp-msg:create :severity types:*sev-error*

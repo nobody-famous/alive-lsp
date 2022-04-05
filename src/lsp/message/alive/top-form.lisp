@@ -4,7 +4,7 @@
              :create-request
              :create-response
              :from-wire
-             :offset
+             :pos
              :request
              :text-document)
     (:local-nicknames (:message :alive/lsp/message/abstract)
@@ -43,27 +43,27 @@
     ((text-document :accessor text-document
                     :initform nil
                     :initarg :text-document)
-     (offset :accessor offset
-             :initform nil
-             :initarg :offset)))
+     (position :accessor pos
+               :initform nil
+               :initarg :pos)))
 
 
 (defmethod print-object ((obj params) out)
     (format out "{text-document: ~A; position: ~A}"
             (text-document obj)
-            (offset obj)))
+            (pos obj)))
 
 
 (defmethod types:deep-equal-p ((a params) b)
     (and (equal (type-of a) (type-of b))
          (types:deep-equal-p (text-document a) (text-document b))
-         (types:deep-equal-p (offset a) (offset b))))
+         (types:deep-equal-p (pos a) (pos b))))
 
 
-(defun create-params (&key text-document offset)
+(defun create-params (&key text-document pos)
     (make-instance 'params
                    :text-document text-document
-                   :offset offset))
+                   :pos pos))
 
 
 (defclass response (message:result-response)
@@ -102,7 +102,7 @@
 (defun from-wire (&key jsonrpc id params)
     (labels ((add-param (out-params key value)
                   (cond ((eq key :text-document) (setf (text-document out-params) (text-doc:from-wire value)))
-                        ((eq key :offset) (setf (offset out-params) value)))))
+                        ((eq key :position) (setf (pos out-params) (pos:from-wire value))))))
 
         (loop :with out-params := (make-instance 'params)
 

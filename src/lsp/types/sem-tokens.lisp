@@ -95,7 +95,8 @@
 
 
 (defun from-type (value)
-    (cond ((eq value types:*comment*) *comment*)
+    (cond ((eq value types:*line-comment*) *comment*)
+          ((eq value types:*block-comment*) *comment*)
           ((eq value types:*string*) *string*)
           ((eq value types:*keyword*) *keyword*)
           ((eq value types:*number*) *number*)

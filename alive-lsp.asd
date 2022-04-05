@@ -13,10 +13,14 @@
                  "alive-lsp/src/errors"
                  "alive-lsp/src/compile-message"
                  "alive-lsp/src/position"
+                 "alive-lsp/src/range"
+                 "alive-lsp/src/text-edit"
 
                  "alive-lsp/src/parse/stream"
                  "alive-lsp/src/parse/token"
                  "alive-lsp/src/parse/tokenizer"
+                 "alive-lsp/src/parse/form"
+                 "alive-lsp/src/parse/forms"
 
                  "alive-lsp/src/compat/sbcl/file"
                  "alive-lsp/src/compat/sbcl/streams"
@@ -25,6 +29,7 @@
                  "alive-lsp/src/file"
                  "alive-lsp/src/streams"
                  "alive-lsp/src/symbols"
+                 "alive-lsp/src/format"
 
                  "alive-lsp/src/lsp/errors"
                  "alive-lsp/src/lsp/completions"
@@ -46,6 +51,7 @@
                  "alive-lsp/src/lsp/message/document/completion"
                  "alive-lsp/src/lsp/message/document/did-change"
                  "alive-lsp/src/lsp/message/document/did-open"
+                 "alive-lsp/src/lsp/message/document/range-format"
                  "alive-lsp/src/lsp/message/document/sem-tokens-full"
 
                  "alive-lsp/src/lsp/packet"
@@ -68,8 +74,8 @@
 
                  "alive-lsp/test/utils"
 
-                 "alive-lsp/test/parse"
                  "alive-lsp/test/parse/tokens"
+                 "alive-lsp/test/parse/forms"
 
                  "alive-lsp/test/lsp/completions"
                  "alive-lsp/test/lsp/message"
@@ -77,6 +83,8 @@
 
                  "alive-lsp/test/session/state"
                  "alive-lsp/test/session/messages"
+
+                 "alive-lsp/test/format/range"
 
                  "alive-lsp/test/suite"))
 
@@ -86,14 +94,19 @@
 (register-system-packages "alive-lsp/src/errors" '(:alive/errors))
 (register-system-packages "alive-lsp/src/compile-message" '(:alive/compile-message))
 (register-system-packages "alive-lsp/src/position" '(:alive/position))
+(register-system-packages "alive-lsp/src/range" '(:alive/range))
+(register-system-packages "alive-lsp/src/text-edit" '(:alive/text-edit))
 
 (register-system-packages "alive-lsp/src/parse/stream" '(:alive/parse/stream))
 (register-system-packages "alive-lsp/src/parse/token" '(:alive/parse/token))
 (register-system-packages "alive-lsp/src/parse/tokenizer" '(:alive/parse/tokenizer))
+(register-system-packages "alive-lsp/src/parse/form" '(:alive/parse/form))
+(register-system-packages "alive-lsp/src/parse/forms" '(:alive/parse/forms))
 
 (register-system-packages "alive-lsp/src/file" '(:alive/file))
 (register-system-packages "alive-lsp/src/streams" '(:alive/streams))
 (register-system-packages "alive-lsp/src/symbols" '(:alive/symbols))
+(register-system-packages "alive-lsp/src/format" '(:alive/format))
 
 (register-system-packages "alive-lsp/src/compat/sbcl/file" '(:alive/sbcl/file))
 (register-system-packages "alive-lsp/src/compat/sbcl/streams" '(:alive/sbcl/streams))
@@ -119,6 +132,7 @@
 (register-system-packages "alive-lsp/src/lsp/message/document/completion" '(:alive/lsp/message/document/completion))
 (register-system-packages "alive-lsp/src/lsp/message/document/did-change" '(:alive/lsp/message/document/did-change))
 (register-system-packages "alive-lsp/src/lsp/message/document/did-open" '(:alive/lsp/message/document/did-open))
+(register-system-packages "alive-lsp/src/lsp/message/document/range-format" '(:alive/lsp/message/document/range-format))
 (register-system-packages "alive-lsp/src/lsp/message/document/sem-tokens-full" '(:alive/lsp/message/document/sem-tokens-full))
 
 (register-system-packages "alive-lsp/src/lsp/packet" '(:alive/lsp/packet))
@@ -140,8 +154,8 @@
 
 (register-system-packages "alive-lsp/test/utils" '(:alive/test/utils))
 
-(register-system-packages "alive-lsp/test/parse" '(:alive/test/parse))
 (register-system-packages "alive-lsp/test/parse/tokens" '(:alive/test/parse/tokens))
+(register-system-packages "alive-lsp/test/parse/forms" '(:alive/test/parse/forms))
 
 (register-system-packages "alive-lsp/test/lsp/completions" '(:alive/test/lsp/completions))
 (register-system-packages "alive-lsp/test/lsp/message" '(:alive/test/lsp/message))
@@ -149,3 +163,5 @@
 
 (register-system-packages "alive-lsp/test/session/state" '(:alive/test/session/state))
 (register-system-packages "alive-lsp/test/session/messages" '(:alive/test/session/messages))
+
+(register-system-packages "alive-lsp/test/format/range" '(:alive/test/format/range))

@@ -33,6 +33,10 @@
     ())
 
 
+(defclass formatting-state (test-state)
+    ())
+
+
 (defun create-state (cls)
     (make-instance cls
                    :logger (logger:create *standard-output* logger:*error*)))
@@ -161,10 +165,53 @@
                       (check:are-equal t (send-called state))))))
 
 
+(defmethod session::get-input-stream ((obj formatting-state))
+    (let ((content (with-output-to-string (str)
+                       (format str "{~A" utils:*end-line*)
+                       (format str "  \"jsonrpc\": \"2.0\",~A" utils:*end-line*)
+                       (format str "  \"id\": 5,~A" utils:*end-line*)
+                       (format str "  \"method\": \"textdocument/rangeformatting\",~A" utils:*end-line*)
+                       (format str "  \"params\": {~A" utils:*end-line*)
+                       (format str "    \"textDocument\": {~A" utils:*end-line*)
+                       (format str "      \"uri\":\"file:///some/file.txt\"~A" utils:*end-line*)
+                       (format str "    },~A" utils:*end-line*)
+                       (format str "    \"range\": {~A" utils:*end-line*)
+                       (format str "      \"start\": {~A" utils:*end-line*)
+                       (format str "        \"line\": 0,~A" utils:*end-line*)
+                       (format str "        \"character\": 0~A" utils:*end-line*)
+                       (format str "      },~A" utils:*end-line*)
+                       (format str "      \"end\": {~A" utils:*end-line*)
+                       (format str "        \"line\": 10,~A" utils:*end-line*)
+                       (format str "        \"character\": 10~A" utils:*end-line*)
+                       (format str "      }~A" utils:*end-line*)
+                       (format str "    },~A" utils:*end-line*)
+                       (format str "    \"options\": {~A" utils:*end-line*)
+                       (format str "      \"tabSize\": 4,~A" utils:*end-line*)
+                       (format str "      \"insertSpaces\": true~A" utils:*end-line*)
+                       (format str "    }~A" utils:*end-line*)
+                       (format str "  }~A" utils:*end-line*)
+                       (format str "}~A" utils:*end-line*))))
+        (make-string-input-stream (utils:create-msg content))))
+
+
+(defmethod session::send-msg ((obj formatting-state) msg)
+    (setf (send-called obj) T))
+
+
+(defun formatting-msg ()
+    (let ((state (create-state 'formatting-state)))
+        (run:test "Range Format Message"
+                  (lambda ()
+                      (session::handle-msg state
+                                           (session::read-message state))
+                      (check:are-equal t (send-called state))))))
+
+
 (defun run-all ()
     (run:suite "Session Message Tests"
                (lambda ()
                    (init-msg)
                    (load-file-msg)
                    (completion-msg)
-                   (top-form-msg))))
+                   (top-form-msg)
+                   (formatting-msg))))

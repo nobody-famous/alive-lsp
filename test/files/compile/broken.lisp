@@ -1,6 +1,6 @@
 (require 'sb-introspect)
 
-(defun foo ()
+(defun foo (b)
   (let* ((x 5)
          (y 10)
          (z (+ x y)))

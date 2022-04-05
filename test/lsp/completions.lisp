@@ -15,8 +15,7 @@
                                                             :kind 3
                                                             :insert-text "macro-p ${1:sym-name}"))
                                    (comps:simple :text "some text alive/symbols:m"
-                                                 :pos (pos:create :line 0
-                                                                  :col 27)))
+                                                 :pos (pos:create 0 27)))
 
                   (check:are-equal (list (comps:create-item :label "defmacro"
                                                             :kind 3
@@ -31,8 +30,7 @@
                                                             :kind 3
                                                             :insert-text "define-symbol-macro ${1:name} ${2:expansion}"))
                                    (comps:simple :text "some text cl-user:defmacro"
-                                                 :pos (pos:create :line 0
-                                                                  :col 26)))
+                                                 :pos (pos:create 0 26)))
 
                   (check:are-equal (list (comps:create-item :label "get-lambda-list"
                                                             :kind 3
@@ -50,8 +48,7 @@
                                                             :kind 3
                                                             :insert-text "lookup ${1:name} ${2:pkg-name}"))
                                    (comps:simple :text "alive/symbols:"
-                                                 :pos (pos:create :line 0
-                                                                  :col 14)))
+                                                 :pos (pos:create 0 14)))
 
                   (check:are-equal (list (comps:create-item :label "*invoke-debugger-hook*"
                                                             :kind 1
@@ -63,8 +60,7 @@
                                                             :kind 1
                                                             :insert-text "*debug-io*"))
                                    (comps:simple :text "*debug-io"
-                                                 :pos (pos:create :line 0
-                                                                  :col 9))))))
+                                                 :pos (pos:create 0 9))))))
 
 
 (defun run-all ()

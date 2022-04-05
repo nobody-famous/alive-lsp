@@ -28,7 +28,7 @@
 
 (defun start-token (state)
     (setf (start state)
-          (pos:create :line (line state) :col (col state)))
+          (pos:create (line state) (col state)))
     (setf (buffer state)
           (make-string-output-stream)))
 
@@ -39,9 +39,7 @@
 
 (defun is-ws (ch)
     (or (char= ch #\space)
-        (char= ch #\tab)
-        (char= ch #\return)
-        (char= ch #\newline)))
+        (not (graphic-char-p ch))))
 
 
 (defun is-delim (ch)
@@ -49,6 +47,13 @@
         (is-ws ch)
         (char= ch #\))
         (char= ch #\()))
+
+
+(defun is-macro-ch (ch)
+    (and ch
+         (not (is-ws ch))
+         (not (char= #\( ch))
+         (not (char= #\) ch))))
 
 
 (defun next-char (state)
@@ -61,8 +66,7 @@
 
 
 (defun new-token (state token-type &optional text)
-    (let ((end (pos:create :line (line state)
-                           :col (col state))))
+    (let ((end (pos:create (line state) (col state))))
 
         (token:create :type-value token-type
                       :start (start state)
@@ -126,7 +130,7 @@
 
 (defun read-comment-token (state)
     (read-text-token :state state
-                     :token-type types:*comment*
+                     :token-type types:*line-comment*
                      :predicate (lambda (ch)
                                     (and ch
                                          (not (char= ch #\newline))))))
@@ -188,7 +192,7 @@
                                         (setf have-pound t))))
               (next-char state)
 
-          :finally (return (new-token state types:*comment*))))
+          :finally (return (new-token state types:*block-comment*))))
 
 
 (defun read-macro-generic-token (state)
@@ -199,6 +203,19 @@
                                          (not (is-delim ch))))))
 
 
+(defun read-macro-char (state)
+    (next-char state)
+
+    (let ((ch (look-ahead state)))
+        (if (is-macro-ch ch)
+            (loop :while (is-macro-ch ch)
+                  :do (next-char state)
+                      (setf ch (look-ahead state)))
+            (next-char state))
+
+        (new-token state types:*macro*)))
+
+
 (defun read-macro-token (state)
     (next-char state)
 
@@ -206,7 +223,17 @@
         (cond ((or (char= ch #\+)
                    (char= ch #\-)) (read-ifdef-token state ch))
               ((char= ch #\|) (read-block-comment-token state))
+              ((char= ch #\\) (read-macro-char state))
               (t (read-macro-generic-token state)))))
+
+
+(defun read-comma-token (state)
+    (next-char state)
+
+    (if (char= #\@ (look-ahead state))
+        (progn (next-char state)
+               (new-token state types:*comma-at*))
+        (new-token state types:*comma*)))
 
 
 (defun next-token (state)
@@ -215,10 +242,13 @@
     (let ((ch (look-ahead state)))
         (cond ((char= ch #\() (read-ch-token state types:*open-paren*))
               ((char= ch #\)) (read-ch-token state types:*close-paren*))
+              ((char= ch #\') (read-ch-token state types:*quote*))
+              ((char= ch #\`) (read-ch-token state types:*back-quote*))
               ((char= ch #\") (read-string-token state))
               ((char= ch #\;) (read-comment-token state))
               ((char= ch #\:) (read-colons-token state))
               ((char= ch #\#) (read-macro-token state))
+              ((char= ch #\,) (read-comma-token state))
               ((is-ws ch) (read-ws-token state))
               (T (read-symbol-token state)))))
 

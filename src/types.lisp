@@ -4,7 +4,8 @@
              :*sev-warn*
              :*sev-info*
 
-             :*comment*
+             :*line-comment*
+             :*block-comment*
              :*string*
              :*keyword*
              :*number*
@@ -20,6 +21,10 @@
              :*colons*
              :*ifdef-true*
              :*ifdef-false*
+             :*quote*
+             :*back-quote*
+             :*comma*
+             :*comma-at*
 
              :deep-equal-p))
 
@@ -31,22 +36,27 @@
 (defparameter *sev-info* "info")
 
 
-(defparameter *comment* 0)
-(defparameter *string* 1)
-(defparameter *keyword* 2)
-(defparameter *number* 3)
-(defparameter *namespace* 4)
-(defparameter *function* 5)
-(defparameter *macro* 6)
-(defparameter *variable* 7)
-(defparameter *parameter* 8)
-(defparameter *open-paren* 9)
-(defparameter *close-paren* 10)
-(defparameter *symbol* 11)
-(defparameter *ws* 12)
-(defparameter *colons* 13)
-(defparameter *ifdef-true* 14)
-(defparameter *ifdef-false* 15)
+(defparameter *line-comment* 0)
+(defparameter *block-comment* 1)
+(defparameter *string* 2)
+(defparameter *keyword* 3)
+(defparameter *number* 4)
+(defparameter *namespace* 5)
+(defparameter *function* 6)
+(defparameter *macro* 7)
+(defparameter *variable* 8)
+(defparameter *parameter* 9)
+(defparameter *open-paren* 10)
+(defparameter *close-paren* 11)
+(defparameter *symbol* 12)
+(defparameter *ws* 13)
+(defparameter *colons* 14)
+(defparameter *ifdef-true* 15)
+(defparameter *ifdef-false* 16)
+(defparameter *quote* 17)
+(defparameter *back-quote* 18)
+(defparameter *comma* 19)
+(defparameter *comma-at* 20)
 
 
 (defgeneric deep-equal-p (a b))
