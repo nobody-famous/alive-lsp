@@ -1,6 +1,7 @@
 (defpackage :alive/threads
     (:use :cl)
-    (:export :list-all))
+    (:export :list-all
+             :kill))
 
 (in-package :alive/threads)
 
@@ -20,3 +21,7 @@
                                :id (sxhash thread)
                                :name (bt:thread-name thread)))
             (bt:all-threads)))
+
+
+(defun kill (thread-hash)
+    (format T "KILL THREAD ~A~%" thread-hash))

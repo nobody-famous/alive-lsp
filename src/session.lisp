@@ -19,6 +19,7 @@
                       (:form :alive/parse/form)
                       (:forms :alive/parse/forms)
                       (:list-threads :alive/lsp/message/alive/list-threads)
+                      (:kill-thread :alive/lsp/message/alive/kill-thread)
                       (:load-file :alive/lsp/message/alive/load-file)
                       (:try-compile :alive/lsp/message/alive/try-compile)
                       (:stderr :alive/lsp/message/alive/stderr)
@@ -231,6 +232,11 @@
 (defmethod handle-msg (state (msg list-threads:request))
     (send-msg state (list-threads:create-response (message:id msg)
                                                   (threads:list-all))))
+
+
+(defmethod handle-msg (state (msg kill-thread:request))
+    (threads:kill (kill-thread:get-id msg))
+    (send-msg state (kill-thread:create-response (message:id msg))))
 
 
 (defun stop (state)

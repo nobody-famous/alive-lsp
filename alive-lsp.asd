@@ -45,6 +45,7 @@
                  "alive-lsp/src/lsp/message/payload"
                  "alive-lsp/src/lsp/message/initialize"
                  "alive-lsp/src/lsp/message/alive/list-threads"
+                 "alive-lsp/src/lsp/message/alive/kill-thread"
                  "alive-lsp/src/lsp/message/alive/load-file"
                  "alive-lsp/src/lsp/message/alive/try-compile"
                  "alive-lsp/src/lsp/message/alive/stderr"
@@ -128,6 +129,7 @@
 (register-system-packages "alive-lsp/src/lsp/message/payload" '(:alive/lsp/message/payload))
 (register-system-packages "alive-lsp/src/lsp/message/initialize" '(:alive/lsp/message/initialize))
 (register-system-packages "alive-lsp/src/lsp/message/alive/list-threads" '(:alive/lsp/message/alive/list-threads))
+(register-system-packages "alive-lsp/src/lsp/message/alive/kill-thread" '(:alive/lsp/message/alive/kill-thread))
 (register-system-packages "alive-lsp/src/lsp/message/alive/load-file" '(:alive/lsp/message/alive/load-file))
 (register-system-packages "alive-lsp/src/lsp/message/alive/try-compile" '(:alive/lsp/message/alive/try-compile))
 (register-system-packages "alive-lsp/src/lsp/message/alive/stderr" '(:alive/lsp/message/alive/stderr))
