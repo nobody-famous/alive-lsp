@@ -4,6 +4,7 @@
     (:local-nicknames (:completion :alive/lsp/message/document/completion)
                       (:did-change :alive/lsp/message/document/did-change)
                       (:did-open :alive/lsp/message/document/did-open)
+                      (:list-threads :alive/lsp/message/alive/list-threads)
                       (:load-file :alive/lsp/message/alive/load-file)
                       (:top-form :alive/lsp/message/alive/top-form)
                       (:text-doc :alive/lsp/types/text-doc)
@@ -292,6 +293,25 @@
                            parsed))))))
 
 
+(defun list-threads-msg ()
+    (labels ((create-content ()
+                  (with-output-to-string (str)
+                      (format str "{~A" utils:*end-line*)
+                      (format str "  \"jsonrpc\": \"2.0\",~A" utils:*end-line*)
+                      (format str "  \"id\": 5,~A" utils:*end-line*)
+                      (format str "  \"method\": \"$/alive/listThreads\"~A" utils:*end-line*)
+                      (format str "}~A" utils:*end-line*))))
+
+        (run:test "Formatting Message"
+                  (lambda ()
+                      (let* ((msg (utils:create-msg (create-content)))
+                             (parsed (parse:from-stream (make-string-input-stream msg))))
+                          (check:are-equal
+                           (list-threads:create-request
+                            :id 5)
+                           parsed))))))
+
+
 (defun run-all ()
     (run:suite "LSP Messages"
                (lambda ()
@@ -303,4 +323,5 @@
                    (load-file-msg)
                    (completion-msg)
                    (top-form-msg)
-                   (formatting-msg))))
+                   (formatting-msg)
+                   (list-threads-msg))))
