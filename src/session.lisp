@@ -235,8 +235,15 @@
 
 
 (defmethod handle-msg (state (msg kill-thread:request))
-    (threads:kill (kill-thread:get-id msg))
-    (send-msg state (kill-thread:create-response (message:id msg))))
+    (handler-case
+            (progn
+             (threads:kill (kill-thread:get-id msg))
+             (send-msg state (kill-thread:create-response (message:id msg))))
+        (threads:thread-not-found (c)
+                                  (send-msg state
+                                            (message:create-error-resp :id (message:id msg)
+                                                                       :code errors:*request-failed*
+                                                                       :message (format nil "Thread ~A not found" (threads:id c)))))))
 
 
 (defun stop (state)

@@ -1,9 +1,18 @@
 (defpackage :alive/threads
     (:use :cl)
     (:export :list-all
-             :kill))
+             :kill
+             :thread-not-found
+             :id))
 
 (in-package :alive/threads)
+
+
+(define-condition thread-not-found (error)
+    ((id :accessor id
+         :initform nil
+         :initarg :id))
+    (:report (lambda (condition stream) (format stream "Thread ~A Not Found" (id condition)))))
 
 
 (defclass thread ()
@@ -24,4 +33,15 @@
 
 
 (defun kill (thread-hash)
-    (format T "KILL THREAD ~A~%" thread-hash))
+    (let ((thread (reduce (lambda (acc thread)
+                              (if acc
+                                  acc
+                                  (when (= thread-hash (sxhash thread))
+                                        thread))
+                              acc)
+                          (bt:all-threads)
+                          :initial-value nil)))
+        (unless thread
+                (error (make-condition 'thread-not-found :id thread-hash)))
+
+        (bt:destroy-thread thread)))
