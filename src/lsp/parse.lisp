@@ -6,11 +6,13 @@
                       (:did-open :alive/lsp/message/document/did-open)
                       (:did-change :alive/lsp/message/document/did-change)
                       (:formatting :alive/lsp/message/document/range-format)
+                      (:list-pkgs :alive/lsp/message/alive/list-packages)
                       (:list-threads :alive/lsp/message/alive/list-threads)
                       (:kill-thread :alive/lsp/message/alive/kill-thread)
                       (:load-file :alive/lsp/message/alive/load-file)
                       (:top-form :alive/lsp/message/alive/top-form)
                       (:try-compile :alive/lsp/message/alive/try-compile)
+                      (:unexport :alive/lsp/message/alive/unexport-symbol)
                       (:init :alive/lsp/message/initialize)
                       (:message :alive/lsp/message/abstract)
                       (:packet :alive/lsp/packet)
@@ -175,10 +177,20 @@
                                       :id msg-id
                                       :params (params fields)))
 
+              ((string= "$/alive/listpackages" name)
+               (list-pkgs:from-wire :jsonrpc (jsonrpc fields)
+                                    :id msg-id
+                                    :params (params fields)))
+
               ((string= "textdocument/didsave" name) nil)
 
               ((string= "$/alive/trycompile" name)
                (try-compile:from-wire :jsonrpc (jsonrpc fields)
+                                      :id msg-id
+                                      :params (params fields)))
+              
+              ((string= "$/alive/unexportsymbol" name)
+               (unexport:from-wire :jsonrpc (jsonrpc fields)
                                       :id msg-id
                                       :params (params fields)))
 
