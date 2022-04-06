@@ -6,6 +6,7 @@
                       (:did-open :alive/lsp/message/document/did-open)
                       (:did-change :alive/lsp/message/document/did-change)
                       (:formatting :alive/lsp/message/document/range-format)
+                      (:eval :alive/lsp/message/alive/do-eval)
                       (:list-pkgs :alive/lsp/message/alive/list-packages)
                       (:list-threads :alive/lsp/message/alive/list-threads)
                       (:kill-thread :alive/lsp/message/alive/kill-thread)
@@ -162,6 +163,11 @@
                                      :id msg-id
                                      :params (params fields)))
 
+              ((string= "$/alive/eval" name)
+               (eval:from-wire :jsonrpc (jsonrpc fields)
+                               :id msg-id
+                               :params (params fields)))
+
               ((string= "$/alive/loadfile" name)
                (load-file:from-wire :jsonrpc (jsonrpc fields)
                                     :id msg-id
@@ -188,11 +194,11 @@
                (try-compile:from-wire :jsonrpc (jsonrpc fields)
                                       :id msg-id
                                       :params (params fields)))
-              
+
               ((string= "$/alive/unexportsymbol" name)
                (unexport:from-wire :jsonrpc (jsonrpc fields)
-                                      :id msg-id
-                                      :params (params fields)))
+                                   :id msg-id
+                                   :params (params fields)))
 
               ((string= "$/alive/topformbounds" name)
                (top-form:from-wire :jsonrpc (jsonrpc fields)

@@ -5,9 +5,7 @@
              :create-response
              :from-wire
              :get-path
-             :request
-             :show-stdout-p
-             :show-stderr-p)
+             :request)
     (:local-nicknames (:message :alive/lsp/message/abstract)
                       (:types :alive/types)))
 

@@ -4,6 +4,7 @@
     (:local-nicknames (:completion :alive/lsp/message/document/completion)
                       (:did-change :alive/lsp/message/document/did-change)
                       (:did-open :alive/lsp/message/document/did-open)
+                      (:eval :alive/lsp/message/alive/do-eval)
                       (:list-pkgs :alive/lsp/message/alive/list-packages)
                       (:list-threads :alive/lsp/message/alive/list-threads)
                       (:kill-thread :alive/lsp/message/alive/kill-thread)
@@ -378,6 +379,30 @@
                            (unexport:create-request
                             :id 5
                             :params (unexport:create-params :sym-name "foo" :pkg-name "bar"))
+                           parsed))))))
+
+
+(defun eval-msg ()
+    (labels ((create-content ()
+                  (with-output-to-string (str)
+                      (format str "{~A" utils:*end-line*)
+                      (format str "  \"jsonrpc\": \"2.0\",~A" utils:*end-line*)
+                      (format str "  \"id\": 5,~A" utils:*end-line*)
+                      (format str "  \"method\": \"$/alive/eval\",~A" utils:*end-line*)
+                      (format str "  \"params\": {~A" utils:*end-line*)
+                      (format str "    \"package\": \"foo\",~A" utils:*end-line*)
+                      (format str "    \"text\": \"(+ 1 2)\"~A" utils:*end-line*)
+                      (format str "  }~A" utils:*end-line*)
+                      (format str "}~A" utils:*end-line*))))
+
+        (run:test "Eval Message"
+                  (lambda ()
+                      (let* ((msg (utils:create-msg (create-content)))
+                             (parsed (parse:from-stream (make-string-input-stream msg))))
+                          (check:are-equal
+                           (eval:create-request
+                            :id 5
+                            :params (eval:create-params :pkg-name "foo" :text "(+ 1 2)"))
                            parsed))))))
 
 

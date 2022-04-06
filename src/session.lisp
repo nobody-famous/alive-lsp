@@ -19,6 +19,7 @@
                       (:init :alive/lsp/message/initialize)
                       (:form :alive/parse/form)
                       (:forms :alive/parse/forms)
+                      (:eval-msg :alive/lsp/message/alive/do-eval)
                       (:list-pkgs :alive/lsp/message/alive/list-packages)
                       (:list-threads :alive/lsp/message/alive/list-threads)
                       (:kill-thread :alive/lsp/message/alive/kill-thread)
@@ -260,6 +261,14 @@
 
         (packages:unexport-symbol pkg-name sym-name)
         (send-msg state (unexport:create-response (message:id msg)))))
+
+
+(defmethod handle-msg (state (msg eval-msg:request))
+    (let* ((pkg-name (eval-msg:get-package msg))
+           (text (eval-msg:get-text msg)))
+
+        (format T "EVAL ~A ~A~%" pkg-name text)
+        (send-msg state (eval-msg:create-response (message:id msg) "OK"))))
 
 
 (defun stop (state)

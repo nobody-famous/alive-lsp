@@ -53,6 +53,10 @@
     ())
 
 
+(defclass eval-state (test-state)
+    ())
+
+
 (defun create-state (cls)
     (make-instance cls
                    :logger (logger:create *standard-output* logger:*error*)))
@@ -316,6 +320,33 @@
 (defun unexport-symbol-msg ()
     (let ((state (create-state 'unexport-state)))
         (run:test "Unexport Symbol Message"
+                  (lambda ()
+                      (session::handle-msg state
+                                           (session::read-message state))
+                      (check:are-equal t (send-called state))))))
+
+
+(defmethod session::get-input-stream ((obj unexport-state))
+    (let ((content (with-output-to-string (str)
+                       (format str "{~A" utils:*end-line*)
+                       (format str "  \"jsonrpc\": \"2.0\",~A" utils:*end-line*)
+                       (format str "  \"id\": 5,~A" utils:*end-line*)
+                       (format str "  \"method\": \"$/alive/eval\",~A" utils:*end-line*)
+                       (format str "  \"params\": {~A" utils:*end-line*)
+                       (format str "    \"package\": \"foo\",~A" utils:*end-line*)
+                       (format str "    \"text\": \"(+ 1 2)\"~A" utils:*end-line*)
+                       (format str "  }~A" utils:*end-line*)
+                       (format str "}~A" utils:*end-line*))))
+        (make-string-input-stream (utils:create-msg content))))
+
+
+(defmethod session::send-msg ((obj eval-state) msg)
+    (setf (send-called obj) T))
+
+
+(defun eval-msg ()
+    (let ((state (create-state 'unexport-state)))
+        (run:test "Eval Message"
                   (lambda ()
                       (session::handle-msg state
                                            (session::read-message state))
