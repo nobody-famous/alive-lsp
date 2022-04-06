@@ -11,6 +11,7 @@
                       (:formatting :alive/lsp/message/document/range-format)
                       (:file :alive/file)
                       (:pos :alive/position)
+                      (:packages :alive/packages)
                       (:threads :alive/threads)
                       (:formatter :alive/format)
                       (:tokenizer :alive/parse/tokenizer)
@@ -18,6 +19,7 @@
                       (:init :alive/lsp/message/initialize)
                       (:form :alive/parse/form)
                       (:forms :alive/parse/forms)
+                      (:list-pkgs :alive/lsp/message/alive/list-packages)
                       (:list-threads :alive/lsp/message/alive/list-threads)
                       (:kill-thread :alive/lsp/message/alive/kill-thread)
                       (:load-file :alive/lsp/message/alive/load-file)
@@ -244,6 +246,11 @@
                                             (message:create-error-resp :id (message:id msg)
                                                                        :code errors:*request-failed*
                                                                        :message (format nil "Thread ~A not found" (threads:id c)))))))
+
+
+(defmethod handle-msg (state (msg list-pkgs:request))
+    (send-msg state (list-pkgs:create-response (message:id msg)
+                                               (packages:list-all))))
 
 
 (defun stop (state)

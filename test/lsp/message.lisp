@@ -4,6 +4,7 @@
     (:local-nicknames (:completion :alive/lsp/message/document/completion)
                       (:did-change :alive/lsp/message/document/did-change)
                       (:did-open :alive/lsp/message/document/did-open)
+                      (:list-pkgs :alive/lsp/message/alive/list-packages)
                       (:list-threads :alive/lsp/message/alive/list-threads)
                       (:kill-thread :alive/lsp/message/alive/kill-thread)
                       (:load-file :alive/lsp/message/alive/load-file)
@@ -336,6 +337,25 @@
                            parsed))))))
 
 
+(defun list-pkgs-msg ()
+    (labels ((create-content ()
+                  (with-output-to-string (str)
+                      (format str "{~A" utils:*end-line*)
+                      (format str "  \"jsonrpc\": \"2.0\",~A" utils:*end-line*)
+                      (format str "  \"id\": 5,~A" utils:*end-line*)
+                      (format str "  \"method\": \"$/alive/listPackages\"~A" utils:*end-line*)
+                      (format str "}~A" utils:*end-line*))))
+
+        (run:test "List Packages Message"
+                  (lambda ()
+                      (let* ((msg (utils:create-msg (create-content)))
+                             (parsed (parse:from-stream (make-string-input-stream msg))))
+                          (check:are-equal
+                           (list-pkgs:create-request
+                            :id 5)
+                           parsed))))))
+
+
 (defun run-all ()
     (run:suite "LSP Messages"
                (lambda ()
@@ -349,4 +369,5 @@
                    (top-form-msg)
                    (formatting-msg)
                    (list-threads-msg)
-                   (kill-thread-msg))))
+                   (kill-thread-msg)
+                   (list-pkgs-msg))))

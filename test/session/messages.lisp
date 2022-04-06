@@ -45,6 +45,10 @@
     ())
 
 
+(defclass list-pkgs-state (test-state)
+    ())
+
+
 (defun create-state (cls)
     (make-instance cls
                    :logger (logger:create *standard-output* logger:*error*)))
@@ -264,6 +268,29 @@
                       (check:are-equal t (send-called state))))))
 
 
+(defmethod session::get-input-stream ((obj list-pkgs-state))
+    (let ((content (with-output-to-string (str)
+                       (format str "{~A" utils:*end-line*)
+                       (format str "  \"jsonrpc\": \"2.0\",~A" utils:*end-line*)
+                       (format str "  \"id\": 5,~A" utils:*end-line*)
+                       (format str "  \"method\": \"$/alive/listPackages\"~A" utils:*end-line*)
+                       (format str "}~A" utils:*end-line*))))
+        (make-string-input-stream (utils:create-msg content))))
+
+
+(defmethod session::send-msg ((obj list-pkgs-state) msg)
+    (setf (send-called obj) T))
+
+
+(defun list-pkgs-msg ()
+    (let ((state (create-state 'list-pkgs-state)))
+        (run:test "List Packages Message"
+                  (lambda ()
+                      (session::handle-msg state
+                                           (session::read-message state))
+                      (check:are-equal t (send-called state))))))
+
+
 (defun run-all ()
     (run:suite "Session Message Tests"
                (lambda ()
@@ -273,4 +300,5 @@
                    (top-form-msg)
                    (formatting-msg)
                    (list-threads-msg)
-                   (kill-thread-msg))))
+                   (kill-thread-msg)
+                   (list-pkgs-msg))))
