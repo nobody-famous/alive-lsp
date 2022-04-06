@@ -24,6 +24,7 @@
                       (:kill-thread :alive/lsp/message/alive/kill-thread)
                       (:load-file :alive/lsp/message/alive/load-file)
                       (:try-compile :alive/lsp/message/alive/try-compile)
+                      (:unexport :alive/lsp/message/alive/unexport-symbol)
                       (:stderr :alive/lsp/message/alive/stderr)
                       (:stdout :alive/lsp/message/alive/stdout)
                       (:top-form :alive/lsp/message/alive/top-form)
@@ -251,6 +252,14 @@
 (defmethod handle-msg (state (msg list-pkgs:request))
     (send-msg state (list-pkgs:create-response (message:id msg)
                                                (packages:list-all))))
+
+
+(defmethod handle-msg (state (msg unexport:request))
+    (let* ((sym-name (unexport:get-symbol msg))
+           (pkg-name (unexport:get-package msg)))
+
+        (packages:unexport-symbol pkg-name sym-name)
+        (send-msg state (unexport:create-response (message:id msg)))))
 
 
 (defun stop (state)

@@ -1,6 +1,7 @@
 (defpackage :alive/packages
     (:use :cl)
-    (:export :list-all))
+    (:export :list-all
+             :unexport-symbol))
 
 (in-package :alive/packages)
 
@@ -38,3 +39,10 @@
     (mapcar (lambda (pkg)
                 (create-package pkg))
             (list-all-packages)))
+
+
+(defun unexport-symbol (pkg-name sym-name)
+    (let* ((pkg (find-package (string-upcase pkg-name)))
+           (sym (when pkg (find-symbol (string-upcase sym-name) pkg))))
+        (when sym
+              (unexport sym pkg))))

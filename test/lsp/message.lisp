@@ -9,6 +9,7 @@
                       (:kill-thread :alive/lsp/message/alive/kill-thread)
                       (:load-file :alive/lsp/message/alive/load-file)
                       (:top-form :alive/lsp/message/alive/top-form)
+                      (:unexport :alive/lsp/message/alive/unexport-symbol)
                       (:text-doc :alive/lsp/types/text-doc)
                       (:text-doc-item :alive/lsp/types/text-doc-item)
                       (:sem-tokens :alive/lsp/message/document/sem-tokens-full)
@@ -353,6 +354,30 @@
                           (check:are-equal
                            (list-pkgs:create-request
                             :id 5)
+                           parsed))))))
+
+
+(defun unexport-symbol-msg ()
+    (labels ((create-content ()
+                  (with-output-to-string (str)
+                      (format str "{~A" utils:*end-line*)
+                      (format str "  \"jsonrpc\": \"2.0\",~A" utils:*end-line*)
+                      (format str "  \"id\": 5,~A" utils:*end-line*)
+                      (format str "  \"method\": \"$/alive/unexportSymbol\",~A" utils:*end-line*)
+                      (format str "  \"params\": {~A" utils:*end-line*)
+                      (format str "    \"symbol\": \"foo\",~A" utils:*end-line*)
+                      (format str "    \"package\": \"bar\"~A" utils:*end-line*)
+                      (format str "  }~A" utils:*end-line*)
+                      (format str "}~A" utils:*end-line*))))
+
+        (run:test "Unexport Symbol Message"
+                  (lambda ()
+                      (let* ((msg (utils:create-msg (create-content)))
+                             (parsed (parse:from-stream (make-string-input-stream msg))))
+                          (check:are-equal
+                           (unexport:create-request
+                            :id 5
+                            :params (unexport:create-params :sym-name "foo" :pkg-name "bar"))
                            parsed))))))
 
 

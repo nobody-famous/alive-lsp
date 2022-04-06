@@ -12,6 +12,7 @@
                       (:load-file :alive/lsp/message/alive/load-file)
                       (:top-form :alive/lsp/message/alive/top-form)
                       (:try-compile :alive/lsp/message/alive/try-compile)
+                      (:unexport :alive/lsp/message/alive/unexport-symbol)
                       (:init :alive/lsp/message/initialize)
                       (:message :alive/lsp/message/abstract)
                       (:packet :alive/lsp/packet)
@@ -185,6 +186,11 @@
 
               ((string= "$/alive/trycompile" name)
                (try-compile:from-wire :jsonrpc (jsonrpc fields)
+                                      :id msg-id
+                                      :params (params fields)))
+              
+              ((string= "$/alive/unexportsymbol" name)
+               (unexport:from-wire :jsonrpc (jsonrpc fields)
                                       :id msg-id
                                       :params (params fields)))
 
