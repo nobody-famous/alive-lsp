@@ -395,4 +395,5 @@
                    (formatting-msg)
                    (list-threads-msg)
                    (kill-thread-msg)
-                   (list-pkgs-msg))))
+                   (list-pkgs-msg)
+                   (unexport-symbol-msg))))
