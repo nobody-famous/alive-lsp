@@ -9,6 +9,7 @@
                       (:did-open :alive/lsp/message/document/did-open)
                       (:did-change :alive/lsp/message/document/did-change)
                       (:formatting :alive/lsp/message/document/range-format)
+                      (:eval :alive/eval)
                       (:file :alive/file)
                       (:pos :alive/position)
                       (:packages :alive/packages)
@@ -267,7 +268,7 @@
     (let* ((pkg-name (eval-msg:get-package msg))
            (text (eval-msg:get-text msg)))
 
-        (format T "EVAL ~A ~A~%" pkg-name text)
+        (eval:from-string text :pkg-name pkg-name)
         (send-msg state (eval-msg:create-response (message:id msg) "OK"))))
 
 

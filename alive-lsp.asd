@@ -32,6 +32,7 @@
                  "alive-lsp/src/format"
                  "alive-lsp/src/packages"
                  "alive-lsp/src/threads"
+                 "alive-lsp/src/eval"
 
                  "alive-lsp/src/lsp/errors"
                  "alive-lsp/src/lsp/completions"
@@ -116,6 +117,7 @@
 (register-system-packages "alive-lsp/src/format" '(:alive/format))
 (register-system-packages "alive-lsp/src/threads" '(:alive/threads))
 (register-system-packages "alive-lsp/src/packages" '(:alive/packages))
+(register-system-packages "alive-lsp/src/eval" '(:alive/eval))
 
 (register-system-packages "alive-lsp/src/compat/sbcl/file" '(:alive/sbcl/file))
 (register-system-packages "alive-lsp/src/compat/sbcl/streams" '(:alive/sbcl/streams))
