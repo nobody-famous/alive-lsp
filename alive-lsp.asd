@@ -94,6 +94,8 @@
 
                  "alive-lsp/test/format/range"
 
+                 "alive-lsp/test/eval"
+
                  "alive-lsp/test/suite"))
 
 (register-system-packages "alive-lsp/src/logger" '(:alive/logger))
@@ -181,3 +183,5 @@
 (register-system-packages "alive-lsp/test/session/messages" '(:alive/test/session/messages))
 
 (register-system-packages "alive-lsp/test/format/range" '(:alive/test/format/range))
+
+(register-system-packages "alive-lsp/test/eval" '(:alive/test/eval))
