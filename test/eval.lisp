@@ -17,7 +17,12 @@
 (defun errors ()
     (run:test "Errors Eval"
               (lambda ()
-                  (eval:from-string "(/ 5 0)"))))
+                  (handler-bind ((T (lambda (c)
+                                        (format T "CAUGHT ~A~%" c)
+                                        (format T "EXIT ~A~%" (find-restart 'exit))
+                                        (loop :for item :in (compute-restarts c) :do
+                                                  (format T "RESTART ~A ~A~%" (restart-name item) item)))))
+                      (eval:from-string "(/ 5 0)")))))
 
 
 (defun run-all ()
