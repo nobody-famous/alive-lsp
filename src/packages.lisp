@@ -12,7 +12,7 @@
     ((name :accessor name
            :initform nil
            :initarg :name))
-    (:report (lambda (condition stream) (format stream "Package ~A Not Found" (name condition)))))
+    (:report (lambda (condition stream) (format stream "Package Not Found: ~A" (name condition)))))
 
 
 (defclass lisp-package ()

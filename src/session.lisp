@@ -328,7 +328,7 @@
                                    (logger:error-msg (logger state) "Message Handler: ~A" c)
                                    (send-msg state
                                              (message:create-error-resp :code errors:*internal-error*
-                                                                        :message "Internal Server Error"
+                                                                        :message (format nil "~A" c)
                                                                         :id (message:id msg))))))
                     :name (next-thread-name state (message:method-name msg))))
 
