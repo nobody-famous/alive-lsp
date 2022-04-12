@@ -336,7 +336,8 @@
 (defun read-messages (state)
     (loop :while (running state)
           :do (let ((msg (read-message state)))
-                  (spawn-handler state msg))))
+                  (when msg
+                        (spawn-handler state msg)))))
 
 
 (defun start-read-thread (state)
