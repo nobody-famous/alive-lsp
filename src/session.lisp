@@ -266,10 +266,12 @@
 
 (defmethod handle-msg (state (msg eval-msg:request))
     (let* ((pkg-name (eval-msg:get-package msg))
-           (text (eval-msg:get-text msg)))
+           (text (eval-msg:get-text msg))
+           (result (eval:from-string text :pkg-name pkg-name)))
 
-        (eval:from-string text :pkg-name pkg-name)
-        (send-msg state (eval-msg:create-response (message:id msg) "OK"))))
+        (send-msg state
+                  (eval-msg:create-response (message:id msg)
+                                            (format nil "~A" result)))))
 
 
 (defun stop (state)
