@@ -268,10 +268,15 @@
         (send-msg state (unexport:create-response (message:id msg)))))
 
 
+
 (defmethod handle-msg (state (msg eval-msg:request))
     (let* ((pkg-name (eval-msg:get-package msg))
            (text (eval-msg:get-text msg))
-           (result (eval:from-string text :pkg-name pkg-name)))
+           (result (eval:from-string text :pkg-name pkg-name
+                                     :stdout-fn (lambda (data)
+                                                    (send-msg state (stdout:create data)))
+                                     :stderr-fn (lambda (data)
+                                                    (send-msg state (stderr:create data))))))
 
         (send-msg state
                   (eval-msg:create-response (message:id msg)
