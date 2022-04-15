@@ -236,7 +236,7 @@
 
 (defmethod handle-msg (state (msg list-threads:request))
     (let ((threads (remove-if (lambda (thread)
-                                  (eq (threads:id thread) (sxhash (bt:current-thread))))
+                                  (eq (threads:id thread) (threads:get-thread-id (bt:current-thread))))
                               (threads:list-all))))
 
         (send-msg state (list-threads:create-response (message:id msg)
