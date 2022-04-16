@@ -25,6 +25,7 @@
                  "alive-lsp/src/compat/sbcl/file"
                  "alive-lsp/src/compat/sbcl/streams"
                  "alive-lsp/src/compat/sbcl/symbols"
+                 "alive-lsp/src/compat/sbcl/threads"
 
                  "alive-lsp/src/file"
                  "alive-lsp/src/streams"
@@ -124,6 +125,7 @@
 (register-system-packages "alive-lsp/src/compat/sbcl/file" '(:alive/sbcl/file))
 (register-system-packages "alive-lsp/src/compat/sbcl/streams" '(:alive/sbcl/streams))
 (register-system-packages "alive-lsp/src/compat/sbcl/symbols" '(:alive/sbcl/symbols))
+(register-system-packages "alive-lsp/src/compat/sbcl/threads" '(:alive/sbcl/threads))
 
 (register-system-packages "alive-lsp/src/lsp/errors" '(:alive/lsp/errors))
 (register-system-packages "alive-lsp/src/lsp/completions" '(:alive/lsp/completions))
