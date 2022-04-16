@@ -21,6 +21,7 @@
                       (:form :alive/parse/form)
                       (:forms :alive/parse/forms)
                       (:eval-msg :alive/lsp/message/alive/do-eval)
+                      (:get-pkg :alive/lsp/message/alive/get-pkg)
                       (:list-pkgs :alive/lsp/message/alive/list-packages)
                       (:list-threads :alive/lsp/message/alive/list-threads)
                       (:kill-thread :alive/lsp/message/alive/kill-thread)
@@ -268,7 +269,6 @@
         (send-msg state (unexport:create-response (message:id msg)))))
 
 
-
 (defmethod handle-msg (state (msg eval-msg:request))
     (let* ((pkg-name (eval-msg:get-package msg))
            (text (eval-msg:get-text msg))
@@ -281,6 +281,21 @@
         (send-msg state
                   (eval-msg:create-response (message:id msg)
                                             (format nil "~A" result)))))
+
+
+(defmethod handle-msg (state (msg get-pkg:request))
+    (let* ((params (message:params msg))
+           (doc (get-pkg:text-document params))
+           (pos (get-pkg:pos params))
+           (uri (text-doc:uri doc))
+           (file-text (get-file-text state uri))
+           (text (if file-text file-text ""))
+           (pkg (packages:for-pos text pos (logger state))))
+
+        (logger:error-msg (logger state) "get-pkg: ~A" pkg)
+
+        (send-msg state (get-pkg:create-response :id (message:id msg)
+                                                 :pkg-name pkg))))
 
 
 (defun stop (state)

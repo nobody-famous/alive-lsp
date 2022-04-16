@@ -1,9 +1,13 @@
 (defpackage :alive/packages
     (:use :cl)
-    (:export :list-all
+    (:export :for-pos
+             :list-all
              :lookup
              :package-not-found
-             :unexport-symbol))
+             :unexport-symbol)
+    (:local-nicknames (:form :alive/parse/form)
+                      (:forms :alive/parse/forms)
+                      (:logger :alive/logger)))
 
 (in-package :alive/packages)
 
@@ -59,3 +63,14 @@
            (sym (when pkg (find-symbol (string-upcase sym-name) pkg))))
         (when sym
               (unexport sym pkg))))
+
+
+(defun for-pos (text pos logger)
+    (declare (ignore pos))
+
+    (loop :with forms := (forms:from-stream (make-string-input-stream text))
+
+          :for form :in forms :do
+              (logger:error-msg logger "FORM ~A POS ~A~%" (form:get-start form) pos)
+
+          :finally (return "cl-user")))

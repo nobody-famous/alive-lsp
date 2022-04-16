@@ -5,6 +5,7 @@
                       (:did-change :alive/lsp/message/document/did-change)
                       (:did-open :alive/lsp/message/document/did-open)
                       (:eval :alive/lsp/message/alive/do-eval)
+                      (:get-pkg :alive/lsp/message/alive/get-pkg)
                       (:list-pkgs :alive/lsp/message/alive/list-packages)
                       (:list-threads :alive/lsp/message/alive/list-threads)
                       (:kill-thread :alive/lsp/message/alive/kill-thread)
@@ -406,6 +407,36 @@
                            parsed))))))
 
 
+(defun get-pkg-msg ()
+    (labels ((create-content ()
+                  (with-output-to-string (str)
+                      (format str "{~A" utils:*end-line*)
+                      (format str "  \"jsonrpc\": \"2.0\",~A" utils:*end-line*)
+                      (format str "  \"id\": 5,~A" utils:*end-line*)
+                      (format str "  \"method\": \"$/alive/getPackageForPosition\",~A" utils:*end-line*)
+                      (format str "  \"params\": {~A" utils:*end-line*)
+                      (format str "    \"textDocument\": {~A" utils:*end-line*)
+                      (format str "      \"uri\":\"file:///some/file.txt\"~A" utils:*end-line*)
+                      (format str "    },~A" utils:*end-line*)
+                      (format str "    \"position\": {~A" utils:*end-line*)
+                      (format str "      \"line\": 5,~A" utils:*end-line*)
+                      (format str "      \"character\": 10~A" utils:*end-line*)
+                      (format str "    }~A" utils:*end-line*)
+                      (format str "  }~A" utils:*end-line*)
+                      (format str "}~A" utils:*end-line*))))
+
+        (run:test "Get Package Message"
+                  (lambda ()
+                      (let* ((msg (utils:create-msg (create-content)))
+                             (parsed (parse:from-stream (make-string-input-stream msg))))
+                          (check:are-equal
+                           (get-pkg:create-request
+                            :id 5
+                            :params (get-pkg:create-params :text-document (text-doc:create :uri "file:///some/file.txt")
+                                                           :pos (pos:create 5 10)))
+                           parsed))))))
+
+
 (defun run-all ()
     (run:suite "LSP Messages"
                (lambda ()
@@ -421,4 +452,6 @@
                    (list-threads-msg)
                    (kill-thread-msg)
                    (list-pkgs-msg)
-                   (unexport-symbol-msg))))
+                   (unexport-symbol-msg)
+                   (eval-msg)
+                   (get-pkg-msg))))
