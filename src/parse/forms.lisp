@@ -28,15 +28,15 @@
 
 
 (defun token-to-form (token)
-    (form:create (token:get-start token)
-                 (token:get-end token)
-                 (token:get-type-value token)))
+    (form:create :start (token:get-start token)
+                 :end (token:get-end token)
+                 :form-type (token:get-type-value token)))
 
 
 (defun open-paren (state token)
-    (push (form:create (token:get-start token)
-                       nil
-                       types:*open-paren*)
+    (push (form:create :start (token:get-start token)
+                       :end nil
+                       :form-type types:*open-paren*)
           (parse-state-opens state)))
 
 
@@ -113,37 +113,43 @@
 (defun start-quote (state token)
     (let ((open-form (car (parse-state-opens state))))
         (cond ((is-quote open-form) NIL)
-              (T (push (form:create (token:get-start token)
-                                    nil
-                                    (token:get-type-value token))
+              (T (push (form:create :start (token:get-start token)
+                                    :end nil
+                                    :form-type (token:get-type-value token))
                        (parse-state-opens state))))))
 
 
 (defun start-comma (state token)
     (let ((open-form (car (parse-state-opens state))))
         (cond ((is-comma open-form) NIL)
-              (T (push (form:create (token:get-start token)
-                                    nil
-                                    (token:get-type-value token))
+              (T (push (form:create :start (token:get-start token)
+                                    :end nil
+                                    :form-type (token:get-type-value token))
                        (parse-state-opens state))))))
 
 
 (defun symbol-token (state token)
     (let ((open-form (car (parse-state-opens state))))
+
         (cond ((or (is-open-paren open-form)
                    (is-quote open-form))
+               (format T "AFTER OPEN ~A ~A~%" token open-form)
+               (if (string= "in-package" (string-downcase (the simple-string (token:get-text token))))
+                   (form:set-is-in-pkg open-form T))
                (form:set-end open-form (token:get-end token))
-               (push (form:create (token:get-start token)
-                                  (token:get-end token)
-                                  types:*symbol*)
+               (push (form:create :start (token:get-start token)
+                                  :end (token:get-end token)
+                                  :form-type types:*symbol*
+                                  :in-pkg (form:is-in-pkg open-form))
                      (parse-state-opens state)))
 
               ((is-symbol open-form)
+               (format T "IS-SYMBOL ~A~%" open-form)
                (form:set-end open-form (token:get-end token)))
 
-              (T (push (form:create (token:get-start token)
-                                    (token:get-end token)
-                                    types:*symbol*)
+              (T (push (form:create :start (token:get-start token)
+                                    :end (token:get-end token)
+                                    :form-type types:*symbol*)
                        (parse-state-opens state))))))
 
 
@@ -176,12 +182,12 @@
                     ((token:is-type types:*ifdef-false* token)
                      (if (parse-state-opens state)
                          (form:add-kid (car (parse-state-opens state))
-                                       (form:create (token:get-start token)
-                                                    (token:get-end token)
-                                                    types:*ifdef-false*))
-                         (push (form:create (token:get-start token)
-                                            (token:get-end token)
-                                            types:*ifdef-false*)
+                                       (form:create :start (token:get-start token)
+                                                    :end (token:get-end token)
+                                                    :form-type types:*ifdef-false*))
+                         (push (form:create :start (token:get-start token)
+                                            :end (token:get-end token)
+                                            :form-type types:*ifdef-false*)
                                (parse-state-forms state))))
 
                     (T (symbol-token state token)))
