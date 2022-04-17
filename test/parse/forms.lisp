@@ -169,13 +169,16 @@
                   (check-forms (format nil (format nil "(IN-PACKAGE :foo)~%bar"))
                                (list (form:create :start (pos:create 0 0)
                                                   :end (pos:create 0 17)
+                                                  :in-pkg T
                                                   :form-type types:*open-paren*
                                                   :kids (list (form:create :start (pos:create 0 1)
                                                                            :end (pos:create 0 11)
-                                                                           :form-type types:*symbol*)
+                                                                           :form-type types:*symbol*
+                                                                           :in-pkg T)
                                                               (form:create :start (pos:create 0 12)
                                                                            :end (pos:create 0 16)
-                                                                           :form-type types:*symbol*)))
+                                                                           :form-type types:*symbol*
+                                                                           :in-pkg T)))
                                      (form:create :start (pos:create 1 0)
                                                   :end (pos:create 1 3)
                                                   :form-type types:*symbol*)))

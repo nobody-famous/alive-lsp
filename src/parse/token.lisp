@@ -3,9 +3,11 @@
     (:export :clone
              :create
              :get-end
+             :get-end-offset
              :get-type-value
              :get-text
              :get-start
+             :get-start-offset
              :is-type)
     (:local-nicknames (:pos :alive/position)
                       (:types :alive/types)))
@@ -17,9 +19,15 @@
     ((start :accessor start
             :initform (pos:create 0 0)
             :initarg :start)
+     (start-offset :accessor start-offset
+                   :initform nil
+                   :initarg :start-offset)
      (end :accessor end
           :initform (pos:create 0 0)
           :initarg :end)
+     (end-offset :accessor end-offset
+                 :initform nil
+                 :initarg :end-offset)
      (text :accessor text
            :initform nil
            :initarg :text)
@@ -29,9 +37,11 @@
 
 
 (defmethod print-object ((obj token) out)
-    (format out "{~A,~A ~A ~A}"
+    (format out "{~A,~A(~A,~A) ~A ~A}"
             (start obj)
             (end obj)
+            (start-offset obj)
+            (end-offset obj)
             (type-value obj)
             (if (eq types:*ws* (type-value obj))
                 ""
@@ -70,6 +80,14 @@
     nil)
 
 
+(defmethod get-start-offset ((obj token))
+    (start-offset obj))
+
+
+(defmethod get-start-offset ((obj T))
+    nil)
+
+
 (defmethod get-end ((obj token))
     (end obj))
 
@@ -78,15 +96,25 @@
     nil)
 
 
+(defmethod get-end-offset ((obj token))
+    (end-offset obj))
+
+
+(defmethod get-end-offset ((obj T))
+    nil)
+
+
 (defun is-type (type token)
     (and token
          (= type (get-type-value token))))
 
 
-(defun create (&key type-value start end text)
+(defun create (&key type-value start start-offset end end-offset text)
     (make-instance 'token
                    :start start
+                   :start-offset start-offset
                    :end end
+                   :end-offset end-offset
                    :text text
                    :type-value type-value))
 

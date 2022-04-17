@@ -1,13 +1,15 @@
 (defpackage :alive/packages
     (:use :cl)
     (:export :for-pos
+             :for-string
              :list-all
              :lookup
              :package-not-found
              :unexport-symbol)
     (:local-nicknames (:form :alive/parse/form)
                       (:forms :alive/parse/forms)
-                      (:logger :alive/logger)))
+                      (:logger :alive/logger)
+                      (:pos :alive/position)))
 
 (in-package :alive/packages)
 
@@ -65,12 +67,27 @@
               (unexport sym pkg))))
 
 
-(defun for-pos (text pos logger)
-    (declare (ignore pos))
+(defun for-string (str)
+    (lookup (ignore-errors
+             (read
+              (make-string-input-stream str)))))
 
+
+(defun name-from-string (str)
+    (let ((pkg (for-string str)))
+        (when pkg (string-downcase (package-name pkg)))))
+
+
+(defun for-pos (text pos)
     (loop :with forms := (forms:from-stream (make-string-input-stream text))
+          :with pkg := "cl-user"
 
-          :for form :in forms :do
-              (logger:error-msg logger "FORM ~A POS ~A~%" (form:get-start form) pos)
+          :for form :in forms
+          :until (pos:less-or-equal pos (form:get-start form))
+          :do (when (and (form:is-in-pkg form)
+                         (<= 2 (length (form:get-kids form))))
+                    (setf pkg (name-from-string (subseq text
+                                                        (form:get-start-offset (elt (form:get-kids form) 1))
+                                                        (form:get-end-offset (elt (form:get-kids form) 1))))))
 
-          :finally (return "cl-user")))
+          :finally (return pkg)))

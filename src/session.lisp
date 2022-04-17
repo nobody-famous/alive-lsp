@@ -290,9 +290,7 @@
            (uri (text-doc:uri doc))
            (file-text (get-file-text state uri))
            (text (if file-text file-text ""))
-           (pkg (packages:for-pos text pos (logger state))))
-
-        (logger:error-msg (logger state) "get-pkg: ~A" pkg)
+           (pkg (packages:for-pos text pos)))
 
         (send-msg state (get-pkg:create-response :id (message:id msg)
                                                  :pkg-name pkg))))
