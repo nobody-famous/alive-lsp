@@ -15,6 +15,9 @@
      (start :accessor start
             :initform nil
             :initarg :start)
+     (start-offset :accessor start-offset
+                   :initform nil
+                   :initarg :start-offset)
      (buffer :accessor buffer
              :initform nil
              :initarg :buffer)
@@ -29,6 +32,8 @@
 (defun start-token (state)
     (setf (start state)
           (pos:create (line state) (col state)))
+    (setf (start-offset state)
+          (file-position (input state)))
     (setf (buffer state)
           (make-string-output-stream)))
 
@@ -70,7 +75,9 @@
 
         (token:create :type-value token-type
                       :start (start state)
+                      :start-offset (start-offset state)
                       :end end
+                      :end-offset (file-position (input state))
                       :text (if text
                                 text
                                 (get-output-stream-string (buffer state))))))

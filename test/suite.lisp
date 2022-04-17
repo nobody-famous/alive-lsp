@@ -15,4 +15,5 @@
                    (alive/test/parse/tokens:run-all)
                    (alive/test/parse/forms:run-all)
                    (alive/test/session/messages:run-all)
-                   (alive/test/format/range:run-all))))
+                   (alive/test/format/range:run-all)
+                   (alive/test/eval:run-all))))

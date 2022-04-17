@@ -53,6 +53,14 @@
     ())
 
 
+(defclass eval-state (test-state)
+    ())
+
+
+(defclass get-pkg-state (test-state)
+    ())
+
+
 (defun create-state (cls)
     (make-instance cls
                    :logger (logger:create *standard-output* logger:*error*)))
@@ -322,6 +330,65 @@
                       (check:are-equal t (send-called state))))))
 
 
+(defmethod session::get-input-stream ((obj eval-state))
+    (let ((content (with-output-to-string (str)
+                       (format str "{~A" utils:*end-line*)
+                       (format str "  \"jsonrpc\": \"2.0\",~A" utils:*end-line*)
+                       (format str "  \"id\": 5,~A" utils:*end-line*)
+                       (format str "  \"method\": \"$/alive/eval\",~A" utils:*end-line*)
+                       (format str "  \"params\": {~A" utils:*end-line*)
+                       (format str "    \"package\": \"foo\",~A" utils:*end-line*)
+                       (format str "    \"text\": \"(+ 1 2)\"~A" utils:*end-line*)
+                       (format str "  }~A" utils:*end-line*)
+                       (format str "}~A" utils:*end-line*))))
+        (make-string-input-stream (utils:create-msg content))))
+
+
+(defmethod session::send-msg ((obj eval-state) msg)
+    (setf (send-called obj) T))
+
+
+(defun eval-msg ()
+    (let ((state (create-state 'eval-state)))
+        (run:test "Eval Message"
+                  (lambda ()
+                      (session::handle-msg state
+                                           (session::read-message state))
+                      (check:are-equal t (send-called state))))))
+
+
+(defmethod session::get-input-stream ((obj get-pkg-state))
+    (let ((content (with-output-to-string (str)
+                       (format str "{~A" utils:*end-line*)
+                       (format str "  \"jsonrpc\": \"2.0\",~A" utils:*end-line*)
+                       (format str "  \"id\": 5,~A" utils:*end-line*)
+                       (format str "  \"method\": \"$/alive/getPackageForPosition\",~A" utils:*end-line*)
+                       (format str "  \"params\": {~A" utils:*end-line*)
+                       (format str "    \"textDocument\": {~A" utils:*end-line*)
+                       (format str "      \"uri\":\"file:///some/file.txt\"~A" utils:*end-line*)
+                       (format str "    },~A" utils:*end-line*)
+                       (format str "    \"position\": {~A" utils:*end-line*)
+                       (format str "      \"line\": 5,~A" utils:*end-line*)
+                       (format str "      \"character\": 10~A" utils:*end-line*)
+                       (format str "    }~A" utils:*end-line*)
+                       (format str "  }~A" utils:*end-line*)
+                       (format str "}~A" utils:*end-line*))))
+        (make-string-input-stream (utils:create-msg content))))
+
+
+(defmethod session::send-msg ((obj get-pkg-state) msg)
+    (setf (send-called obj) T))
+
+
+(defun get-pkg-msg ()
+    (let ((state (create-state 'get-pkg-state)))
+        (run:test "Get Package Message"
+                  (lambda ()
+                      (session::handle-msg state
+                                           (session::read-message state))
+                      (check:are-equal t (send-called state))))))
+
+
 (defun run-all ()
     (run:suite "Session Message Tests"
                (lambda ()
@@ -333,4 +400,5 @@
                    (list-threads-msg)
                    (kill-thread-msg)
                    (list-pkgs-msg)
-                   (unexport-symbol-msg))))
+                   (unexport-symbol-msg)
+                   (get-pkg-msg))))

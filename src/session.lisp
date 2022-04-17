@@ -9,6 +9,7 @@
                       (:did-open :alive/lsp/message/document/did-open)
                       (:did-change :alive/lsp/message/document/did-change)
                       (:formatting :alive/lsp/message/document/range-format)
+                      (:eval :alive/eval)
                       (:file :alive/file)
                       (:pos :alive/position)
                       (:packages :alive/packages)
@@ -19,6 +20,8 @@
                       (:init :alive/lsp/message/initialize)
                       (:form :alive/parse/form)
                       (:forms :alive/parse/forms)
+                      (:eval-msg :alive/lsp/message/alive/do-eval)
+                      (:get-pkg :alive/lsp/message/alive/get-pkg)
                       (:list-pkgs :alive/lsp/message/alive/list-packages)
                       (:list-threads :alive/lsp/message/alive/list-threads)
                       (:kill-thread :alive/lsp/message/alive/kill-thread)
@@ -233,8 +236,12 @@
 
 
 (defmethod handle-msg (state (msg list-threads:request))
-    (send-msg state (list-threads:create-response (message:id msg)
-                                                  (threads:list-all))))
+    (let ((threads (remove-if (lambda (thread)
+                                  (eq (threads:id thread) (threads:get-thread-id (bt:current-thread))))
+                              (threads:list-all))))
+
+        (send-msg state (list-threads:create-response (message:id msg)
+                                                      threads))))
 
 
 (defmethod handle-msg (state (msg kill-thread:request))
@@ -260,6 +267,33 @@
 
         (packages:unexport-symbol pkg-name sym-name)
         (send-msg state (unexport:create-response (message:id msg)))))
+
+
+(defmethod handle-msg (state (msg eval-msg:request))
+    (let* ((pkg-name (eval-msg:get-package msg))
+           (text (eval-msg:get-text msg))
+           (result (eval:from-string text :pkg-name pkg-name
+                                     :stdout-fn (lambda (data)
+                                                    (send-msg state (stdout:create data)))
+                                     :stderr-fn (lambda (data)
+                                                    (send-msg state (stderr:create data))))))
+
+        (send-msg state
+                  (eval-msg:create-response (message:id msg)
+                                            (format nil "~A" result)))))
+
+
+(defmethod handle-msg (state (msg get-pkg:request))
+    (let* ((params (message:params msg))
+           (doc (get-pkg:text-document params))
+           (pos (get-pkg:pos params))
+           (uri (text-doc:uri doc))
+           (file-text (get-file-text state uri))
+           (text (if file-text file-text ""))
+           (pkg (packages:for-pos text pos)))
+
+        (send-msg state (get-pkg:create-response :id (message:id msg)
+                                                 :pkg-name pkg))))
 
 
 (defun stop (state)
@@ -318,7 +352,7 @@
                                    (logger:error-msg (logger state) "Message Handler: ~A" c)
                                    (send-msg state
                                              (message:create-error-resp :code errors:*internal-error*
-                                                                        :message "Internal Server Error"
+                                                                        :message (format nil "~A" c)
                                                                         :id (message:id msg))))))
                     :name (next-thread-name state (message:method-name msg))))
 
@@ -326,7 +360,8 @@
 (defun read-messages (state)
     (loop :while (running state)
           :do (let ((msg (read-message state)))
-                  (spawn-handler state msg))))
+                  (when msg
+                        (spawn-handler state msg)))))
 
 
 (defun start-read-thread (state)

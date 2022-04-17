@@ -1,19 +1,20 @@
-(defpackage :alive/lsp/message/alive/kill-thread
+(defpackage :alive/lsp/message/alive/do-eval
     (:use :cl)
     (:export :create-params
              :create-request
              :create-response
              :from-wire
-             :get-id
+             :get-package
+             :get-text
              :request)
     (:local-nicknames (:message :alive/lsp/message/abstract)
                       (:types :alive/types)))
 
-(in-package :alive/lsp/message/alive/kill-thread)
+(in-package :alive/lsp/message/alive/do-eval)
 
 
 (defclass request (message:request)
-    ((message::method :initform "$/alive/killThread")))
+    ((message::method :initform "$/alive/eval")))
 
 
 (defmethod print-object ((obj request) out)
@@ -30,25 +31,24 @@
 
 
 (defclass params ()
-    ((id :accessor id
-         :initform nil
-         :initarg :id)))
+    ((package :accessor pkg-name
+              :initform nil
+              :initarg :pkg-name)
+     (text :accessor text
+           :initform nil
+           :initarg :text)))
 
 
 (defmethod print-object ((obj params) out)
-    (format out "{id: ~A}"
-            (id obj)))
+    (format out "{package: ~A; text: ~A;}"
+            (pkg-name obj)
+            (text obj)))
 
 
 (defmethod types:deep-equal-p ((a params) b)
     (and (equal (type-of a) (type-of b))
-         (types:deep-equal-p (id a) (id b))))
-
-
-(defun get-id (msg)
-    (let ((params (message:params msg)))
-        (when params
-              (id params))))
+         (string= (pkg-name a) (pkg-name b))
+         (string= (text a) (text b))))
 
 
 (defclass response (message:result-response)
@@ -61,10 +61,30 @@
             (message:result obj)))
 
 
-(defun create-response (id)
+(defclass response-body ()
+    ((text :accessor text
+           :initform nil
+           :initarg :text)))
+
+
+(defmethod print-object ((obj response-body) out)
+    (format out "{text: ~A}" (text obj)))
+
+
+(defun create-response (id text)
     (make-instance 'response
                    :id id
-                   :result T))
+                   :result (make-instance 'response-body :text text)))
+
+
+(defun get-package (obj)
+    (let ((params (message:params obj)))
+        (pkg-name params)))
+
+
+(defun get-text (obj)
+    (let ((params (message:params obj)))
+        (text params)))
 
 
 (defun create-request (&key jsonrpc id params)
@@ -74,13 +94,16 @@
                    :params params))
 
 
-(defun create-params (&key id)
-    (make-instance 'params :id id))
+(defun create-params (&key pkg-name text)
+    (make-instance 'params
+                   :pkg-name pkg-name
+                   :text text))
 
 
 (defun from-wire (&key jsonrpc id params)
     (labels ((add-param (params key value)
-                  (cond ((eq key :id) (setf (id params) value)))))
+                  (cond ((eq key :package) (setf (pkg-name params) value))
+                        ((eq key :text) (setf (text params) value)))))
 
         (loop :with out-params := (make-instance 'params)
               :for param :in params :do

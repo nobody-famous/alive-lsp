@@ -2,6 +2,7 @@
     (:use :cl)
     (:export :add-listener
              :eof-p
+             :flush-stream
              :make-stream))
 
 (in-package :alive/streams)
@@ -9,6 +10,10 @@
 
 (defun make-stream ()
     #+sbcl (make-instance 'alive/sbcl/streams:rt-stream))
+
+
+(defun flush-stream (obj)
+    #+sbcl (alive/sbcl/streams:flush-buffer obj))
 
 
 (defun add-listener (obj listener)

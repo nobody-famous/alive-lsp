@@ -3,6 +3,7 @@
     (:export :list-all
              :kill
              :thread-not-found
+             :get-thread-id
              :id))
 
 (in-package :alive/threads)
@@ -24,10 +25,14 @@
            :initarg :name)))
 
 
+(defun get-thread-id (thread)
+    #+sbcl (alive/sbcl/threads:get-thread-id thread))
+
+
 (defun list-all ()
     (mapcar (lambda (thread)
                 (make-instance 'thread
-                               :id (sxhash thread)
+                               :id (get-thread-id thread)
                                :name (bt:thread-name thread)))
             (bt:all-threads)))
 

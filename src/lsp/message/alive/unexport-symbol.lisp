@@ -6,9 +6,7 @@
              :from-wire
              :get-package
              :get-symbol
-             :request
-             :show-stdout-p
-             :show-stderr-p)
+             :request)
     (:local-nicknames (:message :alive/lsp/message/abstract)
                       (:types :alive/types)))
 

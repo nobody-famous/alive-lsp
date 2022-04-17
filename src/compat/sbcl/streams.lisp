@@ -2,6 +2,7 @@
     (:use :cl)
     (:export :rt-stream
              :eof-p
+             :flush-buffer
              :add-listener))
 
 (in-package :alive/sbcl/streams)
@@ -43,7 +44,8 @@
 (defun flush-buffer (obj)
     (loop :with str := (get-output-stream-string (buffer obj))
           :for listener :in (listeners obj) :do
-              (funcall listener str)))
+              (when (< 0 (length str))
+                    (funcall listener str))))
 
 
 (defmethod sb-gray:stream-write-char ((obj rt-stream) ch)

@@ -30,7 +30,10 @@
                                                (*error-output* orig-stderr))
                                              (funcall stderr-fn data)))))
 
-        (funcall cmd path)))
+        (unwind-protect
+                (funcall cmd path)
+            (astreams:flush-stream out-stream)
+            (astreams:flush-stream err-stream))))
 
 
 (defun do-compile (path &key stdout-fn stderr-fn)
