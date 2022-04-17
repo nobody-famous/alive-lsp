@@ -9,6 +9,7 @@
                       (:did-open :alive/lsp/message/document/did-open)
                       (:did-change :alive/lsp/message/document/did-change)
                       (:formatting :alive/lsp/message/document/range-format)
+                      (:asdf :alive/asdf)
                       (:eval :alive/eval)
                       (:file :alive/file)
                       (:pos :alive/position)
@@ -22,6 +23,7 @@
                       (:forms :alive/parse/forms)
                       (:eval-msg :alive/lsp/message/alive/do-eval)
                       (:get-pkg :alive/lsp/message/alive/get-pkg)
+                      (:list-asdf :alive/lsp/message/alive/list-asdf)
                       (:list-pkgs :alive/lsp/message/alive/list-packages)
                       (:list-threads :alive/lsp/message/alive/list-threads)
                       (:kill-thread :alive/lsp/message/alive/kill-thread)
@@ -259,6 +261,11 @@
 (defmethod handle-msg (state (msg list-pkgs:request))
     (send-msg state (list-pkgs:create-response (message:id msg)
                                                (packages:list-all))))
+
+
+(defmethod handle-msg (state (msg list-asdf:request))
+    (send-msg state (list-asdf:create-response (message:id msg)
+                                               (asdf:list-systems))))
 
 
 (defmethod handle-msg (state (msg unexport:request))

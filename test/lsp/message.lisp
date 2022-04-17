@@ -6,6 +6,7 @@
                       (:did-open :alive/lsp/message/document/did-open)
                       (:eval :alive/lsp/message/alive/do-eval)
                       (:get-pkg :alive/lsp/message/alive/get-pkg)
+                      (:list-asdf :alive/lsp/message/alive/list-asdf)
                       (:list-pkgs :alive/lsp/message/alive/list-packages)
                       (:list-threads :alive/lsp/message/alive/list-threads)
                       (:kill-thread :alive/lsp/message/alive/kill-thread)
@@ -437,6 +438,25 @@
                            parsed))))))
 
 
+(defun list-asdf-msg ()
+    (labels ((create-content ()
+                  (with-output-to-string (str)
+                      (format str "{~A" utils:*end-line*)
+                      (format str "  \"jsonrpc\": \"2.0\",~A" utils:*end-line*)
+                      (format str "  \"id\": 5,~A" utils:*end-line*)
+                      (format str "  \"method\": \"$/alive/listAsdfSystems\"~A" utils:*end-line*)
+                      (format str "}~A" utils:*end-line*))))
+
+        (run:test "List ASDF Systems Message"
+                  (lambda ()
+                      (let* ((msg (utils:create-msg (create-content)))
+                             (parsed (parse:from-stream (make-string-input-stream msg))))
+                          (check:are-equal
+                           (list-asdf:create-request
+                            :id 5)
+                           parsed))))))
+
+
 (defun run-all ()
     (run:suite "LSP Messages"
                (lambda ()
@@ -454,4 +474,5 @@
                    (list-pkgs-msg)
                    (unexport-symbol-msg)
                    (eval-msg)
-                   (get-pkg-msg))))
+                   (get-pkg-msg)
+                   (list-asdf-msg))))

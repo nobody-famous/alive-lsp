@@ -8,6 +8,7 @@
                       (:formatting :alive/lsp/message/document/range-format)
                       (:eval :alive/lsp/message/alive/do-eval)
                       (:get-pkg :alive/lsp/message/alive/get-pkg)
+                      (:list-asdf :alive/lsp/message/alive/list-asdf)
                       (:list-pkgs :alive/lsp/message/alive/list-packages)
                       (:list-threads :alive/lsp/message/alive/list-threads)
                       (:kill-thread :alive/lsp/message/alive/kill-thread)
@@ -188,6 +189,11 @@
                (kill-thread:from-wire :jsonrpc (jsonrpc fields)
                                       :id msg-id
                                       :params (params fields)))
+
+              ((string= "$/alive/listasdfsystems" name)
+               (list-asdf:from-wire :jsonrpc (jsonrpc fields)
+                                    :id msg-id
+                                    :params (params fields)))
 
               ((string= "$/alive/listpackages" name)
                (list-pkgs:from-wire :jsonrpc (jsonrpc fields)

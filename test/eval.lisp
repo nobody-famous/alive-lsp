@@ -11,7 +11,7 @@
 (defun basic ()
     (run:test "Basic Eval"
               (lambda ()
-                  (eval:from-string "(+ 1 2)"))))
+                  (check:are-equal 3 (eval:from-string "(+ 1 2)")))))
 
 
 (defun errors ()

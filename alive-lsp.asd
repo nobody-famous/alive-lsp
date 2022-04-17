@@ -34,6 +34,7 @@
                  "alive-lsp/src/packages"
                  "alive-lsp/src/threads"
                  "alive-lsp/src/eval"
+                 "alive-lsp/src/asdf"
 
                  "alive-lsp/src/lsp/errors"
                  "alive-lsp/src/lsp/completions"
@@ -49,6 +50,7 @@
                  "alive-lsp/src/lsp/message/initialize"
                  "alive-lsp/src/lsp/message/alive/do-eval"
                  "alive-lsp/src/lsp/message/alive/get-pkg"
+                 "alive-lsp/src/lsp/message/alive/list-asdf"
                  "alive-lsp/src/lsp/message/alive/list-packages"
                  "alive-lsp/src/lsp/message/alive/list-threads"
                  "alive-lsp/src/lsp/message/alive/kill-thread"
@@ -122,6 +124,7 @@
 (register-system-packages "alive-lsp/src/threads" '(:alive/threads))
 (register-system-packages "alive-lsp/src/packages" '(:alive/packages))
 (register-system-packages "alive-lsp/src/eval" '(:alive/eval))
+(register-system-packages "alive-lsp/src/asdf" '(:alive/asdf))
 
 (register-system-packages "alive-lsp/src/compat/sbcl/file" '(:alive/sbcl/file))
 (register-system-packages "alive-lsp/src/compat/sbcl/streams" '(:alive/sbcl/streams))
@@ -142,6 +145,7 @@
 (register-system-packages "alive-lsp/src/lsp/message/initialize" '(:alive/lsp/message/initialize))
 (register-system-packages "alive-lsp/src/lsp/message/alive/do-eval" '(:alive/lsp/message/alive/do-eval))
 (register-system-packages "alive-lsp/src/lsp/message/alive/get-pkg" '(:alive/lsp/message/alive/get-pkg))
+(register-system-packages "alive-lsp/src/lsp/message/alive/list-asdf" '(:alive/lsp/message/alive/list-asdf))
 (register-system-packages "alive-lsp/src/lsp/message/alive/list-packages" '(:alive/lsp/message/alive/list-packages))
 (register-system-packages "alive-lsp/src/lsp/message/alive/list-threads" '(:alive/lsp/message/alive/list-threads))
 (register-system-packages "alive-lsp/src/lsp/message/alive/kill-thread" '(:alive/lsp/message/alive/kill-thread))
