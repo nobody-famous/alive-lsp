@@ -12,6 +12,7 @@
                       (:list-pkgs :alive/lsp/message/alive/list-packages)
                       (:list-threads :alive/lsp/message/alive/list-threads)
                       (:kill-thread :alive/lsp/message/alive/kill-thread)
+                      (:load-asdf :alive/lsp/message/alive/load-asdf)
                       (:load-file :alive/lsp/message/alive/load-file)
                       (:top-form :alive/lsp/message/alive/top-form)
                       (:try-compile :alive/lsp/message/alive/try-compile)
@@ -174,6 +175,11 @@
                (get-pkg:from-wire :jsonrpc (jsonrpc fields)
                                   :id msg-id
                                   :params (params fields)))
+
+              ((string= "$/alive/loadasdfsystem" name)
+               (load-asdf:from-wire :jsonrpc (jsonrpc fields)
+                                    :id msg-id
+                                    :params (params fields)))
 
               ((string= "$/alive/loadfile" name)
                (load-file:from-wire :jsonrpc (jsonrpc fields)

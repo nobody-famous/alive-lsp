@@ -23,6 +23,7 @@
                       (:forms :alive/parse/forms)
                       (:eval-msg :alive/lsp/message/alive/do-eval)
                       (:get-pkg :alive/lsp/message/alive/get-pkg)
+                      (:load-asdf :alive/lsp/message/alive/load-asdf)
                       (:list-asdf :alive/lsp/message/alive/list-asdf)
                       (:list-pkgs :alive/lsp/message/alive/list-packages)
                       (:list-threads :alive/lsp/message/alive/list-threads)
@@ -301,6 +302,19 @@
 
         (send-msg state (get-pkg:create-response :id (message:id msg)
                                                  :pkg-name pkg))))
+
+
+(defmethod handle-msg (state (msg load-asdf:request))
+    (let* ((params (message:params msg))
+           (name (load-asdf:get-name params)))
+
+        (asdf:load-system :name name
+                          :stdout-fn (lambda (data)
+                                         (send-msg state (stdout:create data)))
+                          :stderr-fn (lambda (data)
+                                         (send-msg state (stderr:create data))))
+
+        (send-msg state (load-asdf:create-response (message:id msg)))))
 
 
 (defun stop (state)

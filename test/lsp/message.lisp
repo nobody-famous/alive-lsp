@@ -7,6 +7,7 @@
                       (:eval :alive/lsp/message/alive/do-eval)
                       (:get-pkg :alive/lsp/message/alive/get-pkg)
                       (:list-asdf :alive/lsp/message/alive/list-asdf)
+                      (:load-asdf :alive/lsp/message/alive/load-asdf)
                       (:list-pkgs :alive/lsp/message/alive/list-packages)
                       (:list-threads :alive/lsp/message/alive/list-threads)
                       (:kill-thread :alive/lsp/message/alive/kill-thread)
@@ -457,6 +458,29 @@
                            parsed))))))
 
 
+(defun load-asdf-system-msg ()
+    (labels ((create-content ()
+                  (with-output-to-string (str)
+                      (format str "{~A" utils:*end-line*)
+                      (format str "  \"jsonrpc\": \"2.0\",~A" utils:*end-line*)
+                      (format str "  \"id\": 5,~A" utils:*end-line*)
+                      (format str "  \"method\": \"$/alive/loadAsdfSystem\",~A" utils:*end-line*)
+                      (format str "  \"params\": {~A" utils:*end-line*)
+                      (format str "    \"name\": \"foo\"~A" utils:*end-line*)
+                      (format str "  }~A" utils:*end-line*)
+                      (format str "}~A" utils:*end-line*))))
+
+        (run:test "Load ASDF System Message"
+                  (lambda ()
+                      (let* ((msg (utils:create-msg (create-content)))
+                             (parsed (parse:from-stream (make-string-input-stream msg))))
+                          (check:are-equal
+                           (load-asdf:create-request
+                            :id 5
+                            :params (load-asdf:create-params :name "foo"))
+                           parsed))))))
+
+
 (defun run-all ()
     (run:suite "LSP Messages"
                (lambda ()
@@ -475,4 +499,5 @@
                    (unexport-symbol-msg)
                    (eval-msg)
                    (get-pkg-msg)
-                   (list-asdf-msg))))
+                   (list-asdf-msg)
+                   (load-asdf-system-msg))))

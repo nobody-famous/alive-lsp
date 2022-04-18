@@ -63,6 +63,9 @@
 (defclass list-asdf-state (test-state)
     ())
 
+(defclass load-asdf-state (test-state)
+    ())
+
 
 (defun create-state (cls)
     (make-instance cls
@@ -409,6 +412,32 @@
 (defun list-asdf-msg ()
     (let ((state (create-state 'list-asdf-state)))
         (run:test "List ASDF Systems Message"
+                  (lambda ()
+                      (session::handle-msg state
+                                           (session::read-message state))
+                      (check:are-equal t (send-called state))))))
+
+
+(defmethod session::get-input-stream ((obj load-asdf-state))
+    (let ((content (with-output-to-string (str)
+                       (format str "{~A" utils:*end-line*)
+                       (format str "  \"jsonrpc\": \"2.0\",~A" utils:*end-line*)
+                       (format str "  \"id\": 5,~A" utils:*end-line*)
+                       (format str "  \"method\": \"$/alive/loadAsdfSystem\",~A" utils:*end-line*)
+                       (format str "  \"params\": {~A" utils:*end-line*)
+                       (format str "    \"name\": \"foo\"~A" utils:*end-line*)
+                       (format str "  }~A" utils:*end-line*)
+                       (format str "}~A" utils:*end-line*))))
+        (make-string-input-stream (utils:create-msg content))))
+
+
+(defmethod session::send-msg ((obj load-asdf-state) msg)
+    (setf (send-called obj) T))
+
+
+(defun load-asdf-msg ()
+    (let ((state (create-state 'load-asdf-state)))
+        (run:test "Load ASDF System Message"
                   (lambda ()
                       (session::handle-msg state
                                            (session::read-message state))
