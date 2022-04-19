@@ -5,6 +5,7 @@
              :list-all
              :lookup
              :package-not-found
+             :do-remove
              :unexport-symbol)
     (:local-nicknames (:form :alive/parse/form)
                       (:forms :alive/parse/forms)
@@ -91,3 +92,8 @@
                                                         (form:get-end-offset (elt (form:get-kids form) 1))))))
 
           :finally (return pkg)))
+
+
+(defun do-remove (name)
+    (let ((pkg (lookup name)))
+        (when pkg (delete-package pkg))))

@@ -23,6 +23,7 @@
                       (:forms :alive/parse/forms)
                       (:eval-msg :alive/lsp/message/alive/do-eval)
                       (:get-pkg :alive/lsp/message/alive/get-pkg)
+                      (:remove-pkg :alive/lsp/message/alive/remove-pkg)
                       (:load-asdf :alive/lsp/message/alive/load-asdf)
                       (:list-asdf :alive/lsp/message/alive/list-asdf)
                       (:list-pkgs :alive/lsp/message/alive/list-packages)
@@ -302,6 +303,14 @@
 
         (send-msg state (get-pkg:create-response :id (message:id msg)
                                                  :pkg-name pkg))))
+
+
+(defmethod handle-msg (state (msg remove-pkg:request))
+    (let* ((params (message:params msg))
+           (pkg-name (remove-pkg:name params)))
+
+        (packages:do-remove pkg-name)
+        (send-msg state (remove-pkg:create-response :id (message:id msg)))))
 
 
 (defmethod handle-msg (state (msg load-asdf:request))

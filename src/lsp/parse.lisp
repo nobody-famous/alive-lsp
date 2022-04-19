@@ -8,6 +8,7 @@
                       (:formatting :alive/lsp/message/document/range-format)
                       (:eval :alive/lsp/message/alive/do-eval)
                       (:get-pkg :alive/lsp/message/alive/get-pkg)
+                      (:remove-pkg :alive/lsp/message/alive/remove-pkg)
                       (:list-asdf :alive/lsp/message/alive/list-asdf)
                       (:list-pkgs :alive/lsp/message/alive/list-packages)
                       (:list-threads :alive/lsp/message/alive/list-threads)
@@ -175,6 +176,11 @@
                (get-pkg:from-wire :jsonrpc (jsonrpc fields)
                                   :id msg-id
                                   :params (params fields)))
+
+              ((string= "$/alive/removepackage" name)
+               (remove-pkg:from-wire :jsonrpc (jsonrpc fields)
+                                     :id msg-id
+                                     :params (params fields)))
 
               ((string= "$/alive/loadasdfsystem" name)
                (load-asdf:from-wire :jsonrpc (jsonrpc fields)

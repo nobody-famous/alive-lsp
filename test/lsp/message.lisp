@@ -6,6 +6,7 @@
                       (:did-open :alive/lsp/message/document/did-open)
                       (:eval :alive/lsp/message/alive/do-eval)
                       (:get-pkg :alive/lsp/message/alive/get-pkg)
+                      (:remove-pkg :alive/lsp/message/alive/remove-pkg)
                       (:list-asdf :alive/lsp/message/alive/list-asdf)
                       (:load-asdf :alive/lsp/message/alive/load-asdf)
                       (:list-pkgs :alive/lsp/message/alive/list-packages)
@@ -436,6 +437,29 @@
                             :id 5
                             :params (get-pkg:create-params :text-document (text-doc:create :uri "file:///some/file.txt")
                                                            :pos (pos:create 5 10)))
+                           parsed))))))
+
+
+(defun remove-pkg-msg ()
+    (labels ((create-content ()
+                  (with-output-to-string (str)
+                      (format str "{~A" utils:*end-line*)
+                      (format str "  \"jsonrpc\": \"2.0\",~A" utils:*end-line*)
+                      (format str "  \"id\": 5,~A" utils:*end-line*)
+                      (format str "  \"method\": \"$/alive/removePackage\",~A" utils:*end-line*)
+                      (format str "  \"params\": {~A" utils:*end-line*)
+                      (format str "    \"name\": \"foo\"~A" utils:*end-line*)
+                      (format str "  }~A" utils:*end-line*)
+                      (format str "}~A" utils:*end-line*))))
+
+        (run:test "Remove Package Message"
+                  (lambda ()
+                      (let* ((msg (utils:create-msg (create-content)))
+                             (parsed (parse:from-stream (make-string-input-stream msg))))
+                          (check:are-equal
+                           (remove-pkg:create-request
+                            :id 5
+                            :params (remove-pkg:create-params :name "foo"))
                            parsed))))))
 
 

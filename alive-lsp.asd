@@ -50,6 +50,7 @@
                  "alive-lsp/src/lsp/message/initialize"
                  "alive-lsp/src/lsp/message/alive/do-eval"
                  "alive-lsp/src/lsp/message/alive/get-pkg"
+                 "alive-lsp/src/lsp/message/alive/remove-pkg"
                  "alive-lsp/src/lsp/message/alive/load-asdf"
                  "alive-lsp/src/lsp/message/alive/list-asdf"
                  "alive-lsp/src/lsp/message/alive/list-packages"
@@ -146,6 +147,7 @@
 (register-system-packages "alive-lsp/src/lsp/message/initialize" '(:alive/lsp/message/initialize))
 (register-system-packages "alive-lsp/src/lsp/message/alive/do-eval" '(:alive/lsp/message/alive/do-eval))
 (register-system-packages "alive-lsp/src/lsp/message/alive/get-pkg" '(:alive/lsp/message/alive/get-pkg))
+(register-system-packages "alive-lsp/src/lsp/message/alive/remove-pkg" '(:alive/lsp/message/alive/remove-pkg))
 (register-system-packages "alive-lsp/src/lsp/message/alive/load-asdf" '(:alive/lsp/message/alive/load-asdf))
 (register-system-packages "alive-lsp/src/lsp/message/alive/list-asdf" '(:alive/lsp/message/alive/list-asdf))
 (register-system-packages "alive-lsp/src/lsp/message/alive/list-packages" '(:alive/lsp/message/alive/list-packages))
