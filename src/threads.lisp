@@ -4,7 +4,8 @@
              :kill
              :thread-not-found
              :get-thread-id
-             :id))
+             :id)
+    (:local-nicknames (:logger :alive/logger)))
 
 (in-package :alive/threads)
 
@@ -39,13 +40,12 @@
 
 (defun kill (thread-hash)
     (let ((thread (reduce (lambda (acc thread)
-                              (if acc
-                                  acc
+                              (or acc
                                   (when (= thread-hash (get-thread-id thread))
-                                        thread))
-                              acc)
+                                        thread)))
                           (bt:all-threads)
                           :initial-value nil)))
+
         (unless thread
                 (error (make-condition 'thread-not-found :id thread-hash)))
 
