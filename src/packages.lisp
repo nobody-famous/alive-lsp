@@ -40,7 +40,8 @@
 (defun get-all-exports (pkg)
     (let ((syms nil))
         (do-external-symbols (s pkg syms)
-            (push s syms))))
+            (push (string-downcase (string s))
+                  syms))))
 
 
 (defun create-package (pkg)
