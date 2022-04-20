@@ -9,6 +9,7 @@
                       (:did-open :alive/lsp/message/document/did-open)
                       (:did-change :alive/lsp/message/document/did-change)
                       (:formatting :alive/lsp/message/document/range-format)
+                      (:asdf :alive/asdf)
                       (:eval :alive/eval)
                       (:file :alive/file)
                       (:pos :alive/position)
@@ -22,6 +23,9 @@
                       (:forms :alive/parse/forms)
                       (:eval-msg :alive/lsp/message/alive/do-eval)
                       (:get-pkg :alive/lsp/message/alive/get-pkg)
+                      (:remove-pkg :alive/lsp/message/alive/remove-pkg)
+                      (:load-asdf :alive/lsp/message/alive/load-asdf)
+                      (:list-asdf :alive/lsp/message/alive/list-asdf)
                       (:list-pkgs :alive/lsp/message/alive/list-packages)
                       (:list-threads :alive/lsp/message/alive/list-threads)
                       (:kill-thread :alive/lsp/message/alive/kill-thread)
@@ -261,6 +265,11 @@
                                                (packages:list-all))))
 
 
+(defmethod handle-msg (state (msg list-asdf:request))
+    (send-msg state (list-asdf:create-response (message:id msg)
+                                               (asdf:list-systems))))
+
+
 (defmethod handle-msg (state (msg unexport:request))
     (let* ((sym-name (unexport:get-symbol msg))
            (pkg-name (unexport:get-package msg)))
@@ -294,6 +303,27 @@
 
         (send-msg state (get-pkg:create-response :id (message:id msg)
                                                  :pkg-name pkg))))
+
+
+(defmethod handle-msg (state (msg remove-pkg:request))
+    (let* ((params (message:params msg))
+           (pkg-name (remove-pkg:name params)))
+
+        (packages:do-remove pkg-name)
+        (send-msg state (remove-pkg:create-response :id (message:id msg)))))
+
+
+(defmethod handle-msg (state (msg load-asdf:request))
+    (let* ((params (message:params msg))
+           (name (load-asdf:get-name params)))
+
+        (asdf:load-system :name name
+                          :stdout-fn (lambda (data)
+                                         (send-msg state (stdout:create data)))
+                          :stderr-fn (lambda (data)
+                                         (send-msg state (stderr:create data))))
+
+        (send-msg state (load-asdf:create-response (message:id msg)))))
 
 
 (defun stop (state)
