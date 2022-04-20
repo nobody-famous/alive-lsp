@@ -41,7 +41,7 @@
 (defun kill (thread-hash)
     (let ((thread (reduce (lambda (acc thread)
                               (or acc
-                                  (when (= thread-hash (get-thread-id thread))
+                                  (when (equalp thread-hash (get-thread-id thread))
                                         thread)))
                           (bt:all-threads)
                           :initial-value nil)))

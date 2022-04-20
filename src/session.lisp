@@ -377,7 +377,7 @@
     (bt:make-thread (lambda ()
                         (unwind-protect
                                 (progn
-                                 (logger:error-msg (logger state) "STARTING ~A~%" (bt:thread-name (bt:current-thread)))
+                                 (logger:info-msg (logger state) "STARTING ~A~%" (bt:thread-name (bt:current-thread)))
                                  (handler-case (when msg
                                                      (logger:trace-msg (logger state) "--> ~A~%" (json:encode-json-to-string msg))
                                                      (handle-msg state msg))
@@ -387,7 +387,7 @@
                                                       (message:create-error-resp :code errors:*internal-error*
                                                                                  :message (format nil "~A" c)
                                                                                  :id (message:id msg))))))
-                            (logger:error-msg (logger state) "DONE ~A~%" (bt:thread-name (bt:current-thread)))))
+                            (logger:info-msg (logger state) "DONE ~A~%" (bt:thread-name (bt:current-thread)))))
                     :name (next-thread-name state (message:method-name msg))))
 
 
