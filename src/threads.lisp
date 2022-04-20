@@ -41,7 +41,7 @@
     (let ((thread (reduce (lambda (acc thread)
                               (if acc
                                   acc
-                                  (when (= thread-hash (sxhash thread))
+                                  (when (= thread-hash (get-thread-id thread))
                                         thread))
                               acc)
                           (bt:all-threads)
