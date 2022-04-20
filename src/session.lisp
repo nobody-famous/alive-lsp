@@ -375,15 +375,19 @@
 
 (defun spawn-handler (state msg)
     (bt:make-thread (lambda ()
-                        (handler-case (when msg
-                                            (logger:trace-msg (logger state) "--> ~A~%" (json:encode-json-to-string msg))
-                                            (handle-msg state msg))
-                            (error (c)
-                                   (logger:error-msg (logger state) "Message Handler: ~A" c)
-                                   (send-msg state
-                                             (message:create-error-resp :code errors:*internal-error*
-                                                                        :message (format nil "~A" c)
-                                                                        :id (message:id msg))))))
+                        (unwind-protect
+                                (progn
+                                 (logger:error-msg (logger state) "STARTING ~A~%" (bt:thread-name (bt:current-thread)))
+                                 (handler-case (when msg
+                                                     (logger:trace-msg (logger state) "--> ~A~%" (json:encode-json-to-string msg))
+                                                     (handle-msg state msg))
+                                     (error (c)
+                                            (logger:error-msg (logger state) "Message Handler: ~A" c)
+                                            (send-msg state
+                                                      (message:create-error-resp :code errors:*internal-error*
+                                                                                 :message (format nil "~A" c)
+                                                                                 :id (message:id msg))))))
+                            (logger:error-msg (logger state) "DONE ~A~%" (bt:thread-name (bt:current-thread)))))
                     :name (next-thread-name state (message:method-name msg))))
 
 
