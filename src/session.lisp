@@ -66,6 +66,9 @@
      (files :accessor files
             :initform (make-hash-table :test 'equalp)
             :initarg :files)
+     (thread-msgs :accessor thread-msgs
+                  :initform (make-hash-table :test 'equalp)
+                  :initarg :thread-msgs)
      (listeners :accessor listeners
                 :initform nil
                 :initarg :listeners)
@@ -251,6 +254,13 @@
 (defmethod handle-msg (state (msg kill-thread:request))
     (handler-case
             (progn
+             (let ((thread-msg-id (gethash (kill-thread:get-id msg)
+                                           (thread-msgs state))))
+                 (when thread-msg-id
+                       (send-msg state
+                                 (message:create-error-resp :id thread-msg-id
+                                                            :code errors:*request-cancelled*
+                                                            :message (format nil "Request ~A canceled" (message:id msg))))))
              (threads:kill (kill-thread:get-id msg))
              (send-msg state (kill-thread:create-response (message:id msg))))
         (threads:thread-not-found (c)
@@ -376,18 +386,20 @@
 (defun spawn-handler (state msg)
     (bt:make-thread (lambda ()
                         (unwind-protect
-                                (progn
-                                 (logger:info-msg (logger state) "STARTING ~A~%" (bt:thread-name (bt:current-thread)))
-                                 (handler-case (when msg
-                                                     (logger:trace-msg (logger state) "--> ~A~%" (json:encode-json-to-string msg))
-                                                     (handle-msg state msg))
-                                     (error (c)
-                                            (logger:error-msg (logger state) "Message Handler: ~A" c)
-                                            (send-msg state
-                                                      (message:create-error-resp :code errors:*internal-error*
-                                                                                 :message (format nil "~A" c)
-                                                                                 :id (message:id msg))))))
-                            (logger:info-msg (logger state) "DONE ~A~%" (bt:thread-name (bt:current-thread)))))
+                                (handler-case (when msg
+                                                    (when (typep msg 'message:request)
+                                                          (setf (gethash (threads:get-thread-id (bt:current-thread)) (thread-msgs state))
+                                                                (message:id msg)))
+                                                    (logger:trace-msg (logger state) "--> ~A~%" (json:encode-json-to-string msg))
+                                                    (handle-msg state msg))
+                                    (error (c)
+                                           (logger:error-msg (logger state) "Message Handler: ~A" c)
+                                           (send-msg state
+                                                     (message:create-error-resp :code errors:*internal-error*
+                                                                                :message (format nil "~A" c)
+                                                                                :id (message:id msg)))))
+                            (when (typep msg 'message:request)
+                                  (remhash (threads:get-thread-id (bt:current-thread)) (thread-msgs state)))))
                     :name (next-thread-name state (message:method-name msg))))
 
 
