@@ -28,13 +28,17 @@
            :initarg :name)
      (exports :accessor exports
               :initform nil
-              :initarg :exports)))
+              :initarg :exports)
+     (nicknames :accessor nicknames
+                :initform nil
+                :initarg :nicknames)))
 
 
 (defmethod print-object ((obj lisp-package) out)
-    (format out "{name: ~A; exports: ~A}"
+    (format out "{name: ~A; exports: ~A; nicknames: ~A}"
             (name obj)
-            (exports obj)))
+            (exports obj)
+            (nicknames obj)))
 
 
 (defun get-all-exports (pkg)
@@ -44,12 +48,18 @@
                   syms))))
 
 
+(defun get-all-nicknames (pkg)
+    (package-nicknames pkg))
+
+
 (defun create-package (pkg)
     (let ((name (package-name pkg))
-          (exports (get-all-exports pkg)))
+          (exports (get-all-exports pkg))
+          (nicknames (get-all-nicknames pkg)))
         (make-instance 'lisp-package
                        :name name
-                       :exports exports)))
+                       :exports exports
+                       :nicknames nicknames)))
 
 
 (defun list-all ()
