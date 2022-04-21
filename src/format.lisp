@@ -211,7 +211,8 @@
     (reduce (lambda (acc item)
                 (or acc
                     (and (symbolp item)
-                         (string= item "&BODY"))))
+                         (or (string= item "&BODY")
+                             (string= item "&REST")))))
             lambda-list
             :initial-value NIL))
 
@@ -407,7 +408,8 @@
                                  (lambda-list form-open)
                                  (not (token:is-type types:*ws* token)))
                             (when (and (not (eq 'cons (type-of (car (lambda-list form-open)))))
-                                       (string= (the symbol (car (lambda-list form-open))) "&BODY"))
+                                       (or (string= (the symbol (car (lambda-list form-open))) "&BODY")
+                                           (string= (the symbol (car (lambda-list form-open))) "&REST")))
                                   (pop (parse-state-indent state)))
                             (pop (lambda-list form-open)))
 
