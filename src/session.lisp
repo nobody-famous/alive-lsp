@@ -383,24 +383,30 @@
         name))
 
 
+(defun process-msg (state msg)
+    (unwind-protect
+            (handler-case (when msg
+                                (when (typep msg 'message:request)
+                                      (setf (gethash (threads:get-thread-id (bt:current-thread)) (thread-msgs state))
+                                            (message:id msg)))
+                                (logger:trace-msg (logger state) "--> ~A~%" (json:encode-json-to-string msg))
+                                (handle-msg state msg))
+                (error (c)
+                       (logger:error-msg (logger state) "Message Handler: ~A" c)
+                       (send-msg state
+                                 (message:create-error-resp :code errors:*internal-error*
+                                                            :message (format nil "~A" c)
+                                                            :id (message:id msg)))))
+        (when (typep msg 'message:request)
+              (remhash (threads:get-thread-id (bt:current-thread)) (thread-msgs state)))))
+
+
 (defun spawn-handler (state msg)
-    (bt:make-thread (lambda ()
-                        (unwind-protect
-                                (handler-case (when msg
-                                                    (when (typep msg 'message:request)
-                                                          (setf (gethash (threads:get-thread-id (bt:current-thread)) (thread-msgs state))
-                                                                (message:id msg)))
-                                                    (logger:trace-msg (logger state) "--> ~A~%" (json:encode-json-to-string msg))
-                                                    (handle-msg state msg))
-                                    (error (c)
-                                           (logger:error-msg (logger state) "Message Handler: ~A" c)
-                                           (send-msg state
-                                                     (message:create-error-resp :code errors:*internal-error*
-                                                                                :message (format nil "~A" c)
-                                                                                :id (message:id msg)))))
-                            (when (typep msg 'message:request)
-                                  (remhash (threads:get-thread-id (bt:current-thread)) (thread-msgs state)))))
-                    :name (next-thread-name state (message:method-name msg))))
+    (let ((stdout *standard-output*))
+        (bt:make-thread (lambda ()
+                            (let ((*standard-output* stdout))
+                                (process-msg state msg)))
+                        :name (next-thread-name state (message:method-name msg)))))
 
 
 (defun read-messages (state)
