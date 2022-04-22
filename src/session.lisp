@@ -75,6 +75,9 @@
      (thread-name-id :accessor thread-name-id
                      :initform 1
                      :initarg :thread-name-id)
+     (lock :accessor lock
+           :initform (bt:make-recursive-lock)
+           :initarg :lock)
      (read-thread :accessor read-thread
                   :initform nil
                   :initarg :read-thread)))
@@ -128,8 +131,9 @@
 (defmethod send-msg ((obj network-state) msg)
     (logger:trace-msg (logger obj) "<-- ~A~%" (json:encode-json-to-string msg))
 
-    (write-string (packet:to-wire msg) (usocket:socket-stream (conn obj)))
-    (force-output (usocket:socket-stream (conn obj))))
+    (bt:with-recursive-lock-held ((lock obj))
+                                 (write-string (packet:to-wire msg) (usocket:socket-stream (conn obj)))
+                                 (force-output (usocket:socket-stream (conn obj)))))
 
 
 (defmethod handle-msg ((obj state) (msg init:request))

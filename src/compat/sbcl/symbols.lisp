@@ -10,10 +10,9 @@
 
 
 (defun get-lambda-list (fn-name &optional pkg-name)
-    (let* ((pkg-str (if pkg-name
-                        pkg-name
-                        "CL-USER"))
-           (pkg (ignore-errors (find-package (string-upcase pkg-str))))
+    (let* ((pkg (ignore-errors (if pkg-name
+                                   (find-package (string-upcase pkg-name))
+                                   *package*)))
            (*package* (if pkg
                           pkg
                           *package*)))
@@ -23,10 +22,9 @@
 
 
 (defun function-p (sym-name &optional pkg-name)
-    (let* ((pkg-str (if pkg-name
-                        pkg-name
-                        "CL-USER"))
-           (pkg (find-package (string-upcase pkg-str)))
+    (let* ((pkg (if pkg-name
+                    (find-package (string-upcase pkg-name))
+                    *package*))
            (sym (when pkg
                       (find-symbol (string-upcase sym-name) pkg))))
 
