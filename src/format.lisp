@@ -193,6 +193,20 @@
     (push value (parse-state-indent state)))
 
 
+(defun get-next-indent (state)
+    (let ((indent (car (parse-state-indent state))))
+        (if (eq 'cons (type-of indent))
+            (car indent)
+            (if indent indent 0))))
+
+
+(defun pop-next-indent (state)
+    (let ((indent (car (parse-state-indent state))))
+        (if (eq 'cons (type-of indent))
+            (replace-indent state (cdr indent))
+            (pop (parse-state-indent state)))))
+
+
 (defun prev-is-start-form (state)
     (loop :with tokens := (parse-state-seen state)
 
@@ -226,14 +240,13 @@
                 (if (has-body lambda-list)
                     (progn (setf (aligned form-open) T)
                            (setf (lambda-list form-open) lambda-list)
-                           (replace-indent state (the fixnum (+ (the fixnum (options-indent-width (parse-state-options state)))
-                                                                (the fixnum (pos:col (token:get-start token)))
-                                                                (the fixnum -1))))
-                           (push (the fixnum (+ (the fixnum (* 2
-                                                               (the fixnum (options-indent-width (parse-state-options state)))))
-                                                (the fixnum (pos:col (token:get-start token)))
-                                                (the fixnum -1)))
-                                 (parse-state-indent state)))
+                           (replace-indent state (cons (the fixnum (+ (the fixnum (* 2
+                                                                                     (the fixnum (options-indent-width (parse-state-options state)))))
+                                                                      (the fixnum (pos:col (token:get-start token)))
+                                                                      (the fixnum -1)))
+                                                       (the fixnum (+ (the fixnum (options-indent-width (parse-state-options state)))
+                                                                      (the fixnum (pos:col (token:get-start token)))
+                                                                      (the fixnum -1))))))
                     (replace-indent state (pos:col (token:get-start token)))))
 
             (when (and form-open (not (aligned form-open)))
@@ -252,7 +265,7 @@
 
 
 (defun fix-indent (state)
-    (let* ((indent (car (parse-state-indent state)))
+    (let* ((indent (get-next-indent state))
            (token (car (parse-state-seen state)))
            (prev (cadr (parse-state-seen state)))
            (start (token:get-start token))
@@ -410,7 +423,7 @@
                             (when (and (not (eq 'cons (type-of (car (lambda-list form-open)))))
                                        (or (string= (the symbol (car (lambda-list form-open))) "&BODY")
                                            (string= (the symbol (car (lambda-list form-open))) "&REST")))
-                                  (pop (parse-state-indent state)))
+                                  (pop-next-indent state))
                             (pop (lambda-list form-open)))
 
                       (cond ((token:is-type *start-form* token) (process-open state token))
