@@ -104,6 +104,11 @@
 (defun indent ()
     (run:test "Indent Test"
               (lambda ()
+                  (check-format (format nil "(error)~%     foo")
+                                (range:create (pos:create 0 0) (pos:create 3 0))
+                                (list (edit:create :range (range:create (pos:create 0 7) (pos:create 1 5))
+                                                   :text (format nil "~%"))))
+
                   (check-format (format nil "(defun foo~%()~%nil)")
                                 (range:create (pos:create 0 0) (pos:create 3 0))
                                 (list (edit:create :range (range:create (pos:create 0 10) (pos:create 1 0))
