@@ -249,7 +249,8 @@
 
               ((or (eq :lambda-list e-type)
                    (eq :plain-list e-type)
-                   (eq :arg-init e-type))
+                   (eq :arg-init e-type)
+                   (eq :in-package e-type))
                nil)
 
               (T (format T "SYMBOL EXPR HAS TYPE ~A~%" e-type)))))
