@@ -3,6 +3,7 @@
     (:export :to-sem-tokens)
     (:local-nicknames (:pos :alive/position)
                       (:sem-types :alive/lsp/types/sem-tokens)
+                      (:packages :alive/packages)
                       (:symbols :alive/symbols)
                       (:token :alive/parse/token)
                       (:types :alive/types)))
@@ -54,6 +55,9 @@
      (comment-next-p :accessor comment-next-p
                      :initform nil
                      :initarg :comment-next-p)
+     (cur-pkg :accessor cur-pkg
+              :initform nil
+              :initarg :cur-pkg)
      (opens :accessor opens
             :initform (list (make-instance 'open-form :form-type :top-level-form))
             :initarg :opens)))
@@ -189,7 +193,8 @@
 (defun get-symbol-type (state sym &optional namespace)
     (declare (type simple-string sym))
 
-    (let ((open-form (car (opens state))))
+    (let ((open-form (car (opens state)))
+          (*package* (if (cur-pkg state) (cur-pkg state) *package*)))
         (cond ((eq :lambda-list (expr-type open-form))
                (if (char= #\& (char sym 0))
                    sem-types:*keyword*
@@ -250,6 +255,16 @@
               (T (format T "SYMBOL EXPR HAS TYPE ~A~%" e-type)))))
 
 
+(defun update-symbol-fn-state (state lambda-list)
+    (let ((token (peek-token state))
+          (open-form (car (opens state))))
+        (if (string= "in-package" (string-downcase (token:get-text token)))
+            (progn (setf (cur-pkg state) nil)
+                   (setf (expr-type open-form) :in-package))
+            (setf (expr-type open-form) :fn-call))
+        (setf (lambda-list open-form) lambda-list)))
+
+
 (defun update-symbol-state (state lambda-list)
     (let ((open-form (car (opens state))))
         (when (eq :expr (form-type open-form))
@@ -257,8 +272,7 @@
               (if (expr-type open-form)
                   (update-symbol-expr-state open-form)
                   (if lambda-list
-                      (progn (setf (expr-type (car (opens state))) :fn-call)
-                             (setf (lambda-list (car (opens state))) lambda-list))
+                      (update-symbol-fn-state state lambda-list)
                       (setf (expr-type (car (opens state))) :plain-list))))))
 
 
@@ -354,6 +368,13 @@
                (add-sem-token state token (convert-if-comment state sem-types:*symbol*))
                (when (token:is-type types:*symbol* (cadr (lex-tokens state)))
                      (next-token state)
+                     (when (and (not (cur-pkg state))
+                                (opens state)
+                                (eq :in-package (expr-type (car (opens state)))))
+                           (setf (cur-pkg state)
+                                 (packages:for-string (format nil "~A~A"
+                                                              (token:get-text token)
+                                                              (token:get-text (peek-token state))))))
                      (add-sem-token state (peek-token state) (convert-if-comment state sem-types:*symbol*)))
                (setf (comment-next-p state) NIL))
 
@@ -366,9 +387,17 @@
                (add-sem-token state token (convert-if-comment state sem-types:*keyword*)))
 
               ((token:is-type types:*string* token)
+               (when (and (not (cur-pkg state))
+                          (opens state)
+                          (eq :in-package (expr-type (car (opens state)))))
+                     (setf (cur-pkg state) (packages:for-string (token:get-text token))))
                (add-sem-token state token (convert-if-comment state sem-types:*string*)))
 
               ((token:is-type types:*macro* token)
+               (when (and (not (cur-pkg state))
+                          (opens state)
+                          (eq :in-package (expr-type (car (opens state)))))
+                     (setf (cur-pkg state) (packages:for-string (token:get-text token))))
                (add-sem-token state token (convert-if-comment state sem-types:*macro*)))
 
               ((token:is-type types:*ws* token)
@@ -381,7 +410,9 @@
 
 
 (defun to-sem-tokens (tokens)
-    (loop :with state := (make-instance 'analysis-state :lex-tokens tokens)
+    (loop :with state := (make-instance 'analysis-state
+                                        :lex-tokens tokens
+                                        :cur-pkg (packages:lookup "cl-user"))
 
           :while (lex-tokens state)
           :do (process-token state)
