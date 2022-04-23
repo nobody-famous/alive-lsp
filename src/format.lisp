@@ -2,6 +2,7 @@
     (:use :cl)
     (:export :range)
     (:local-nicknames (:edit :alive/text-edit)
+                      (:packages :alive/packages)
                       (:pos :alive/position)
                       (:range :alive/range)
                       (:symbols :alive/symbols)
@@ -103,6 +104,7 @@
     out-list
     seen
     opens
+    cur-pkg
     (options (make-options)))
 
 
@@ -231,12 +233,33 @@
             :initial-value NIL))
 
 
+(defun set-cur-pkg (state)
+    (let ((token1 (car (parse-state-tokens state)))
+          (token2 (cadr (parse-state-tokens state))))
+        (cond ((and (token:is-type types:*colons* token1)
+                    (token:is-type types:*symbol* token2))
+               (setf (parse-state-cur-pkg state)
+                     (format nil "~A~A"
+                             (token:get-text token1)
+                             (token:get-text token2))))
+              ((token:is-type types:*macro* token1)
+               (setf (parse-state-cur-pkg state)
+                     (token:get-text token1))))))
+
+
 (defun update-aligned (state)
     (let* ((form-open (car (parse-state-opens state)))
-           (token (car (parse-state-out-list state))))
+           (token (car (parse-state-out-list state)))
+           (pkg (packages:for-string (parse-state-cur-pkg state)))
+           (pkg-name (when pkg (package-name pkg))))
 
         (if (prev-is-start-form state)
-            (let ((lambda-list (symbols:get-lambda-list (token:get-text token))))
+            (let ((lambda-list (symbols:get-lambda-list (token:get-text token)
+                                                        pkg-name)))
+
+                (when (string= "in-package" (string-downcase (token:get-text token)))
+                      (setf (parse-state-cur-pkg state) NIL))
+
                 (if (has-body lambda-list)
                     (progn (setf (aligned form-open) T)
                            (setf (lambda-list form-open) lambda-list)
@@ -260,7 +283,9 @@
                               (token:is-type types:*symbol* token))
                          NIL)
 
-                        (T (setf (aligned form-open) T)
+                        (T (unless (parse-state-cur-pkg state)
+                                   (set-cur-pkg state))
+                           (setf (aligned form-open) T)
                            (replace-indent state (pos:col (token:get-start token)))))))))
 
 
@@ -410,7 +435,8 @@
 (defun range (input range)
     (let* ((tokens (convert-tokens (tokenizer:from-stream input)))
            (state (make-parse-state :tokens tokens
-                                    :range range)))
+                                    :range range
+                                    :cur-pkg (package-name *package*))))
 
         (loop :while (parse-state-tokens state)
 
