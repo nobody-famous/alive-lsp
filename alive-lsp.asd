@@ -39,6 +39,7 @@
                  "alive-lsp/src/lsp/errors"
                  "alive-lsp/src/lsp/completions"
 
+                 "alive-lsp/src/lsp/types/config-item"
                  "alive-lsp/src/lsp/types/sem-tokens"
                  "alive-lsp/src/lsp/types/text-doc"
                  "alive-lsp/src/lsp/types/text-doc-item"
@@ -67,6 +68,7 @@
                  "alive-lsp/src/lsp/message/document/did-open"
                  "alive-lsp/src/lsp/message/document/range-format"
                  "alive-lsp/src/lsp/message/document/sem-tokens-full"
+                 "alive-lsp/src/lsp/message/workspace/config"
 
                  "alive-lsp/src/lsp/packet"
                  "alive-lsp/src/lsp/parse"
@@ -136,6 +138,7 @@
 (register-system-packages "alive-lsp/src/lsp/errors" '(:alive/lsp/errors))
 (register-system-packages "alive-lsp/src/lsp/completions" '(:alive/lsp/completions))
 
+(register-system-packages "alive-lsp/src/lsp/types/config-item" '(:alive/lsp/types/config-item))
 (register-system-packages "alive-lsp/src/lsp/types/sem-tokens" '(:alive/lsp/types/sem-tokens))
 (register-system-packages "alive-lsp/src/lsp/types/text-doc" '(:alive/lsp/types/text-doc))
 (register-system-packages "alive-lsp/src/lsp/types/text-doc-item" '(:alive/lsp/types/text-doc-item))
@@ -164,6 +167,7 @@
 (register-system-packages "alive-lsp/src/lsp/message/document/did-open" '(:alive/lsp/message/document/did-open))
 (register-system-packages "alive-lsp/src/lsp/message/document/range-format" '(:alive/lsp/message/document/range-format))
 (register-system-packages "alive-lsp/src/lsp/message/document/sem-tokens-full" '(:alive/lsp/message/document/sem-tokens-full))
+(register-system-packages "alive-lsp/src/lsp/message/workspace/config" '(:alive/lsp/message/workspace/config))
 
 (register-system-packages "alive-lsp/src/lsp/packet" '(:alive/lsp/packet))
 (register-system-packages "alive-lsp/src/lsp/parse" '(:alive/lsp/parse))

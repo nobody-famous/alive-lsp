@@ -6,6 +6,7 @@
                       (:did-open :alive/lsp/message/document/did-open)
                       (:did-change :alive/lsp/message/document/did-change)
                       (:formatting :alive/lsp/message/document/range-format)
+                      (:config :alive/lsp/message/workspace/config)
                       (:eval :alive/lsp/message/alive/do-eval)
                       (:get-pkg :alive/lsp/message/alive/get-pkg)
                       (:remove-pkg :alive/lsp/message/alive/remove-pkg)
@@ -166,6 +167,11 @@
                (sem-tokens:from-wire :jsonrpc (jsonrpc fields)
                                      :id msg-id
                                      :params (params fields)))
+
+              ((string= "workspace/configuration" name)
+               (config:from-wire :jsonrpc (jsonrpc fields)
+                                 :id msg-id
+                                 :params (params fields)))
 
               ((string= "$/alive/eval" name)
                (eval:from-wire :jsonrpc (jsonrpc fields)

@@ -2,6 +2,7 @@
     (:use :cl)
     (:export :run-all)
     (:local-nicknames (:completion :alive/lsp/message/document/completion)
+                      (:config :alive/lsp/message/workspace/config)
                       (:did-change :alive/lsp/message/document/did-change)
                       (:did-open :alive/lsp/message/document/did-open)
                       (:eval :alive/lsp/message/alive/do-eval)
@@ -15,6 +16,7 @@
                       (:load-file :alive/lsp/message/alive/load-file)
                       (:top-form :alive/lsp/message/alive/top-form)
                       (:unexport :alive/lsp/message/alive/unexport-symbol)
+                      (:config-item :alive/lsp/types/config-item)
                       (:text-doc :alive/lsp/types/text-doc)
                       (:text-doc-item :alive/lsp/types/text-doc-item)
                       (:sem-tokens :alive/lsp/message/document/sem-tokens-full)
@@ -502,6 +504,31 @@
                            (load-asdf:create-request
                             :id 5
                             :params (load-asdf:create-params :name "foo"))
+                           parsed))))))
+
+
+(defun request-config-msg ()
+    (labels ((create-content ()
+                  (with-output-to-string (str)
+                      (format str "{~A" utils:*end-line*)
+                      (format str "  \"jsonrpc\": \"2.0\",~A" utils:*end-line*)
+                      (format str "  \"id\": 5,~A" utils:*end-line*)
+                      (format str "  \"method\": \"workspace/configuration\",~A" utils:*end-line*)
+                      (format str "  \"params\": {~A" utils:*end-line*)
+                      (format str "    \"items\": [~A" utils:*end-line*)
+                      (format str "      {\"section\": \"alive\"}~A" utils:*end-line*)
+                      (format str "    ]~A" utils:*end-line*)
+                      (format str "  }~A" utils:*end-line*)
+                      (format str "}~A" utils:*end-line*))))
+
+        (run:test "Request Config Message"
+                  (lambda ()
+                      (let* ((msg (utils:create-msg (create-content)))
+                             (parsed (parse:from-stream (make-string-input-stream msg))))
+                          (check:are-equal
+                           (config:create-request
+                            :id 5
+                            :params (config:create-params :items (list (config-item:create-item :section "alive"))))
                            parsed))))))
 
 
