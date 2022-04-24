@@ -1,12 +1,15 @@
 (defpackage :alive/lsp/message/abstract
     (:use :cl)
     (:export :create-error-resp
+             :create-result-resp
+             :error-from-wire
              :id
              :version
              :method-name
              :notification
              :params
              :request
+             :response
              :result
              :result-response))
 
@@ -79,3 +82,24 @@
                    :error (make-instance 'error-data
                                          :code code
                                          :message message)))
+
+
+(defmethod create-result-resp (&key id result)
+    (make-instance 'result-response
+                   :id id
+                   :result result))
+
+
+(defun error-from-wire (&key id params)
+    (labels ((add-param (out-params key value)
+                  (cond ((eq key :code) (setf (code out-params) value))
+                        ((eq key :message) (setf (message out-params) value)))))
+
+        (loop :with out-params := (make-instance 'error-data)
+
+              :for param :in params :do
+                  (add-param out-params (car param) (cdr param))
+
+              :finally (return (make-instance 'error-response
+                                              :id id
+                                              :error out-params)))))

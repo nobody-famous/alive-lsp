@@ -80,6 +80,12 @@
      (lock :accessor lock
            :initform (bt:make-recursive-lock)
            :initarg :lock)
+     (send-msg-id :accessor send-msg-id
+                  :initform 1
+                  :initarg :send-msg-id)
+     (sent-msg-callbacks :accessor sent-msg-callbacks
+                         :initform (make-hash-table :test 'equalp)
+                         :initarg :sent-msg-callbacks)
      (read-thread :accessor read-thread
                   :initform nil
                   :initarg :read-thread)))
@@ -120,6 +126,13 @@
 
 (defmethod get-file-text ((obj state) uri)
     (gethash uri (files obj)))
+
+
+(defmethod next-send-id ((obj state))
+    (bt:with-recursive-lock-held ((lock obj))
+                                 (let ((id (send-msg-id obj)))
+                                     (incf (send-msg-id obj))
+                                     id)))
 
 
 (defmethod get-input-stream ((obj network-state))
@@ -235,21 +248,29 @@
                                                                  :end end)))))
 
 
+(defun wait-for-response (state id next-fn)
+    (setf (gethash id (sent-msg-callbacks state)) next-fn))
+
+
 (defmethod handle-msg (state (msg formatting:request))
-    (send-msg state (config:create-request
-                            :id 5
-                            :params (config:create-params :items (list (config-item:create-item :section "alive")))))
+    (let ((send-id (next-send-id state)))
+        (setf (gethash send-id (sent-msg-callbacks state))
+              (lambda (config-resp)
+                  (format T "CONFIG RESP ~A~%" (message:result config-resp))
+                  (let* ((params (message:params msg))
+                         (range (formatting:range params))
+                         (doc (formatting:text-document params))
+                         (uri (text-doc:uri doc))
+                         (file-text (get-file-text state uri))
+                         (text (if file-text file-text ""))
+                         (edits (formatter:range (make-string-input-stream text)
+                                                 range)))
 
-    (let* ((params (message:params msg))
-           (range (formatting:range params))
-           (doc (formatting:text-document params))
-           (uri (text-doc:uri doc))
-           (file-text (get-file-text state uri))
-           (text (if file-text file-text ""))
-           (edits (formatter:range (make-string-input-stream text)
-                                   range)))
+                      (send-msg state (formatting:create-response (message:id msg) edits)))))
 
-        (send-msg state (formatting:create-response (message:id msg) edits))))
+        (send-msg state (config:create-request
+                         :id send-id
+                         :params (config:create-params :items (list (config-item:create-item :section "alive.format")))))))
 
 
 (defmethod handle-msg (state (msg list-threads:request))
@@ -346,6 +367,17 @@
         (send-msg state (load-asdf:create-response (message:id msg)))))
 
 
+(defmethod handle-msg (state (msg message:response))
+    (let* ((msg-id (message:id msg))
+           (cb (gethash msg-id (sent-msg-callbacks state))))
+
+        (if cb
+            (funcall cb msg)
+            (message:create-error-resp :id (message:id msg)
+                                       :code errors:*request-failed*
+                                       :message (format nil "No callback for request: ~A" (message:id msg))))))
+
+
 (defun stop (state)
     (logger:info-msg (logger state) "Stopping state ~A" state)
 
@@ -416,7 +448,9 @@
         (bt:make-thread (lambda ()
                             (let ((*standard-output* stdout))
                                 (process-msg state msg)))
-                        :name (next-thread-name state (message:method-name msg)))))
+                        :name (next-thread-name state (if (typep msg 'message:request)
+                                                          (message:method-name msg)
+                                                          "response")))))
 
 
 (defun read-messages (state)
