@@ -98,7 +98,7 @@
                                 (listen-for-conns server port)))
                         :name "Main Loop")
 
-        (setf (logger server) (logger:create *standard-output* logger:*trace*))
+        (setf (logger server) (logger:create *standard-output* logger:*error*))
 
         server))
 
