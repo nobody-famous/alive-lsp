@@ -16,7 +16,7 @@
 
 
 (defclass request (message:request)
-    ((message::method :initform "workspace/config")))
+    ((message::method :initform "workspace/configuration")))
 
 
 (defmethod print-object ((obj request) out)

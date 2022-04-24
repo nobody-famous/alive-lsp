@@ -242,7 +242,8 @@
 (defun build-message (payload)
     (let ((fields (get-msg-fields payload)))
         (cond ((request-p fields) (build-request fields))
-              ((response-p fields) (error (make-condition 'errors:server-error
+              ((response-p fields) (format T "~A~%" (result fields))
+                                   (error (make-condition 'errors:server-error
                                                           :id (id fields)
                                                           :message "Got response")))
               (T (error (make-condition 'errors:server-error

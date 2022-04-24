@@ -9,6 +9,7 @@
                       (:did-open :alive/lsp/message/document/did-open)
                       (:did-change :alive/lsp/message/document/did-change)
                       (:formatting :alive/lsp/message/document/range-format)
+                      (:config :alive/lsp/message/workspace/config)
                       (:asdf :alive/asdf)
                       (:eval :alive/eval)
                       (:file :alive/file)
@@ -41,6 +42,7 @@
                       (:packet :alive/lsp/packet)
                       (:parse :alive/lsp/parse)
                       (:errors :alive/lsp/errors)
+                      (:config-item :alive/lsp/types/config-item)
                       (:text-doc :alive/lsp/types/text-doc)
                       (:sem-tokens :alive/lsp/message/document/sem-tokens-full)))
 
@@ -234,6 +236,10 @@
 
 
 (defmethod handle-msg (state (msg formatting:request))
+    (send-msg state (config:create-request
+                            :id 5
+                            :params (config:create-params :items (list (config-item:create-item :section "alive")))))
+
     (let* ((params (message:params msg))
            (range (formatting:range params))
            (doc (formatting:text-document params))
