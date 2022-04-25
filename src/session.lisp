@@ -44,6 +44,7 @@
                       (:errors :alive/lsp/errors)
                       (:config-item :alive/lsp/types/config-item)
                       (:text-doc :alive/lsp/types/text-doc)
+                      (:fmt-opts :alive/lsp/types/format-options)
                       (:sem-tokens :alive/lsp/message/document/sem-tokens-full)))
 
 (in-package :alive/session)
@@ -248,25 +249,28 @@
                                                                  :end end)))))
 
 
-(defun wait-for-response (state id next-fn)
-    (setf (gethash id (sent-msg-callbacks state)) next-fn))
+(defun handle-format-msg (state options msg)
+
+    (let* ((params (message:params msg))
+           (range (formatting:range params))
+           (doc (formatting:text-document params))
+           (uri (text-doc:uri doc))
+           (file-text (get-file-text state uri))
+           (text (if file-text file-text ""))
+           (edits (formatter:range (make-string-input-stream text)
+                                   range
+                                   options)))
+
+        (send-msg state (formatting:create-response (message:id msg) edits))))
 
 
 (defmethod handle-msg (state (msg formatting:request))
     (let ((send-id (next-send-id state)))
         (setf (gethash send-id (sent-msg-callbacks state))
               (lambda (config-resp)
-                  (format T "CONFIG RESP ~A~%" (message:result config-resp))
-                  (let* ((params (message:params msg))
-                         (range (formatting:range params))
-                         (doc (formatting:text-document params))
-                         (uri (text-doc:uri doc))
-                         (file-text (get-file-text state uri))
-                         (text (if file-text file-text ""))
-                         (edits (formatter:range (make-string-input-stream text)
-                                                 range)))
-
-                      (send-msg state (formatting:create-response (message:id msg) edits)))))
+                  (let ((opts (when (message:result config-resp)
+                                    (fmt-opts:from-wire (message:result config-resp)))))
+                      (handle-format-msg state opts msg))))
 
         (send-msg state (config:create-request
                          :id send-id

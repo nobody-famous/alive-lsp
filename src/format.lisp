@@ -8,7 +8,8 @@
                       (:symbols :alive/symbols)
                       (:token :alive/parse/token)
                       (:tokenizer :alive/parse/tokenizer)
-                      (:types :alive/types)))
+                      (:types :alive/types)
+                      (:fmt-opts :alive/lsp/types/format-options)))
 
 (in-package :alive/format)
 
@@ -432,11 +433,20 @@
           :finally (return (reverse converted))))
 
 
-(defun range (input range)
+(defun update-options (state opts)
+    (when (fmt-opts:get-indent-width opts)
+          (setf (options-indent-width (parse-state-options state))
+                (fmt-opts:get-indent-width opts))))
+
+
+(defun range (input range opts)
     (let* ((tokens (convert-tokens (tokenizer:from-stream input)))
            (state (make-parse-state :tokens tokens
                                     :range range
                                     :cur-pkg (package-name *package*))))
+
+        (when opts
+              (update-options state opts))
 
         (loop :while (parse-state-tokens state)
 
