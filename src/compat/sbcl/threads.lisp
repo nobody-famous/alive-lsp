@@ -28,4 +28,4 @@
 
 #-win32
 (defun get-thread-id (thread)
-    (sxhash thread))
+    (bt:thread-name thread))

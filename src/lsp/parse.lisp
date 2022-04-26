@@ -6,6 +6,7 @@
                       (:did-open :alive/lsp/message/document/did-open)
                       (:did-change :alive/lsp/message/document/did-change)
                       (:formatting :alive/lsp/message/document/range-format)
+                      (:config :alive/lsp/message/workspace/config)
                       (:eval :alive/lsp/message/alive/do-eval)
                       (:get-pkg :alive/lsp/message/alive/get-pkg)
                       (:remove-pkg :alive/lsp/message/alive/remove-pkg)
@@ -167,6 +168,11 @@
                                      :id msg-id
                                      :params (params fields)))
 
+              ((string= "workspace/configuration" name)
+               (config:from-wire :jsonrpc (jsonrpc fields)
+                                 :id msg-id
+                                 :params (params fields)))
+
               ((string= "$/alive/eval" name)
                (eval:from-wire :jsonrpc (jsonrpc fields)
                                :id msg-id
@@ -233,12 +239,28 @@
                                         :id msg-id
                                         :method-name name))))))
 
+
+(defun build-error-response (fields)
+    (message:error-from-wire (id fields) (error-msg fields)))
+
+
+(defun build-result-response (fields)
+    (message:create-result-resp :id (id fields)
+                                :result (result fields)))
+
+
+(defun build-response (fields)
+    (cond ((error-msg fields) (build-error-response fields))
+          ((result fields) (build-result-response fields))
+          (T (error (make-condition 'errors:server-error
+                                    :id (id fields)
+                                    :message "Unknown response type")))))
+
+
 (defun build-message (payload)
     (let ((fields (get-msg-fields payload)))
         (cond ((request-p fields) (build-request fields))
-              ((response-p fields) (error (make-condition 'errors:server-error
-                                                          :id (id fields)
-                                                          :message "Got response")))
+              ((response-p fields) (build-response fields))
               (T (error (make-condition 'errors:server-error
                                         :id (id fields)
                                         :message "Unknown payload type"))))))

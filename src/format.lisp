@@ -2,12 +2,14 @@
     (:use :cl)
     (:export :range)
     (:local-nicknames (:edit :alive/text-edit)
+                      (:packages :alive/packages)
                       (:pos :alive/position)
                       (:range :alive/range)
                       (:symbols :alive/symbols)
                       (:token :alive/parse/token)
                       (:tokenizer :alive/parse/tokenizer)
-                      (:types :alive/types)))
+                      (:types :alive/types)
+                      (:fmt-opts :alive/lsp/types/format-options)))
 
 (in-package :alive/format)
 
@@ -103,6 +105,7 @@
     out-list
     seen
     opens
+    cur-pkg
     (options (make-options)))
 
 
@@ -193,6 +196,20 @@
     (push value (parse-state-indent state)))
 
 
+(defun get-next-indent (state)
+    (let ((indent (car (parse-state-indent state))))
+        (if (eq 'cons (type-of indent))
+            (car indent)
+            (if indent indent 0))))
+
+
+(defun pop-next-indent (state)
+    (let ((indent (car (parse-state-indent state))))
+        (if (eq 'cons (type-of indent))
+            (replace-indent state (cdr indent))
+            (pop (parse-state-indent state)))))
+
+
 (defun prev-is-start-form (state)
     (loop :with tokens := (parse-state-seen state)
 
@@ -211,28 +228,49 @@
     (reduce (lambda (acc item)
                 (or acc
                     (and (symbolp item)
-                         (string= item "&BODY"))))
+                         (or (string= item "&BODY")
+                             (string= item "&REST")))))
             lambda-list
             :initial-value NIL))
 
 
+(defun set-cur-pkg (state)
+    (let ((token1 (car (parse-state-tokens state)))
+          (token2 (cadr (parse-state-tokens state))))
+        (cond ((and (token:is-type types:*colons* token1)
+                    (token:is-type types:*symbol* token2))
+               (setf (parse-state-cur-pkg state)
+                     (format nil "~A~A"
+                             (token:get-text token1)
+                             (token:get-text token2))))
+              ((token:is-type types:*macro* token1)
+               (setf (parse-state-cur-pkg state)
+                     (token:get-text token1))))))
+
+
 (defun update-aligned (state)
     (let* ((form-open (car (parse-state-opens state)))
-           (token (car (parse-state-out-list state))))
+           (token (car (parse-state-out-list state)))
+           (pkg (packages:for-string (parse-state-cur-pkg state)))
+           (pkg-name (when pkg (package-name pkg))))
 
         (if (prev-is-start-form state)
-            (let ((lambda-list (symbols:get-lambda-list (token:get-text token))))
+            (let ((lambda-list (symbols:get-lambda-list (token:get-text token)
+                                                        pkg-name)))
+
+                (when (string= "in-package" (string-downcase (token:get-text token)))
+                      (setf (parse-state-cur-pkg state) NIL))
+
                 (if (has-body lambda-list)
                     (progn (setf (aligned form-open) T)
                            (setf (lambda-list form-open) lambda-list)
-                           (replace-indent state (the fixnum (+ (the fixnum (options-indent-width (parse-state-options state)))
-                                                                (the fixnum (pos:col (token:get-start token)))
-                                                                (the fixnum -1))))
-                           (push (the fixnum (+ (the fixnum (* 2
-                                                               (the fixnum (options-indent-width (parse-state-options state)))))
-                                                (the fixnum (pos:col (token:get-start token)))
-                                                (the fixnum -1)))
-                                 (parse-state-indent state)))
+                           (replace-indent state (cons (the fixnum (+ (the fixnum (* 2
+                                                                                     (the fixnum (options-indent-width (parse-state-options state)))))
+                                                                      (the fixnum (pos:col (token:get-start token)))
+                                                                      (the fixnum -1)))
+                                                       (the fixnum (+ (the fixnum (options-indent-width (parse-state-options state)))
+                                                                      (the fixnum (pos:col (token:get-start token)))
+                                                                      (the fixnum -1))))))
                     (replace-indent state (pos:col (token:get-start token)))))
 
             (when (and form-open (not (aligned form-open)))
@@ -246,12 +284,14 @@
                               (token:is-type types:*symbol* token))
                          NIL)
 
-                        (T (setf (aligned form-open) T)
+                        (T (unless (parse-state-cur-pkg state)
+                                   (set-cur-pkg state))
+                           (setf (aligned form-open) T)
                            (replace-indent state (pos:col (token:get-start token)))))))))
 
 
 (defun fix-indent (state)
-    (let* ((indent (car (parse-state-indent state)))
+    (let* ((indent (get-next-indent state))
            (token (car (parse-state-seen state)))
            (prev (cadr (parse-state-seen state)))
            (start (token:get-start token))
@@ -393,10 +433,20 @@
           :finally (return (reverse converted))))
 
 
-(defun range (input range)
+(defun update-options (state opts)
+    (when (fmt-opts:get-indent-width opts)
+          (setf (options-indent-width (parse-state-options state))
+                (fmt-opts:get-indent-width opts))))
+
+
+(defun range (input range opts)
     (let* ((tokens (convert-tokens (tokenizer:from-stream input)))
            (state (make-parse-state :tokens tokens
-                                    :range range)))
+                                    :range range
+                                    :cur-pkg (package-name *package*))))
+
+        (when opts
+              (update-options state opts))
 
         (loop :while (parse-state-tokens state)
 
@@ -407,8 +457,9 @@
                                  (lambda-list form-open)
                                  (not (token:is-type types:*ws* token)))
                             (when (and (not (eq 'cons (type-of (car (lambda-list form-open)))))
-                                       (string= (the symbol (car (lambda-list form-open))) "&BODY"))
-                                  (pop (parse-state-indent state)))
+                                       (or (string= (the symbol (car (lambda-list form-open))) "&BODY")
+                                           (string= (the symbol (car (lambda-list form-open))) "&REST")))
+                                  (pop-next-indent state))
                             (pop (lambda-list form-open)))
 
                       (cond ((token:is-type *start-form* token) (process-open state token))

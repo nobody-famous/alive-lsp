@@ -24,10 +24,9 @@
 
 
 (defun macro-p (sym-name &optional pkg-name)
-    (let* ((pkg-str (if pkg-name
-                        pkg-name
-                        "CL-USER"))
-           (pkg (find-package (string-upcase pkg-str)))
+    (let* ((pkg (if pkg-name
+                    (find-package (string-upcase pkg-name))
+                    *package*))
            (sym (when pkg
                       (find-symbol (string-upcase sym-name) pkg))))
 

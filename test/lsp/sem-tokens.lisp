@@ -106,6 +106,86 @@
 (defun combos ()
     (run:test "Combos"
               (lambda ()
+                  (check-combo "(in-package #:alive/errors) start" (list (sem-types:create
+                                                                          :token-type sem-types:*parenthesis*
+                                                                          :line 0
+                                                                          :start 0
+                                                                          :end 1)
+                                                                         (sem-types:create
+                                                                          :token-type sem-types:*macro*
+                                                                          :line 0
+                                                                          :start 1
+                                                                          :end 11)
+                                                                         (sem-types:create
+                                                                          :token-type sem-types:*macro*
+                                                                          :line 0
+                                                                          :start 12
+                                                                          :end 26)
+                                                                         (sem-types:create
+                                                                          :token-type sem-types:*parenthesis*
+                                                                          :line 0
+                                                                          :start 26
+                                                                          :end 27)
+                                                                         (sem-types:create
+                                                                          :token-type sem-types:*function*
+                                                                          :line 0
+                                                                          :start 28
+                                                                          :end 33)))
+                  (check-combo "(in-package :alive/errors) start" (list (sem-types:create
+                                                                         :token-type sem-types:*parenthesis*
+                                                                         :line 0
+                                                                         :start 0
+                                                                         :end 1)
+                                                                        (sem-types:create
+                                                                         :token-type sem-types:*macro*
+                                                                         :line 0
+                                                                         :start 1
+                                                                         :end 11)
+                                                                        (sem-types:create
+                                                                         :token-type sem-types:*symbol*
+                                                                         :line 0
+                                                                         :start 12
+                                                                         :end 13)
+                                                                        (sem-types:create
+                                                                         :token-type sem-types:*symbol*
+                                                                         :line 0
+                                                                         :start 13
+                                                                         :end 25)
+                                                                        (sem-types:create
+                                                                         :token-type sem-types:*parenthesis*
+                                                                         :line 0
+                                                                         :start 25
+                                                                         :end 26)
+                                                                        (sem-types:create
+                                                                         :token-type sem-types:*function*
+                                                                         :line 0
+                                                                         :start 27
+                                                                         :end 32)))
+                  (check-combo "(in-package \"alive/errors\") start" (list (sem-types:create
+                                                                            :token-type sem-types:*parenthesis*
+                                                                            :line 0
+                                                                            :start 0
+                                                                            :end 1)
+                                                                           (sem-types:create
+                                                                            :token-type sem-types:*macro*
+                                                                            :line 0
+                                                                            :start 1
+                                                                            :end 11)
+                                                                           (sem-types:create
+                                                                            :token-type sem-types:*string*
+                                                                            :line 0
+                                                                            :start 12
+                                                                            :end 26)
+                                                                           (sem-types:create
+                                                                            :token-type sem-types:*parenthesis*
+                                                                            :line 0
+                                                                            :start 26
+                                                                            :end 27)
+                                                                           (sem-types:create
+                                                                            :token-type sem-types:*function*
+                                                                            :line 0
+                                                                            :start 28
+                                                                            :end 33)))
                   (check-combo "#+n (+ (+ (+ 'foo))) ()" (list (sem-types:create
                                                                 :token-type sem-types:*comment*
                                                                 :line 0

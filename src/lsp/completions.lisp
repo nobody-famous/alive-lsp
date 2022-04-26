@@ -29,6 +29,7 @@
              :*kind-operator*
              :*kind-type-parameter*)
     (:local-nicknames (:pos :alive/position)
+                      (:packages :alive/packages)
                       (:symbols :alive/symbols)
                       (:token :alive/parse/token)
                       (:tokenizer :alive/parse/tokenizer)
@@ -171,7 +172,8 @@
 
 (defun to-snippet (name lambda-list)
     (when (and (eq (type-of lambda-list) 'cons)
-               (eq (type-of (cdr lambda-list)) 'cons))
+               (or (not (cdr lambda-list))
+                   (eq (type-of (cdr lambda-list)) 'cons)))
           (list-to-snippet name lambda-list)))
 
 
@@ -276,7 +278,8 @@
 
 
 (defun simple (&key text pos)
-    (let ((tokens (tokenizer:from-stream (make-string-input-stream text))))
+    (let* ((tokens (tokenizer:from-stream (make-string-input-stream text)))
+           (*package* (packages:lookup (packages:for-pos text pos))))
         (if (zerop (length tokens))
             '()
             (destructuring-bind (token1 token2 token3) (find-tokens tokens pos)
