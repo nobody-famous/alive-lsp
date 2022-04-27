@@ -1,7 +1,6 @@
 (defpackage :alive/server
     (:use :cl)
-    (:export :create
-             :stop
+    (:export :stop
              :start)
 
     (:local-nicknames (:logger :alive/logger)
@@ -13,6 +12,8 @@
 
 
 (defvar *default-port* 25483)
+(defparameter *server* nil)
+(defparameter *logger* (logger:create *standard-output* logger:*error*))
 
 
 (defclass lsp-server ()
@@ -96,22 +97,16 @@
         (bt:make-thread (lambda ()
                             (let ((*standard-output* stdout))
                                 (listen-for-conns server port)))
-                        :name "Main Loop")
+                        :name "Main Loop")))
 
-        (setf (logger server) (logger:create *standard-output* logger:*error*))
-
-        server))
-
-(defun stop (server)
-    (logger:info-msg (logger server) "Stop server~%")
-    (stop-server server))
+(defun stop ()
+    (logger:info-msg (logger *server*) "Stop server~%")
+    (stop-server *server*)
+    (setf *server* nil))
 
 
-(defun start (server &key (port *default-port*))
-    (if (running server)
-        (logger:error-msg (logger server) "Server already running")
-        (start-server server port)))
-
-
-(defun create ()
-    (make-instance 'lsp-server))
+(defun start (&key (port *default-port*))
+    (if *server*
+        (logger:error-msg *logger* "Server already running")
+        (progn (setf *server* (make-instance 'lsp-server :logger *logger*))
+               (start-server *server* port))))
