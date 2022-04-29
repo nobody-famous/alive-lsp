@@ -13,25 +13,25 @@
 
 (defvar *default-port* 25483)
 (defparameter *server* nil)
-(defparameter *logger* (logger:create *standard-output* logger:*error*))
+(defparameter *logger* (logger:create *standard-output* logger:*info*))
 
 
 (defclass lsp-server ()
-    ((running :accessor running
-              :initform nil
-              :initarg :running)
-     (logger :accessor logger
-             :initform nil
-             :initarg :logger)
-     (lock :accessor lock
-           :initform (bt:make-recursive-lock)
-           :initarg :lock)
-     (sessions :accessor sessions
-               :initform nil
-               :initarg :sessions)
-     (socket :accessor socket
-             :initform nil
-             :initarg :socket)))
+        ((running :accessor running
+                  :initform nil
+                  :initarg :running)
+         (logger :accessor logger
+                 :initform nil
+                 :initarg :logger)
+         (lock :accessor lock
+               :initform (bt:make-recursive-lock)
+               :initarg :lock)
+         (sessions :accessor sessions
+                   :initform nil
+                   :initarg :sessions)
+         (socket :accessor socket
+                 :initform nil
+                 :initarg :socket)))
 
 
 (defun accept-conn (server)
@@ -41,10 +41,10 @@
 
         (session:add-listener session
                               (make-instance 'session:listener
-                                             :on-done (lambda ()
-                                                          (usocket:socket-close conn)
-                                                          (setf (sessions server)
-                                                                (remove session (sessions server))))))
+                                  :on-done (lambda ()
+                                               (usocket:socket-close conn)
+                                               (setf (sessions server)
+                                                   (remove session (sessions server))))))
         (session:start session)
 
         (push session (sessions server))))
@@ -54,14 +54,14 @@
     (usocket:wait-for-input (socket server))
 
     (when (and (running server)
-               (usocket::state (socket server)))
-          (accept-conn server)))
+              (usocket::state (socket server)))
+        (accept-conn server)))
 
 
 (defun wake-up-accept (server)
     (ignore-errors
-     (let ((conn (usocket:socket-connect "127.0.0.1" (usocket:get-local-port (socket server)))))
-         (usocket:socket-close conn))))
+        (let ((conn (usocket:socket-connect "127.0.0.1" (usocket:get-local-port (socket server)))))
+            (usocket:socket-close conn))))
 
 
 (defun stop-server (server)
@@ -69,14 +69,14 @@
                                  (setf (running server) nil)
 
                                  (loop :for session :in (sessions server) :do
-                                           (session:stop session))
+                                     (session:stop session))
 
                                  (setf (sessions server) nil)
 
                                  (when (socket server)
-                                       (wake-up-accept server)
-                                       (usocket:socket-close (socket server))
-                                       (setf (socket server) nil))))
+                                     (wake-up-accept server)
+                                     (usocket:socket-close (socket server))
+                                     (setf (socket server) nil))))
 
 
 (defun listen-for-conns (server port)
@@ -85,10 +85,10 @@
 
         (unwind-protect
                 (progn (setf (socket server) socket)
-                       (setf (running server) T)
+                    (setf (running server) T)
 
-                       (loop :while (running server)
-                             :do (wait-for-conn server)))
+                    (loop :while (running server)
+                        :do (wait-for-conn server)))
             (stop-server server))))
 
 
@@ -109,4 +109,4 @@
     (if *server*
         (logger:error-msg *logger* "Server already running")
         (progn (setf *server* (make-instance 'lsp-server :logger *logger*))
-               (start-server *server* port))))
+            (start-server *server* port))))

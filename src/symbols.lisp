@@ -28,7 +28,7 @@
                     (find-package (string-upcase pkg-name))
                     *package*))
            (sym (when pkg
-                      (find-symbol (string-upcase sym-name) pkg))))
+                    (find-symbol (string-upcase sym-name) pkg))))
 
         (if (macro-function sym)
             T
@@ -44,4 +44,4 @@
 (defun lookup (name pkg-name)
     (let ((pkg (find-package (string-upcase pkg-name))))
         (when pkg
-              (find-symbol (string-upcase name) pkg))))
+            (find-symbol (string-upcase name) pkg))))
