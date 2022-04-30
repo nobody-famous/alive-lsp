@@ -407,17 +407,19 @@
 
         (errors:unhandled-request (c)
                                   (logger:error-msg (logger state) "read-message: ~A" c)
-                                  (send-msg state
-                                            (message:create-error-resp :id (errors:id c)
-                                                                       :code errors:*method-not-found*
-                                                                       :message (format nil "Unhandled request: ~A" (errors:method-name c)))))
+                                  (when (errors:id c)
+                                      (send-msg state
+                                                (message:create-error-resp :id (errors:id c)
+                                                                           :code errors:*method-not-found*
+                                                                           :message (format nil "Unhandled request: ~A" (errors:method-name c))))))
 
         (errors:server-error (c)
                              (logger:error-msg (logger state) "read-message: ~A" c)
-                             (send-msg state
-                                       (message:create-error-resp :id (errors:id c)
-                                                                  :code errors:*internal-error*
-                                                                  :message (format nil "Server error: ~A" (errors:message c)))))
+                             (when (errors:id c)
+                                 (send-msg state
+                                           (message:create-error-resp :id (errors:id c)
+                                                                      :code errors:*internal-error*
+                                                                      :message (format nil "Server error: ~A" (errors:message c))))))
 
         (T (c)
            (logger:error-msg (logger state) "read-message: ~A" c)
