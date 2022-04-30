@@ -131,9 +131,9 @@
 
 (defmethod next-send-id ((obj state))
     (bt:with-recursive-lock-held ((lock obj))
-                                 (let ((id (send-msg-id obj)))
-                                     (incf (send-msg-id obj))
-                                     id)))
+        (let ((id (send-msg-id obj)))
+            (incf (send-msg-id obj))
+            id)))
 
 
 (defmethod get-input-stream ((obj network-state))
@@ -148,8 +148,8 @@
     (logger:trace-msg (logger obj) "<-- ~A~%" (json:encode-json-to-string msg))
 
     (bt:with-recursive-lock-held ((lock obj))
-                                 (write-string (packet:to-wire msg) (usocket:socket-stream (conn obj)))
-                                 (force-output (usocket:socket-stream (conn obj)))))
+        (write-string (packet:to-wire msg) (usocket:socket-stream (conn obj)))
+        (force-output (usocket:socket-stream (conn obj)))))
 
 
 (defmethod handle-msg ((obj state) (msg init:request))
@@ -166,7 +166,8 @@
           (text (did-open:get-text msg)))
 
         (when text
-            (set-file-text obj uri text))))
+            (bt:with-recursive-lock-held ((lock obj))
+                (set-file-text obj uri text)))))
 
 
 (defmethod handle-msg (state (msg did-change:did-change))
@@ -174,7 +175,8 @@
           (text (did-change:get-text msg)))
 
         (when text
-            (set-file-text state uri text))))
+            (bt:with-recursive-lock-held ((lock state))
+                (set-file-text state uri text)))))
 
 
 (defmethod handle-msg (state (msg sem-tokens:request))

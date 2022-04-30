@@ -248,15 +248,33 @@
                  (token:get-text token1))))))
 
 
+(defun lookup-lambda-list (token1 token2 token3)
+    (cond ((and (token:is-type types:*symbol* token1)
+               (token:is-type types:*colons* token2)
+               (token:is-type types:*symbol* token3))
+
+           (symbols:get-lambda-list (token:get-text token3)
+                                    (token:get-text token1)))
+
+        ((and (token:is-type types:*symbol* token1)
+             (not (token:is-type types:*colons* token2)))
+
+         (symbols:get-lambda-list (token:get-text token1)
+                                  (package-name *package*)))
+        (() ())))
+
+
 (defun update-aligned (state)
     (let* ((form-open (car (parse-state-opens state)))
            (token (car (parse-state-out-list state)))
            (pkg (packages:for-string (parse-state-cur-pkg state)))
-           (pkg-name (when pkg (package-name pkg))))
+           (*package* (if pkg pkg *package*)))
 
         (if (prev-is-start-form state)
-            (let ((lambda-list (symbols:get-lambda-list (token:get-text token)
-                                                        pkg-name)))
+            (let* ((ns (car (parse-state-tokens state)))
+                   (colons (cadr (parse-state-tokens state)))
+                   (sym (caddr (parse-state-tokens state)))
+                   (lambda-list (lookup-lambda-list ns colons sym)))
 
                 (when (string= "in-package" (string-downcase (token:get-text token)))
                     (setf (parse-state-cur-pkg state) NIL))
