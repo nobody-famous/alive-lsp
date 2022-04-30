@@ -6,6 +6,7 @@
              :from-wire
              :get-package
              :get-text
+             :store-result-p
              :request)
     (:local-nicknames (:message :alive/lsp/message/abstract)
                       (:types :alive/types)))
@@ -89,6 +90,11 @@
 (defun get-text (obj)
     (let ((params (message:params obj)))
         (text params)))
+
+
+(defun store-result-p (obj)
+    (let ((params (message:params obj)))
+        (store-result params)))
 
 
 (defun create-request (&key jsonrpc id params)

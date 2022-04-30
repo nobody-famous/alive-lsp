@@ -87,9 +87,21 @@
          (sent-msg-callbacks :accessor sent-msg-callbacks
                              :initform (make-hash-table :test 'equalp)
                              :initarg :sent-msg-callbacks)
+         (history :accessor history
+                  :initform (make-array 3)
+                  :initarg :history)
          (read-thread :accessor read-thread
                       :initform nil
                       :initarg :read-thread)))
+
+
+(defun add-history (state item)
+    (setf (elt (history state) 2)
+        (elt (history state) 1))
+    (setf (elt (history state) 1)
+        (elt (history state) 0))
+    (setf (elt (history state) 0)
+        item))
 
 
 (defclass network-state (state)
@@ -328,11 +340,17 @@
 (defmethod handle-msg (state (msg eval-msg:request))
     (let* ((pkg-name (eval-msg:get-package msg))
            (text (eval-msg:get-text msg))
+           (* (elt (history state) 0))
+           (** (elt (history state) 1))
+           (*** (elt (history state) 2))
            (result (eval:from-string text :pkg-name pkg-name
                                      :stdout-fn (lambda (data)
                                                     (send-msg state (stdout:create data)))
                                      :stderr-fn (lambda (data)
                                                     (send-msg state (stderr:create data))))))
+
+        (when (eval-msg:store-result-p msg)
+            (add-history state result))
 
         (send-msg state
                   (eval-msg:create-response (message:id msg)
