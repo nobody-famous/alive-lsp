@@ -186,8 +186,8 @@
            (file-text (get-file-text state uri))
            (text (if file-text file-text ""))
            (sem-tokens (analysis:to-sem-tokens
-                        (tokenizer:from-stream
-                         (make-string-input-stream text)))))
+                           (tokenizer:from-stream
+                               (make-string-input-stream text)))))
 
         (send-msg state (sem-tokens:create-response (message:id msg) sem-tokens))))
 
@@ -224,8 +224,8 @@
            (items (comps:simple :text text :pos pos)))
 
         (send-msg state (completion:create-response
-                         :id (message:id msg)
-                         :items items))))
+                            :id (message:id msg)
+                            :items items))))
 
 
 (defmethod handle-msg (state (msg top-form:request))
@@ -275,8 +275,8 @@
                     (handle-format-msg state opts msg))))
 
         (send-msg state (config:create-request
-                         :id send-id
-                         :params (config:create-params :items (list (config-item:create-item :section "alive.format")))))))
+                            :id send-id
+                            :params (config:create-params :items (list (config-item:create-item :section "alive.format")))))))
 
 
 (defmethod handle-msg (state (msg list-threads:request))
@@ -434,12 +434,15 @@
 
 (defun process-msg (state msg)
     (unwind-protect
-            (handler-case (when msg
-                              (when (typep msg 'message:request)
-                                  (setf (gethash (threads:get-thread-id (bt:current-thread)) (thread-msgs state))
-                                      (message:id msg)))
-                              (logger:trace-msg (logger state) "--> ~A~%" (json:encode-json-to-string msg))
-                              (handle-msg state msg))
+            (handler-case
+
+                    (when msg
+                        (when (typep msg 'message:request)
+                            (setf (gethash (threads:get-thread-id (bt:current-thread)) (thread-msgs state))
+                                (message:id msg)))
+                        (logger:trace-msg (logger state) "--> ~A~%" (json:encode-json-to-string msg))
+                        (handle-msg state msg))
+
                 (error (c)
                     (logger:error-msg (logger state) "Message Handler: ~A" c)
                     (send-msg state

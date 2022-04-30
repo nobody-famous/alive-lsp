@@ -289,7 +289,11 @@
                                                     (the fixnum (+ (the fixnum (options-indent-width (parse-state-options state)))
                                                                     (the fixnum (pos:col (token:get-start token)))
                                                                     (the fixnum -1))))))
-                    (replace-indent state (pos:col (token:get-start token)))))
+                    (if lambda-list
+                        (replace-indent state (the fixnum (+ (the fixnum (options-indent-width (parse-state-options state)))
+                                                              (the fixnum (pos:col (token:get-start token)))
+                                                              (the fixnum -1))))
+                        (replace-indent state (pos:col (token:get-start token))))))
 
             (when (and form-open (not (aligned form-open)))
                 (cond ((and (token:is-type types:*symbol* (car (parse-state-seen state)))
