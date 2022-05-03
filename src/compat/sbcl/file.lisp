@@ -111,7 +111,6 @@
                            (sb-c:compiler-error (compiler-error out forms))
                            (sb-ext:compiler-note (compiler-note out forms))
                            (sb-ext::simple-style-warning (handle-warning out forms))
-                           ;    (sb-ext::package-does-not-exist (handle-error out forms))
                            (error (handle-error out forms))
                            (warning (handle-warning out forms)))
                 (funcall cmd path)))))
@@ -173,4 +172,11 @@
                                                    msgs)))
                 (sb-ext:package-does-not-exist (e)
                                                (declare (ignore e))
-                                               msgs)))))
+                                               msgs)
+
+                (sb-c::simple-package-error (e)
+                                            (declare (ignore e))
+                                            msgs)
+
+                (T (e)
+                   (format T "HERE ~A~%" (type-of e)))))))
