@@ -17,29 +17,29 @@
 
 (defun should-skip (form-type)
     (and form-type
-         (or (= types:*ifdef-false* form-type)
-             (= types:*line-comment* form-type)
-             (= types:*block-comment* form-type))))
+        (or (= types:*ifdef-false* form-type)
+            (= types:*line-comment* form-type)
+            (= types:*block-comment* form-type))))
 
 
 (defun get-nth-form (forms offset)
     (loop :with counted := 0
-          :with cur-form := nil
+        :with cur-form := nil
 
-          :while (<= counted offset)
+        :while (<= counted offset)
 
-          :do (setf cur-form (pop forms))
+        :do (setf cur-form (pop forms))
 
-              (cond ((or (= types:*line-comment* (form:get-form-type cur-form))
-                         (= types:*block-comment* (form:get-form-type cur-form)))
-                     NIL)
+        (cond ((or (= types:*line-comment* (form:get-form-type cur-form))
+                   (= types:*block-comment* (form:get-form-type cur-form)))
+               NIL)
 
-                    ((= types:*ifdef-false* (form:get-form-type cur-form))
-                     (pop forms))
+            ((= types:*ifdef-false* (form:get-form-type cur-form))
+             (pop forms))
 
-                    (T (incf counted)))
+            (T (incf counted)))
 
-          :finally (return cur-form)))
+        :finally (return cur-form)))
 
 
 (defun get-err-location (forms)
@@ -51,21 +51,21 @@
                           (form:get-end (car (reverse forms))))
 
             (loop :with indicies := source-path
-                  :with ndx := nil
-                  :with form := nil
+                :with ndx := nil
+                :with form := nil
 
-                  :while indicies
-                  :do (setf ndx (pop indicies))
+                :while indicies
+                :do (setf ndx (pop indicies))
 
-                      (when (<= (length forms) ndx)
-                            (error (format nil "Source ndx ~A, path ~A, form ~A" ndx source-path form)))
+                (when (<= (length forms) ndx)
+                    (error (format nil "Source ndx ~A, path ~A, form ~A" ndx source-path form)))
 
-                      (setf form (get-nth-form forms ndx))
+                (setf form (get-nth-form forms ndx))
 
-                      (setf forms (form:get-kids form))
+                (setf forms (form:get-kids form))
 
-                  :finally (return (range:create (form:get-start form)
-                                                 (form:get-end form)))))))
+                :finally (return (range:create (form:get-start form)
+                                               (form:get-end form)))))))
 
 
 (defun send-message (out-fn forms sev err)
@@ -75,7 +75,7 @@
                                  :message (format nil "~A" err))))
 
         (when loc
-              (funcall out-fn msg))))
+            (funcall out-fn msg))))
 
 
 (defun fatal-error (out-fn forms)
@@ -95,6 +95,7 @@
 
 (defun handle-error (out-fn forms)
     (lambda (err)
+        (format T "HANDLE-ERROR ~A~%" (type-of err))
         (send-message out-fn forms types:*sev-error* err)))
 
 
@@ -110,6 +111,7 @@
                            (sb-c:compiler-error (compiler-error out forms))
                            (sb-ext:compiler-note (compiler-note out forms))
                            (sb-ext::simple-style-warning (handle-warning out forms))
+                           ;    (sb-ext::package-does-not-exist (handle-error out forms))
                            (error (handle-error out forms))
                            (warning (handle-warning out forms)))
                 (funcall cmd path)))))
@@ -157,14 +159,18 @@
             ;;
 
             (handler-case
-                    (progn (do-cmd path 'compile-file
-                                   (lambda (msg)
-                                       (setf msgs (cons msg msgs))))
+                    (progn
+                        (do-cmd path 'compile-file
+                                (lambda (msg)
+                                    (setf msgs (cons msg msgs))))
 
-                           msgs)
+                        msgs)
                 (errors:input-error (e)
                                     (setf msgs (cons
-                                                (comp-msg:create :severity types:*sev-error*
-                                                                 :location (list (errors:start e) (errors:end e))
-                                                                 :message (format nil "~A" e))
-                                                msgs)))))))
+                                                   (comp-msg:create :severity types:*sev-error*
+                                                                    :location (list (errors:start e) (errors:end e))
+                                                                    :message (format nil "~A" e))
+                                                   msgs)))
+                (sb-ext:package-does-not-exist (e)
+                                               (declare (ignore e))
+                                               msgs)))))
