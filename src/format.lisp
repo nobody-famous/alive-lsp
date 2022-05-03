@@ -461,7 +461,7 @@
             (fmt-opts:get-indent-width opts))))
 
 
-(defun range (input range opts)
+(defun range (input range &optional opts)
     (let* ((tokens (convert-tokens (tokenizer:from-stream input)))
            (state (make-parse-state :tokens tokens
                                     :range range
