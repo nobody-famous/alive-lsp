@@ -9,7 +9,7 @@
 
 
 (defun make-stream ()
-    #+sbcl (make-instance 'alive/sbcl/streams:rt-stream))
+    #+sbcl (make-instance 'alive/sbcl/streams:output-stream))
 
 
 (defun flush-stream (obj)

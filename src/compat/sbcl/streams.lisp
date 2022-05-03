@@ -1,6 +1,6 @@
 (defpackage :alive/sbcl/streams
     (:use :cl)
-    (:export :rt-stream
+    (:export :output-stream
              :eof-p
              :flush-buffer
              :add-listener))
@@ -8,7 +8,7 @@
 (in-package :alive/sbcl/streams)
 
 
-(defclass rt-stream (sb-gray:fundamental-character-output-stream)
+(defclass output-stream (sb-gray:fundamental-character-output-stream)
         ((buffer :accessor buffer
                  :initform (make-string-output-stream)
                  :initarg :buffer)
@@ -29,11 +29,11 @@
                    :initarg :cond-var)))
 
 
-(defmethod stream-element-type ((obj rt-stream))
+(defmethod stream-element-type ((obj output-stream))
     'character)
 
 
-(defmethod close ((obj rt-stream) &key abort)
+(defmethod close ((obj output-stream) &key abort)
     (declare (ignore abort))
 
     (bt:with-recursive-lock-held ((lock obj))
@@ -48,7 +48,7 @@
             (funcall listener str))))
 
 
-(defmethod sb-gray:stream-write-char ((obj rt-stream) ch)
+(defmethod sb-gray:stream-write-char ((obj output-stream) ch)
     (if (char= #\newline ch)
         (flush-buffer obj)
         (write-char ch (buffer obj))))
@@ -76,7 +76,7 @@
         line))
 
 
-(defmethod sb-gray:stream-read-line ((obj rt-stream))
+(defmethod sb-gray:stream-read-line ((obj output-stream))
     (bt:with-recursive-lock-held ((lock obj))
         (loop :until (or (closed-p obj)
                          (position #\linefeed (buffer obj)))
