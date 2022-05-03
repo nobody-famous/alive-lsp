@@ -343,7 +343,8 @@
            (* (elt (history state) 0))
            (** (elt (history state) 1))
            (*** (elt (history state) 2))
-           (result (eval:from-string text :pkg-name pkg-name
+           (result (eval:from-string text
+                                     :pkg-name pkg-name
                                      :stdout-fn (lambda (data)
                                                     (send-msg state (stdout:create data)))
                                      :stderr-fn (lambda (data)
