@@ -90,6 +90,9 @@
          (history :accessor history
                   :initform (make-array 3)
                   :initarg :history)
+         (uri-cond-vars :accessor uri-cond-vars
+                        :initform (make-hash-table :test 'equalp)
+                        :initarg :uri-cond-vars)
          (read-thread :accessor read-thread
                       :initform nil
                       :initarg :read-thread)))
@@ -134,11 +137,27 @@
 
 
 (defmethod set-file-text ((obj state) uri text)
-    (setf (gethash uri (files obj)) text))
+    (bt:with-recursive-lock-held ((lock obj))
+        (let ((cond-var (gethash uri (uri-cond-vars obj))))
+            (setf (gethash uri (files obj)) text)
+
+            (when cond-var
+                (bt:condition-notify cond-var)
+                (remhash uri (uri-cond-vars obj))))))
 
 
 (defmethod get-file-text ((obj state) uri)
-    (gethash uri (files obj)))
+    (bt:with-recursive-lock-held ((lock obj))
+        (let ((file-text (gethash uri (files obj))))
+
+            (unless file-text
+                (setf (gethash uri (uri-cond-vars obj))
+                    (bt:make-condition-variable))
+
+                (bt:condition-wait (gethash uri (uri-cond-vars obj))
+                                   (lock obj)))
+
+            (gethash uri (files obj)))))
 
 
 (defmethod next-send-id ((obj state))
