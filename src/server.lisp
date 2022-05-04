@@ -97,7 +97,7 @@
         (bt:make-thread (lambda ()
                             (let ((*standard-output* stdout))
                                 (listen-for-conns server port)))
-                        :name "Main Loop")))
+                        :name "Alive LSP Server")))
 
 (defun stop ()
     (logger:info-msg (logger *server*) "Stop server~%")

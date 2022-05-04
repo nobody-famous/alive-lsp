@@ -90,9 +90,6 @@
          (history :accessor history
                   :initform (make-array 3)
                   :initarg :history)
-         (uri-cond-vars :accessor uri-cond-vars
-                        :initform (make-hash-table :test 'equalp)
-                        :initarg :uri-cond-vars)
          (read-thread :accessor read-thread
                       :initform nil
                       :initarg :read-thread)))
@@ -137,27 +134,11 @@
 
 
 (defmethod set-file-text ((obj state) uri text)
-    (bt:with-recursive-lock-held ((lock obj))
-        (let ((cond-var (gethash uri (uri-cond-vars obj))))
-            (setf (gethash uri (files obj)) text)
-
-            (when cond-var
-                (bt:condition-notify cond-var)
-                (remhash uri (uri-cond-vars obj))))))
+    (setf (gethash uri (files obj)) text))
 
 
 (defmethod get-file-text ((obj state) uri)
-    (bt:with-recursive-lock-held ((lock obj))
-        (let ((file-text (gethash uri (files obj))))
-
-            (unless file-text
-                (setf (gethash uri (uri-cond-vars obj))
-                    (bt:make-condition-variable))
-
-                (bt:condition-wait (gethash uri (uri-cond-vars obj))
-                                   (lock obj)))
-
-            (gethash uri (files obj)))))
+    (gethash uri (files obj)))
 
 
 (defmethod next-send-id ((obj state))
@@ -181,6 +162,20 @@
     (bt:with-recursive-lock-held ((lock obj))
         (write-string (packet:to-wire msg) (usocket:socket-stream (conn obj)))
         (force-output (usocket:socket-stream (conn obj)))))
+
+
+(defun run-in-thread (state msg fn)
+    (let ((stdout *standard-output*))
+        (bt:make-thread (lambda ()
+                            (let ((*standard-output* stdout))
+                                (setf (gethash (threads:get-thread-id (bt:current-thread)) (thread-msgs state))
+                                    (message:id msg))
+
+                                (funcall fn)))
+
+                        :name (next-thread-name state (if (typep msg 'message:request)
+                                                          (message:method-name msg)
+                                                          "response")))))
 
 
 (defmethod handle-msg ((obj state) (msg init:request))
@@ -311,12 +306,13 @@
 
 
 (defmethod handle-msg (state (msg list-threads:request))
-    (let ((threads (remove-if (lambda (thread)
-                                  (eq (threads:id thread) (threads:get-thread-id (bt:current-thread))))
-                           (threads:list-all))))
+    (bt:with-recursive-lock-held ((lock state))
+        (let ((threads (remove-if (lambda (thread)
+                                      (eq (threads:id thread) (threads:get-thread-id (bt:current-thread))))
+                               (threads:list-all))))
 
-        (send-msg state (list-threads:create-response (message:id msg)
-                                                      threads))))
+            (send-msg state (list-threads:create-response (message:id msg)
+                                                          threads)))))
 
 
 (defmethod handle-msg (state (msg kill-thread:request))
@@ -356,7 +352,7 @@
         (send-msg state (unexport:create-response (message:id msg)))))
 
 
-(defmethod handle-msg (state (msg eval-msg:request))
+(defun process-eval (state msg)
     (let* ((pkg-name (eval-msg:get-package msg))
            (text (eval-msg:get-text msg))
            (* (elt (history state) 0))
@@ -375,6 +371,11 @@
         (send-msg state
                   (eval-msg:create-response (message:id msg)
                                             (format nil "~A" result)))))
+
+
+(defmethod handle-msg (state (msg eval-msg:request))
+    (run-in-thread state msg (lambda ()
+                                 (process-eval state msg))))
 
 
 (defmethod handle-msg (state (msg get-pkg:request))
@@ -474,7 +475,7 @@
     (unwind-protect
             (handler-case
 
-                    (when msg
+                    (progn
                         (when (typep msg 'message:request)
                             (setf (gethash (threads:get-thread-id (bt:current-thread)) (thread-msgs state))
                                 (message:id msg)))
@@ -491,21 +492,11 @@
             (remhash (threads:get-thread-id (bt:current-thread)) (thread-msgs state)))))
 
 
-(defun spawn-handler (state msg)
-    (let ((stdout *standard-output*))
-        (bt:make-thread (lambda ()
-                            (let ((*standard-output* stdout))
-                                (process-msg state msg)))
-                        :name (next-thread-name state (if (typep msg 'message:request)
-                                                          (message:method-name msg)
-                                                          "response")))))
-
-
 (defun read-messages (state)
     (loop :while (running state)
         :do (let ((msg (read-message state)))
                 (when msg
-                    (spawn-handler state msg)))))
+                    (process-msg state msg)))))
 
 
 (defun start-read-thread (state)
