@@ -1,11 +1,55 @@
 (defpackage :alive/sbcl/streams
     (:use :cl)
-    (:export :output-stream
+    (:export :input-stream
+             :output-stream
              :eof-p
              :flush-buffer
-             :add-listener))
+             :add-listener
+             :add-to-input
+             :set-listener))
 
 (in-package :alive/sbcl/streams)
+
+
+(defclass input-stream (sb-gray:fundamental-character-input-stream)
+        ((buffer :accessor buffer
+                 :initform (make-string-output-stream)
+                 :initarg :buffer)
+         (out-buffer :accessor out-buffer
+                     :initform nil
+                     :initarg :out-buffer)
+         (listener :accessor listener
+                   :initform nil
+                   :initarg :listener)
+         (lock :accessor lock
+               :initform (bt:make-recursive-lock)
+               :initarg :lock)
+         (cond-var :accessor cond-var
+                   :initform (bt:make-condition-variable)
+                   :initarg :cond-var)))
+
+
+(defmethod sb-gray:stream-read-char ((obj input-stream))
+    (bt:with-recursive-lock-held ((lock obj))
+        (unless (out-buffer obj)
+            (setf (out-buffer obj)
+                (get-output-stream-string (buffer obj))))
+
+        (if (zerop (length (out-buffer obj)))
+            :eof
+            (let ((ch (elt (out-buffer obj) 0)))
+                (setf (out-buffer obj)
+                    (subseq (out-buffer obj) 1))
+
+                (when (zerop (length (out-buffer obj)))
+                    (setf (out-buffer obj) nil))
+
+                ch))))
+
+
+(defun add-to-input (obj data)
+    (loop :for ch :across data :do
+        (write-char ch (buffer obj))))
 
 
 (defclass output-stream (sb-gray:fundamental-character-output-stream)
@@ -56,6 +100,11 @@
 
 (defun add-listener (obj listener)
     (push listener (listeners obj)))
+
+
+(defun set-listener (obj listener)
+    (when obj
+        (setf (listener obj) listener)))
 
 
 (defun end-stream (obj)
