@@ -165,11 +165,11 @@
 
                         msgs)
                 (errors:input-error (e)
-                                    (setf msgs (cons
-                                                   (comp-msg:create :severity types:*sev-error*
-                                                                    :location (list (errors:start e) (errors:end e))
-                                                                    :message (format nil "~A" e))
-                                                   msgs)))
+                                    (push (comp-msg:create :severity types:*sev-error*
+                                                           :location (range:create (errors:start e) (errors:end e))
+                                                           :message (format nil "~A" e))
+                                          msgs)
+                                    msgs)
                 (sb-ext:package-does-not-exist (e)
                                                (declare (ignore e))
                                                msgs)
@@ -179,4 +179,5 @@
                                             msgs)
 
                 (T (e)
-                   (format T "HERE ~A~%" (type-of e)))))))
+                   (declare (ignore e))
+                   msgs)))))
