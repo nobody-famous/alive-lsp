@@ -171,7 +171,13 @@
                                 (setf (gethash (threads:get-thread-id (bt:current-thread)) (thread-msgs state))
                                     (message:id msg))
 
-                                (funcall fn)))
+                                (handler-case
+                                        (funcall fn)
+                                    (T (e)
+                                       (send-msg state
+                                                 (message:create-error-resp :id (message:id msg)
+                                                                            :code errors:*request-failed*
+                                                                            :message (format nil "~A" e)))))))
 
                         :name (next-thread-name state (if (typep msg 'message:request)
                                                           (message:method-name msg)
