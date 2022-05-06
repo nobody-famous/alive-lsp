@@ -187,10 +187,12 @@
 
         ((symbols:function-p sym namespace) sem-types:*function*)
 
-        ((symbols:callable-p sym namespace) sem-types:*keyword*)))
+        ((symbols:callable-p sym namespace) sem-types:*keyword*)
+
+        ((symbols:external-p sym namespace) sem-types:*symbol*)))
 
 
-(defun get-symbol-type (state sym &optional namespace)
+(defun get-symbol-type (state sym)
     (declare (type simple-string sym))
 
     (let ((open-form (car (opens state)))
@@ -205,7 +207,7 @@
                  (incf (the fixnum (expr-ndx open-form)))
                  sem-types:*parameter*))
 
-            (T (lookup-symbol-type sym namespace)))))
+            (T (lookup-symbol-type sym (package-name *package*))))))
 
 
 (defun update-symbol-types (state)

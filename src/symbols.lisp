@@ -2,6 +2,7 @@
     (:use :cl)
     (:export :callable-p
              :get-lambda-list
+             :external-p
              :function-p
              :lookup
              :macro-p))
@@ -39,6 +40,22 @@
     (or (function-p sym-name pkg-name)
         (macro-p sym-name pkg-name)
         (has-lambda-list-p sym-name pkg-name)))
+
+
+(defun external-p (sym-name &optional pkg-name)
+    (let* ((pkg (if pkg-name
+                    (find-package (string-upcase pkg-name))
+                    *package*)))
+
+        (when pkg
+            (multiple-value-bind (sym status)
+
+                    (find-symbol (string-upcase sym-name) pkg)
+
+                (declare (ignore sym))
+
+                (or (eq status :external)
+                    (eq status :inherited))))))
 
 
 (defun lookup (name pkg-name)
