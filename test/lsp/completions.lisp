@@ -32,21 +32,24 @@
                                    (comps:simple :text "some text cl-user:defmacro"
                                                  :pos (pos:create 0 26)))
 
-                  (check:are-equal (list (comps:create-item :label "get-lambda-list"
+                  (check:are-equal (list (comps:create-item :label "external-p"
                                                             :kind 3
-                                                            :insert-text "get-lambda-list ${1:fn-name}")
-                                       (comps:create-item :label "callable-p"
-                                                          :kind 3
-                                                          :insert-text "callable-p ${1:sym-name}")
-                                       (comps:create-item :label "function-p"
-                                                          :kind 3
-                                                          :insert-text "function-p ${1:name}")
+                                                            :insert-text "external-p ${1:sym-name}")
                                        (comps:create-item :label "macro-p"
                                                           :kind 3
                                                           :insert-text "macro-p ${1:sym-name}")
                                        (comps:create-item :label "lookup"
                                                           :kind 3
-                                                          :insert-text "lookup ${1:name} ${2:pkg-name}"))
+                                                          :insert-text "lookup ${1:name} ${2:pkg-name}")
+                                       (comps:create-item :label "callable-p"
+                                                          :kind 3
+                                                          :insert-text "callable-p ${1:sym-name}")
+                                       (comps:create-item :label "get-lambda-list"
+                                                          :kind 3
+                                                          :insert-text "get-lambda-list ${1:fn-name}")
+                                       (comps:create-item :label "function-p"
+                                                          :kind 3
+                                                          :insert-text "function-p ${1:name}"))
                                    (comps:simple :text "alive/symbols:"
                                                  :pos (pos:create 0 14)))
 
