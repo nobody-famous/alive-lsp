@@ -21,8 +21,18 @@
                                         (format T "CAUGHT ~A~%" c)
                                         (format T "EXIT ~A~%" (find-restart 'exit))
                                         (loop :for item :in (compute-restarts c) :do
-                                                  (format T "RESTART ~A ~A~%" (restart-name item) item)))))
+                                            (format T "RESTART ~A ~A~%" (restart-name item) item)))))
                       (eval:from-string "(/ 5 0)")))))
+
+
+(defun stdin ()
+    (run:test "Stdin Eval"
+              (lambda ()
+                  (eval:from-string "(read-line)"
+                                    :stdin-fn (lambda ()
+                                                  (format T "STDIN-FN CALLED~%"))
+                                    :stdout-fn (lambda (data)
+                                                   (format T "STDOUT ~A~%" data))))))
 
 
 (defun run-all ()
