@@ -173,7 +173,7 @@
 
                                 (handler-case
                                         (funcall fn)
-                                    (T (e)
+                                    (error (e)
                                        (send-msg state
                                                  (message:create-error-resp :id (message:id msg)
                                                                             :code errors:*request-failed*

@@ -30,7 +30,6 @@
 
 
 (defmethod sb-gray:stream-read-char ((obj input-stream))
-    (format T "READ-CHAR ~A ~A~%" (buffer obj) (length (out-buffer obj)))
     (bt:with-recursive-lock-held ((lock obj))
         (unless (out-buffer obj)
             (setf (out-buffer obj)
