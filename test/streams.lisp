@@ -37,7 +37,7 @@
 
                       (astreams:set-listener in-stream (lambda ()
                                                            (let ((return-eof listener-called))
-                                                            ;    (setf listener-called T)
+                                                               (setf listener-called T)
                                                                (if return-eof :eof *test-string*))))
                       (setf out-text (read-line))
 
