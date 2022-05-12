@@ -367,7 +367,6 @@
            (result (eval:from-string text
                                      :pkg-name pkg-name
                                      :stdin-fn (lambda ()
-                                                   (format T "STDIN CALLBACK CALLED~%")
                                                    (format nil "FAKE STDIN DATA"))
                                      :stdout-fn (lambda (data)
                                                     (send-msg state (stdout:create data)))

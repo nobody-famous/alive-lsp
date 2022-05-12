@@ -38,7 +38,7 @@
                     (subseq (buffer obj) 1))
 
                 (when (zerop (length (buffer obj)))
-                    (setf (buffer obj) nil))
+                    (setf (buffer obj) :eof))
 
                 ch))))
 
