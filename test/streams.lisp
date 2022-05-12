@@ -8,7 +8,7 @@
 (in-package :alive/test/streams)
 
 
-(defparameter *test-string* "Test String")
+(defparameter *test-string* (format nil "Test String"))
 
 
 (defun stdout ()
@@ -32,12 +32,13 @@
               (lambda ()
                   (let* ((in-stream (astreams:make-input-stream))
                          (*standard-input* in-stream)
+                         (listener-called nil)
                          (out-text nil))
 
                       (astreams:set-listener in-stream (lambda ()
-                                                           *test-string*))
-
-                      (astreams:add-to-input in-stream *test-string*)
+                                                           (let ((return-eof listener-called))
+                                                            ;    (setf listener-called T)
+                                                               (if return-eof :eof *test-string*))))
                       (setf out-text (read-line))
 
                       (check:are-equal *test-string* out-text)))))
