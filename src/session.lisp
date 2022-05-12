@@ -174,10 +174,10 @@
                                 (handler-case
                                         (funcall fn)
                                     (error (e)
-                                       (send-msg state
-                                                 (message:create-error-resp :id (message:id msg)
-                                                                            :code errors:*request-failed*
-                                                                            :message (format nil "~A" e)))))))
+                                        (send-msg state
+                                                  (message:create-error-resp :id (message:id msg)
+                                                                             :code errors:*request-failed*
+                                                                             :message (format nil "~A" e)))))))
 
                         :name (next-thread-name state (if (typep msg 'message:request)
                                                           (message:method-name msg)
@@ -358,6 +358,12 @@
         (send-msg state (unexport:create-response (message:id msg)))))
 
 
+(defun wait-for-input (state)
+    (declare (ignore state))
+    
+    (format nil "WAIT FOR INPUT"))
+
+
 (defun process-eval (state msg)
     (let* ((pkg-name (eval-msg:get-package msg))
            (text (eval-msg:get-text msg))
@@ -367,7 +373,7 @@
            (result (eval:from-string text
                                      :pkg-name pkg-name
                                      :stdin-fn (lambda ()
-                                                   (format nil "FAKE STDIN DATA"))
+                                                   (wait-for-input state))
                                      :stdout-fn (lambda (data)
                                                     (send-msg state (stdout:create data)))
                                      :stderr-fn (lambda (data)
