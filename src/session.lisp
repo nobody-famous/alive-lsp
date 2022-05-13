@@ -10,6 +10,7 @@
                       (:did-change :alive/lsp/message/document/did-change)
                       (:formatting :alive/lsp/message/document/range-format)
                       (:config :alive/lsp/message/workspace/config)
+                      (:input :alive/lsp/message/alive/user-input)
                       (:asdf :alive/asdf)
                       (:eval :alive/eval)
                       (:file :alive/file)
@@ -45,6 +46,7 @@
                       (:config-item :alive/lsp/types/config-item)
                       (:text-doc :alive/lsp/types/text-doc)
                       (:fmt-opts :alive/lsp/types/format-options)
+                      (:user-input :alive/lsp/types/user-input)
                       (:sem-tokens :alive/lsp/message/document/sem-tokens-full)))
 
 (in-package :alive/session)
@@ -87,6 +89,9 @@
          (sent-msg-callbacks :accessor sent-msg-callbacks
                              :initform (make-hash-table :test 'equalp)
                              :initarg :sent-msg-callbacks)
+         (input-cond-vars :accessor input-cond-vars
+                          :initform (make-hash-table :test 'equalp)
+                          :initarg :input-cond-vars)
          (history :accessor history
                   :initform (make-array 3)
                   :initarg :history)
@@ -284,7 +289,6 @@
 
 
 (defun handle-format-msg (state options msg)
-
     (let* ((params (message:params msg))
            (range (formatting:range params))
            (doc (formatting:text-document params))
@@ -359,9 +363,26 @@
 
 
 (defun wait-for-input (state)
-    (declare (ignore state))
-    
-    (format nil "WAIT FOR INPUT"))
+    (let ((send-id (next-send-id state))
+          (cond-var (bt:make-condition-variable))
+          (text nil))
+
+        (setf (gethash send-id (sent-msg-callbacks state))
+            (lambda (input-resp)
+                (format T "INPUT-RESP ~A~%" (type-of input-resp))
+                (let ((opts (when (message:result input-resp)
+                                (user-input:from-wire (message:result input-resp)))))
+                    (setf text (user-input:get-text opts))
+                    (bt:condition-notify cond-var))))
+
+        (format T "WAIT FOR INPUT ~A~%" send-id)
+        (send-msg state (input:create-request
+                            :id send-id))
+
+        (bt:with-recursive-lock-held ((lock state))
+            (bt:condition-wait cond-var (lock state)))
+
+        text))
 
 
 (defun process-eval (state msg)

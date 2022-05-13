@@ -235,7 +235,8 @@
 
 
 (defun build-error-response (fields)
-    (message:error-from-wire (id fields) (error-msg fields)))
+    (message:error-from-wire :id (id fields)
+                             :params (error-msg fields)))
 
 
 (defun build-result-response (fields)

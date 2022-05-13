@@ -1,7 +1,6 @@
 (defpackage :alive/streams
     (:use :cl)
     (:export :add-listener
-             :add-to-input
              :set-listener
              :eof-p
              :flush-stream
@@ -29,10 +28,6 @@
 
 (defun set-listener (obj listener)
     #+sbcl (alive/sbcl/streams:set-listener obj listener))
-
-
-(defun add-to-input (obj data)
-    #+sbcl (alive/sbcl/streams:add-to-input obj data))
 
 
 (defun eof-p (obj)
