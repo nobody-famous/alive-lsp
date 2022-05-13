@@ -189,6 +189,17 @@
                                                           "response")))))
 
 
+(defun cancel-thread (state thread-id msg-id)
+    (when msg-id
+        (send-msg state
+                  (message:create-error-resp :id msg-id
+                                             :code errors:*request-cancelled*
+                                             :message (format nil "Request ~A canceled" msg-id))))
+
+    (when thread-id
+        (threads:kill thread-id)))
+
+
 (defmethod handle-msg ((obj state) (msg init:request))
     (let* ((resp (init:create-response (message:id msg))))
         (send-msg obj resp)))
@@ -328,14 +339,11 @@
 (defmethod handle-msg (state (msg kill-thread:request))
     (handler-case
             (progn
-                (let ((thread-msg-id (gethash (kill-thread:get-id msg)
-                                              (thread-msgs state))))
-                    (when thread-msg-id
-                        (send-msg state
-                                  (message:create-error-resp :id thread-msg-id
-                                                             :code errors:*request-cancelled*
-                                                             :message (format nil "Request ~A canceled" (message:id msg))))))
-                (threads:kill (kill-thread:get-id msg))
+                (cancel-thread state
+                               (kill-thread:get-id msg)
+                               (gethash (kill-thread:get-id msg)
+                                        (thread-msgs state)))
+
                 (send-msg state (kill-thread:create-response (message:id msg))))
         (threads:thread-not-found (c)
                                   (send-msg state
@@ -369,19 +377,22 @@
 
         (setf (gethash send-id (sent-msg-callbacks state))
             (lambda (input-resp)
-                (format T "INPUT-RESP ~A~%" (type-of input-resp))
-                (let ((opts (when (message:result input-resp)
-                                (user-input:from-wire (message:result input-resp)))))
-                    (setf text (user-input:get-text opts))
-                    (bt:condition-notify cond-var))))
+                (typecase input-resp
+                    (message:error-response (logger:error-msg (logger state) "Input Error ~A" input-resp)
+                                            (bt:condition-notify cond-var))
 
-        (format T "WAIT FOR INPUT ~A~%" send-id)
+                    (message:result-response (let ((opts (when (message:result input-resp)
+                                                             (user-input:from-wire (message:result input-resp)))))
+                                                 (setf text (user-input:get-text opts))
+                                                 (bt:condition-notify cond-var))))))
+
         (send-msg state (input:create-request
                             :id send-id))
 
         (bt:with-recursive-lock-held ((lock state))
             (bt:condition-wait cond-var (lock state)))
 
+        (format T "TEXT: ~A~%" text)
         text))
 
 
@@ -400,6 +411,7 @@
                                      :stderr-fn (lambda (data)
                                                     (send-msg state (stderr:create data))))))
 
+        (format T "RESULT ~A~%" result)
         (when (eval-msg:store-result-p msg)
             (add-history state result))
 

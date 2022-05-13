@@ -31,7 +31,8 @@
             (setf (buffer obj)
                 (funcall (listener obj))))
 
-        (if (eq :eof (buffer obj))
+        (if (or (eq :eof (buffer obj))
+                (not (buffer obj)))
             :eof
             (let ((ch (elt (buffer obj) 0)))
                 (setf (buffer obj)

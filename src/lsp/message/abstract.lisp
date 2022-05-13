@@ -11,6 +11,7 @@
              :request
              :response
              :result
+             :error-response
              :result-response))
 
 (in-package :alive/lsp/message/abstract)
@@ -59,7 +60,7 @@
 
 
 (defmethod print-object ((obj error-data) out)
-    (format out "{code: ~A; message ~A}"
+    (format out "{code: ~A; message: ~A}"
         (code obj)
         (message obj)))
 
