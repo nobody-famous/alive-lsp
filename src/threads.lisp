@@ -12,19 +12,19 @@
 
 
 (define-condition thread-not-found (error)
-    ((id :accessor id
-         :initform nil
-         :initarg :id))
+        ((id :accessor id
+             :initform nil
+             :initarg :id))
     (:report (lambda (condition stream) (format stream "Thread ~A Not Found" (id condition)))))
 
 
 (defclass thread ()
-    ((id :accessor id
-         :initform nil
-         :initarg :id)
-     (name :accessor name
-           :initform nil
-           :initarg :name)))
+        ((id :accessor id
+             :initform nil
+             :initarg :id)
+         (name :accessor name
+               :initform nil
+               :initarg :name)))
 
 
 (defun get-thread-id (thread)
@@ -34,8 +34,8 @@
 (defun list-all ()
     (mapcar (lambda (thread)
                 (make-instance 'thread
-                               :id (get-thread-id thread)
-                               :name (bt:thread-name thread)))
+                    :id (get-thread-id thread)
+                    :name (bt:thread-name thread)))
             (bt:all-threads)))
 
 
@@ -43,15 +43,15 @@
     (reduce (lambda (acc thread)
                 (or acc
                     (when (equalp thread-id (get-thread-id thread))
-                          thread)))
+                        thread)))
             (bt:all-threads)
-            :initial-value nil))
+        :initial-value nil))
 
 
 (defun kill (thread-id)
     (let ((thread (find-by-id thread-id)))
 
         (unless thread
-                (error (make-condition 'thread-not-found :id thread-id)))
+            (error (make-condition 'thread-not-found :id thread-id)))
 
         (bt:destroy-thread thread)))

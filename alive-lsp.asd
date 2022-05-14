@@ -44,6 +44,7 @@
                  "alive-lsp/src/lsp/types/text-doc"
                  "alive-lsp/src/lsp/types/text-doc-item"
                  "alive-lsp/src/lsp/types/format-options"
+                 "alive-lsp/src/lsp/types/user-input"
 
                  "alive-lsp/src/lsp/sem-analysis"
 
@@ -64,6 +65,7 @@
                  "alive-lsp/src/lsp/message/alive/stderr"
                  "alive-lsp/src/lsp/message/alive/stdout"
                  "alive-lsp/src/lsp/message/alive/top-form"
+                 "alive-lsp/src/lsp/message/alive/user-input"
                  "alive-lsp/src/lsp/message/document/completion"
                  "alive-lsp/src/lsp/message/document/did-change"
                  "alive-lsp/src/lsp/message/document/did-open"
@@ -104,6 +106,7 @@
                  "alive-lsp/test/format/range"
 
                  "alive-lsp/test/eval"
+                 "alive-lsp/test/streams"
 
                  "alive-lsp/test/suite"))
 
@@ -144,6 +147,7 @@
 (register-system-packages "alive-lsp/src/lsp/types/text-doc" '(:alive/lsp/types/text-doc))
 (register-system-packages "alive-lsp/src/lsp/types/text-doc-item" '(:alive/lsp/types/text-doc-item))
 (register-system-packages "alive-lsp/src/lsp/types/format-options" '(:alive/lsp/types/format-options))
+(register-system-packages "alive-lsp/src/lsp/types/user-input" '(:alive/lsp/types/user-input))
 
 (register-system-packages "alive-lsp/src/lsp/sem-analysis" '(:alive/lsp/sem-analysis))
 
@@ -164,6 +168,7 @@
 (register-system-packages "alive-lsp/src/lsp/message/alive/stderr" '(:alive/lsp/message/alive/stderr))
 (register-system-packages "alive-lsp/src/lsp/message/alive/stdout" '(:alive/lsp/message/alive/stdout))
 (register-system-packages "alive-lsp/src/lsp/message/alive/top-form" '(:alive/lsp/message/alive/top-form))
+(register-system-packages "alive-lsp/src/lsp/message/alive/user-input" '(:alive/lsp/message/alive/user-input))
 (register-system-packages "alive-lsp/src/lsp/message/document/completion" '(:alive/lsp/message/document/completion))
 (register-system-packages "alive-lsp/src/lsp/message/document/did-change" '(:alive/lsp/message/document/did-change))
 (register-system-packages "alive-lsp/src/lsp/message/document/did-open" '(:alive/lsp/message/document/did-open))
@@ -203,3 +208,4 @@
 (register-system-packages "alive-lsp/test/format/range" '(:alive/test/format/range))
 
 (register-system-packages "alive-lsp/test/eval" '(:alive/test/eval))
+(register-system-packages "alive-lsp/test/streams" '(:alive/test/streams))

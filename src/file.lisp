@@ -11,8 +11,8 @@
 (defun do-cmd (cmd path &key stdout-fn stderr-fn)
     (let* ((orig-stdout *standard-output*)
            (orig-stderr *error-output*)
-           (out-stream (astreams:make-stream))
-           (err-stream (astreams:make-stream))
+           (out-stream (astreams:make-output-stream))
+           (err-stream (astreams:make-output-stream))
            (*standard-output* out-stream)
            (*error-output* err-stream))
 

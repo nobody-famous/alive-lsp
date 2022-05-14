@@ -6,6 +6,7 @@
              :from-wire
              :get-package
              :get-text
+             :store-result-p
              :request)
     (:local-nicknames (:message :alive/lsp/message/abstract)
                       (:types :alive/types)))
@@ -14,57 +15,61 @@
 
 
 (defclass request (message:request)
-    ((message::method :initform "$/alive/eval")))
+        ((message::method :initform "$/alive/eval")))
 
 
 (defmethod print-object ((obj request) out)
     (format out "{id: ~A; method: ~A; params: ~A}"
-            (message:id obj)
-            (message:method-name obj)
-            (message:params obj)))
+        (message:id obj)
+        (message:method-name obj)
+        (message:params obj)))
 
 
 (defmethod types:deep-equal-p ((a request) b)
     (and (equal (type-of a) (type-of b))
-         (equalp (message:id a) (message:id b))
-         (types:deep-equal-p (message:params a) (message:params b))))
+        (equalp (message:id a) (message:id b))
+        (types:deep-equal-p (message:params a) (message:params b))))
 
 
 (defclass params ()
-    ((package :accessor pkg-name
-              :initform nil
-              :initarg :pkg-name)
-     (text :accessor text
-           :initform nil
-           :initarg :text)))
-
+        ((package :accessor pkg-name
+                  :initform nil
+                  :initarg :pkg-name)
+         (text :accessor text
+               :initform nil
+               :initarg :text)
+         (store-result :accessor store-result
+                       :initform nil
+                       :initarg :store-result)))
 
 (defmethod print-object ((obj params) out)
-    (format out "{package: ~A; text: ~A;}"
-            (pkg-name obj)
-            (text obj)))
+    (format out "{package: ~A; text: ~A; store-result: ~A}"
+        (pkg-name obj)
+        (text obj)
+        (store-result obj)))
 
 
 (defmethod types:deep-equal-p ((a params) b)
     (and (equal (type-of a) (type-of b))
-         (string= (pkg-name a) (pkg-name b))
-         (string= (text a) (text b))))
+        (types:deep-equal-p (pkg-name a) (pkg-name b))
+        (types:deep-equal-p (text a) (text b))
+        (types:deep-equal-p (store-result a) (store-result b))))
 
 
 (defclass response (message:result-response)
-    ())
+        ())
 
 
 (defmethod print-object ((obj response) out)
     (format out "{id: ~A; result: ~A}"
-            (message:id obj)
-            (message:result obj)))
+        (message:id obj)
+        (message:result obj)))
 
 
 (defclass response-body ()
-    ((text :accessor text
-           :initform nil
-           :initarg :text)))
+        ((text :accessor text
+               :initform nil
+               :initarg :text)))
 
 
 (defmethod print-object ((obj response-body) out)
@@ -73,8 +78,8 @@
 
 (defun create-response (id text)
     (make-instance 'response
-                   :id id
-                   :result (make-instance 'response-body :text text)))
+        :id id
+        :result (make-instance 'response-body :text text)))
 
 
 (defun get-package (obj)
@@ -87,27 +92,34 @@
         (text params)))
 
 
+(defun store-result-p (obj)
+    (let ((params (message:params obj)))
+        (store-result params)))
+
+
 (defun create-request (&key jsonrpc id params)
     (make-instance 'request
-                   :jsonrpc jsonrpc
-                   :id id
-                   :params params))
+        :jsonrpc jsonrpc
+        :id id
+        :params params))
 
 
-(defun create-params (&key pkg-name text)
+(defun create-params (&key pkg-name text store-result)
     (make-instance 'params
-                   :pkg-name pkg-name
-                   :text text))
+        :pkg-name pkg-name
+        :text text
+        :store-result store-result))
 
 
 (defun from-wire (&key jsonrpc id params)
     (labels ((add-param (params key value)
-                  (cond ((eq key :package) (setf (pkg-name params) value))
-                        ((eq key :text) (setf (text params) value)))))
+                        (cond ((eq key :package) (setf (pkg-name params) value))
+                            ((eq key :text) (setf (text params) value))
+                            ((eq key :store-result) (setf (store-result params) value)))))
 
         (loop :with out-params := (make-instance 'params)
-              :for param :in params :do
-                  (add-param out-params (car param) (cdr param))
-              :finally (return (create-request :jsonrpc jsonrpc
-                                               :id id
-                                               :params out-params)))))
+            :for param :in params :do
+            (add-param out-params (car param) (cdr param))
+            :finally (return (create-request :jsonrpc jsonrpc
+                                             :id id
+                                             :params out-params)))))
