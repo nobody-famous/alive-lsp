@@ -40,6 +40,7 @@
 
         (loop :with item := (make-instance 'user-input)
             :for result :in results :do
-            (loop :for param :in result :do
-                (add-param item (car param) (cdr param)))
+
+            (add-param item (car result) (cdr result))
+
             :finally (return item))))

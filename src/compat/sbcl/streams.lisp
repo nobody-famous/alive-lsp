@@ -32,6 +32,7 @@
                 (funcall (listener obj))))
 
         (if (or (eq :eof (buffer obj))
+                (zerop (length (buffer obj)))
                 (not (buffer obj)))
             :eof
             (let ((ch (elt (buffer obj) 0)))
