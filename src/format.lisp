@@ -167,10 +167,19 @@
                         (the fixnum (pos:line start))))))
 
 
+(defun do-indent (out num str)
+    (declare (type character-string-ostream out)
+             (type fixnum num))
+
+    (loop :repeat num
+        :do (format out "~A" str)))
+
+
 (defun indent-string (nl-count space-count)
-    (format nil "~A~A"
-        (format nil "~v@{~A~:*~}" nl-count (format nil "~%"))
-        (format nil "~v@{~A~:*~}" space-count " ")))
+    (let ((out (make-string-output-stream)))
+        (do-indent out nl-count (format nil "~%"))
+        (do-indent out space-count " ")
+        (get-output-stream-string out)))
 
 
 (defun replace-token (state token text)
