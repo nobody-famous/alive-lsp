@@ -25,6 +25,10 @@
                    :initarg :cond-var)))
 
 
+(defmethod sb-gray:stream-unread-char ((obj input-stream) ch)
+    nil)
+
+
 (defmethod sb-gray:stream-read-char ((obj input-stream))
     (bt:with-recursive-lock-held ((lock obj))
         (unless (buffer obj)
@@ -34,7 +38,11 @@
         (if (or (eq :eof (buffer obj))
                 (zerop (length (buffer obj)))
                 (not (buffer obj)))
-            :eof
+
+            (progn
+                (setf (buffer obj) nil)
+                :eof)
+
             (let ((ch (elt (buffer obj) 0)))
                 (setf (buffer obj)
                     (subseq (buffer obj) 1))

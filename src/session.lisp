@@ -392,7 +392,6 @@
         (bt:with-recursive-lock-held ((lock state))
             (bt:condition-wait cond-var (lock state)))
 
-        (format T "TEXT: ~A~%" text)
         text))
 
 
@@ -411,7 +410,6 @@
                                      :stderr-fn (lambda (data)
                                                     (send-msg state (stderr:create data))))))
 
-        (format T "RESULT ~A~%" result)
         (when (eval-msg:store-result-p msg)
             (add-history state result))
 
