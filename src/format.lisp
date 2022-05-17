@@ -42,6 +42,9 @@
          (aligned :accessor aligned
                   :initform nil
                   :initarg :aligned)
+         (cond-p :accessor cond-p
+                 :initform nil
+                 :initarg :cond-p)
          (lambda-list :accessor lambda-list
                       :initform nil
                       :initarg :lambda-list)
@@ -53,11 +56,12 @@
 (defmethod print-object ((obj start-form) out)
     (declare (type stream out))
 
-    (format out "{[~A:~A] ML: ~A; aligned: ~A; lambda-list: ~A}"
+    (format out "{[~A:~A] ML: ~A; aligned: ~A; cond-p: ~A; lambda-list: ~A}"
         (start obj)
         (end obj)
         (is-multiline obj)
         (aligned obj)
+        (cond-p obj)
         (lambda-list obj)))
 
 
@@ -129,8 +133,8 @@
 
           :for ch :across (the simple-string str) :do
           (cond ((char= #\newline ch)
-                 (incf line)
-                 (setf col 0))
+                    (incf line)
+                    (setf col 0))
 
                 (T (incf col)))
 
@@ -251,13 +255,13 @@
           (token2 (cadr (parse-state-tokens state))))
         (cond ((and (token:is-type types:*colons* token1)
                     (token:is-type types:*symbol* token2))
-               (setf (parse-state-cur-pkg state)
-                   (format nil "~A~A"
-                       (token:get-text token1)
-                       (token:get-text token2))))
+                  (setf (parse-state-cur-pkg state)
+                      (format nil "~A~A"
+                          (token:get-text token1)
+                          (token:get-text token2))))
               ((token:is-type types:*macro* token1)
-               (setf (parse-state-cur-pkg state)
-                   (token:get-text token1))))))
+                  (setf (parse-state-cur-pkg state)
+                      (token:get-text token1))))))
 
 
 (defun lookup-lambda-list (token1 token2 token3)
@@ -265,14 +269,14 @@
                 (token:is-type types:*colons* token2)
                 (token:is-type types:*symbol* token3))
 
-           (symbols:get-lambda-list (token:get-text token3)
-                                    (token:get-text token1)))
+              (symbols:get-lambda-list (token:get-text token3)
+                                       (token:get-text token1)))
 
           ((and (token:is-type types:*symbol* token1)
                 (not (token:is-type types:*colons* token2)))
 
-           (symbols:get-lambda-list (token:get-text token1)
-                                    (package-name *package*)))))
+              (symbols:get-lambda-list (token:get-text token1)
+                                       (package-name *package*)))))
 
 
 (defun force-aligned-p (token)
@@ -281,8 +285,16 @@
         (member name *force-align-targets* :test #'string=)))
 
 
+(defun token-is (token text)
+    (declare (type simple-string text))
+
+    (let ((name (string-downcase (token:get-text token))))
+        (string= name text)))
+
+
 (defun update-aligned (state)
     (let* ((form-open (car (parse-state-opens state)))
+           (prev-open (cadr (parse-state-opens state)))
            (token (car (parse-state-out-list state)))
            (pkg (packages:for-string (parse-state-cur-pkg state)))
            (*package* (if pkg pkg *package*)))
@@ -296,7 +308,15 @@
                 (when (string= "in-package" (string-downcase (token:get-text token)))
                       (setf (parse-state-cur-pkg state) NIL))
 
-                (cond ((force-aligned-p token) (replace-indent state (pos:col (token:get-start token))))
+                (cond ((token-is token "cond") (setf (cond-p form-open) T)
+                                               (replace-indent state (pos:col (token:get-start token))))
+
+                      ((and prev-open (cond-p prev-open))
+                          (replace-indent state (the fixnum (+ (the fixnum (options-indent-width (parse-state-options state)))
+                                                               (the fixnum (pos:col (token:get-start token)))
+                                                               (the fixnum -1)))))
+
+                      ((force-aligned-p token) (replace-indent state (pos:col (token:get-start token))))
 
                       ((has-body lambda-list) (setf (aligned form-open) T)
                                               (setf (lambda-list form-open) lambda-list)
@@ -318,12 +338,12 @@
                   (cond ((and (token:is-type types:*symbol* (car (parse-state-seen state)))
                               (token:is-type types:*colons* token)
                               (token:is-type types:*symbol* (cadr (parse-state-tokens state))))
-                         (add-to-out-list state (cadr (parse-state-tokens state)))
-                         (pop-token state))
+                            (add-to-out-list state (cadr (parse-state-tokens state)))
+                            (pop-token state))
 
                         ((and (token:is-type types:*colons* (car (parse-state-seen state)))
                               (token:is-type types:*symbol* token))
-                         NIL)
+                            NIL)
 
                         (T (unless (parse-state-cur-pkg state)
                                (set-cur-pkg state))
@@ -343,25 +363,24 @@
                   (add-to-out-list state token)
                   (cond ((or (not prev)
                              (token:is-type *start-form* prev))
-                         (replace-token state token ""))
+                            (replace-token state token ""))
 
                         ((= (the fixnum (pos:line start)) (the fixnum (pos:line end)))
-                         (if (string= " " (the simple-string (token:get-text token)))
-                             (add-to-out-list state token)
-                             (progn (add-to-out-list state
-                                                     (token:create :type-value types:*ws*
-                                                                   :start (token:get-start token)
-                                                                   :end (pos:create (pos:line start)
-                                                                                    (+ (the fixnum 1) (the fixnum (pos:col start))))
-                                                                   :text " "))
-                                    (replace-token state token " "))))
+                            (if (string= " " (the simple-string (token:get-text token)))
+                                (add-to-out-list state token)
+                                (progn (add-to-out-list state
+                                                        (token:create :type-value types:*ws*
+                                                                      :start (token:get-start token)
+                                                                      :end (pos:create (pos:line start)
+                                                                                       (+ (the fixnum 1) (the fixnum (pos:col start))))
+                                                                      :text " "))
+                                       (replace-token state token " "))))
 
-                        (T
-                         (let* ((str (indent-string (new-line-count token) indent))
-                                (new-token (make-new-token token (token:get-start token) str)))
+                        (T (let* ((str (indent-string (new-line-count token) indent))
+                                  (new-token (make-new-token token (token:get-start token) str)))
 
-                             (add-to-out-list state new-token)
-                             (replace-token state token str))))))))
+                               (add-to-out-list state new-token)
+                               (replace-token state token str))))))))
 
 
 (defun need-space-p (token)
@@ -380,10 +399,10 @@
 
         (when prev
               (cond ((token:is-type types:*ws* prev)
-                     (fix-indent state))
+                        (fix-indent state))
 
                     ((need-space-p prev)
-                     (insert-text state (token:get-end prev) " "))))
+                        (insert-text state (token:get-end prev) " "))))
 
         (add-to-out-list state token)
         (update-aligned state)
@@ -423,18 +442,18 @@
         (when prev
               (cond ((or (token:is-type types:*line-comment* token)
                          (token:is-type types:*block-comment* token))
-                     (if (and (token:is-type types:*ws* prev)
-                              (not (out-of-range (parse-state-range state) prev))
-                              (same-line prev token))
-                         (when (not (string= " " (the simple-string (token:get-text prev))))
-                               (replace-token state prev " "))
-                         (fix-indent state)))
+                        (if (and (token:is-type types:*ws* prev)
+                                 (not (out-of-range (parse-state-range state) prev))
+                                 (same-line prev token))
+                            (when (not (string= " " (the simple-string (token:get-text prev))))
+                                  (replace-token state prev " "))
+                            (fix-indent state)))
 
                     ((token:is-type types:*ws* prev) (fix-indent state))
 
                     ((and (not (token:is-type types:*colons* token))
                           (need-space-p prev))
-                     (insert-text state (token:get-end prev) " "))))
+                        (insert-text state (token:get-end prev) " "))))
 
         (add-to-out-list state token)
 
@@ -455,13 +474,13 @@
 
           :for token :in tokens :do
           (cond ((token:is-type types:*open-paren* token)
-                 (let ((new-token (new-start-form token)))
-                     (push new-token opens)
-                     (push new-token converted)))
+                    (let ((new-token (new-start-form token)))
+                        (push new-token opens)
+                        (push new-token converted)))
 
                 ((= (the fixnum types:*close-paren*) (the fixnum (token:get-type-value token)))
-                 (pop opens)
-                 (push token converted))
+                    (pop opens)
+                    (push token converted))
 
                 ((token:is-type types:*ws* token) (push token converted))
 
