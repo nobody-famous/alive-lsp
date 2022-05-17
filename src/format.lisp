@@ -17,7 +17,7 @@
 (declaim (optimize (speed 3) (safety 0)))
 
 
-(defparameter *force-align-targets* '("and" "or" "cond" "not" "when" "if" "progn" "loop"))
+(defparameter *force-align-targets* '("and" "or" "cond" "not" "when" "if" "progn" "loop" "/" "*" "-" "+"))
 
 (defparameter *start-form* 100)
 
@@ -167,7 +167,7 @@
     (let ((start (token:get-start token))
           (end (token:get-end token)))
         (the fixnum (- (the fixnum (pos:line end))
-                        (the fixnum (pos:line start))))))
+                       (the fixnum (pos:line start))))))
 
 
 (defun do-indent (out num str)
@@ -301,16 +301,16 @@
                       ((has-body lambda-list) (setf (aligned form-open) T)
                                               (setf (lambda-list form-open) lambda-list)
                                               (replace-indent state (cons (the fixnum (+ (the fixnum (* 2
-                                                                                                         (the fixnum (options-indent-width (parse-state-options state)))))
-                                                                                          (the fixnum (pos:col (token:get-start token)))
-                                                                                          (the fixnum -1)))
+                                                                                                        (the fixnum (options-indent-width (parse-state-options state)))))
+                                                                                         (the fixnum (pos:col (token:get-start token)))
+                                                                                         (the fixnum -1)))
                                                                           (the fixnum (+ (the fixnum (options-indent-width (parse-state-options state)))
-                                                                                          (the fixnum (pos:col (token:get-start token)))
-                                                                                          (the fixnum -1))))))
+                                                                                         (the fixnum (pos:col (token:get-start token)))
+                                                                                         (the fixnum -1))))))
 
                       (lambda-list (replace-indent state (the fixnum (+ (the fixnum (options-indent-width (parse-state-options state)))
-                                                                         (the fixnum (pos:col (token:get-start token)))
-                                                                         (the fixnum -1)))))
+                                                                        (the fixnum (pos:col (token:get-start token)))
+                                                                        (the fixnum -1)))))
 
                       (T (replace-indent state (pos:col (token:get-start token))))))
 
