@@ -45,6 +45,9 @@
          (cond-p :accessor cond-p
                  :initform nil
                  :initarg :cond-p)
+         (loop-p :accessor loop-p
+                 :initform nil
+                 :initarg :loop-p)
          (lambda-list :accessor lambda-list
                       :initform nil
                       :initarg :lambda-list)
@@ -56,12 +59,13 @@
 (defmethod print-object ((obj start-form) out)
     (declare (type stream out))
 
-    (format out "{[~A:~A] ML: ~A; aligned: ~A; cond-p: ~A; lambda-list: ~A}"
+    (format out "{[~A:~A] ML: ~A; aligned: ~A; cond-p: ~A; loop-p: ~A; lambda-list: ~A}"
         (start obj)
         (end obj)
         (is-multiline obj)
         (aligned obj)
         (cond-p obj)
+        (loop-p obj)
         (lambda-list obj)))
 
 
@@ -311,6 +315,9 @@
                 (cond ((token-is token "cond") (setf (cond-p form-open) T)
                                                (replace-indent state (pos:col (token:get-start token))))
 
+                      ((token-is token "loop") (setf (loop-p form-open) T)
+                                               (replace-indent state (pos:col (token:get-start token))))
+
                       ((and prev-open (cond-p prev-open))
                           (replace-indent state (the fixnum (+ (the fixnum (options-indent-width (parse-state-options state)))
                                                                (the fixnum (pos:col (token:get-start token)))
@@ -437,7 +444,8 @@
 
 
 (defun process-token (state token)
-    (let ((prev (car (parse-state-seen state))))
+    (let ((prev (car (parse-state-seen state)))
+          (form-open (car (parse-state-opens state))))
 
         (when prev
               (cond ((or (token:is-type types:*line-comment* token)
@@ -448,6 +456,10 @@
                             (when (not (string= " " (the simple-string (token:get-text prev))))
                                   (replace-token state prev " "))
                             (fix-indent state)))
+
+                    ((and (token-is token "foo")
+                          (loop-p form-open))
+                        (format T "LOOP ~A ~A~%" token (next-token state)))
 
                     ((token:is-type types:*ws* prev) (fix-indent state))
 
