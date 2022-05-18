@@ -104,10 +104,15 @@
 (defun indent ()
     (run:test "Indent Test"
               (lambda ()
+                  (check-format (format nil "(loop :for i :from 1 :to 10~%:do~%nil)")
+                                (range:create (pos:create 0 0) (pos:create 3 0))
+                                (list (edit:create :range (range:create (pos:create 0 31) (pos:create 1 0))
+                                                   :text (format nil "~%       "))))
+                  
                   (check-format (format nil "(loop :for i :from 1 :to 10 :do~%nil)")
                                 (range:create (pos:create 0 0) (pos:create 3 0))
                                 (list (edit:create :range (range:create (pos:create 0 31) (pos:create 1 0))
-                                                   :text (format nil "~%        "))))
+                                                   :text (format nil "~%       "))))
 
                   (check-format (format nil "(cond (a~%b~%c))")
                                 (range:create (pos:create 0 0) (pos:create 3 0))
