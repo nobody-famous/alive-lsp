@@ -139,22 +139,22 @@
 
 (defun make-new-token (token start &optional new-str)
     (loop :with line :of-type fixnum := (pos:line start)
-             :with col :of-type fixnum := (pos:col start)
-                :with str := (if new-str
-                                 new-str
-                                 (token:get-text token))
+              :with col :of-type fixnum := (pos:col start)
+                  :with str := (if new-str
+                                   new-str
+                                   (token:get-text token))
 
-                   :for ch :across (the simple-string str) :do
-                      (cond ((char= #\newline ch)
-                                (incf line)
-                                (setf col 0))
+                      :for ch :across (the simple-string str) :do
+                          (cond ((char= #\newline ch)
+                                    (incf line)
+                                    (setf col 0))
 
-                            (T (incf col)))
+                                (T (incf col)))
 
-                      :finally (return (token:clone token
-                                                    start
-                                                    (pos:create line col)
-                                                    str))))
+                          :finally (return (token:clone token
+                                                        start
+                                                        (pos:create line col)
+                                                        str))))
 
 
 (defun add-to-out-list (state token)
@@ -242,15 +242,15 @@
 (defun prev-is-start-form (state)
     (loop :with tokens := (parse-state-seen state)
 
-             :while (and tokens
-                         (or (token:is-type types:*ws* (car tokens))
-                             (token:is-type types:*line-comment* (car tokens))
-                             (token:is-type types:*block-comment* (car tokens))))
+              :while (and tokens
+                          (or (token:is-type types:*ws* (car tokens))
+                              (token:is-type types:*line-comment* (car tokens))
+                              (token:is-type types:*block-comment* (car tokens))))
 
-                :do (pop tokens)
+                  :do (pop tokens)
 
-                   :finally (return (and tokens
-                                         (token:is-type *start-form* (car tokens))))))
+                      :finally (return (and tokens
+                                            (token:is-type *start-form* (car tokens))))))
 
 
 (defun has-body (lambda-list)
@@ -525,27 +525,27 @@
 
 (defun convert-tokens (tokens)
     (loop :with converted := '()
-             :with opens = '()
+              :with opens = '()
 
-                :for token :in tokens :do
-                   (cond ((token:is-type types:*open-paren* token)
-                             (let ((new-token (new-start-form token)))
-                                 (push new-token opens)
-                                 (push new-token converted)))
+                  :for token :in tokens :do
+                      (cond ((token:is-type types:*open-paren* token)
+                                (let ((new-token (new-start-form token)))
+                                    (push new-token opens)
+                                    (push new-token converted)))
 
-                         ((= (the fixnum types:*close-paren*) (the fixnum (token:get-type-value token)))
-                             (pop opens)
-                             (push token converted))
+                            ((= (the fixnum types:*close-paren*) (the fixnum (token:get-type-value token)))
+                                (pop opens)
+                                (push token converted))
 
-                         ((token:is-type types:*ws* token) (push token converted))
+                            ((token:is-type types:*ws* token) (push token converted))
 
-                         (T (when (and (car opens)
-                                       (not (= (the fixnum (pos:line (token:get-start (car opens))))
-                                                (the fixnum (pos:line (token:get-end token))))))
-                                  (setf (is-multiline (car opens)) T))
-                            (push token converted)))
+                            (T (when (and (car opens)
+                                          (not (= (the fixnum (pos:line (token:get-start (car opens))))
+                                                   (the fixnum (pos:line (token:get-end token))))))
+                                     (setf (is-multiline (car opens)) T))
+                               (push token converted)))
 
-                   :finally (return (reverse converted))))
+                      :finally (return (reverse converted))))
 
 
 (defun update-options (state opts)
@@ -565,25 +565,25 @@
 
         (loop :while (parse-state-tokens state)
 
-                 :do (let ((token (next-token state))
-                           (form-open (car (parse-state-opens state))))
+                  :do (let ((token (next-token state))
+                            (form-open (car (parse-state-opens state))))
 
-                         (when (and form-open
-                                    (lambda-list form-open)
-                                    (not (token:is-type types:*ws* token)))
-                               (when (and (not (eq 'cons (type-of (car (lambda-list form-open)))))
-                                          (or (string= (the symbol (car (lambda-list form-open))) "&BODY")
-                                              (string= (the symbol (car (lambda-list form-open))) "&REST")))
-                                     (pop-next-indent state))
-                               (pop (lambda-list form-open)))
+                          (when (and form-open
+                                     (lambda-list form-open)
+                                     (not (token:is-type types:*ws* token)))
+                                (when (and (not (eq 'cons (type-of (car (lambda-list form-open)))))
+                                           (or (string= (the symbol (car (lambda-list form-open))) "&BODY")
+                                               (string= (the symbol (car (lambda-list form-open))) "&REST")))
+                                      (pop-next-indent state))
+                                (pop (lambda-list form-open)))
 
-                         (cond ((token:is-type *start-form* token) (process-open state token))
-                               ((token:is-type types:*close-paren* token) (process-close state token))
-                               ((token:is-type types:*ws* token) nil)
-                               (T (process-token state token)))
+                          (cond ((token:is-type *start-form* token) (process-open state token))
+                                ((token:is-type types:*close-paren* token) (process-close state token))
+                                ((token:is-type types:*ws* token) nil)
+                                (T (process-token state token)))
 
-                         (push token (parse-state-seen state))
-                         (pop-token state))
+                          (push token (parse-state-seen state))
+                          (pop-token state))
 
-                    :finally (progn (check-end-space state)
-                                    (return (reverse (parse-state-edits state)))))))
+                      :finally (progn (check-end-space state)
+                                      (return (reverse (parse-state-edits state)))))))
