@@ -381,8 +381,7 @@
                         (setf (aligned form-open) T)
                         (setf (loop-indent-p form-open) T)
                         (replace-indent state (the fixnum (+ (the fixnum (options-indent-width (parse-state-options state)))
-                                                             (the fixnum (pos:col (token:get-start token)))
-                                                             (the fixnum -1))))))
+                                                             (the fixnum (pos:col (token:get-start token))))))))
 
               ((and form-open
                     (not (aligned form-open)))
