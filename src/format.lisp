@@ -17,7 +17,9 @@
 (declaim (optimize (speed 3) (safety 0)))
 
 
-(defparameter *force-align-targets* '("and" "or" "cond" "not" "when" "if" "progn" "loop" "/" "*" "-" "+"))
+(defparameter *force-align-targets* '("and" "or" "cond" "not" "when" "if" "progn" "loop" "/" "*" "-" "+" "eq" "equal" "equalp"))
+
+(defparameter *loop-keys* '("do" "for" "while" "until" "=" "from" "to" "with"))
 
 (defparameter *start-form* 100)
 
@@ -122,6 +124,10 @@
 
 (defun next-token (state)
     (car (parse-state-tokens state)))
+
+
+(defun next-next-token (state)
+    (cadr (parse-state-tokens state)))
 
 
 (defun pop-token (state)
@@ -443,6 +449,16 @@
             0)))
 
 
+(defun is-loop-key (state token)
+    (let ((prev (car (parse-state-seen state)))
+          (key (if (token:is-type types:*colons* token)
+                   (token:get-text (next-next-token state))
+                   (token:get-text token))))
+
+        (and (token:is-type types:*ws* prev)
+             (member (string-downcase key) *loop-keys* :test #'string=))))
+
+
 (defun process-token (state token)
     (let ((prev (car (parse-state-seen state)))
           (form-open (car (parse-state-opens state))))
@@ -457,9 +473,12 @@
                                   (replace-token state prev " "))
                             (fix-indent state)))
 
-                    ((and (token-is token "foo")
-                          (loop-p form-open))
-                        (format T "LOOP ~A ~A~%" token (next-token state)))
+                    ((and (loop-p form-open)
+                          (is-loop-key state token)
+                          (token:is-type types:*ws* prev)
+                          (token:is-multiline prev)
+                          (not (is-loop-key state token)))
+                        (format T "LOOP ~A ~A~%" token (next-next-token state)))
 
                     ((token:is-type types:*ws* prev) (fix-indent state))
 

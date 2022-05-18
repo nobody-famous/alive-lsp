@@ -8,6 +8,7 @@
              :get-text
              :get-start
              :get-start-offset
+             :is-multiline
              :is-type)
     (:local-nicknames (:pos :alive/position)
                       (:types :alive/types)))
@@ -50,10 +51,10 @@
 
 (defmethod types:deep-equal-p ((a token) b)
     (and (equal (type-of a) (type-of b))
-        (types:deep-equal-p (start a) (start b))
-        (types:deep-equal-p (end a) (end b))
-        (string-equal (text a) (text b))
-        (eq (type-value a) (type-value b))))
+         (types:deep-equal-p (start a) (start b))
+         (types:deep-equal-p (end a) (end b))
+         (string-equal (text a) (text b))
+         (eq (type-value a) (type-value b))))
 
 
 (defmethod get-type-value ((obj token))
@@ -106,7 +107,13 @@
 
 (defun is-type (type token)
     (and token
-        (= type (get-type-value token))))
+         (= type (get-type-value token))))
+
+
+(defun is-multiline (token)
+    (and token
+         (not (eq (pos:line (start token))
+                  (pos:line (end token))))))
 
 
 (defun create (&key type-value start start-offset end end-offset text)
