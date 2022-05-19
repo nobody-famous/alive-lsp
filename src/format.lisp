@@ -495,8 +495,7 @@
 
 
 (defun process-token (state token)
-    (let ((prev (car (parse-state-seen state)))
-          #+n (form-open (car (parse-state-opens state))))
+    (let ((prev (car (parse-state-seen state))))
 
         (when prev
               (cond ((or (token:is-type types:*line-comment* token)
@@ -507,13 +506,6 @@
                             (when (not (string= " " (the simple-string (token:get-text prev))))
                                   (replace-token state prev " "))
                             (fix-indent state)))
-
-                    ; ((and (loop-p form-open)
-                    ;       (is-loop-key state token)
-                    ;       (token:is-type types:*ws* prev)
-                    ;       (token:is-multiline prev)
-                    ;       (not (is-loop-key state token)))
-                    ;     (format T "LOOP ~A ~A~%" token (next-next-token state)))
 
                     ((token:is-type types:*ws* prev) (fix-indent state))
 
@@ -527,11 +519,13 @@
 
 
 (defun check-end-space (state)
-    (let ((token (car (parse-state-seen state))))
+    (let* ((token (car (parse-state-seen state)))
+           (nl-count (min 1 (new-line-count token)))
+           (str (indent-string nl-count 0)))
         (when (and token
                    (not (out-of-range (parse-state-range state) token))
                    (token:is-type types:*ws* token))
-              (replace-token state token ""))))
+              (replace-token state token str))))
 
 
 (defun convert-tokens (tokens)
