@@ -35,7 +35,7 @@
                   (check-format (format nil "; Do not remove~%  ")
                                 (range:create (pos:create 0 0) (pos:create 1 2))
                                 (list (edit:create :range (range:create (pos:create 0 15) (pos:create 1 2))
-                                                   :text "")))
+                                                   :text (format NIL "~%"))))
 
                   (check-format (format nil "'(1 2 3 4~%   5 6 7 8)")
                                 (range:create (pos:create 0 0) (pos:create 1 3))
@@ -162,7 +162,7 @@
                   (check-format (format nil "( ; Foo~%")
                                 (range:create (pos:create 0 0) (pos:create 2 0))
                                 (list (edit:create :range (range:create (pos:create 0 7) (pos:create 1 0))
-                                                   :text (format nil ""))))
+                                                   :text (format nil "~%"))))
 
                   (check-format (format nil "( ; Foo~%)")
                                 (range:create (pos:create 0 0) (pos:create 2 0))
