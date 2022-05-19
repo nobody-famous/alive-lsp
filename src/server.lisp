@@ -66,17 +66,17 @@
 
 (defun stop-server (server)
     (bt:with-recursive-lock-held ((lock server))
-                                 (setf (running server) nil)
+        (setf (running server) nil)
 
-                                 (loop :for session :in (sessions server) :do
-                                     (session:stop session))
+        (loop :for session :in (sessions server) :do
+            (session:stop session))
 
-                                 (setf (sessions server) nil)
+        (setf (sessions server) nil)
 
-                                 (when (socket server)
-                                     (wake-up-accept server)
-                                     (usocket:socket-close (socket server))
-                                     (setf (socket server) nil))))
+        (when (socket server)
+            (wake-up-accept server)
+            (usocket:socket-close (socket server))
+            (setf (socket server) nil))))
 
 
 (defun listen-for-conns (server port)
