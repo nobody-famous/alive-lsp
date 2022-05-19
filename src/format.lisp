@@ -17,7 +17,10 @@
 (declaim (optimize (speed 3) (safety 0)))
 
 
-(defparameter *force-align-targets* '("and" "or" "cond" "not" "when" "if" "progn" "loop" "/" "*" "-" "+" "eq" "equal" "equalp" "list"))
+(defparameter *force-align-targets* (list "and" "or" "cond" "not"
+                                          "when" "if" "progn" "loop"
+                                          "/" "*" "-" "+" "<" "<=" ">" ">="
+                                          "eq" "equal" "equalp" "list"))
 
 (defparameter *loop-keys* '("do" "for" "while" "until" "=" "from" "to" "with" "finally" "repeat"))
 
