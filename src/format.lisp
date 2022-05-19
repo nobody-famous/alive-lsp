@@ -394,6 +394,9 @@
            (token (car (parse-state-seen state)))
            (prev (cadr (parse-state-seen state)))
            (next (next-token state))
+           (nl-count (if (zerop (list-length (parse-state-opens state)))
+                         (min (new-line-count token) 3)
+                         (min (new-line-count token) 2)))
            (start (token:get-start token))
            (end (token:get-end token)))
 
@@ -421,7 +424,7 @@
                                                                       :text " "))
                                        (replace-token state token " "))))
 
-                        (T (let* ((str (indent-string (new-line-count token) indent))
+                        (T (let* ((str (indent-string nl-count indent))
                                   (new-token (make-new-token token (token:get-start token) str)))
 
                                (add-to-out-list state new-token)
