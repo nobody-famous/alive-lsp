@@ -30,4 +30,5 @@
         :message (format nil "~A" c)
         :restarts (compute-restarts c)
         :stack-trace (mapcar (lambda (item)
-                                 (format nil "~A" item)) (threads:get-stack-trace))))
+                                 (format nil "~A" item))
+                             (threads:get-stack-trace))))
