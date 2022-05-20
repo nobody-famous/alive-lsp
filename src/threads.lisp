@@ -3,6 +3,7 @@
     (:export :list-all
              :kill
              :thread-not-found
+             :get-stack-trace
              :get-thread-id
              :find-by-id
              :id)
@@ -27,6 +28,10 @@
                :initarg :name)))
 
 
+(defun get-stack-trace ()
+    #+sbcl (alive/sbcl/threads:get-stack-trace))
+
+
 (defun get-thread-id (thread)
     #+sbcl (alive/sbcl/threads:get-thread-id thread))
 
@@ -43,7 +48,7 @@
     (reduce (lambda (acc thread)
                 (or acc
                     (when (equalp thread-id (get-thread-id thread))
-                        thread)))
+                          thread)))
             (bt:all-threads)
         :initial-value nil))
 

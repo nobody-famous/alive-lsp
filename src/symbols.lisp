@@ -29,7 +29,7 @@
                     (find-package (string-upcase pkg-name))
                     *package*))
            (sym (when pkg
-                    (find-symbol (string-upcase sym-name) pkg))))
+                      (find-symbol (string-upcase sym-name) pkg))))
 
         (if (macro-function sym)
             T
@@ -48,17 +48,17 @@
                     *package*)))
 
         (when pkg
-            (multiple-value-bind (sym status)
+              (multiple-value-bind (sym status)
 
-                    (find-symbol (string-upcase sym-name) pkg)
+                      (find-symbol (string-upcase sym-name) pkg)
 
-                (declare (ignore sym))
+                  (declare (ignore sym))
 
-                (or (eq status :external)
-                    (eq status :inherited))))))
+                  (or (eq status :external)
+                      (eq status :inherited))))))
 
 
 (defun lookup (name pkg-name)
     (let ((pkg (find-package (string-upcase pkg-name))))
         (when pkg
-            (find-symbol (string-upcase name) pkg))))
+              (find-symbol (string-upcase name) pkg))))

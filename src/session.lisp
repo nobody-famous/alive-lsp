@@ -12,6 +12,7 @@
                       (:config :alive/lsp/message/workspace/config)
                       (:input :alive/lsp/message/alive/user-input)
                       (:asdf :alive/asdf)
+                      (:debug :alive/debugger)
                       (:eval :alive/eval)
                       (:file :alive/file)
                       (:pos :alive/position)
@@ -420,7 +421,10 @@
 
 (defmethod handle-msg (state (msg eval-msg:request))
     (run-in-thread state msg (lambda ()
-                                 (process-eval state msg))))
+                                 (handler-bind ((error (lambda (e)
+                                                           (let ((dbg (debug:for-cond e)))
+                                                               (format T "CAUGHT ~A~%" dbg)))))
+                                     (process-eval state msg)))))
 
 
 (defmethod handle-msg (state (msg get-pkg:request))

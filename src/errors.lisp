@@ -8,18 +8,18 @@
 
 
 (define-condition input-error (error)
-    ((start :accessor start
-            :initform nil
-            :initarg :start)
-     (end :accessor end
-          :initform nil
-          :initarg :end)
-     (message :accessor message
+        ((start :accessor start
+                :initform nil
+                :initarg :start)
+         (end :accessor end
               :initform nil
-              :initarg :message))
+              :initarg :end)
+         (message :accessor message
+                  :initform nil
+                  :initarg :message))
 
     (:report (lambda (condition stream)
                  (format stream "[~A:~A] ~A"
-                         (start condition)
-                         (end condition)
-                         (message condition)))))
+                     (start condition)
+                     (end condition)
+                     (message condition)))))

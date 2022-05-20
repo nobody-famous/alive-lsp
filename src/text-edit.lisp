@@ -9,18 +9,18 @@
 
 
 (defclass change ()
-    ((range :accessor range
-            :initform nil
-            :initarg :range)
-     (text :accessor text
-           :initform nil
-           :initarg :text)))
+        ((range :accessor range
+                :initform nil
+                :initarg :range)
+         (text :accessor text
+               :initform nil
+               :initarg :text)))
 
 
 (defmethod print-object ((obj change) out)
     (format out "{range: ~A; text: \"~A\"}"
-            (range obj)
-            (text obj)))
+        (range obj)
+        (text obj)))
 
 
 (defmethod types:deep-equal-p ((a change) b)
@@ -31,5 +31,5 @@
 
 (defun create (&key range text)
     (make-instance 'change
-                   :range range
-                   :text text))
+        :range range
+        :text text))

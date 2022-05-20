@@ -10,6 +10,7 @@
                  "alive-lsp/src/logger"
 
                  "alive-lsp/src/types"
+                 "alive-lsp/src/debugger"
                  "alive-lsp/src/errors"
                  "alive-lsp/src/compile-message"
                  "alive-lsp/src/position"
@@ -76,7 +77,6 @@
                  "alive-lsp/src/lsp/packet"
                  "alive-lsp/src/lsp/parse"
 
-                 "alive-lsp/src/socket-pair"
                  "alive-lsp/src/session"
                  "alive-lsp/src/server"))
 
@@ -113,6 +113,7 @@
 (register-system-packages "alive-lsp/src/logger" '(:alive/logger))
 
 (register-system-packages "alive-lsp/src/types" '(:alive/types))
+(register-system-packages "alive-lsp/src/debugger" '(:alive/debugger))
 (register-system-packages "alive-lsp/src/errors" '(:alive/errors))
 (register-system-packages "alive-lsp/src/compile-message" '(:alive/compile-message))
 (register-system-packages "alive-lsp/src/position" '(:alive/position))
@@ -179,7 +180,6 @@
 (register-system-packages "alive-lsp/src/lsp/packet" '(:alive/lsp/packet))
 (register-system-packages "alive-lsp/src/lsp/parse" '(:alive/lsp/parse))
 
-(register-system-packages "alive-lsp/src/socket-pair" '(:alive/socket-pair))
 (register-system-packages "alive-lsp/src/session" '(:alive/session))
 (register-system-packages "alive-lsp/src/server" '(:alive/server))
 
