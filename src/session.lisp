@@ -12,7 +12,6 @@
                       (:config :alive/lsp/message/workspace/config)
                       (:input :alive/lsp/message/alive/user-input)
                       (:asdf :alive/asdf)
-                      (:debug :alive/debugger)
                       (:eval :alive/eval)
                       (:file :alive/file)
                       (:pos :alive/position)
@@ -24,6 +23,7 @@
                       (:init :alive/lsp/message/initialize)
                       (:form :alive/parse/form)
                       (:forms :alive/parse/forms)
+                      (:debug :alive/lsp/message/alive/debugger)
                       (:eval-msg :alive/lsp/message/alive/do-eval)
                       (:get-pkg :alive/lsp/message/alive/get-pkg)
                       (:remove-pkg :alive/lsp/message/alive/remove-pkg)
@@ -387,8 +387,7 @@
                                                  (setf text (user-input:get-text opts))
                                                  (bt:condition-notify cond-var))))))
 
-        (send-msg state (input:create-request
-                            :id send-id))
+        (send-msg state (input:create-request :id send-id))
 
         (bt:with-recursive-lock-held ((lock state))
             (bt:condition-wait cond-var (lock state)))
@@ -419,12 +418,50 @@
                                             (format nil "~A" result)))))
 
 
+(defun wait-for-debug (state err restarts)
+    (let ((send-id (next-send-id state))
+          (cond-var (bt:make-condition-variable))
+          (params (debug:create-params :message (format nil "~A" err)
+                                       :restarts restarts
+                                       :stack-trace (mapcar (lambda (item) (princ-to-string item))
+                                                            (threads:get-stack-trace))))
+          (restart-ndx nil))
+
+        (setf (gethash send-id (sent-msg-callbacks state))
+            (lambda (debug-resp)
+                (format T "DEBUG RESP: ~A~%" debug-resp)
+                (typecase debug-resp
+                    (message:error-response (logger:error-msg (logger state) "Debugger Error ~A" debug-resp)
+                                            (bt:condition-notify cond-var))
+
+                    (message:result-response (let ((opts (when (message:result debug-resp)
+                                                               (user-input:from-wire (message:result debug-resp)))))
+                                                 (setf restart-ndx (user-input:get-text opts))
+                                                 (bt:condition-notify cond-var))))))
+
+        (send-msg state (debug:create-request :id send-id :params params))
+
+        (bt:with-recursive-lock-held ((lock state))
+            (bt:condition-wait cond-var (lock state)))
+
+        restart-ndx))
+
+
+(defun start-debugger (state err)
+    (let* ((restarts (mapcar (lambda (item) (princ-to-string item))
+                             (compute-restarts err)))
+           (ndx (wait-for-debug state err restarts)))
+
+        (format T "START-DEBUGGER ~A~%" ndx)))
+
+
 (defmethod handle-msg (state (msg eval-msg:request))
     (run-in-thread state msg (lambda ()
-                                 (handler-bind ((error (lambda (e)
-                                                           (let ((dbg (debug:for-cond e)))
-                                                               (format T "CAUGHT ~A~%" dbg)))))
-                                     (process-eval state msg)))))
+                                 (block handler
+                                     (handler-bind ((error (lambda (err)
+                                                               (start-debugger state err)
+                                                               (return-from handler))))
+                                         (process-eval state msg))))))
 
 
 (defmethod handle-msg (state (msg get-pkg:request))

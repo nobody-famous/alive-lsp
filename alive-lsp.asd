@@ -10,7 +10,6 @@
                  "alive-lsp/src/logger"
 
                  "alive-lsp/src/types"
-                 "alive-lsp/src/debugger"
                  "alive-lsp/src/errors"
                  "alive-lsp/src/compile-message"
                  "alive-lsp/src/position"
@@ -52,6 +51,7 @@
                  "alive-lsp/src/lsp/message/abstract"
                  "alive-lsp/src/lsp/message/payload"
                  "alive-lsp/src/lsp/message/initialize"
+                 "alive-lsp/src/lsp/message/alive/debugger"
                  "alive-lsp/src/lsp/message/alive/do-eval"
                  "alive-lsp/src/lsp/message/alive/get-pkg"
                  "alive-lsp/src/lsp/message/alive/remove-pkg"
@@ -113,7 +113,6 @@
 (register-system-packages "alive-lsp/src/logger" '(:alive/logger))
 
 (register-system-packages "alive-lsp/src/types" '(:alive/types))
-(register-system-packages "alive-lsp/src/debugger" '(:alive/debugger))
 (register-system-packages "alive-lsp/src/errors" '(:alive/errors))
 (register-system-packages "alive-lsp/src/compile-message" '(:alive/compile-message))
 (register-system-packages "alive-lsp/src/position" '(:alive/position))
@@ -155,6 +154,7 @@
 (register-system-packages "alive-lsp/src/lsp/message/abstract" '(:alive/lsp/message/abstract))
 (register-system-packages "alive-lsp/src/lsp/message/payload" '(:alive/lsp/message/payload))
 (register-system-packages "alive-lsp/src/lsp/message/initialize" '(:alive/lsp/message/initialize))
+(register-system-packages "alive-lsp/src/lsp/message/alive/debugger" '(:alive/lsp/message/alive/debugger))
 (register-system-packages "alive-lsp/src/lsp/message/alive/do-eval" '(:alive/lsp/message/alive/do-eval))
 (register-system-packages "alive-lsp/src/lsp/message/alive/get-pkg" '(:alive/lsp/message/alive/get-pkg))
 (register-system-packages "alive-lsp/src/lsp/message/alive/remove-pkg" '(:alive/lsp/message/alive/remove-pkg))
