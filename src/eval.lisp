@@ -22,29 +22,29 @@
            (*package* (if pkg pkg *package*)))
 
         (when stdin-fn
-            (astreams:set-listener in-stream
-                                   (lambda ()
-                                       (let ((*standard-input* orig-stdin)
-                                             (*standard-output* orig-stdout)
-                                             (*error-output* orig-stderr))
-                                           (funcall stdin-fn)))))
+              (astreams:set-listener in-stream
+                                     (lambda ()
+                                         (let ((*standard-input* orig-stdin)
+                                               (*standard-output* orig-stdout)
+                                               (*error-output* orig-stderr))
+                                             (funcall stdin-fn)))))
 
         (when stdout-fn
-            (astreams:add-listener out-stream
-                                   (lambda (data)
-                                       (let ((*standard-output* orig-stdout)
-                                             (*error-output* orig-stderr))
-                                           (funcall stdout-fn data)))))
+              (astreams:add-listener out-stream
+                                     (lambda (data)
+                                         (let ((*standard-output* orig-stdout)
+                                               (*error-output* orig-stderr))
+                                             (funcall stdout-fn data)))))
 
         (when stderr-fn
-            (astreams:add-listener err-stream
-                                   (lambda (data)
-                                       (let ((*standard-output* orig-stdout)
-                                             (*error-output* orig-stderr))
-                                           (funcall stderr-fn data)))))
+              (astreams:add-listener err-stream
+                                     (lambda (data)
+                                         (let ((*standard-output* orig-stdout)
+                                               (*error-output* orig-stderr))
+                                             (funcall stderr-fn data)))))
 
         (when (and pkg-name (not pkg))
-            (error (make-condition 'pkgs:package-not-found :name pkg-name)))
+              (error (make-condition 'pkgs:package-not-found :name pkg-name)))
 
         (unwind-protect
                 (eval (read input))
