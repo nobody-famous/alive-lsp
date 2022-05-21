@@ -47,6 +47,7 @@
                       (:config-item :alive/lsp/types/config-item)
                       (:text-doc :alive/lsp/types/text-doc)
                       (:fmt-opts :alive/lsp/types/format-options)
+                      (:debug-resp :alive/lsp/types/debug-resp)
                       (:user-input :alive/lsp/types/user-input)
                       (:sem-tokens :alive/lsp/message/document/sem-tokens-full)))
 
@@ -429,14 +430,13 @@
 
         (setf (gethash send-id (sent-msg-callbacks state))
             (lambda (debug-resp)
-                (format T "DEBUG RESP: ~A~%" debug-resp)
                 (typecase debug-resp
                     (message:error-response (logger:error-msg (logger state) "Debugger Error ~A" debug-resp)
                                             (bt:condition-notify cond-var))
 
                     (message:result-response (let ((opts (when (message:result debug-resp)
-                                                               (user-input:from-wire (message:result debug-resp)))))
-                                                 (setf restart-ndx (user-input:get-text opts))
+                                                               (debug-resp:from-wire (message:result debug-resp)))))
+                                                 (setf restart-ndx (debug-resp:get-index opts))
                                                  (bt:condition-notify cond-var))))))
 
         (send-msg state (debug:create-request :id send-id :params params))
@@ -448,11 +448,12 @@
 
 
 (defun start-debugger (state err)
-    (let* ((restarts (mapcar (lambda (item) (princ-to-string item))
-                             (compute-restarts err)))
-           (ndx (wait-for-debug state err restarts)))
+    (let* ((restarts (compute-restarts err))
+           (ndx (wait-for-debug state err (mapcar (lambda (item) (princ-to-string item))
+                                                  restarts))))
 
-        (format T "START-DEBUGGER ~A~%" ndx)))
+        (when (<= 0 ndx (- (length restarts) 1))
+              (invoke-restart-interactively (elt restarts ndx)))))
 
 
 (defmethod handle-msg (state (msg eval-msg:request))

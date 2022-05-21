@@ -55,27 +55,27 @@
 
 (defun next-line (input)
     (loop :with str := (make-string-output-stream)
-        :with prev-char := (code-char 0)
-        :until (and (char= #\return prev-char)
-                   (char= #\newline
-                       (peek-char nil input)))
-        :do (let ((ch (read-char input)))
-                (setf prev-char ch)
-                (write-char ch str))
-        :finally (progn (read-char input)
-                     (return (trim-ws (get-output-stream-string str))))))
+          :with prev-char := (code-char 0)
+          :until (and (char= #\return prev-char)
+                      (char= #\newline
+                          (peek-char nil input)))
+          :do (let ((ch (read-char input)))
+                  (setf prev-char ch)
+                  (write-char ch str))
+          :finally (progn (read-char input)
+                          (return (trim-ws (get-output-stream-string str))))))
 
 
 (defun get-header-lines (input)
     (loop :with done := nil
-        :with lines := ()
-        :until done
-        :do (let ((line (next-line input)))
-                (if (zerop (length line))
-                    (setf done T)
-                    (setf lines (cons line lines))))
-        :finally (progn
-                     (return lines))))
+          :with lines := ()
+          :until done
+          :do (let ((line (next-line input)))
+                  (format T "HEADER LINE: ~A~%" line)
+                  (if (zerop (length line))
+                      (setf done T)
+                      (setf lines (cons line lines))))
+          :finally (return lines)))
 
 
 (defun parse-header-line (line)
@@ -83,7 +83,7 @@
         (unless ndx (error (format nil "Invalid header line: ~A" line)))
 
         (list (trim-ws (subseq line 0 ndx))
-            (trim-ws (subseq line (+ 1 ndx))))))
+              (trim-ws (subseq line (+ 1 ndx))))))
 
 
 (defun add-to-header (header pair)
@@ -91,22 +91,24 @@
             pair
         (cond ((string= key "Content-Length") (setf (packet:content-length header)
                                                   (parse-integer value)))
-            (T (error (format nil "Unhandled header key: ~A" key))))))
+              ((string= key "ent-Length") (format T "ENT-LENGTH ~A~%" value))
+              (T (error (format nil "Unhandled header key: ~A" key))))))
 
 
 (defun parse-header (input)
     (loop :with header := (packet:create-header)
-        :for line :in (get-header-lines input) :do
-        (add-to-header header
-                       (parse-header-line line))
-        :finally (return header)))
+          :for line :in (get-header-lines input) :do
+              (format T "LINE ~A~%" line)
+              (add-to-header header
+                             (parse-header-line line))
+          :finally (return header)))
 
 
 (defun read-content (input size)
     (with-output-to-string (out)
         (loop :for ndx :from 0 :below size :do
-            (let ((ch (read-char input)))
-                (when ch (write-char ch out))))))
+                  (let ((ch (read-char input)))
+                      (when ch (write-char ch out))))))
 
 
 (defun decode-json (content)
@@ -116,14 +118,14 @@
 
 (defun get-msg-fields (payload)
     (loop :with fields := (make-instance 'fields)
-        :for item :in payload :do
-        (cond ((eq :jsonrpc (car item)) (setf (jsonrpc fields) (cdr item)))
-            ((eq :id (car item)) (setf (id fields) (cdr item)))
-            ((eq :method (car item)) (setf (method-name fields) (string-downcase (cdr item))))
-            ((eq :result (car item)) (setf (result fields) (cdr item)))
-            ((eq :error (car item)) (setf (error-msg fields) (cdr item)))
-            ((eq :params (car item)) (setf (params fields) (cdr item))))
-        :finally (return fields)))
+          :for item :in payload :do
+              (cond ((eq :jsonrpc (car item)) (setf (jsonrpc fields) (cdr item)))
+                    ((eq :id (car item)) (setf (id fields) (cdr item)))
+                    ((eq :method (car item)) (setf (method-name fields) (string-downcase (cdr item))))
+                    ((eq :result (car item)) (setf (result fields) (cdr item)))
+                    ((eq :error (car item)) (setf (error-msg fields) (cdr item)))
+                    ((eq :params (car item)) (setf (params fields) (cdr item))))
+          :finally (return fields)))
 
 
 (defun request-p (fields)
@@ -139,99 +141,99 @@
     (let ((name (string-downcase (method-name fields)))
           (msg-id (id fields)))
         (cond ((string= "initialize" name)
-               (init:request-from-wire :jsonrpc (jsonrpc fields)
-                                       :id msg-id
-                                       :params (params fields)))
+                  (init:request-from-wire :jsonrpc (jsonrpc fields)
+                                          :id msg-id
+                                          :params (params fields)))
 
-            ((string= "initialized" name)
-             (init:create-initialized-notification))
+              ((string= "initialized" name)
+                  (init:create-initialized-notification))
 
-            ((string= "textdocument/didopen" name)
-             (did-open:from-wire (params fields)))
+              ((string= "textdocument/didopen" name)
+                  (did-open:from-wire (params fields)))
 
-            ((string= "textdocument/didchange" name)
-             (did-change:from-wire (params fields)))
+              ((string= "textdocument/didchange" name)
+                  (did-change:from-wire (params fields)))
 
-            ((string= "textdocument/completion" name)
-             (completion:from-wire :jsonrpc (jsonrpc fields)
-                                   :id msg-id
-                                   :params (params fields)))
+              ((string= "textdocument/completion" name)
+                  (completion:from-wire :jsonrpc (jsonrpc fields)
+                                        :id msg-id
+                                        :params (params fields)))
 
-            ((string= "textdocument/rangeformatting" name)
-             (formatting:from-wire :jsonrpc (jsonrpc fields)
-                                   :id msg-id
-                                   :params (params fields)))
+              ((string= "textdocument/rangeformatting" name)
+                  (formatting:from-wire :jsonrpc (jsonrpc fields)
+                                        :id msg-id
+                                        :params (params fields)))
 
-            ((string= "textdocument/semantictokens/full" name)
-             (sem-tokens:from-wire :jsonrpc (jsonrpc fields)
-                                   :id msg-id
-                                   :params (params fields)))
+              ((string= "textdocument/semantictokens/full" name)
+                  (sem-tokens:from-wire :jsonrpc (jsonrpc fields)
+                                        :id msg-id
+                                        :params (params fields)))
 
-            ((string= "$/alive/eval" name)
-             (eval:from-wire :jsonrpc (jsonrpc fields)
-                             :id msg-id
-                             :params (params fields)))
-
-            ((string= "$/alive/getpackageforposition" name)
-             (get-pkg:from-wire :jsonrpc (jsonrpc fields)
-                                :id msg-id
-                                :params (params fields)))
-
-            ((string= "$/alive/removepackage" name)
-             (remove-pkg:from-wire :jsonrpc (jsonrpc fields)
-                                   :id msg-id
-                                   :params (params fields)))
-
-            ((string= "$/alive/loadasdfsystem" name)
-             (load-asdf:from-wire :jsonrpc (jsonrpc fields)
+              ((string= "$/alive/eval" name)
+                  (eval:from-wire :jsonrpc (jsonrpc fields)
                                   :id msg-id
                                   :params (params fields)))
 
-            ((string= "$/alive/loadfile" name)
-             (load-file:from-wire :jsonrpc (jsonrpc fields)
-                                  :id msg-id
-                                  :params (params fields)))
-
-            ((string= "$/alive/listthreads" name)
-             (list-threads:from-wire :jsonrpc (jsonrpc fields)
+              ((string= "$/alive/getpackageforposition" name)
+                  (get-pkg:from-wire :jsonrpc (jsonrpc fields)
                                      :id msg-id
                                      :params (params fields)))
 
-            ((string= "$/alive/killthread" name)
-             (kill-thread:from-wire :jsonrpc (jsonrpc fields)
-                                    :id msg-id
-                                    :params (params fields)))
+              ((string= "$/alive/removepackage" name)
+                  (remove-pkg:from-wire :jsonrpc (jsonrpc fields)
+                                        :id msg-id
+                                        :params (params fields)))
 
-            ((string= "$/alive/listasdfsystems" name)
-             (list-asdf:from-wire :jsonrpc (jsonrpc fields)
-                                  :id msg-id
-                                  :params (params fields)))
+              ((string= "$/alive/loadasdfsystem" name)
+                  (load-asdf:from-wire :jsonrpc (jsonrpc fields)
+                                       :id msg-id
+                                       :params (params fields)))
 
-            ((string= "$/alive/listpackages" name)
-             (list-pkgs:from-wire :jsonrpc (jsonrpc fields)
-                                  :id msg-id
-                                  :params (params fields)))
+              ((string= "$/alive/loadfile" name)
+                  (load-file:from-wire :jsonrpc (jsonrpc fields)
+                                       :id msg-id
+                                       :params (params fields)))
 
-            ((string= "textdocument/didsave" name) nil)
+              ((string= "$/alive/listthreads" name)
+                  (list-threads:from-wire :jsonrpc (jsonrpc fields)
+                                          :id msg-id
+                                          :params (params fields)))
 
-            ((string= "$/alive/trycompile" name)
-             (try-compile:from-wire :jsonrpc (jsonrpc fields)
-                                    :id msg-id
-                                    :params (params fields)))
+              ((string= "$/alive/killthread" name)
+                  (kill-thread:from-wire :jsonrpc (jsonrpc fields)
+                                         :id msg-id
+                                         :params (params fields)))
 
-            ((string= "$/alive/unexportsymbol" name)
-             (unexport:from-wire :jsonrpc (jsonrpc fields)
-                                 :id msg-id
-                                 :params (params fields)))
+              ((string= "$/alive/listasdfsystems" name)
+                  (list-asdf:from-wire :jsonrpc (jsonrpc fields)
+                                       :id msg-id
+                                       :params (params fields)))
 
-            ((string= "$/alive/topformbounds" name)
-             (top-form:from-wire :jsonrpc (jsonrpc fields)
-                                 :id msg-id
-                                 :params (params fields)))
+              ((string= "$/alive/listpackages" name)
+                  (list-pkgs:from-wire :jsonrpc (jsonrpc fields)
+                                       :id msg-id
+                                       :params (params fields)))
 
-            (T (error (make-condition 'errors:unhandled-request
-                          :id msg-id
-                          :method-name name))))))
+              ((string= "textdocument/didsave" name) nil)
+
+              ((string= "$/alive/trycompile" name)
+                  (try-compile:from-wire :jsonrpc (jsonrpc fields)
+                                         :id msg-id
+                                         :params (params fields)))
+
+              ((string= "$/alive/unexportsymbol" name)
+                  (unexport:from-wire :jsonrpc (jsonrpc fields)
+                                      :id msg-id
+                                      :params (params fields)))
+
+              ((string= "$/alive/topformbounds" name)
+                  (top-form:from-wire :jsonrpc (jsonrpc fields)
+                                      :id msg-id
+                                      :params (params fields)))
+
+              (T (error (make-condition 'errors:unhandled-request
+                            :id msg-id
+                            :method-name name))))))
 
 
 (defun build-error-response (fields)
@@ -246,19 +248,19 @@
 
 (defun build-response (fields)
     (cond ((error-msg fields) (build-error-response fields))
-        ((result fields) (build-result-response fields))
-        (T (error (make-condition 'errors:server-error
-                      :id (id fields)
-                      :message "Unknown response type")))))
+          ((result fields) (build-result-response fields))
+          (T (error (make-condition 'errors:server-error
+                        :id (id fields)
+                        :message "Unknown response type")))))
 
 
 (defun build-message (payload)
     (let ((fields (get-msg-fields payload)))
         (cond ((request-p fields) (build-request fields))
-            ((response-p fields) (build-response fields))
-            (T (error (make-condition 'errors:server-error
-                          :id (id fields)
-                          :message "Unknown payload type"))))))
+              ((response-p fields) (build-response fields))
+              (T (error (make-condition 'errors:server-error
+                            :id (id fields)
+                            :message "Unknown payload type"))))))
 
 
 (defun from-stream (input)

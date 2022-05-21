@@ -12,7 +12,7 @@
 
 (defvar *default-port* 25483)
 (defparameter *server* nil)
-(defparameter *logger* (logger:create *standard-output* logger:*info*))
+(defparameter *logger* (logger:create *standard-output* logger:*trace*))
 
 
 (defclass lsp-server ()

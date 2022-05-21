@@ -21,7 +21,7 @@
 
 (defmethod types:deep-equal-p ((a user-input) b)
     (and (equal (type-of a) (type-of b))
-        (types:deep-equal-p (text a) (text b))))
+         (types:deep-equal-p (text a) (text b))))
 
 
 (defun create-item (&key text)
@@ -31,7 +31,7 @@
 
 (defun get-text (obj)
     (when obj
-        (text obj)))
+          (text obj)))
 
 
 (defun from-wire (results)
@@ -39,8 +39,8 @@
                         (cond ((eq key :text) (setf (text params) value)))))
 
         (loop :with item := (make-instance 'user-input)
-            :for result :in results :do
+              :for result :in results :do
 
-            (add-param item (car result) (cdr result))
+                  (add-param item (car result) (cdr result))
 
-            :finally (return item))))
+              :finally (return item))))
