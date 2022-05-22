@@ -71,7 +71,6 @@
           :with lines := ()
           :until done
           :do (let ((line (next-line input)))
-                  (format T "HEADER LINE: ~A~%" line)
                   (if (zerop (length line))
                       (setf done T)
                       (setf lines (cons line lines))))
@@ -91,14 +90,13 @@
             pair
         (cond ((string= key "Content-Length") (setf (packet:content-length header)
                                                   (parse-integer value)))
-              ((string= key "ent-Length") (format T "ENT-LENGTH ~A~%" value))
+
               (T (error (format nil "Unhandled header key: ~A" key))))))
 
 
 (defun parse-header (input)
     (loop :with header := (packet:create-header)
           :for line :in (get-header-lines input) :do
-              (format T "LINE ~A~%" line)
               (add-to-header header
                              (parse-header-line line))
           :finally (return header)))
