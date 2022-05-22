@@ -44,6 +44,7 @@
                  "alive-lsp/src/lsp/types/text-doc"
                  "alive-lsp/src/lsp/types/text-doc-item"
                  "alive-lsp/src/lsp/types/format-options"
+                 "alive-lsp/src/lsp/types/debug-resp"
                  "alive-lsp/src/lsp/types/user-input"
 
                  "alive-lsp/src/lsp/sem-analysis"
@@ -51,6 +52,7 @@
                  "alive-lsp/src/lsp/message/abstract"
                  "alive-lsp/src/lsp/message/payload"
                  "alive-lsp/src/lsp/message/initialize"
+                 "alive-lsp/src/lsp/message/alive/debugger"
                  "alive-lsp/src/lsp/message/alive/do-eval"
                  "alive-lsp/src/lsp/message/alive/get-pkg"
                  "alive-lsp/src/lsp/message/alive/remove-pkg"
@@ -76,7 +78,6 @@
                  "alive-lsp/src/lsp/packet"
                  "alive-lsp/src/lsp/parse"
 
-                 "alive-lsp/src/socket-pair"
                  "alive-lsp/src/session"
                  "alive-lsp/src/server"))
 
@@ -147,6 +148,7 @@
 (register-system-packages "alive-lsp/src/lsp/types/text-doc" '(:alive/lsp/types/text-doc))
 (register-system-packages "alive-lsp/src/lsp/types/text-doc-item" '(:alive/lsp/types/text-doc-item))
 (register-system-packages "alive-lsp/src/lsp/types/format-options" '(:alive/lsp/types/format-options))
+(register-system-packages "alive-lsp/src/lsp/types/debug-resp" '(:alive/lsp/types/debug-resp))
 (register-system-packages "alive-lsp/src/lsp/types/user-input" '(:alive/lsp/types/user-input))
 
 (register-system-packages "alive-lsp/src/lsp/sem-analysis" '(:alive/lsp/sem-analysis))
@@ -154,6 +156,7 @@
 (register-system-packages "alive-lsp/src/lsp/message/abstract" '(:alive/lsp/message/abstract))
 (register-system-packages "alive-lsp/src/lsp/message/payload" '(:alive/lsp/message/payload))
 (register-system-packages "alive-lsp/src/lsp/message/initialize" '(:alive/lsp/message/initialize))
+(register-system-packages "alive-lsp/src/lsp/message/alive/debugger" '(:alive/lsp/message/alive/debugger))
 (register-system-packages "alive-lsp/src/lsp/message/alive/do-eval" '(:alive/lsp/message/alive/do-eval))
 (register-system-packages "alive-lsp/src/lsp/message/alive/get-pkg" '(:alive/lsp/message/alive/get-pkg))
 (register-system-packages "alive-lsp/src/lsp/message/alive/remove-pkg" '(:alive/lsp/message/alive/remove-pkg))
@@ -179,7 +182,6 @@
 (register-system-packages "alive-lsp/src/lsp/packet" '(:alive/lsp/packet))
 (register-system-packages "alive-lsp/src/lsp/parse" '(:alive/lsp/parse))
 
-(register-system-packages "alive-lsp/src/socket-pair" '(:alive/socket-pair))
 (register-system-packages "alive-lsp/src/session" '(:alive/session))
 (register-system-packages "alive-lsp/src/server" '(:alive/server))
 

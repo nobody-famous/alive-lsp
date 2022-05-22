@@ -5,8 +5,7 @@
 
     (:local-nicknames (:logger :alive/logger)
                       (:parse :alive/lsp/parse)
-                      (:session :alive/session)
-                      (:socket-pair :alive/socket-pair)))
+                      (:session :alive/session)))
 
 (in-package :alive/server)
 
@@ -54,8 +53,8 @@
     (usocket:wait-for-input (socket server))
 
     (when (and (running server)
-              (usocket::state (socket server)))
-        (accept-conn server)))
+               (usocket::state (socket server)))
+          (accept-conn server)))
 
 
 (defun wake-up-accept (server)
@@ -69,14 +68,14 @@
         (setf (running server) nil)
 
         (loop :for session :in (sessions server) :do
-            (session:stop session))
+                  (session:stop session))
 
         (setf (sessions server) nil)
 
         (when (socket server)
-            (wake-up-accept server)
-            (usocket:socket-close (socket server))
-            (setf (socket server) nil))))
+              (wake-up-accept server)
+              (usocket:socket-close (socket server))
+              (setf (socket server) nil))))
 
 
 (defun listen-for-conns (server port)
@@ -85,10 +84,10 @@
 
         (unwind-protect
                 (progn (setf (socket server) socket)
-                    (setf (running server) T)
+                       (setf (running server) T)
 
-                    (loop :while (running server)
-                        :do (wait-for-conn server)))
+                       (loop :while (running server)
+                             :do (wait-for-conn server)))
             (stop-server server))))
 
 
@@ -109,4 +108,4 @@
     (if *server*
         (logger:error-msg *logger* "Server already running")
         (progn (setf *server* (make-instance 'lsp-server :logger *logger*))
-            (start-server *server* port))))
+               (start-server *server* port))))

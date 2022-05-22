@@ -12,12 +12,12 @@
 
 
 (defclass pos ()
-    ((line :accessor line
-           :initform 0
-           :initarg :line)
-     (col :accessor col
-          :initform 0
-          :initarg :col)))
+        ((line :accessor line
+               :initform 0
+               :initarg :line)
+         (col :accessor col
+              :initform 0
+              :initarg :col)))
 
 
 (defmethod print-object ((obj pos) out)
@@ -44,14 +44,14 @@
 
 (defun create (line col)
     (make-instance 'pos
-                   :line line
-                   :col col))
+        :line line
+        :col col))
 
 
 (defun from-wire (fields)
     (labels ((add-field (obj key value)
-                  (cond ((eq key :line) (setf (line obj) value))
-                        ((eq key :character) (setf (col obj) value)))))
+                        (cond ((eq key :line) (setf (line obj) value))
+                              ((eq key :character) (setf (col obj) value)))))
 
         (loop :with obj := (make-instance 'pos)
 

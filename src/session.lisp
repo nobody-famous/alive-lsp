@@ -23,6 +23,7 @@
                       (:init :alive/lsp/message/initialize)
                       (:form :alive/parse/form)
                       (:forms :alive/parse/forms)
+                      (:debug :alive/lsp/message/alive/debugger)
                       (:eval-msg :alive/lsp/message/alive/do-eval)
                       (:get-pkg :alive/lsp/message/alive/get-pkg)
                       (:remove-pkg :alive/lsp/message/alive/remove-pkg)
@@ -46,6 +47,7 @@
                       (:config-item :alive/lsp/types/config-item)
                       (:text-doc :alive/lsp/types/text-doc)
                       (:fmt-opts :alive/lsp/types/format-options)
+                      (:debug-resp :alive/lsp/types/debug-resp)
                       (:user-input :alive/lsp/types/user-input)
                       (:sem-tokens :alive/lsp/message/document/sem-tokens-full)))
 
@@ -126,8 +128,8 @@
 
 (defmethod destroy ((obj network-state))
     (when (conn obj)
-        (usocket:socket-close (conn obj))
-        (setf (conn obj) NIL)))
+          (usocket:socket-close (conn obj))
+          (setf (conn obj) NIL)))
 
 
 (defmethod add-listener ((obj state) (to-add listener))
@@ -191,13 +193,13 @@
 
 (defun cancel-thread (state thread-id msg-id)
     (when msg-id
-        (send-msg state
-                  (message:create-error-resp :id msg-id
-                                             :code errors:*request-cancelled*
-                                             :message (format nil "Request ~A canceled" msg-id))))
+          (send-msg state
+                    (message:create-error-resp :id msg-id
+                                               :code errors:*request-cancelled*
+                                               :message (format nil "Request ~A canceled" msg-id))))
 
     (when thread-id
-        (threads:kill thread-id)))
+          (threads:kill thread-id)))
 
 
 (defmethod handle-msg ((obj state) (msg init:request))
@@ -214,8 +216,8 @@
           (text (did-open:get-text msg)))
 
         (when text
-            (bt:with-recursive-lock-held ((lock obj))
-                (set-file-text obj uri text)))))
+              (bt:with-recursive-lock-held ((lock obj))
+                  (set-file-text obj uri text)))))
 
 
 (defmethod handle-msg (state (msg did-change:did-change))
@@ -223,8 +225,8 @@
           (text (did-change:get-text msg)))
 
         (when text
-            (bt:with-recursive-lock-held ((lock state))
-                (set-file-text state uri text)))))
+              (bt:with-recursive-lock-held ((lock state))
+                  (set-file-text state uri text)))))
 
 
 (defmethod handle-msg (state (msg sem-tokens:request))
@@ -245,10 +247,10 @@
            (msgs (file:do-load path
                                :stdout-fn (lambda (data)
                                               (when (load-file:show-stdout-p msg)
-                                                  (send-msg state (stdout:create data))))
+                                                    (send-msg state (stdout:create data))))
                                :stderr-fn (lambda (data)
                                               (when (load-file:show-stderr-p msg)
-                                                  (send-msg state (stderr:create data))))))
+                                                    (send-msg state (stderr:create data))))))
            (resp (load-file:create-response (message:id msg) msgs)))
 
         (send-msg state resp)))
@@ -286,17 +288,17 @@
            (forms (forms:from-stream (make-string-input-stream text))))
 
         (loop :with start := nil
-            :with end := nil
+              :with end := nil
 
-            :for form :in forms :do
-            (when (and (pos:less-or-equal (form:get-start form) pos)
-                      (pos:less-or-equal pos (form:get-end form)))
-                (setf start (form:get-start form))
-                (setf end (form:get-end form)))
+              :for form :in forms :do
+                  (when (and (pos:less-or-equal (form:get-start form) pos)
+                             (pos:less-or-equal pos (form:get-end form)))
+                        (setf start (form:get-start form))
+                        (setf end (form:get-end form)))
 
-            :finally (send-msg state (top-form:create-response :id (message:id msg)
-                                                               :start start
-                                                               :end end)))))
+              :finally (send-msg state (top-form:create-response :id (message:id msg)
+                                                                 :start start
+                                                                 :end end)))))
 
 
 (defun handle-format-msg (state options msg)
@@ -318,7 +320,7 @@
         (setf (gethash send-id (sent-msg-callbacks state))
             (lambda (config-resp)
                 (let ((opts (when (message:result config-resp)
-                                (fmt-opts:from-wire (message:result config-resp)))))
+                                  (fmt-opts:from-wire (message:result config-resp)))))
                     (handle-format-msg state opts msg))))
 
         (send-msg state (config:create-request
@@ -339,12 +341,12 @@
 (defmethod handle-msg (state (msg kill-thread:request))
     (handler-case
             (progn
-                (cancel-thread state
-                               (kill-thread:get-id msg)
-                               (gethash (kill-thread:get-id msg)
-                                        (thread-msgs state)))
+             (cancel-thread state
+                            (kill-thread:get-id msg)
+                            (gethash (kill-thread:get-id msg)
+                                     (thread-msgs state)))
 
-                (send-msg state (kill-thread:create-response (message:id msg))))
+             (send-msg state (kill-thread:create-response (message:id msg))))
         (threads:thread-not-found (c)
                                   (send-msg state
                                             (message:create-error-resp :id (message:id msg)
@@ -382,12 +384,11 @@
                                             (bt:condition-notify cond-var))
 
                     (message:result-response (let ((opts (when (message:result input-resp)
-                                                             (user-input:from-wire (message:result input-resp)))))
+                                                               (user-input:from-wire (message:result input-resp)))))
                                                  (setf text (user-input:get-text opts))
                                                  (bt:condition-notify cond-var))))))
 
-        (send-msg state (input:create-request
-                            :id send-id))
+        (send-msg state (input:create-request :id send-id))
 
         (bt:with-recursive-lock-held ((lock state))
             (bt:condition-wait cond-var (lock state)))
@@ -411,16 +412,57 @@
                                                     (send-msg state (stderr:create data))))))
 
         (when (eval-msg:store-result-p msg)
-            (add-history state result))
+              (add-history state result))
 
         (send-msg state
                   (eval-msg:create-response (message:id msg)
                                             (format nil "~A" result)))))
 
 
+(defun wait-for-debug (state err restarts)
+    (let ((send-id (next-send-id state))
+          (cond-var (bt:make-condition-variable))
+          (params (debug:create-params :message (format nil "~A" err)
+                                       :restarts restarts
+                                       :stack-trace (mapcar (lambda (item) (princ-to-string item))
+                                                            (threads:get-stack-trace))))
+          (restart-ndx nil))
+
+        (setf (gethash send-id (sent-msg-callbacks state))
+            (lambda (debug-resp)
+                (typecase debug-resp
+                    (message:error-response (logger:error-msg (logger state) "Debugger Error ~A" debug-resp)
+                                            (bt:condition-notify cond-var))
+
+                    (message:result-response (let ((opts (when (message:result debug-resp)
+                                                               (debug-resp:from-wire (message:result debug-resp)))))
+                                                 (setf restart-ndx (debug-resp:get-index opts))
+                                                 (bt:condition-notify cond-var))))))
+
+        (send-msg state (debug:create-request :id send-id :params params))
+
+        (bt:with-recursive-lock-held ((lock state))
+            (bt:condition-wait cond-var (lock state)))
+
+        restart-ndx))
+
+
+(defun start-debugger (state err)
+    (let* ((restarts (compute-restarts err))
+           (ndx (wait-for-debug state err (mapcar (lambda (item) (princ-to-string item))
+                                                  restarts))))
+
+        (when (<= 0 ndx (- (length restarts) 1))
+              (invoke-restart-interactively (elt restarts ndx)))))
+
+
 (defmethod handle-msg (state (msg eval-msg:request))
     (run-in-thread state msg (lambda ()
-                                 (process-eval state msg))))
+                                 (block handler
+                                     (handler-bind ((error (lambda (err)
+                                                               (start-debugger state err)
+                                                               (return-from handler))))
+                                         (process-eval state msg))))))
 
 
 (defmethod handle-msg (state (msg get-pkg:request))
@@ -476,8 +518,8 @@
     (destroy state)
 
     (loop :for listener :in (listeners state) :do
-        (when (on-done listener)
-            (funcall (on-done listener)))))
+              (when (on-done listener)
+                    (funcall (on-done listener)))))
 
 
 (defun read-message (state)
@@ -492,18 +534,18 @@
         (errors:unhandled-request (c)
                                   (logger:error-msg (logger state) "read-message: ~A" c)
                                   (when (errors:id c)
-                                      (send-msg state
-                                                (message:create-error-resp :id (errors:id c)
-                                                                           :code errors:*method-not-found*
-                                                                           :message (format nil "Unhandled request: ~A" (errors:method-name c))))))
+                                        (send-msg state
+                                                  (message:create-error-resp :id (errors:id c)
+                                                                             :code errors:*method-not-found*
+                                                                             :message (format nil "Unhandled request: ~A" (errors:method-name c))))))
 
         (errors:server-error (c)
                              (logger:error-msg (logger state) "read-message: ~A" c)
                              (when (errors:id c)
-                                 (send-msg state
-                                           (message:create-error-resp :id (errors:id c)
-                                                                      :code errors:*internal-error*
-                                                                      :message (format nil "Server error: ~A" (errors:message c))))))
+                                   (send-msg state
+                                             (message:create-error-resp :id (errors:id c)
+                                                                        :code errors:*internal-error*
+                                                                        :message (format nil "Server error: ~A" (errors:message c))))))
 
         (T (c)
            (logger:error-msg (logger state) "read-message: ~A" c)
@@ -521,11 +563,11 @@
             (handler-case
 
                     (progn
-                        (when (typep msg 'message:request)
-                            (setf (gethash (threads:get-thread-id (bt:current-thread)) (thread-msgs state))
-                                (message:id msg)))
-                        (logger:trace-msg (logger state) "--> ~A~%" (json:encode-json-to-string msg))
-                        (handle-msg state msg))
+                     (when (typep msg 'message:request)
+                           (setf (gethash (threads:get-thread-id (bt:current-thread)) (thread-msgs state))
+                               (message:id msg)))
+                     (logger:trace-msg (logger state) "--> ~A~%" (json:encode-json-to-string msg))
+                     (handle-msg state msg))
 
                 (error (c)
                     (logger:error-msg (logger state) "Message Handler: ~A" c)
@@ -534,14 +576,14 @@
                                                          :message (format nil "~A" c)
                                                          :id (message:id msg)))))
         (when (typep msg 'message:request)
-            (remhash (threads:get-thread-id (bt:current-thread)) (thread-msgs state)))))
+              (remhash (threads:get-thread-id (bt:current-thread)) (thread-msgs state)))))
 
 
 (defun read-messages (state)
     (loop :while (running state)
-        :do (let ((msg (read-message state)))
-                (when msg
-                    (process-msg state msg)))))
+          :do (let ((msg (read-message state)))
+                  (when msg
+                        (process-msg state msg)))))
 
 
 (defun start-read-thread (state)
