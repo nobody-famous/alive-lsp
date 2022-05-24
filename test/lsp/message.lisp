@@ -54,7 +54,7 @@
         (run:test "Initialize Message"
                   (lambda ()
                       (let* ((msg (utils:create-msg (create-content)))
-                             (parsed (parse:from-stream (make-string-input-stream msg))))
+                             (parsed (parse:from-stream (utils:stream-from-string msg))))
                           (check:are-equal (alive/lsp/message/initialize:create-request
                                                :id 5
                                                :params (alive/lsp/message/initialize:create-request-params
@@ -75,16 +75,16 @@
                                            :sem-tokens-provider (alive/lsp/message/initialize:create-sem-tokens-opts
                                                                     :legend (alive/lsp/message/initialize:create-legend
                                                                                 :types (list "comment"
-                                                                                           "string"
-                                                                                           "keyword"
-                                                                                           "number"
-                                                                                           "namespace"
-                                                                                           "function"
-                                                                                           "macro"
-                                                                                           "variable"
-                                                                                           "parameter"
-                                                                                           "parenthesis"
-                                                                                           "symbol"))
+                                                                                             "string"
+                                                                                             "keyword"
+                                                                                             "number"
+                                                                                             "namespace"
+                                                                                             "function"
+                                                                                             "macro"
+                                                                                             "variable"
+                                                                                             "parameter"
+                                                                                             "parenthesis"
+                                                                                             "symbol"))
                                                                     :full t))
                                        (alive/lsp/message/initialize::capabilities result))))))
 
@@ -109,7 +109,7 @@
         (run:test "Did Open Message"
                   (lambda ()
                       (let* ((msg (utils:create-msg (create-content)))
-                             (parsed (parse:from-stream (make-string-input-stream msg))))
+                             (parsed (parse:from-stream (utils:stream-from-string msg))))
                           (check:are-equal (did-open:create-did-open
                                                (did-open:create-params
                                                    (text-doc-item:create-item :text "(foo)"
@@ -141,7 +141,7 @@
         (run:test "Did Change Message"
                   (lambda ()
                       (let* ((msg (utils:create-msg (create-content)))
-                             (parsed (parse:from-stream (make-string-input-stream msg))))
+                             (parsed (parse:from-stream (utils:stream-from-string msg))))
                           (check:are-equal
                               (did-change:create
                                   (did-change:create-params
@@ -167,7 +167,7 @@
         (run:test "Semantic Tokens Message"
                   (lambda ()
                       (let* ((msg (utils:create-msg (create-content)))
-                             (parsed (parse:from-stream (make-string-input-stream msg))))
+                             (parsed (parse:from-stream (utils:stream-from-string msg))))
                           (check:are-equal
                               (sem-tokens:create-request
                                   :id 5
@@ -192,7 +192,7 @@
         (run:test "Load File Message"
                   (lambda ()
                       (let* ((msg (utils:create-msg (create-content)))
-                             (parsed (parse:from-stream (make-string-input-stream msg))))
+                             (parsed (parse:from-stream (utils:stream-from-string msg))))
                           (check:are-equal
                               (load-file:create-request
                                   :id 5
@@ -225,7 +225,7 @@
         (run:test "Completion Message"
                   (lambda ()
                       (let* ((msg (utils:create-msg (create-content)))
-                             (parsed (parse:from-stream (make-string-input-stream msg))))
+                             (parsed (parse:from-stream (utils:stream-from-string msg))))
                           (check:are-equal
                               (completion:create-request
                                   :id 5
@@ -255,7 +255,7 @@
         (run:test "Top Form Message"
                   (lambda ()
                       (let* ((msg (utils:create-msg (create-content)))
-                             (parsed (parse:from-stream (make-string-input-stream msg))))
+                             (parsed (parse:from-stream (utils:stream-from-string msg))))
                           (check:are-equal
                               (top-form:create-request
                                   :id 5
@@ -295,7 +295,7 @@
         (run:test "Formatting Message"
                   (lambda ()
                       (let* ((msg (utils:create-msg (create-content)))
-                             (parsed (parse:from-stream (make-string-input-stream msg))))
+                             (parsed (parse:from-stream (utils:stream-from-string msg))))
                           (check:are-equal
                               (formatting:create-request
                                   :id 5
@@ -316,7 +316,7 @@
         (run:test "List Threads Message"
                   (lambda ()
                       (let* ((msg (utils:create-msg (create-content)))
-                             (parsed (parse:from-stream (make-string-input-stream msg))))
+                             (parsed (parse:from-stream (utils:stream-from-string msg))))
                           (check:are-equal
                               (list-threads:create-request
                                   :id 5)
@@ -338,7 +338,7 @@
         (run:test "Kill Thread Message"
                   (lambda ()
                       (let* ((msg (utils:create-msg (create-content)))
-                             (parsed (parse:from-stream (make-string-input-stream msg))))
+                             (parsed (parse:from-stream (utils:stream-from-string msg))))
                           (check:are-equal
                               (kill-thread:create-request
                                   :id 5
@@ -358,7 +358,7 @@
         (run:test "List Packages Message"
                   (lambda ()
                       (let* ((msg (utils:create-msg (create-content)))
-                             (parsed (parse:from-stream (make-string-input-stream msg))))
+                             (parsed (parse:from-stream (utils:stream-from-string msg))))
                           (check:are-equal
                               (list-pkgs:create-request
                                   :id 5)
@@ -381,7 +381,7 @@
         (run:test "Unexport Symbol Message"
                   (lambda ()
                       (let* ((msg (utils:create-msg (create-content)))
-                             (parsed (parse:from-stream (make-string-input-stream msg))))
+                             (parsed (parse:from-stream (utils:stream-from-string msg))))
                           (check:are-equal
                               (unexport:create-request
                                   :id 5
@@ -405,7 +405,7 @@
         (run:test "Eval Message"
                   (lambda ()
                       (let* ((msg (utils:create-msg (create-content)))
-                             (parsed (parse:from-stream (make-string-input-stream msg))))
+                             (parsed (parse:from-stream (utils:stream-from-string msg))))
                           (check:are-equal
                               (eval:create-request
                                   :id 5
@@ -434,7 +434,7 @@
         (run:test "Get Package Message"
                   (lambda ()
                       (let* ((msg (utils:create-msg (create-content)))
-                             (parsed (parse:from-stream (make-string-input-stream msg))))
+                             (parsed (parse:from-stream (utils:stream-from-string msg))))
                           (check:are-equal
                               (get-pkg:create-request
                                   :id 5
@@ -458,7 +458,7 @@
         (run:test "Remove Package Message"
                   (lambda ()
                       (let* ((msg (utils:create-msg (create-content)))
-                             (parsed (parse:from-stream (make-string-input-stream msg))))
+                             (parsed (parse:from-stream (utils:stream-from-string msg))))
                           (check:are-equal
                               (remove-pkg:create-request
                                   :id 5
@@ -478,7 +478,7 @@
         (run:test "List ASDF Systems Message"
                   (lambda ()
                       (let* ((msg (utils:create-msg (create-content)))
-                             (parsed (parse:from-stream (make-string-input-stream msg))))
+                             (parsed (parse:from-stream (utils:stream-from-string msg))))
                           (check:are-equal
                               (list-asdf:create-request
                                   :id 5)
@@ -500,7 +500,7 @@
         (run:test "Load ASDF System Message"
                   (lambda ()
                       (let* ((msg (utils:create-msg (create-content)))
-                             (parsed (parse:from-stream (make-string-input-stream msg))))
+                             (parsed (parse:from-stream (utils:stream-from-string msg))))
                           (check:are-equal
                               (load-asdf:create-request
                                   :id 5
