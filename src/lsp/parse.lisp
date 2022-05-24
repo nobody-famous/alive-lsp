@@ -27,6 +27,10 @@
 (in-package :alive/lsp/parse)
 
 
+(defvar *return-char* (char-code #\return))
+(defvar *nl-char* (char-code #\newline))
+
+
 (defclass fields ()
         ((id :accessor id
              :initform nil
@@ -54,16 +58,19 @@
 
 
 (defun next-line (input)
-    (loop :with str := (make-string-output-stream)
-          :with prev-char := (code-char 0)
-          :until (and (char= #\return prev-char)
-                      (char= #\newline
-                          (peek-char nil input)))
-          :do (let ((ch (read-char input)))
+    (loop :with out := (flexi-streams:make-in-memory-output-stream)
+          :with prev-char := 0
+
+          :until (and (eq *return-char* prev-char)
+                      (eq *nl-char* (flexi-streams:peek-byte input)))
+
+          :do (let ((ch (read-byte input)))
                   (setf prev-char ch)
-                  (write-char ch str))
-          :finally (progn (read-char input)
-                          (return (trim-ws (get-output-stream-string str))))))
+                  (write-byte ch out))
+
+          :finally (progn (read-byte input)
+                          (return (trim-ws (flexi-streams:octets-to-string
+                                               (flexi-streams:get-output-stream-sequence out)))))))
 
 
 (defun get-header-lines (input)
@@ -102,11 +109,16 @@
           :finally (return header)))
 
 
-(defun read-content (input size)
-    (with-output-to-string (out)
+(defun read-content-bytes (input size)
+    (flexi-streams:with-output-to-sequence (out)
         (loop :for ndx :from 0 :below size :do
-                  (let ((ch (read-char input)))
-                      (when ch (write-char ch out))))))
+                  (let ((ch (read-byte input)))
+                      (when ch (write-byte ch out))))))
+
+(defun read-content (input size)
+    (let ((content (flexi-streams:octets-to-string
+                       (read-content-bytes input size))))
+        content))
 
 
 (defun decode-json (content)

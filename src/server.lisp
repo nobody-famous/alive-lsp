@@ -34,7 +34,8 @@
 
 
 (defun accept-conn (server)
-    (let* ((conn (usocket:socket-accept (socket server)))
+    (let* ((conn (usocket:socket-accept (socket server) :element-type '(unsigned-byte 8)))
+           ; (let* ((conn (usocket:socket-accept (socket server)))
            (session (session:create :conn conn
                                     :logger (logger server))))
 
