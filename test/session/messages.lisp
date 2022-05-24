@@ -91,7 +91,7 @@
                        (format str "    }~A" utils:*end-line*)
                        (format str "  }~A" utils:*end-line*)
                        (format str "}~A" utils:*end-line*))))
-        (make-string-input-stream (utils:create-msg content))))
+        (utils:stream-from-string (utils:create-msg content))))
 
 
 (defmethod session::send-msg ((obj init-msg-state) msg)
@@ -118,7 +118,7 @@
                        (format str "    \"showStdout\": false~A" utils:*end-line*)
                        (format str "  }~A" utils:*end-line*)
                        (format str "}~A" utils:*end-line*))))
-        (make-string-input-stream (utils:create-msg content))))
+        (utils:stream-from-string (utils:create-msg content))))
 
 
 (defmethod session::send-msg ((obj load-file-state) msg)
@@ -153,7 +153,7 @@
                        (format str "    }~A" utils:*end-line*)
                        (format str "  }~A" utils:*end-line*)
                        (format str "}~A" utils:*end-line*))))
-        (make-string-input-stream (utils:create-msg content))))
+        (utils:stream-from-string (utils:create-msg content))))
 
 
 (defmethod session::send-msg ((obj completion-state) msg)
@@ -185,7 +185,7 @@
                        (format str "    }~A" utils:*end-line*)
                        (format str "  }~A" utils:*end-line*)
                        (format str "}~A" utils:*end-line*))))
-        (make-string-input-stream (utils:create-msg content))))
+        (utils:stream-from-string (utils:create-msg content))))
 
 
 (defmethod session::send-msg ((obj top-form-state) msg)
@@ -227,7 +227,7 @@
                        (format str "    }~A" utils:*end-line*)
                        (format str "  }~A" utils:*end-line*)
                        (format str "}~A" utils:*end-line*))))
-        (make-string-input-stream (utils:create-msg content))))
+        (utils:stream-from-string (utils:create-msg content))))
 
 
 (defmethod session::send-msg ((obj formatting-state) msg)
@@ -250,7 +250,7 @@
                        (format str "  \"id\": 5,~A" utils:*end-line*)
                        (format str "  \"method\": \"$/alive/listThreads\"~A" utils:*end-line*)
                        (format str "}~A" utils:*end-line*))))
-        (make-string-input-stream (utils:create-msg content))))
+        (utils:stream-from-string (utils:create-msg content))))
 
 
 (defmethod session::send-msg ((obj list-threads-state) msg)
@@ -276,7 +276,7 @@
                        (format str "    \"id\": 10~A" utils:*end-line*)
                        (format str "  }~A" utils:*end-line*)
                        (format str "}~A" utils:*end-line*))))
-        (make-string-input-stream (utils:create-msg content))))
+        (utils:stream-from-string (utils:create-msg content))))
 
 
 (defmethod session::send-msg ((obj kill-thread-state) msg)
@@ -299,7 +299,7 @@
                        (format str "  \"id\": 5,~A" utils:*end-line*)
                        (format str "  \"method\": \"$/alive/listPackages\"~A" utils:*end-line*)
                        (format str "}~A" utils:*end-line*))))
-        (make-string-input-stream (utils:create-msg content))))
+        (utils:stream-from-string (utils:create-msg content))))
 
 
 (defmethod session::send-msg ((obj list-pkgs-state) msg)
@@ -326,7 +326,7 @@
                        (format str "    \"package\": \"bar\"~A" utils:*end-line*)
                        (format str "  }~A" utils:*end-line*)
                        (format str "}~A" utils:*end-line*))))
-        (make-string-input-stream (utils:create-msg content))))
+        (utils:stream-from-string (utils:create-msg content))))
 
 
 (defmethod session::send-msg ((obj unexport-state) msg)
@@ -353,7 +353,7 @@
                        (format str "    \"text\": \"(+ 1 2)\"~A" utils:*end-line*)
                        (format str "  }~A" utils:*end-line*)
                        (format str "}~A" utils:*end-line*))))
-        (make-string-input-stream (utils:create-msg content))))
+        (utils:stream-from-string (utils:create-msg content))))
 
 
 (defmethod session::send-msg ((obj eval-state) msg)
@@ -385,7 +385,7 @@
                        (format str "    }~A" utils:*end-line*)
                        (format str "  }~A" utils:*end-line*)
                        (format str "}~A" utils:*end-line*))))
-        (make-string-input-stream (utils:create-msg content))))
+        (utils:stream-from-string (utils:create-msg content))))
 
 
 (defmethod session::send-msg ((obj get-pkg-state) msg)
@@ -411,7 +411,7 @@
                        (format str "    \"name\": \"foo\"~A" utils:*end-line*)
                        (format str "  }~A" utils:*end-line*)
                        (format str "}~A" utils:*end-line*))))
-        (make-string-input-stream (utils:create-msg content))))
+        (utils:stream-from-string (utils:create-msg content))))
 
 
 (defmethod session::send-msg ((obj remove-pkg-state) msg)
@@ -434,7 +434,7 @@
                        (format str "  \"id\": 5,~A" utils:*end-line*)
                        (format str "  \"method\": \"$/alive/listAsdfSystems\"~A" utils:*end-line*)
                        (format str "}~A" utils:*end-line*))))
-        (make-string-input-stream (utils:create-msg content))))
+        (utils:stream-from-string (utils:create-msg content))))
 
 
 (defmethod session::send-msg ((obj list-asdf-state) msg)
@@ -460,7 +460,7 @@
                        (format str "    \"name\": \"foo\"~A" utils:*end-line*)
                        (format str "  }~A" utils:*end-line*)
                        (format str "}~A" utils:*end-line*))))
-        (make-string-input-stream (utils:create-msg content))))
+        (utils:stream-from-string (utils:create-msg content))))
 
 
 (defmethod session::send-msg ((obj load-asdf-state) msg)

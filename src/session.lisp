@@ -156,7 +156,8 @@
 
 
 (defmethod get-input-stream ((obj network-state))
-    (usocket:socket-stream (conn obj)))
+    (flexi-streams:make-flexi-stream
+        (usocket:socket-stream (conn obj))))
 
 
 (defmethod get-output-stream ((obj network-state))
@@ -167,7 +168,7 @@
     (logger:trace-msg (logger obj) "<-- ~A~%" (json:encode-json-to-string msg))
 
     (bt:with-recursive-lock-held ((lock obj))
-        (write-string (packet:to-wire msg) (usocket:socket-stream (conn obj)))
+        (write-sequence (flexi-streams:string-to-octets (packet:to-wire msg)) (usocket:socket-stream (conn obj)))
         (force-output (usocket:socket-stream (conn obj)))))
 
 

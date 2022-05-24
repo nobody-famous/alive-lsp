@@ -1,8 +1,8 @@
 (defpackage :alive/test/utils
     (:use :cl)
     (:export :*end-line*
-
-             :create-msg))
+             :create-msg
+             :stream-from-string))
 
 (in-package :alive/test/utils)
 
@@ -15,3 +15,9 @@
         (format str "Content-Length: ~A~A" (length content) *end-line*)
         (format str "~A" *end-line*)
         (format str "~A" content)))
+
+
+(defun stream-from-string (str)
+    (flexi-streams:make-flexi-stream
+        (flexi-streams:make-in-memory-input-stream
+            (flexi-streams:string-to-octets str))))
