@@ -22,7 +22,7 @@
                                           "/" "*" "-" "+" "<" "<=" ">" ">="
                                           "eq" "equal" "equalp" "list"))
 
-(defparameter *loop-keys* '("do" "for" "while" "until" "=" "from" "to" "with" "finally" "repeat"))
+(defparameter *loop-keys* '("do" "for" "while" "until" "=" "from" "to" "with" "finally" "repeat" "collect" "into"))
 
 (defparameter *start-form* 100)
 
