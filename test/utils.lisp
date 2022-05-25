@@ -7,12 +7,16 @@
 (in-package :alive/test/utils)
 
 
-(defparameter *end-line* (format nil "~C~C" #\return #\linefeed))
+#+win32
+(defparameter *end-line* (format nil "~C" #\newline))
+
+#-win32
+(defparameter *end-line* (format nil "~C~C" #\return #\newline))
 
 
 (defun create-msg (content)
     (with-output-to-string (str)
-        (format str "Content-Length: ~A~A" (length content) *end-line*)
+        (format str "Content-Length: ~A~A" (length (flexi-streams:string-to-octets content)) *end-line*)
         (format str "~A" *end-line*)
         (format str "~A" content)))
 
