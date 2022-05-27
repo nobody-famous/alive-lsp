@@ -9,33 +9,33 @@
 
 
 (defclass parse-state ()
-    ((input :accessor input
-            :initform nil
-            :initarg :input)
-     (start :accessor start
-            :initform nil
-            :initarg :start)
-     (start-offset :accessor start-offset
-                   :initform nil
-                   :initarg :start-offset)
-     (buffer :accessor buffer
-             :initform nil
-             :initarg :buffer)
-     (line :accessor line
-           :initform 0
-           :initarg :line)
-     (col :accessor col
-          :initform 0
-          :initarg :col)))
+        ((input :accessor input
+                :initform nil
+                :initarg :input)
+         (start :accessor start
+                :initform nil
+                :initarg :start)
+         (start-offset :accessor start-offset
+                       :initform nil
+                       :initarg :start-offset)
+         (buffer :accessor buffer
+                 :initform nil
+                 :initarg :buffer)
+         (line :accessor line
+               :initform 0
+               :initarg :line)
+         (col :accessor col
+              :initform 0
+              :initarg :col)))
 
 
 (defun start-token (state)
     (setf (start state)
-          (pos:create (line state) (col state)))
+        (pos:create (line state) (col state)))
     (setf (start-offset state)
-          (file-position (input state)))
+        (file-position (input state)))
     (setf (buffer state)
-          (make-string-output-stream)))
+        (make-string-output-stream)))
 
 
 (defun look-ahead (state)
@@ -114,11 +114,11 @@
 
 (defun read-string-token (state)
     (labels ((try-read (state)
-                  (handler-case
-                          (read-preserving-whitespace (input state))
-                      (error (c)
-                             (declare (ignore c))
-                             nil))))
+                       (handler-case
+                               (read-preserving-whitespace (input state))
+                           (error (c)
+                               (declare (ignore c))
+                               nil))))
 
         (let ((start (file-position (input state)))
               (str (try-read state))
@@ -154,8 +154,8 @@
     (next-char state)
 
     (labels ((check-ifdef (text)
-                  (let ((to-check (format nil "~A T" text)))
-                      (ignore-errors (read-from-string to-check)))))
+                          (let ((to-check (format nil "~A T" text)))
+                              (ignore-errors (read-from-string to-check)))))
 
         (loop :with str := (make-string-output-stream)
               :with depth := 0
@@ -185,18 +185,23 @@
           :with have-pound := nil
 
           :for ch := (look-ahead state)
-          :until done
+          :until (or (not ch)
+                     done)
 
-          :do (cond ((char= ch #\|) (if have-pound
-                                        (progn (incf depth)
-                                               (setf have-pound nil))
-                                        (setf have-bar t)))
-                    ((char= ch #\#) (if have-bar
-                                        (if (eq 0 depth)
-                                            (setf done t)
-                                            (progn (decf depth)
-                                                   (setf have-bar nil)))
-                                        (setf have-pound t))))
+          :do (cond ((char= ch #\|)
+                        (if have-pound
+                            (progn (incf depth)
+                                   (setf have-pound nil))
+                            (setf have-bar t)))
+
+                    ((char= ch #\#)
+                        (if have-bar
+                            (if (eq 0 depth)
+                                (setf done t)
+                                (progn (decf depth)
+                                       (setf have-bar nil)))
+                            (setf have-pound t))))
+
               (next-char state)
 
           :finally (return (new-token state types:*block-comment*))))

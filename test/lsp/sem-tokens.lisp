@@ -106,6 +106,11 @@
 (defun combos ()
     (run:test "Combos"
               (lambda ()
+                  (check-combo "#|" (list (sem-types:create
+                                              :token-type sem-types:*comment*
+                                              :line 0
+                                              :start 0
+                                              :end 2)))
                   (check-combo "(in-package #:alive/errors) start" (list (sem-types:create
                                                                              :token-type sem-types:*parenthesis*
                                                                              :line 0
