@@ -49,6 +49,7 @@
                       (:fmt-opts :alive/lsp/types/format-options)
                       (:debug-resp :alive/lsp/types/debug-resp)
                       (:user-input :alive/lsp/types/user-input)
+                      (:restart-info :alive/lsp/types/restart-info)
                       (:sem-tokens :alive/lsp/message/document/sem-tokens-full)))
 
 (in-package :alive/session)
@@ -450,7 +451,9 @@
 
 (defun start-debugger (state err)
     (let* ((restarts (compute-restarts err))
-           (ndx (wait-for-debug state err (mapcar (lambda (item) (princ-to-string item))
+           (ndx (wait-for-debug state err (mapcar (lambda (item)
+                                                      (restart-info:create-item :name (restart-name item)
+                                                                                :description (princ-to-string item)))
                                                   restarts))))
 
         (when (<= 0 ndx (- (length restarts) 1))
