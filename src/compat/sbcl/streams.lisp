@@ -66,7 +66,7 @@
 
             (progn
              (setf (in-buffer obj) nil)
-             :eof)
+             #\newline)
 
             (let ((ch (elt (in-buffer obj) 0)))
                 (setf (in-buffer obj)

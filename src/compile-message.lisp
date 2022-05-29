@@ -1,6 +1,7 @@
 (defpackage :alive/compile-message
     (:use :cl)
-    (:export :create))
+    (:export :create
+             :message))
 
 (in-package :alive/compile-message)
 

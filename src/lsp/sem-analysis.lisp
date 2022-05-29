@@ -133,13 +133,13 @@
                                       0)
                 :for end-col := (if (eq line (pos:line end))
                                     (pos:col end)
-                                    #xFFFFFFFF)
+                                    #xFFFF)
                 :for new-token := (sem-types:create :line line
                                                     :start start-col
                                                     :end end-col
                                                     :token-type new-type) :do
-                (when new-type
-                      (push new-token (sem-tokens state))))))
+                    (when new-type
+                          (push new-token (sem-tokens state))))))
 
 
 (defun is-number (text)
@@ -151,19 +151,19 @@
           :with have-after-div := nil
 
           :for ch :across text :do
-          (cond ((char= ch #\.) (if have-decimal
-                                    (setf is-valid nil)
-                                    (setf have-decimal T)))
-                ((char= ch #\/) (if have-div
-                                    (setf is-valid nil)
-                                    (setf have-div T)))
-                ((digit-char-p ch) (when (and is-valid
-                                              have-div)
-                                         (setf have-after-div T))
-                                   (when (and is-valid
-                                              have-decimal)
-                                         (setf have-after-decimal T)))
-                (T (setf is-valid nil)))
+              (cond ((char= ch #\.) (if have-decimal
+                                        (setf is-valid nil)
+                                        (setf have-decimal T)))
+                    ((char= ch #\/) (if have-div
+                                        (setf is-valid nil)
+                                        (setf have-div T)))
+                    ((digit-char-p ch) (when (and is-valid
+                                                  have-div)
+                                             (setf have-after-div T))
+                                       (when (and is-valid
+                                                  have-decimal)
+                                             (setf have-after-decimal T)))
+                    (T (setf is-valid nil)))
 
           :finally (return (and is-valid
                                 (eq have-div have-after-div)

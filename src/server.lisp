@@ -10,7 +10,7 @@
 (in-package :alive/server)
 
 
-(defvar *default-port* 25483)
+(defvar *default-port* 0)
 (defparameter *server* nil)
 (defparameter *logger* (logger:create *standard-output* logger:*info*))
 

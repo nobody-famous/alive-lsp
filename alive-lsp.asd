@@ -47,6 +47,7 @@
                  "alive-lsp/src/lsp/types/format-options"
                  "alive-lsp/src/lsp/types/debug-resp"
                  "alive-lsp/src/lsp/types/user-input"
+                 "alive-lsp/src/lsp/types/restart-info"
 
                  "alive-lsp/src/lsp/sem-analysis"
 
@@ -151,6 +152,7 @@
 (register-system-packages "alive-lsp/src/lsp/types/format-options" '(:alive/lsp/types/format-options))
 (register-system-packages "alive-lsp/src/lsp/types/debug-resp" '(:alive/lsp/types/debug-resp))
 (register-system-packages "alive-lsp/src/lsp/types/user-input" '(:alive/lsp/types/user-input))
+(register-system-packages "alive-lsp/src/lsp/types/restart-info" '(:alive/lsp/types/restart-info))
 
 (register-system-packages "alive-lsp/src/lsp/sem-analysis" '(:alive/lsp/sem-analysis))
 

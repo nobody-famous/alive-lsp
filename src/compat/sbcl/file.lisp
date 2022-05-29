@@ -17,29 +17,29 @@
 
 (defun should-skip (form-type)
     (and form-type
-        (or (= types:*ifdef-false* form-type)
-            (= types:*line-comment* form-type)
-            (= types:*block-comment* form-type))))
+         (or (= types:*ifdef-false* form-type)
+             (= types:*line-comment* form-type)
+             (= types:*block-comment* form-type))))
 
 
 (defun get-nth-form (forms offset)
     (loop :with counted := 0
-        :with cur-form := nil
+          :with cur-form := nil
 
-        :while (<= counted offset)
+          :while (<= counted offset)
 
-        :do (setf cur-form (pop forms))
+          :do (setf cur-form (pop forms))
 
-        (cond ((or (= types:*line-comment* (form:get-form-type cur-form))
-                   (= types:*block-comment* (form:get-form-type cur-form)))
-               NIL)
+              (cond ((or (= types:*line-comment* (form:get-form-type cur-form))
+                         (= types:*block-comment* (form:get-form-type cur-form)))
+                        NIL)
 
-            ((= types:*ifdef-false* (form:get-form-type cur-form))
-             (pop forms))
+                    ((= types:*ifdef-false* (form:get-form-type cur-form))
+                        (pop forms))
 
-            (T (incf counted)))
+                    (T (incf counted)))
 
-        :finally (return cur-form)))
+          :finally (return cur-form)))
 
 
 (defun get-err-location (forms)
@@ -51,21 +51,21 @@
                           (form:get-end (car (reverse forms))))
 
             (loop :with indicies := source-path
-                :with ndx := nil
-                :with form := nil
+                  :with ndx := nil
+                  :with form := nil
 
-                :while indicies
-                :do (setf ndx (pop indicies))
+                  :while indicies
+                  :do (setf ndx (pop indicies))
 
-                (when (<= (length forms) ndx)
-                    (error (format nil "Source ndx ~A, path ~A, form ~A" ndx source-path form)))
+                      (when (<= (length forms) ndx)
+                            (error (format nil "Source ndx ~A, path ~A, form ~A" ndx source-path form)))
 
-                (setf form (get-nth-form forms ndx))
+                      (setf form (get-nth-form forms ndx))
 
-                (setf forms (form:get-kids form))
+                      (setf forms (form:get-kids form))
 
-                :finally (return (range:create (form:get-start form)
-                                               (form:get-end form)))))))
+                  :finally (return (range:create (form:get-start form)
+                                                 (form:get-end form)))))))
 
 
 (defun send-message (out-fn forms sev err)
@@ -75,7 +75,7 @@
                                  :message (format nil "~A" err))))
 
         (when loc
-            (funcall out-fn msg))))
+              (funcall out-fn msg))))
 
 
 (defun fatal-error (out-fn forms)
@@ -137,6 +137,12 @@
         msgs))
 
 
+(defun filter-warnings (msgs)
+    (remove-if (lambda (msg)
+                   (search "redefining" (comp-msg:message msg)))
+            msgs))
+
+
 (defun try-compile (path)
     (with-open-file (f path)
         (let ((msgs nil))
@@ -158,12 +164,11 @@
             ;;
 
             (handler-case
-                    (progn
-                        (do-cmd path 'compile-file
-                                (lambda (msg)
-                                    (setf msgs (cons msg msgs))))
+                    (progn (do-cmd path 'compile-file
+                                   (lambda (msg)
+                                       (setf msgs (cons msg msgs))))
 
-                        msgs)
+                           msgs)
                 (errors:input-error (e)
                                     (push (comp-msg:create :severity types:*sev-error*
                                                            :location (range:create (errors:start e) (errors:end e))
@@ -180,4 +185,4 @@
 
                 (T (e)
                    (declare (ignore e))
-                   msgs)))))
+                   (filter-warnings msgs))))))
