@@ -6,8 +6,7 @@
              :get-stack-trace
              :get-thread-id
              :find-by-id
-             :id)
-    (:local-nicknames (:logger :alive/logger)))
+             :id))
 
 (in-package :alive/threads)
 

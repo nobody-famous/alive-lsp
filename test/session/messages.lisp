@@ -74,8 +74,7 @@
 
 
 (defun create-state (cls)
-    (make-instance cls
-        :logger (logger:create *standard-output* logger:*error*)))
+    (make-instance cls))
 
 
 (defmethod session::get-input-stream ((obj init-msg-state))
