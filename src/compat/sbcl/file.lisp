@@ -95,7 +95,6 @@
 
 (defun handle-error (out-fn forms)
     (lambda (err)
-        (format T "HANDLE-ERROR ~A~%" (type-of err))
         (send-message out-fn forms types:*sev-error* err)))
 
 

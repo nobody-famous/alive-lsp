@@ -130,18 +130,6 @@
         line))
 
 
-; (defmethod sb-gray:stream-read-line ((obj io-stream))
-;     (format T "READ LINE~%")
-;     (bt:with-recursive-lock-held ((out-lock obj))
-;         (loop :until (or (out-closed-p obj)
-;                          (position #\linefeed (out-buffer obj)))
-;               :do (bt:condition-wait (out-cond-var obj) (out-lock obj)))
-
-;         (if (zerop (length (out-buffer obj)))
-;             (end-out-stream obj)
-;             (next-out-buffer-line obj))))
-
-
 (defclass input-stream (sb-gray:fundamental-character-input-stream)
         ((buffer :accessor buffer
                  :initform nil

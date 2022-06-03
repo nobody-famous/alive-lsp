@@ -65,7 +65,6 @@
 
 
 (defun set-level (level)
-    (format T "SET LEVEL ~A ~A~%" *logger* level)
     (when *logger*
           (setf (level *logger*) level)))
 
