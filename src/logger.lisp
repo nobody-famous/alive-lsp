@@ -5,12 +5,10 @@
              *info*
              *error*
 
-             :create
-             :trace-msg
-             :debug-msg
-             :info-msg
-             :error-msg
-             :set-level))
+             :init
+             :has-level
+             :set-level
+             :msg))
 
 (in-package :alive/logger)
 
@@ -20,6 +18,7 @@
 (defparameter *info* 2)
 (defparameter *error* 3)
 
+(defparameter *logger* NIL)
 
 (defparameter *level-names* (make-hash-table))
 
@@ -30,7 +29,7 @@
 (setf (gethash *error* *level-names*) "ERROR")
 
 
-(defclass config ()
+(defclass logger ()
         ((level :accessor level
                 :initform *error*
                 :initarg :level)
@@ -52,39 +51,28 @@
         (format nil "~d/~d/~d ~2,'0d:~2,'0d:~2,'0d" month day year hour minute sec)))
 
 
-(defun msg (logger level fmt &rest args)
-    (bt:with-recursive-lock-held ((lock logger))
-        (let* ((new-fmt (format nil "~&[~A][~A] ~A~&" (get-timestamp) (level-name level) fmt))
-               (params (concatenate 'list (list (out logger) new-fmt) args)))
-            (apply #'format params))))
+(defun msg (level fmt &rest args)
+    (when *logger*
+          (bt:with-recursive-lock-held ((lock *logger*))
+              (let* ((new-fmt (format nil "~&[~A][~A] ~A~&" (get-timestamp) (level-name level) fmt))
+                     (params (concatenate 'list (list (out *logger*) new-fmt) args)))
+                  (apply #'format params)))))
 
 
-(defun trace-msg (logger fmt &rest rest)
-    (when (<= (level logger) *trace*)
-          (apply #'msg logger *trace* fmt rest)))
+(defun has-level (level)
+    (when *logger*
+          (<= (level *logger*) level)))
 
 
-(defun debug-msg (logger fmt &rest rest)
-    (when (<= (level logger) *debug*)
-          (apply #'msg logger *debug* fmt rest)))
+(defun set-level (level)
+    (format T "SET LEVEL ~A ~A~%" *logger* level)
+    (when *logger*
+          (setf (level *logger*) level)))
 
 
-(defun info-msg (logger fmt &rest rest)
-    (when (<= (level logger) *info*)
-          (apply #'msg logger *info* fmt rest)))
+(defun init (out &optional level)
+    (setf *logger* (make-instance 'logger
+                       :out out))
 
-
-(defun error-msg (logger fmt &rest rest)
-    (when (<= (level logger) *error*)
-          (apply #'msg logger *error* fmt rest)))
-
-
-(defun set-level (logger level)
-    (setf (level logger) level))
-
-
-(defun create (out &optional level)
-    (let ((obj (make-instance 'config
-                   :out out)))
-        (when level (setf (level obj) level))
-        obj))
+    (when level
+          (setf (level *logger*) level)))

@@ -12,16 +12,11 @@
 
 (defvar *default-port* 0)
 (defparameter *server* nil)
-(defparameter *logger* (logger:create *standard-output* logger:*info*))
-
 
 (defclass lsp-server ()
         ((running :accessor running
                   :initform nil
                   :initarg :running)
-         (logger :accessor logger
-                 :initform nil
-                 :initarg :logger)
          (lock :accessor lock
                :initform (bt:make-recursive-lock)
                :initarg :lock)
@@ -35,9 +30,7 @@
 
 (defun accept-conn (server)
     (let* ((conn (usocket:socket-accept (socket server) :element-type '(unsigned-byte 8)))
-           ; (let* ((conn (usocket:socket-accept (socket server)))
-           (session (session:create :conn conn
-                                    :logger (logger server))))
+           (session (session:create :conn conn)))
 
         (session:add-listener session
                               (make-instance 'session:listener
@@ -81,7 +74,8 @@
 
 (defun listen-for-conns (server port)
     (let ((socket (usocket:socket-listen "127.0.0.1" port :reuse-address T)))
-        (logger:info-msg (logger server) "Started on port ~A~%" (usocket:get-local-port socket))
+        (when (logger:has-level logger:*info*)
+              (logger:msg logger:*info* "Started on port ~A~%" (usocket:get-local-port socket)))
 
         (unwind-protect
                 (progn (setf (socket server) socket)
@@ -100,13 +94,18 @@
                         :name "Alive LSP Server")))
 
 (defun stop ()
-    (logger:info-msg (logger *server*) "Stop server~%")
+    (when (logger:has-level logger:*info*)
+          (logger:msg logger:*info* "Stop server~%"))
+
     (stop-server *server*)
+
     (setf *server* nil))
 
 
 (defun start (&key (port *default-port*))
     (if *server*
-        (logger:error-msg *logger* "Server already running")
-        (progn (setf *server* (make-instance 'lsp-server :logger *logger*))
+        (logger:msg logger:*error* "Server already running")
+
+        (progn (logger:init *standard-output* logger:*info*)
+               (setf *server* (make-instance 'lsp-server))
                (start-server *server* port))))

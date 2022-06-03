@@ -62,10 +62,7 @@
 
 
 (defclass state ()
-        ((logger :accessor logger
-                 :initform nil
-                 :initarg :logger)
-         (running :accessor running
+        ((running :accessor running
                   :initform T
                   :initarg :running)
          (initialized :accessor initialized
@@ -118,9 +115,8 @@
                :initarg :conn)))
 
 
-(defun create (&key logger conn)
+(defun create (&key conn)
     (make-instance 'network-state
-        :logger logger
         :conn conn
         :running nil
         :listeners nil
@@ -166,7 +162,8 @@
 
 
 (defmethod send-msg ((obj network-state) msg)
-    (logger:trace-msg (logger obj) "<-- ~A~%" (json:encode-json-to-string msg))
+    (when (logger:has-level logger:*trace*)
+          (logger:msg logger:*trace* "<-- ~A~%" (json:encode-json-to-string msg)))
 
     (bt:with-recursive-lock-held ((lock obj))
         (write-sequence (flexi-streams:string-to-octets (packet:to-wire msg)) (usocket:socket-stream (conn obj)))
@@ -382,7 +379,7 @@
         (setf (gethash send-id (sent-msg-callbacks state))
             (lambda (input-resp)
                 (typecase input-resp
-                    (message:error-response (logger:error-msg (logger state) "Input Error ~A" input-resp)
+                    (message:error-response (logger:msg logger:*error* "Input Error ~A" input-resp)
                                             (bt:condition-notify cond-var))
 
                     (message:result-response (let ((opts (when (message:result input-resp)
@@ -433,7 +430,7 @@
         (setf (gethash send-id (sent-msg-callbacks state))
             (lambda (debug-resp)
                 (typecase debug-resp
-                    (message:error-response (logger:error-msg (logger state) "Debugger Error ~A" debug-resp)
+                    (message:error-response (logger:msg logger:*error* "Debugger Error ~A" debug-resp)
                                             (bt:condition-notify cond-var))
 
                     (message:result-response (let ((opts (when (message:result debug-resp)
@@ -515,7 +512,8 @@
 
 
 (defun stop (state)
-    (logger:info-msg (logger state) "Stopping state ~A" state)
+    (when (logger:has-level logger:*info*)
+          (logger:msg logger:*info* "Stopping state ~A" state))
 
     (setf (running state) NIL)
 
@@ -536,7 +534,7 @@
                      (stop state))
 
         (errors:unhandled-request (c)
-                                  (logger:error-msg (logger state) "read-message: ~A" c)
+                                  (logger:msg logger:*error* "read-message: ~A" c)
                                   (when (errors:id c)
                                         (send-msg state
                                                   (message:create-error-resp :id (errors:id c)
@@ -544,7 +542,7 @@
                                                                              :message (format nil "Unhandled request: ~A" (errors:method-name c))))))
 
         (errors:server-error (c)
-                             (logger:error-msg (logger state) "read-message: ~A" c)
+                             (logger:msg logger:*error* "read-message: ~A" c)
                              (when (errors:id c)
                                    (send-msg state
                                              (message:create-error-resp :id (errors:id c)
@@ -552,7 +550,7 @@
                                                                         :message (format nil "Server error: ~A" (errors:message c))))))
 
         (T (c)
-           (logger:error-msg (logger state) "read-message: ~A" c)
+           (logger:msg logger:*error* "read-message: ~A" c)
            (stop state))))
 
 
@@ -570,11 +568,14 @@
                      (when (typep msg 'message:request)
                            (setf (gethash (threads:get-thread-id (bt:current-thread)) (thread-msgs state))
                                (message:id msg)))
-                     (logger:trace-msg (logger state) "--> ~A~%" (json:encode-json-to-string msg))
+
+                     (when (logger:has-level logger:*trace*)
+                           (logger:msg logger:*trace* "--> ~A~%" (json:encode-json-to-string msg)))
+
                      (handle-msg state msg))
 
                 (error (c)
-                    (logger:error-msg (logger state) "Message Handler: ~A" c)
+                    (logger:msg logger:*error* "Message Handler: ~A" c)
                     (send-msg state
                               (message:create-error-resp :code errors:*internal-error*
                                                          :message (format nil "~A" c)
@@ -604,4 +605,5 @@
 
     (start-read-thread state)
 
-    (logger:info-msg (logger state) "Started state ~A" state))
+    (when (logger:has-level logger:*info*)
+          (logger:msg logger:*info* "Started state ~A" state)))
