@@ -49,6 +49,10 @@
 
 
 (defmethod sb-gray:stream-unread-char ((obj io-stream) ch)
+    (if (eq :eof (in-buffer obj))
+        (setf (in-buffer obj) (princ-to-string ch))
+        (setf (in-buffer obj) (format nil "~C~A" ch (in-buffer obj))))
+
     nil)
 
 
@@ -146,6 +150,10 @@
 
 
 (defmethod sb-gray:stream-unread-char ((obj input-stream) ch)
+    (if (eq :eof (buffer obj))
+        (setf (buffer obj) (princ-to-string ch))
+        (setf (buffer obj) (format nil "~C~A" ch (buffer obj))))
+
     nil)
 
 
