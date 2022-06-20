@@ -190,6 +190,17 @@
                                                           "response")))))
 
 
+(defun with-debugger (state msg fn)
+    (run-in-thread state
+                   msg
+                   (lambda ()
+                       (block handler
+                           (handler-bind ((error (lambda (err)
+                                                     (start-debugger state err)
+                                                     (return-from handler))))
+                               (funcall fn state msg))))))
+
+
 (defun cancel-thread (state thread-id msg-id)
     (when msg-id
           (send-msg state
@@ -458,12 +469,7 @@
 
 
 (defmethod handle-msg (state (msg eval-msg:request))
-    (run-in-thread state msg (lambda ()
-                                 (block handler
-                                     (handler-bind ((error (lambda (err)
-                                                               (start-debugger state err)
-                                                               (return-from handler))))
-                                         (process-eval state msg))))))
+    (with-debugger state msg #'process-eval))
 
 
 (defmethod handle-msg (state (msg get-pkg:request))
@@ -487,7 +493,7 @@
         (send-msg state (remove-pkg:create-response :id (message:id msg)))))
 
 
-(defmethod handle-msg (state (msg load-asdf:request))
+(defmethod process-load-asdf (state (msg load-asdf:request))
     (let* ((params (message:params msg))
            (name (load-asdf:get-name params)))
 
@@ -498,6 +504,10 @@
                                          (send-msg state (stderr:create data))))
 
         (send-msg state (load-asdf:create-response (message:id msg)))))
+
+
+(defmethod handle-msg (state (msg load-asdf:request))
+    (with-debugger state msg #'process-load-asdf))
 
 
 (defmethod handle-msg (state (msg message:response))
