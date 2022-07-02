@@ -170,20 +170,39 @@
         (force-output (usocket:socket-stream (conn obj)))))
 
 
+(defun save-thread-msg (state msg)
+    (let* ((table (thread-msgs state))
+           (cur-thread (bt:current-thread))
+           (thread-id (threads:get-thread-id cur-thread)))
+
+        (bt:with-recursive-lock-held ((lock state))
+            (setf (gethash thread-id table) (message:id msg)))))
+
+
+(defun rem-thread-msg (state)
+    (let* ((table (thread-msgs state))
+           (cur-thread (bt:current-thread))
+           (thread-id (threads:get-thread-id cur-thread)))
+
+        (bt:with-recursive-lock-held ((lock state))
+            (remhash thread-id table))))
+
+
 (defun run-in-thread (state msg fn)
     (let ((stdout *standard-output*))
         (bt:make-thread (lambda ()
-                            (let ((*standard-output* stdout))
-                                (setf (gethash (threads:get-thread-id (bt:current-thread)) (thread-msgs state))
-                                    (message:id msg))
+                            (unwind-protect
+                                    (let ((*standard-output* stdout))
+                                        (save-thread-msg state msg)
 
-                                (handler-case
-                                        (funcall fn)
-                                    (error (e)
-                                        (send-msg state
-                                                  (message:create-error-resp :id (message:id msg)
-                                                                             :code errors:*request-failed*
-                                                                             :message (format nil "~A" e)))))))
+                                        (handler-case
+                                                (funcall fn)
+                                            (error (e)
+                                                (send-msg state
+                                                          (message:create-error-resp :id (message:id msg)
+                                                                                     :code errors:*request-failed*
+                                                                                     :message (format nil "~A" e)))))))
+                            (rem-thread-msg state))
 
                         :name (next-thread-name state (if (typep msg 'message:request)
                                                           (message:method-name msg)
@@ -564,15 +583,13 @@
     (unwind-protect
             (handler-case
 
-                    (progn
-                     (when (typep msg 'message:request)
-                           (setf (gethash (threads:get-thread-id (bt:current-thread)) (thread-msgs state))
-                               (message:id msg)))
+                    (progn (when (typep msg 'message:request)
+                                 (save-thread-msg state msg))
 
-                     (when (logger:has-level logger:*trace*)
-                           (logger:msg logger:*trace* "--> ~A~%" (json:encode-json-to-string msg)))
+                           (when (logger:has-level logger:*trace*)
+                                 (logger:msg logger:*trace* "--> ~A~%" (json:encode-json-to-string msg)))
 
-                     (handle-msg state msg))
+                           (handle-msg state msg))
 
                 (error (c)
                     (logger:msg logger:*error* "Message Handler: ~A" c)
@@ -581,7 +598,7 @@
                                                          :message (format nil "~A" c)
                                                          :id (message:id msg)))))
         (when (typep msg 'message:request)
-              (remhash (threads:get-thread-id (bt:current-thread)) (thread-msgs state)))))
+              (rem-thread-msg state))))
 
 
 (defun read-messages (state)
