@@ -5,6 +5,7 @@
                       (:config :alive/lsp/message/workspace/config)
                       (:did-change :alive/lsp/message/document/did-change)
                       (:did-open :alive/lsp/message/document/did-open)
+                      (:hover :alive/lsp/message/document/hover)
                       (:eval :alive/lsp/message/alive/do-eval)
                       (:get-pkg :alive/lsp/message/alive/get-pkg)
                       (:remove-pkg :alive/lsp/message/alive/remove-pkg)
@@ -508,6 +509,36 @@
                               parsed))))))
 
 
+(defun hover-msg ()
+    (labels ((create-content ()
+                             (with-output-to-string (str)
+                                 (format str "{~A" utils:*end-line*)
+                                 (format str "  \"jsonrpc\": \"2.0\",~A" utils:*end-line*)
+                                 (format str "  \"id\": 5,~A" utils:*end-line*)
+                                 (format str "  \"method\": \"textdocument/hover\",~A" utils:*end-line*)
+                                 (format str "  \"params\": {~A" utils:*end-line*)
+                                 (format str "    \"textDocument\": {~A" utils:*end-line*)
+                                 (format str "      \"uri\":\"file:///some/file.txt\"~A" utils:*end-line*)
+                                 (format str "    },~A" utils:*end-line*)
+                                 (format str "    \"position\": {~A" utils:*end-line*)
+                                 (format str "      \"line\": 3,~A" utils:*end-line*)
+                                 (format str "      \"character\": 11~A" utils:*end-line*)
+                                 (format str "    }~A" utils:*end-line*)
+                                 (format str "  }~A" utils:*end-line*)
+                                 (format str "}~A" utils:*end-line*))))
+
+        (run:test "Hover Message"
+                  (lambda ()
+                      (let* ((msg (utils:create-msg (create-content)))
+                             (parsed (parse:from-stream (utils:stream-from-string msg))))
+                          (check:are-equal
+                              (hover:create-request
+                                  :id 5
+                                  :params (hover:create-params :text-document (text-doc:create :uri "file:///some/file.txt")
+                                                               :pos (pos:create 3 11)))
+                              parsed))))))
+
+
 (defun run-all ()
     (run:suite "LSP Messages"
                (lambda ()
@@ -527,4 +558,5 @@
                    (eval-msg)
                    (get-pkg-msg)
                    (list-asdf-msg)
-                   (load-asdf-system-msg))))
+                   (load-asdf-system-msg)
+                   (hover-msg))))

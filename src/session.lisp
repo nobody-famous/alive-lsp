@@ -8,6 +8,7 @@
     (:local-nicknames (:completion :alive/lsp/message/document/completion)
                       (:did-open :alive/lsp/message/document/did-open)
                       (:did-change :alive/lsp/message/document/did-change)
+                      (:hover :alive/lsp/message/document/hover)
                       (:formatting :alive/lsp/message/document/range-format)
                       (:config :alive/lsp/message/workspace/config)
                       (:input :alive/lsp/message/alive/user-input)
@@ -294,6 +295,21 @@
         (send-msg state (completion:create-response
                             :id (message:id msg)
                             :items items))))
+
+
+(defmethod handle-msg (state (msg hover:request))
+    (let* ((params (message:params msg))
+           (doc (hover:text-document params))
+           (pos (hover:pos params))
+           (uri (text-doc:uri doc))
+           (file-text (get-file-text state uri))
+           (text (if file-text file-text ""))
+           (hov-text (alive/lsp/hover:get-text :text text :pos pos))
+           (result (if hov-text hov-text "")))
+
+        (send-msg state (hover:create-response
+                            :id (message:id msg)
+                            :value result))))
 
 
 (defmethod handle-msg (state (msg top-form:request))

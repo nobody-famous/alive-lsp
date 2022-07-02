@@ -29,6 +29,10 @@
         ())
 
 
+(defclass hover-state (test-state)
+        ())
+
+
 (defclass top-form-state (test-state)
         ())
 
@@ -162,6 +166,38 @@
 (defun completion-msg ()
     (let ((state (create-state 'completion-state)))
         (run:test "Completion Message"
+                  (lambda ()
+                      (session::handle-msg state
+                                           (session::read-message state))
+                      (check:are-equal t (send-called state))))))
+
+
+(defmethod session::get-input-stream ((obj hover-state))
+    (let ((content (with-output-to-string (str)
+                       (format str "{~A" utils:*end-line*)
+                       (format str "  \"jsonrpc\": \"2.0\",~A" utils:*end-line*)
+                       (format str "  \"id\": 5,~A" utils:*end-line*)
+                       (format str "  \"method\": \"textdocument/hover\",~A" utils:*end-line*)
+                       (format str "  \"params\": {~A" utils:*end-line*)
+                       (format str "    \"textDocument\": {~A" utils:*end-line*)
+                       (format str "      \"uri\":\"file:///some/file.txt\"~A" utils:*end-line*)
+                       (format str "    },~A" utils:*end-line*)
+                       (format str "    \"position\": {~A" utils:*end-line*)
+                       (format str "      \"line\": 3,~A" utils:*end-line*)
+                       (format str "      \"character\": 11~A" utils:*end-line*)
+                       (format str "    }~A" utils:*end-line*)
+                       (format str "  }~A" utils:*end-line*)
+                       (format str "}~A" utils:*end-line*))))
+        (utils:stream-from-string (utils:create-msg content))))
+
+
+(defmethod session::send-msg ((obj hover-state) msg)
+    (setf (send-called obj) T))
+
+
+(defun hover-msg ()
+    (let ((state (create-state 'hover-state)))
+        (run:test "Hover Message"
                   (lambda ()
                       (session::handle-msg state
                                            (session::read-message state))
@@ -488,4 +524,5 @@
                    (list-pkgs-msg)
                    (unexport-symbol-msg)
                    (get-pkg-msg)
-                   (list-asdf-msg))))
+                   (list-asdf-msg)
+                   (hover-msg))))
