@@ -38,6 +38,7 @@
                  "alive-lsp/src/asdf"
 
                  "alive-lsp/src/lsp/errors"
+                 "alive-lsp/src/lsp/utils"
                  "alive-lsp/src/lsp/completions"
                  "alive-lsp/src/lsp/hover"
 
@@ -145,6 +146,7 @@
 (register-system-packages "alive-lsp/src/compat/sbcl/threads" '(:alive/sbcl/threads))
 
 (register-system-packages "alive-lsp/src/lsp/errors" '(:alive/lsp/errors))
+(register-system-packages "alive-lsp/src/lsp/utils" '(:alive/lsp/utils))
 (register-system-packages "alive-lsp/src/lsp/completions" '(:alive/lsp/completions))
 (register-system-packages "alive-lsp/src/lsp/hover" '(:alive/lsp/hover))
 
