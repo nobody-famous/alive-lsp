@@ -5,6 +5,7 @@
     (:local-nicknames (:completion :alive/lsp/message/document/completion)
                       (:did-open :alive/lsp/message/document/did-open)
                       (:did-change :alive/lsp/message/document/did-change)
+                      (:hover :alive/lsp/message/document/hover)
                       (:formatting :alive/lsp/message/document/range-format)
                       (:eval :alive/lsp/message/alive/do-eval)
                       (:get-pkg :alive/lsp/message/alive/get-pkg)
@@ -168,6 +169,11 @@
                   (completion:from-wire :jsonrpc (jsonrpc fields)
                                         :id msg-id
                                         :params (params fields)))
+
+              ((string= "textdocument/hover" name)
+                  (hover:from-wire :jsonrpc (jsonrpc fields)
+                                   :id msg-id
+                                   :params (params fields)))
 
               ((string= "textdocument/rangeformatting" name)
                   (formatting:from-wire :jsonrpc (jsonrpc fields)

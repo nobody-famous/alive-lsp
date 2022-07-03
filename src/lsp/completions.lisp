@@ -33,7 +33,8 @@
                       (:symbols :alive/symbols)
                       (:token :alive/parse/token)
                       (:tokenizer :alive/parse/tokenizer)
-                      (:types :alive/types)))
+                      (:types :alive/types)
+                      (:utils :alive/lsp/utils)))
 
 (in-package :alive/lsp/completions)
 
@@ -89,9 +90,9 @@
 
 (defmethod types:deep-equal-p ((a item) b)
     (and (equal (type-of a) (type-of b))
-        (string-equal (label a) (label b))
-        (string-equal (insert-text a) (insert-text b))
-        (eq (kind a) (kind b))))
+         (string-equal (label a) (label b))
+         (string-equal (insert-text a) (insert-text b))
+         (eq (kind a) (kind b))))
 
 
 (defmethod print-object ((obj item) out)
@@ -111,18 +112,6 @@
         :insert-text-format insert-format))
 
 
-(defun find-tokens (tokens pos)
-    (loop :for token :in tokens
-
-        :collect token :into found-tokens
-
-        :while (pos:less-than (token:get-end token) pos)
-
-        :finally (return (cond ((<= 3 (length found-tokens)) (subseq (reverse found-tokens) 0 3))
-                             ((= 2 (length found-tokens)) (reverse (cons nil found-tokens)))
-                             ((= 1 (length found-tokens)) (list (first found-tokens) nil nil))))))
-
-
 (defun get-ext-symbols (pkg)
     (let ((inherited (list))
           (external (list)))
@@ -136,7 +125,7 @@
                     (find-symbol (string s) pkg)
 
                 (cond ((eq status :external) (push name external))
-                    ((eq status :inherited) (push name inherited)))))))
+                      ((eq status :inherited) (push name inherited)))))))
 
 
 (defun get-all-symbols (pkg)
@@ -147,34 +136,34 @@
 
 (defun list-to-snippet (name lambda-list)
     (loop :with is-keys := nil
-        :with skip-rest := nil
-        :with ndx := 1
-        :with items := '()
+          :with skip-rest := nil
+          :with ndx := 1
+          :with items := '()
 
-        :for item :in lambda-list :do
-        (cond ((not (eq 'symbol (type-of item)))
-               (string-downcase (format NIL "${~A:~A}~%" ndx item))
-               (incf ndx))
-            ((string= "&KEY" item) (setf is-keys T))
-            ((char= #\& (char (string item) 0)) (setf skip-rest T))
-            ((not skip-rest) (setf items
-                                 (cons
-                                     (let ((item-text (string-downcase item)))
-                                         (if is-keys
-                                             (format nil ":~A ${~A:~A}" item-text ndx item-text)
-                                             (format nil "${~A:~A}" ndx (string-downcase item))))
+          :for item :in lambda-list :do
+              (cond ((not (eq 'symbol (type-of item)))
+                        (string-downcase (format NIL "${~A:~A}~%" ndx item))
+                        (incf ndx))
+                    ((string= "&KEY" item) (setf is-keys T))
+                    ((char= #\& (char (string item) 0)) (setf skip-rest T))
+                    ((not skip-rest) (setf items
+                                         (cons
+                                             (let ((item-text (string-downcase item)))
+                                                 (if is-keys
+                                                     (format nil ":~A ${~A:~A}" item-text ndx item-text)
+                                                     (format nil "${~A:~A}" ndx (string-downcase item))))
 
-                                     items))
-                             (incf ndx)))
+                                             items))
+                                     (incf ndx)))
 
-        :finally (return (format nil "~{~A~^ ~}" (cons name (reverse items))))))
+          :finally (return (format nil "~{~A~^ ~}" (cons name (reverse items))))))
 
 
 (defun to-snippet (name lambda-list)
     (when (and (eq (type-of lambda-list) 'cons)
-              (or (not (cdr lambda-list))
-                  (eq (type-of (cdr lambda-list)) 'cons)))
-        (list-to-snippet name lambda-list)))
+               (or (not (cdr lambda-list))
+                   (eq (type-of (cdr lambda-list)) 'cons)))
+          (list-to-snippet name lambda-list)))
 
 
 (defun to-item (name pkg-name)
@@ -189,7 +178,7 @@
                               *insert-snippet*
                               *insert-plain*))
            (doc-string (when lambda-list
-                           (documentation (symbols:lookup name pkg-name) 'function))))
+                             (documentation (symbols:lookup name pkg-name) 'function))))
 
         (create-item :label name
                      :insert-text text
@@ -204,21 +193,21 @@
 
 (defun get-found-chars (str)
     (loop :with found := (make-hash-table)
-        :for ch :across str :do
-        (setf (gethash ch found) T)
-        :finally (return found)))
+          :for ch :across str :do
+              (setf (gethash ch found) T)
+          :finally (return found)))
 
 
 (defun fuzzy-match (pref str)
     (cond ((zerop (length pref)) T)
-        ((zerop (length str)) NIL)
-        (T (let ((found (get-found-chars str)))
-               (loop :with match := (char= (char pref 0) (char str 0))
-                   :for ch :across pref :do
-                   (setf match
-                       (and match
-                           (gethash ch found)))
-                   :finally (return match))))))
+          ((zerop (length str)) NIL)
+          (T (let ((found (get-found-chars str)))
+                 (loop :with match := (char= (char pref 0) (char str 0))
+                       :for ch :across pref :do
+                           (setf match
+                               (and match
+                                    (gethash ch found)))
+                       :finally (return match))))))
 
 
 (defun symbols-to-items (&key name symbols pkg)
@@ -227,7 +216,7 @@
                     (to-item name (package-name pkg)))
                 (remove-if-not (lambda (str)
                                    (and (<= (length pref) (length str))
-                                       (fuzzy-match pref str)))
+                                        (fuzzy-match pref str)))
                         symbols))))
 
 
@@ -264,17 +253,17 @@
                        :pkg-name pkg-name)))
 
         (cond ((and pkgs (not symbols)) pkgs)
-            ((and (not pkgs) symbols) symbols)
-            ((and pkgs symbols) (concatenate 'cons pkgs symbols))
-            (T '()))))
+              ((and (not pkgs) symbols) symbols)
+              ((and pkgs symbols) (concatenate 'cons pkgs symbols))
+              (T '()))))
 
 
 (defun prefix-symbols (pref items)
     (loop :for item :in items :do
-        (setf (label item) (format nil "~A~A" pref (label item)))
-        (setf (insert-text item) (format nil "~A~A" pref (insert-text item)))
+              (setf (label item) (format nil "~A~A" pref (label item)))
+              (setf (insert-text item) (format nil "~A~A" pref (insert-text item)))
 
-        :finally (return items)))
+          :finally (return items)))
 
 
 (defun simple (&key text pos)
@@ -284,37 +273,37 @@
 
         (if (zerop (length tokens))
             '()
-            (destructuring-bind (token1 token2 token3) (find-tokens tokens pos)
+            (destructuring-bind (token1 token2 token3) (utils:find-tokens tokens pos)
                 (cond ((and (eq (token:get-type-value token1) types:*symbol*)
-                           (eq (token:get-type-value token2) types:*colons*)
-                           (eq (token:get-type-value token3) types:*symbol*))
-                       (symbol-with-pkg :name (token:get-text token1)
-                                        :num-colons (length (token:get-text token2))
-                                        :pkg-name (token:get-text token3)))
+                            (eq (token:get-type-value token2) types:*colons*)
+                            (eq (token:get-type-value token3) types:*symbol*))
+                          (symbol-with-pkg :name (token:get-text token1)
+                                           :num-colons (length (token:get-text token2))
+                                           :pkg-name (token:get-text token3)))
 
-                    ((and (eq (token:get-type-value token1) types:*colons*)
-                         (eq (token:get-type-value token2) types:*symbol*))
-                     (symbol-with-pkg :name ""
-                                      :num-colons (length (token:get-text token1))
-                                      :pkg-name (token:get-text token2)))
+                      ((and (eq (token:get-type-value token1) types:*colons*)
+                            (eq (token:get-type-value token2) types:*symbol*))
+                          (symbol-with-pkg :name ""
+                                           :num-colons (length (token:get-text token1))
+                                           :pkg-name (token:get-text token2)))
 
-                    ((eq (token:get-type-value token1) types:*colons*)
-                     (symbol-with-pkg :name ""
-                                      :num-colons (length (token:get-text token1))
-                                      :pkg-name (package-name *package*)))
+                      ((eq (token:get-type-value token1) types:*colons*)
+                          (symbol-with-pkg :name ""
+                                           :num-colons (length (token:get-text token1))
+                                           :pkg-name (package-name *package*)))
 
-                    ((and (eq (token:get-type-value token1) types:*symbol*)
-                         (eq (token:get-type-value token2) types:*quote*))
-                     (prefix-symbols "'" (symbol-no-pkg :name (token:get-text token1)
-                                                        :pkg-name (package-name *package*))))
+                      ((and (eq (token:get-type-value token1) types:*symbol*)
+                            (eq (token:get-type-value token2) types:*quote*))
+                          (prefix-symbols "'" (symbol-no-pkg :name (token:get-text token1)
+                                                             :pkg-name (package-name *package*))))
 
-                    ((and (eq (token:get-type-value token1) types:*symbol*)
-                         (eq (token:get-type-value token2) types:*back-quote*))
-                     (prefix-symbols "`" (symbol-no-pkg :name (token:get-text token1)
-                                                        :pkg-name (package-name *package*))))
+                      ((and (eq (token:get-type-value token1) types:*symbol*)
+                            (eq (token:get-type-value token2) types:*back-quote*))
+                          (prefix-symbols "`" (symbol-no-pkg :name (token:get-text token1)
+                                                             :pkg-name (package-name *package*))))
 
-                    ((eq (token:get-type-value token1) types:*symbol*)
-                     (symbol-no-pkg :name (token:get-text token1)
-                                    :pkg-name (package-name *package*)))
+                      ((eq (token:get-type-value token1) types:*symbol*)
+                          (symbol-no-pkg :name (token:get-text token1)
+                                         :pkg-name (package-name *package*)))
 
-                    (T '()))))))
+                      (T '()))))))
