@@ -90,13 +90,16 @@
 
 
 (defsystem "alive-lsp/test"
-    :depends-on ("alive-lsp")
+    :depends-on ("alive-lsp"
+                 "clue")
     :components ((:module "test"
                           :components ((:file "harness/errors")
                                        (:file "harness/check")
                                        (:file "harness/formatting")
                                        (:file "harness/run")
 
+                                       (:file "compare")
+                                       
                                        (:file "compat/sbcl/compile")
                                        (:file "compat/sbcl/symbols")
 

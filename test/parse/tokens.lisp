@@ -1,10 +1,7 @@
 (defpackage :alive/test/parse/tokens
     (:use :cl)
     (:export :run-all)
-    (:local-nicknames (:run :alive/test/harness/run)
-                      (:check :alive/test/harness/check)
-
-                      (:pos :alive/position)
+    (:local-nicknames (:pos :alive/position)
                       (:token :alive/parse/token)
                       (:tokens :alive/parse/tokenizer)))
 
@@ -17,81 +14,86 @@
 
 
 (defun atoms ()
-    (run:test "Test atoms"
-              (lambda ()
-                  (check:are-equal (list (token:create
-                                          :type-value alive/types:*symbol*
-                                          :start (pos:create 0 0)
-                                          :end (pos:create 0 3)
-                                          :text "foo"))
-                                   (tokens-for-string "foo"))
+    (clue:test "Test foo symbol"
+        (clue:check-equal :expected (list (token:create
+                                              :type-value alive/types:*symbol*
+                                              :start (pos:create 0 0)
+                                              :end (pos:create 0 3)
+                                              :text "foo"))
+                          :actual (tokens-for-string "foo")))
 
-                  (check:are-equal (list (token:create
-                                          :type-value alive/types:*symbol*
-                                          :start (pos:create 0 0)
-                                          :end (pos:create 0 5)
-                                          :text "defun"))
-                                   (tokens-for-string "defun"))
+    (clue:test "Test defun symbol"
+        (clue:check-equal :expected (list (token:create
+                                              :type-value alive/types:*symbol*
+                                              :start (pos:create 0 0)
+                                              :end (pos:create 0 5)
+                                              :text "defun"))
+                          :actual (tokens-for-string "defun")))
 
-                  (check:are-equal (list (token:create
-                                          :type-value alive/types:*line-comment*
-                                          :start (pos:create 0 0)
-                                          :end (pos:create 0 9)
-                                          :text "; Comment"))
-                                   (tokens-for-string "; Comment"))
+    (clue:test "Test comment"
+        (clue:check-equal :expected (list (token:create
+                                              :type-value alive/types:*line-comment*
+                                              :start (pos:create 0 0)
+                                              :end (pos:create 0 9)
+                                              :text "; Comment"))
+                          :actual (tokens-for-string "; Comment")))
 
-                  (check:are-equal (list (token:create
-                                          :type-value alive/types:*string*
-                                          :start (pos:create 0 0)
-                                          :end (pos:create 0 8)
-                                          :text "\"String\""))
-                                   (tokens-for-string "\"String\""))
+    (clue:test "Test string"
+        (clue:check-equal :expected (list (token:create
+                                              :type-value alive/types:*string*
+                                              :start (pos:create 0 0)
+                                              :end (pos:create 0 8)
+                                              :text "\"String\""))
+                          :actual (tokens-for-string "\"String\"")))
 
-                  (check:are-equal (list (token:create
-                                          :type-value alive/types:*macro*
-                                          :start (pos:create 0 0)
-                                          :end (pos:create 0 6)
-                                          :text "#'abcd"))
-                                   (tokens-for-string "#'abcd"))
+    (clue:test "Test basic macro"
+        (clue:check-equal :expected (list (token:create
+                                              :type-value alive/types:*macro*
+                                              :start (pos:create 0 0)
+                                              :end (pos:create 0 6)
+                                              :text "#'abcd"))
+                          :actual (tokens-for-string "#'abcd")))
 
-                  (check:are-equal (list (token:create
-                                          :type-value alive/types:*ifdef-false*
-                                          :start (pos:create 0 0)
-                                          :end (pos:create 0 3)
-                                          :text "#+n"))
-                                   (tokens-for-string "#+n"))
+    (clue:test "Test ifdef macro"
+        (clue:check-equal :expected (list (token:create
+                                              :type-value alive/types:*ifdef-false*
+                                              :start (pos:create 0 0)
+                                              :end (pos:create 0 3)
+                                              :text "#+n"))
+                          :actual (tokens-for-string "#+n")))
 
-                  (check:are-equal (list (token:create
-                                          :type-value alive/types:*open-paren*
-                                          :start (pos:create 0 0)
-                                          :end (pos:create 0 1)
-                                          :text "(")
-                                         (token:create
-                                          :type-value alive/types:*close-paren*
-                                          :start (pos:create 0 1)
-                                          :end (pos:create 0 2)
-                                          :text ")"))
-                                   (tokens-for-string "()"))
+    (clue:test "Test parens"
+        (clue:check-equal :expected (list (token:create
+                                              :type-value alive/types:*open-paren*
+                                              :start (pos:create 0 0)
+                                              :end (pos:create 0 1)
+                                              :text "(")
+                                          (token:create
+                                              :type-value alive/types:*close-paren*
+                                              :start (pos:create 0 1)
+                                              :end (pos:create 0 2)
+                                              :text ")"))
+                          :actual (tokens-for-string "()")))
 
-                  (check:are-equal (list (token:create
-                                          :type-value alive/types:*symbol*
-                                          :start (pos:create 0 0)
-                                          :end (pos:create 0 3)
-                                          :text "foo")
-                                         (token:create
-                                          :type-value alive/types:*colons*
-                                          :start (pos:create 0 3)
-                                          :end (pos:create 0 5)
-                                          :text "::")
-                                         (token:create
-                                          :type-value alive/types:*symbol*
-                                          :start (pos:create 0 5)
-                                          :end (pos:create 0 8)
-                                          :text "bar"))
-                                   (tokens-for-string "foo::bar")))))
+    (clue:test "Test symbol with package"
+        (clue:check-equal :expected (list (token:create
+                                              :type-value alive/types:*symbol*
+                                              :start (pos:create 0 0)
+                                              :end (pos:create 0 3)
+                                              :text "foo")
+                                          (token:create
+                                              :type-value alive/types:*colons*
+                                              :start (pos:create 0 3)
+                                              :end (pos:create 0 5)
+                                              :text "::")
+                                          (token:create
+                                              :type-value alive/types:*symbol*
+                                              :start (pos:create 0 5)
+                                              :end (pos:create 0 8)
+                                              :text "bar"))
+                          :actual (tokens-for-string "foo::bar"))))
 
 
 (defun run-all ()
-    (run:suite "Test parse tokens"
-               (lambda ()
-                   (atoms))))
+    (clue:suite "Test parse tokens"
+        (atoms)))
