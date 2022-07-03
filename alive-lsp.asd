@@ -105,6 +105,7 @@
                  "alive-lsp/test/lsp/completions"
                  "alive-lsp/test/lsp/message"
                  "alive-lsp/test/lsp/sem-tokens"
+                 "alive-lsp/test/lsp/hover"
 
                  "alive-lsp/test/session/state"
                  "alive-lsp/test/session/messages"
@@ -212,6 +213,7 @@
 (register-system-packages "alive-lsp/test/lsp/completions" '(:alive/test/lsp/completions))
 (register-system-packages "alive-lsp/test/lsp/message" '(:alive/test/lsp/message))
 (register-system-packages "alive-lsp/test/lsp/sem-tokens" '(:alive/test/lsp/sem-tokens))
+(register-system-packages "alive-lsp/test/lsp/hover" '(:alive/test/lsp/hover))
 
 (register-system-packages "alive-lsp/test/session/state" '(:alive/test/session/state))
 (register-system-packages "alive-lsp/test/session/messages" '(:alive/test/session/messages))

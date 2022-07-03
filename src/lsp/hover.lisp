@@ -10,6 +10,15 @@
 (in-package :alive/lsp/hover)
 
 
+(defun get-symbol-doc (name pkg-name)
+    (let* ((sym (alive/symbols:lookup name pkg-name)))
+
+        (if sym
+            (with-output-to-string (str)
+                (describe sym str))
+            "")))
+
+
 (defun get-text (&key text pos)
     (let* ((raw-tokens (tokenizer:from-stream (make-string-input-stream text)))
            (tokens (utils:find-tokens raw-tokens pos))
@@ -23,26 +32,11 @@
                 (cond ((and (eq (token:get-type-value token1) types:*symbol*)
                             (eq (token:get-type-value token2) types:*colons*)
                             (eq (token:get-type-value token3) types:*symbol*))
-                          (format NIL "HOVER ~A:~A~%" (token:get-text token3) (token:get-text token1))
-                          #+n (symbol-with-pkg :name (token:get-text token1)
-                                               :num-colons (length (token:get-text token2))
-                                               :pkg-name (token:get-text token3)))
-
-                      ((and (eq (token:get-type-value token1) types:*symbol*)
-                            (eq (token:get-type-value token2) types:*quote*))
-                          (format NIL "HOVER '~A~%" (token:get-text token1))
-                          #+n (prefix-symbols "'" (symbol-no-pkg :name (token:get-text token1)
-                                                                 :pkg-name (package-name *package*))))
-
-                      ((and (eq (token:get-type-value token1) types:*symbol*)
-                            (eq (token:get-type-value token2) types:*back-quote*))
-                          (format NIL "HOVER `~A~%" (token:get-text token1))
-                          #+n (prefix-symbols "`" (symbol-no-pkg :name (token:get-text token1)
-                                                                 :pkg-name (package-name *package*))))
+                          (get-symbol-doc (token:get-text token1)
+                                          (token:get-text token3)))
 
                       ((eq (token:get-type-value token1) types:*symbol*)
-                          (format NIL "HOVER ~A~%" (token:get-text token1))
-                          #+n (symbol-no-pkg :name (token:get-text token1)
-                                             :pkg-name (package-name *package*)))
+                          (get-symbol-doc (token:get-text token1)
+                                          pkg-name))
 
                       (T ""))))))

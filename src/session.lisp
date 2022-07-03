@@ -307,8 +307,6 @@
            (hov-text (alive/lsp/hover:get-text :text text :pos pos))
            (result (if hov-text hov-text "")))
 
-        (format T "HOVER RESULT ~A~%" result)
-
         (send-msg state (hover:create-response
                             :id (message:id msg)
                             :value result))))
