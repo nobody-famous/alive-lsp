@@ -1,41 +1,36 @@
 (defpackage :alive/test/eval
     (:use :cl)
     (:export :run-all)
-    (:local-nicknames (:eval :alive/eval)
-                      (:check :alive/test/harness/check)
-                      (:run :alive/test/harness/run)))
+    (:local-nicknames (:eval :alive/eval)))
 
 (in-package :alive/test/eval)
 
 
 (defun basic ()
-    (run:test "Basic Eval"
-              (lambda ()
-                  (check:are-equal 3 (eval:from-string "(+ 1 2)")))))
+    (clue:test "Basic Eval"
+        (clue:check-equal :expected 3
+                          :actual (eval:from-string "(+ 1 2)"))))
 
 
 (defun errors ()
-    (run:test "Errors Eval"
-              (lambda ()
-                  (handler-bind ((T (lambda (c)
-                                        (format T "CAUGHT ~A~%" c)
-                                        (format T "EXIT ~A~%" (find-restart 'exit))
-                                        (loop :for item :in (compute-restarts c) :do
-                                            (format T "RESTART ~A ~A~%" (restart-name item) item)))))
-                      (eval:from-string "(/ 5 0)")))))
+    (clue:test "Errors Eval"
+        (handler-bind ((T (lambda (c)
+                              (format T "CAUGHT ~A~%" c)
+                              (format T "EXIT ~A~%" (find-restart 'exit))
+                              (loop :for item :in (compute-restarts c) :do
+                                        (format T "RESTART ~A ~A~%" (restart-name item) item)))))
+            (eval:from-string "(/ 5 0)"))))
 
 
 (defun stdin ()
-    (run:test "Stdin Eval"
-              (lambda ()
-                  (eval:from-string "(read-line)"
-                                    :stdin-fn (lambda ()
-                                                  (format T "STDIN-FN CALLED~%"))
-                                    :stdout-fn (lambda (data)
-                                                   (format T "STDOUT ~A~%" data))))))
+    (clue:test "Stdin Eval"
+        (eval:from-string "(read-line)"
+                          :stdin-fn (lambda ()
+                                        (format T "STDIN-FN CALLED~%"))
+                          :stdout-fn (lambda (data)
+                                         (format T "STDOUT ~A~%" data)))))
 
 
 (defun run-all ()
-    (run:suite "Eval Tests"
-               (lambda ()
-                   (basic))))
+    (clue:suite "Eval Tests"
+        (basic)))
