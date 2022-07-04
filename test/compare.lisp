@@ -273,3 +273,11 @@
 (defmethod clue:are-equal ((a alive/lsp/message/document/hover::req-params) b)
     (and (equal (type-of a) (type-of b))
          (clue:are-equal (alive/lsp/message/document/hover::text-document a) (alive/lsp/message/document/hover::text-document b))))
+
+
+(defmethod clue:are-equal ((a alive/lsp/types/sem-tokens::token) b)
+    (and (equal (type-of a) (type-of b))
+         (eq (alive/lsp/types/sem-tokens::token-type a) (alive/lsp/types/sem-tokens::token-type b))
+         (eq (alive/lsp/types/sem-tokens::line a) (alive/lsp/types/sem-tokens::line b))
+         (eq (alive/lsp/types/sem-tokens::start-col a) (alive/lsp/types/sem-tokens::start-col b))
+         (eq (alive/lsp/types/sem-tokens::end-col a) (alive/lsp/types/sem-tokens::end-col b))))

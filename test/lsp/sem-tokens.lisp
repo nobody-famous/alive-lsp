@@ -19,88 +19,148 @@
 
 (defun check-symbol (text expected)
     (let ((tokens (get-sem-tokens text)))
-        (check:are-equal (if expected
-                             (list expected)
-                             nil)
-                         tokens)))
-
-
-(defun symbols ()
-    (run:test "Symbols"
-              (lambda ()
-                  (check-symbol "#\\Replacement_Character" (sem-types:create
-                                                               :token-type sem-types:*macro*
-                                                               :line 0
-                                                               :start 0
-                                                               :end 23))
-                  (check-symbol "#| Stuff |#" (sem-types:create
-                                                  :token-type sem-types:*comment*
-                                                  :line 0
-                                                  :start 0
-                                                  :end 11))
-                  (check-symbol "; Stuff" (sem-types:create
-                                              :token-type sem-types:*comment*
-                                              :line 0
-                                              :start 0
-                                              :end 7))
-                  (check-symbol "\"String\"" (sem-types:create
-                                                 :token-type sem-types:*string*
-                                                 :line 0
-                                                 :start 0
-                                                 :end 8))
-                  (check-symbol "#foo" (sem-types:create
-                                           :token-type sem-types:*macro*
-                                           :line 0
-                                           :start 0
-                                           :end 4))
-                  (check-symbol ":" (sem-types:create
-                                        :token-type sem-types:*symbol*
-                                        :line 0
-                                        :start 0
-                                        :end 1))
-                  (check-symbol "::" (sem-types:create
-                                         :token-type sem-types:*symbol*
-                                         :line 0
-                                         :start 0
-                                         :end 2))
-                  (check-symbol "123" (sem-types:create
-                                          :token-type sem-types:*number*
-                                          :line 0
-                                          :start 0
-                                          :end 3))
-                  (check-symbol "123/45" (sem-types:create
-                                             :token-type sem-types:*number*
-                                             :line 0
-                                             :start 0
-                                             :end 6))
-                  (check-symbol "123.45" (sem-types:create
-                                             :token-type sem-types:*number*
-                                             :line 0
-                                             :start 0
-                                             :end 6))
-                  (check-symbol "123/" nil)
-                  (check-symbol "123." nil)
-                  (check-symbol "(" (sem-types:create
-                                        :token-type sem-types:*parenthesis*
-                                        :line 0
-                                        :start 0
-                                        :end 1))
-                  (check-symbol ")" (sem-types:create
-                                        :token-type sem-types:*parenthesis*
-                                        :line 0
-                                        :start 0
-                                        :end 1))
-                  (check-symbol "foo" nil)
-                  (check-symbol "defun" (sem-types:create
-                                            :token-type sem-types:*macro*
-                                            :line 0
-                                            :start 0
-                                            :end 5)))))
+        (clue:check-equal :expected (if expected
+                                        (list expected)
+                                        nil)
+                          :actual tokens)))
 
 
 (defun check-combo (text expected)
     (let ((tokens (get-sem-tokens text)))
-        (check:are-equal expected tokens)))
+        (clue:check-equal :expected expected
+                          :actual tokens)))
+
+
+(defun test-reader-macro ()
+    (clue:test "Test reader macro"
+        (check-symbol "#\\Replacement_Character" (sem-types:create
+                                                     :token-type sem-types:*macro*
+                                                     :line 0
+                                                     :start 0
+                                                     :end 23))))
+
+
+(defun test-block-comment ()
+    (clue:test "Test block comment"
+        (check-symbol "#| Stuff |#" (sem-types:create
+                                        :token-type sem-types:*comment*
+                                        :line 0
+                                        :start 0
+                                        :end 11))))
+
+
+(defun test-line-comment ()
+    (clue:test "Test line comment"
+        (check-symbol "; Stuff" (sem-types:create
+                                    :token-type sem-types:*comment*
+                                    :line 0
+                                    :start 0
+                                    :end 7))))
+
+
+(defun test-string ()
+    (clue:test "Test string"
+        (check-symbol "\"String\"" (sem-types:create
+                                       :token-type sem-types:*string*
+                                       :line 0
+                                       :start 0
+                                       :end 8))))
+
+
+(defun test-macro ()
+    (clue:test "Test macro"
+        (check-symbol "#foo" (sem-types:create
+                                 :token-type sem-types:*macro*
+                                 :line 0
+                                 :start 0
+                                 :end 4))))
+
+
+(defun test-colon ()
+    (clue:test "Test colon"
+        (check-symbol ":" (sem-types:create
+                              :token-type sem-types:*symbol*
+                              :line 0
+                              :start 0
+                              :end 1))))
+
+
+(defun test-double-colon ()
+    (clue:test "Test double colon"
+        (check-symbol "::" (sem-types:create
+                               :token-type sem-types:*symbol*
+                               :line 0
+                               :start 0
+                               :end 2))))
+
+
+(defun test-integer ()
+    (clue:test "Test integer"
+        (check-symbol "123" (sem-types:create
+                                :token-type sem-types:*number*
+                                :line 0
+                                :start 0
+                                :end 3))))
+
+
+(defun test-ratio ()
+    (clue:test "Test ratio"
+        (check-symbol "123/45" (sem-types:create
+                                   :token-type sem-types:*number*
+                                   :line 0
+                                   :start 0
+                                   :end 6))))
+
+
+(defun test-float ()
+    (clue:test "Test float"
+        (check-symbol "123.45" (sem-types:create
+                                   :token-type sem-types:*number*
+                                   :line 0
+                                   :start 0
+                                   :end 6))))
+
+
+(defun test-invalid-ratio ()
+    (clue:test "Test invalid ratio"
+        (check-symbol "123/" nil)))
+
+
+(defun test-invalid-float ()
+    (clue:test "Test invalid float"
+        (check-symbol "123." nil)))
+
+
+(defun test-open-parens ()
+    (clue:test "Test open parens"
+        (check-symbol "(" (sem-types:create
+                              :token-type sem-types:*parenthesis*
+                              :line 0
+                              :start 0
+                              :end 1))))
+
+
+(defun test-close-parens ()
+    (clue:test "Test close parens"
+        (check-symbol ")" (sem-types:create
+                              :token-type sem-types:*parenthesis*
+                              :line 0
+                              :start 0
+                              :end 1))))
+
+
+(defun test-foo ()
+    (clue:test "Test foo"
+        (check-symbol "foo" nil)))
+
+
+(defun test-defun ()
+    (clue:test "Test defun"
+        (check-symbol "defun" (sem-types:create
+                                  :token-type sem-types:*macro*
+                                  :line 0
+                                  :start 0
+                                  :end 5))))
 
 
 (defun combos ()
@@ -884,5 +944,20 @@
 (defun run-all ()
     (run:suite "Semantic Tokens"
                (lambda ()
-                   (symbols)
+                   (test-reader-macro)
+                   (test-block-comment)
+                   (test-line-comment)
+                   (test-string)
+                   (test-macro)
+                   (test-colon)
+                   (test-double-colon)
+                   (test-integer)
+                   (test-ratio)
+                   (test-float)
+                   (test-invalid-ratio)
+                   (test-invalid-float)
+                   (test-open-parens)
+                   (test-close-parens)
+                   (test-foo)
+                   (test-defun)
                    (combos))))
