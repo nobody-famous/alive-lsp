@@ -23,10 +23,7 @@
         (text obj)))
 
 
-(defmethod types:deep-equal-p ((a change) b)
-    (and (equal (type-of a) (type-of b))
-         (types:deep-equal-p (range a) (range b))
-         (types:deep-equal-p (text a) (text b))))
+
 
 
 (defun create (&key range text)
