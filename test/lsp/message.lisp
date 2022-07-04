@@ -30,9 +30,7 @@
                       (:packet :alive/lsp/packet)
                       (:parse :alive/lsp/parse)
 
-                      (:utils :alive/test/utils)
-                      (:run :alive/test/harness/run)
-                      (:check :alive/test/harness/check)))
+                      (:utils :alive/test/utils)))
 
 (in-package :alive/test/lsp/message)
 
@@ -52,42 +50,40 @@
                                  (format str "  }~A" utils:*end-line*)
                                  (format str "}~A" utils:*end-line*))))
 
-        (run:test "Initialize Message"
-                  (lambda ()
-                      (let* ((msg (utils:create-msg (create-content)))
-                             (parsed (parse:from-stream (utils:stream-from-string msg))))
-                          (check:are-equal (alive/lsp/message/initialize:create-request
-                                               :id 5
-                                               :params (alive/lsp/message/initialize:create-request-params
-                                                           :client-info (alive/lsp/message/initialize:create-client-info
-                                                                            :name "Visual Studio Code"
-                                                                            :version "1.62.3")))
-                                           parsed))))))
+        (clue:test "Initialize Message"
+            (let* ((msg (utils:create-msg (create-content)))
+                   (parsed (parse:from-stream (utils:stream-from-string msg))))
+                (clue:check-equal :expected (alive/lsp/message/initialize:create-request
+                                                :id 5
+                                                :params (alive/lsp/message/initialize:create-request-params
+                                                            :client-info (alive/lsp/message/initialize:create-client-info
+                                                                             :name "Visual Studio Code"
+                                                                             :version "1.62.3")))
+                                  :actual parsed)))))
 
 
 (defun init-resp-msg ()
-    (run:test "Initialize Response"
-              (lambda ()
-                  (let* ((msg (init:create-response 0))
-                         (result (alive/lsp/message/abstract:result msg)))
-                      (check:are-equal (alive/lsp/message/initialize:create-capabilities
-                                           :text-doc-sync 1
-                                           :hover-provider nil
-                                           :sem-tokens-provider (alive/lsp/message/initialize:create-sem-tokens-opts
-                                                                    :legend (alive/lsp/message/initialize:create-legend
-                                                                                :types (list "comment"
-                                                                                             "string"
-                                                                                             "keyword"
-                                                                                             "number"
-                                                                                             "namespace"
-                                                                                             "function"
-                                                                                             "macro"
-                                                                                             "variable"
-                                                                                             "parameter"
-                                                                                             "parenthesis"
-                                                                                             "symbol"))
-                                                                    :full t))
-                                       (alive/lsp/message/initialize::capabilities result))))))
+    (clue:test "Initialize Response"
+        (let* ((msg (init:create-response 0))
+               (result (alive/lsp/message/abstract:result msg)))
+            (clue:check-equal :expected (alive/lsp/message/initialize:create-capabilities
+                                            :text-doc-sync 1
+                                            :hover-provider nil
+                                            :sem-tokens-provider (alive/lsp/message/initialize:create-sem-tokens-opts
+                                                                     :legend (alive/lsp/message/initialize:create-legend
+                                                                                 :types (list "comment"
+                                                                                              "string"
+                                                                                              "keyword"
+                                                                                              "number"
+                                                                                              "namespace"
+                                                                                              "function"
+                                                                                              "macro"
+                                                                                              "variable"
+                                                                                              "parameter"
+                                                                                              "parenthesis"
+                                                                                              "symbol"))
+                                                                     :full t))
+                              :actual (alive/lsp/message/initialize::capabilities result)))))
 
 
 (defun did-open-msg ()
@@ -107,17 +103,16 @@
                                  (format str "  }~A" utils:*end-line*)
                                  (format str "}~A" utils:*end-line*))))
 
-        (run:test "Did Open Message"
-                  (lambda ()
-                      (let* ((msg (utils:create-msg (create-content)))
-                             (parsed (parse:from-stream (utils:stream-from-string msg))))
-                          (check:are-equal (did-open:create-did-open
-                                               (did-open:create-params
-                                                   (text-doc-item:create-item :text "(foo)"
-                                                                              :language-id "lisp"
-                                                                              :version "1"
-                                                                              :uri "file:///some/file.txt")))
-                                           parsed))))))
+        (clue:test "Did Open Message"
+            (let* ((msg (utils:create-msg (create-content)))
+                   (parsed (parse:from-stream (utils:stream-from-string msg))))
+                (clue:check-equal :expected (did-open:create-did-open
+                                                (did-open:create-params
+                                                    (text-doc-item:create-item :text "(foo)"
+                                                                               :language-id "lisp"
+                                                                               :version "1"
+                                                                               :uri "file:///some/file.txt")))
+                                  :actual parsed)))))
 
 
 (defun did-change-msg ()
@@ -139,16 +134,14 @@
                                  (format str "  }~A" utils:*end-line*)
                                  (format str "}~A" utils:*end-line*))))
 
-        (run:test "Did Change Message"
-                  (lambda ()
-                      (let* ((msg (utils:create-msg (create-content)))
-                             (parsed (parse:from-stream (utils:stream-from-string msg))))
-                          (check:are-equal
-                              (did-change:create
-                                  (did-change:create-params
-                                      :text-doc (text-doc:create :uri "file:///some/file.txt")
-                                      :changes (list (did-change:create-change "(foo)"))))
-                              parsed))))))
+        (clue:test "Did Change Message"
+            (let* ((msg (utils:create-msg (create-content)))
+                   (parsed (parse:from-stream (utils:stream-from-string msg))))
+                (clue:check-equal :expected (did-change:create
+                                                (did-change:create-params
+                                                    :text-doc (text-doc:create :uri "file:///some/file.txt")
+                                                    :changes (list (did-change:create-change "(foo)"))))
+                                  :actual parsed)))))
 
 
 (defun sem-tokens-msg ()
@@ -165,16 +158,14 @@
                                  (format str "  }~A" utils:*end-line*)
                                  (format str "}~A" utils:*end-line*))))
 
-        (run:test "Semantic Tokens Message"
-                  (lambda ()
-                      (let* ((msg (utils:create-msg (create-content)))
-                             (parsed (parse:from-stream (utils:stream-from-string msg))))
-                          (check:are-equal
-                              (sem-tokens:create-request
-                                  :id 5
-                                  :params (sem-tokens:create-params
-                                              (text-doc:create :uri "file:///some/file.txt")))
-                              parsed))))))
+        (clue:test "Semantic Tokens Message"
+            (let* ((msg (utils:create-msg (create-content)))
+                   (parsed (parse:from-stream (utils:stream-from-string msg))))
+                (clue:check-equal :expected (sem-tokens:create-request
+                                                :id 5
+                                                :params (sem-tokens:create-params
+                                                            (text-doc:create :uri "file:///some/file.txt")))
+                                  :actual parsed)))))
 
 
 (defun load-file-msg ()
@@ -190,16 +181,14 @@
                                  (format str "  }~A" utils:*end-line*)
                                  (format str "}~A" utils:*end-line*))))
 
-        (run:test "Load File Message"
-                  (lambda ()
-                      (let* ((msg (utils:create-msg (create-content)))
-                             (parsed (parse:from-stream (utils:stream-from-string msg))))
-                          (check:are-equal
-                              (load-file:create-request
-                                  :id 5
-                                  :params (load-file:create-params :path "file:///some/file.txt"
-                                                                   :show-stdout nil))
-                              parsed))))))
+        (clue:test "Load File Message"
+            (let* ((msg (utils:create-msg (create-content)))
+                   (parsed (parse:from-stream (utils:stream-from-string msg))))
+                (clue:check-equal :expected (load-file:create-request
+                                                :id 5
+                                                :params (load-file:create-params :path "file:///some/file.txt"
+                                                                                 :show-stdout nil))
+                                  :actual parsed)))))
 
 
 (defun completion-msg ()
@@ -223,16 +212,14 @@
                                  (format str "  }~A" utils:*end-line*)
                                  (format str "}~A" utils:*end-line*))))
 
-        (run:test "Completion Message"
-                  (lambda ()
-                      (let* ((msg (utils:create-msg (create-content)))
-                             (parsed (parse:from-stream (utils:stream-from-string msg))))
-                          (check:are-equal
-                              (completion:create-request
-                                  :id 5
-                                  :params (completion:create-params :text-document (text-doc:create :uri "file:///some/file.txt")
-                                                                    :pos (pos:create 3 11)))
-                              parsed))))))
+        (clue:test "Completion Message"
+            (let* ((msg (utils:create-msg (create-content)))
+                   (parsed (parse:from-stream (utils:stream-from-string msg))))
+                (clue:check-equal :expected (completion:create-request
+                                                :id 5
+                                                :params (completion:create-params :text-document (text-doc:create :uri "file:///some/file.txt")
+                                                                                  :pos (pos:create 3 11)))
+                                  :actual parsed)))))
 
 
 (defun top-form-msg ()
@@ -253,16 +240,14 @@
                                  (format str "  }~A" utils:*end-line*)
                                  (format str "}~A" utils:*end-line*))))
 
-        (run:test "Top Form Message"
-                  (lambda ()
-                      (let* ((msg (utils:create-msg (create-content)))
-                             (parsed (parse:from-stream (utils:stream-from-string msg))))
-                          (check:are-equal
-                              (top-form:create-request
-                                  :id 5
-                                  :params (top-form:create-params :text-document (text-doc:create :uri "file:///some/file.txt")
-                                                                  :pos (pos:create 5 10)))
-                              parsed))))))
+        (clue:test "Top Form Message"
+            (let* ((msg (utils:create-msg (create-content)))
+                   (parsed (parse:from-stream (utils:stream-from-string msg))))
+                (clue:check-equal :expected (top-form:create-request
+                                                :id 5
+                                                :params (top-form:create-params :text-document (text-doc:create :uri "file:///some/file.txt")
+                                                                                :pos (pos:create 5 10)))
+                                  :actual parsed)))))
 
 
 (defun formatting-msg ()
@@ -293,16 +278,14 @@
                                  (format str "  }~A" utils:*end-line*)
                                  (format str "}~A" utils:*end-line*))))
 
-        (run:test "Formatting Message"
-                  (lambda ()
-                      (let* ((msg (utils:create-msg (create-content)))
-                             (parsed (parse:from-stream (utils:stream-from-string msg))))
-                          (check:are-equal
-                              (formatting:create-request
-                                  :id 5
-                                  :params (formatting:create-params :range (range:create (pos:create 0 0) (pos:create 10 10))
-                                                                    :text-document (text-doc:create :uri "file:///some/file.txt")))
-                              parsed))))))
+        (clue:test "Formatting Message"
+            (let* ((msg (utils:create-msg (create-content)))
+                   (parsed (parse:from-stream (utils:stream-from-string msg))))
+                (clue:check-equal :expected (formatting:create-request
+                                                :id 5
+                                                :params (formatting:create-params :range (range:create (pos:create 0 0) (pos:create 10 10))
+                                                                                  :text-document (text-doc:create :uri "file:///some/file.txt")))
+                                  :actual parsed)))))
 
 
 (defun list-threads-msg ()
@@ -314,14 +297,12 @@
                                  (format str "  \"method\": \"$/alive/listThreads\"~A" utils:*end-line*)
                                  (format str "}~A" utils:*end-line*))))
 
-        (run:test "List Threads Message"
-                  (lambda ()
-                      (let* ((msg (utils:create-msg (create-content)))
-                             (parsed (parse:from-stream (utils:stream-from-string msg))))
-                          (check:are-equal
-                              (list-threads:create-request
-                                  :id 5)
-                              parsed))))))
+        (clue:test "List Threads Message"
+            (let* ((msg (utils:create-msg (create-content)))
+                   (parsed (parse:from-stream (utils:stream-from-string msg))))
+                (clue:check-equal :expected (list-threads:create-request
+                                                :id 5)
+                                  :actual parsed)))))
 
 
 (defun kill-thread-msg ()
@@ -336,15 +317,13 @@
                                  (format str "  }~A" utils:*end-line*)
                                  (format str "}~A" utils:*end-line*))))
 
-        (run:test "Kill Thread Message"
-                  (lambda ()
-                      (let* ((msg (utils:create-msg (create-content)))
-                             (parsed (parse:from-stream (utils:stream-from-string msg))))
-                          (check:are-equal
-                              (kill-thread:create-request
-                                  :id 5
-                                  :params (kill-thread:create-params :id 10))
-                              parsed))))))
+        (clue:test "Kill Thread Message"
+            (let* ((msg (utils:create-msg (create-content)))
+                   (parsed (parse:from-stream (utils:stream-from-string msg))))
+                (clue:check-equal :expected (kill-thread:create-request
+                                                :id 5
+                                                :params (kill-thread:create-params :id 10))
+                                  :actual parsed)))))
 
 
 (defun list-pkgs-msg ()
@@ -356,14 +335,12 @@
                                  (format str "  \"method\": \"$/alive/listPackages\"~A" utils:*end-line*)
                                  (format str "}~A" utils:*end-line*))))
 
-        (run:test "List Packages Message"
-                  (lambda ()
-                      (let* ((msg (utils:create-msg (create-content)))
-                             (parsed (parse:from-stream (utils:stream-from-string msg))))
-                          (check:are-equal
-                              (list-pkgs:create-request
-                                  :id 5)
-                              parsed))))))
+        (clue:test "List Packages Message"
+            (let* ((msg (utils:create-msg (create-content)))
+                   (parsed (parse:from-stream (utils:stream-from-string msg))))
+                (clue:check-equal :expected (list-pkgs:create-request
+                                                :id 5)
+                                  :actual parsed)))))
 
 
 (defun unexport-symbol-msg ()
@@ -379,15 +356,13 @@
                                  (format str "  }~A" utils:*end-line*)
                                  (format str "}~A" utils:*end-line*))))
 
-        (run:test "Unexport Symbol Message"
-                  (lambda ()
-                      (let* ((msg (utils:create-msg (create-content)))
-                             (parsed (parse:from-stream (utils:stream-from-string msg))))
-                          (check:are-equal
-                              (unexport:create-request
-                                  :id 5
-                                  :params (unexport:create-params :sym-name "foo" :pkg-name "bar"))
-                              parsed))))))
+        (clue:test "Unexport Symbol Message"
+            (let* ((msg (utils:create-msg (create-content)))
+                   (parsed (parse:from-stream (utils:stream-from-string msg))))
+                (clue:check-equal :expected (unexport:create-request
+                                                :id 5
+                                                :params (unexport:create-params :sym-name "foo" :pkg-name "bar"))
+                                  :actual parsed)))))
 
 
 (defun eval-msg ()
@@ -403,15 +378,13 @@
                                  (format str "  }~A" utils:*end-line*)
                                  (format str "}~A" utils:*end-line*))))
 
-        (run:test "Eval Message"
-                  (lambda ()
-                      (let* ((msg (utils:create-msg (create-content)))
-                             (parsed (parse:from-stream (utils:stream-from-string msg))))
-                          (check:are-equal
-                              (eval:create-request
-                                  :id 5
-                                  :params (eval:create-params :pkg-name "foo" :text "(+ 1 2)"))
-                              parsed))))))
+        (clue:test "Eval Message"
+            (let* ((msg (utils:create-msg (create-content)))
+                   (parsed (parse:from-stream (utils:stream-from-string msg))))
+                (clue:check-equal :expected (eval:create-request
+                                                :id 5
+                                                :params (eval:create-params :pkg-name "foo" :text "(+ 1 2)"))
+                                  :actual parsed)))))
 
 
 (defun get-pkg-msg ()
@@ -432,16 +405,14 @@
                                  (format str "  }~A" utils:*end-line*)
                                  (format str "}~A" utils:*end-line*))))
 
-        (run:test "Get Package Message"
-                  (lambda ()
-                      (let* ((msg (utils:create-msg (create-content)))
-                             (parsed (parse:from-stream (utils:stream-from-string msg))))
-                          (check:are-equal
-                              (get-pkg:create-request
-                                  :id 5
-                                  :params (get-pkg:create-params :text-document (text-doc:create :uri "file:///some/file.txt")
-                                                                 :pos (pos:create 5 10)))
-                              parsed))))))
+        (clue:test "Get Package Message"
+            (let* ((msg (utils:create-msg (create-content)))
+                   (parsed (parse:from-stream (utils:stream-from-string msg))))
+                (clue:check-equal :expected (get-pkg:create-request
+                                                :id 5
+                                                :params (get-pkg:create-params :text-document (text-doc:create :uri "file:///some/file.txt")
+                                                                               :pos (pos:create 5 10)))
+                                  :actual parsed)))))
 
 
 (defun remove-pkg-msg ()
@@ -456,15 +427,13 @@
                                  (format str "  }~A" utils:*end-line*)
                                  (format str "}~A" utils:*end-line*))))
 
-        (run:test "Remove Package Message"
-                  (lambda ()
-                      (let* ((msg (utils:create-msg (create-content)))
-                             (parsed (parse:from-stream (utils:stream-from-string msg))))
-                          (check:are-equal
-                              (remove-pkg:create-request
-                                  :id 5
-                                  :params (remove-pkg:create-params :name "foo"))
-                              parsed))))))
+        (clue:test "Remove Package Message"
+            (let* ((msg (utils:create-msg (create-content)))
+                   (parsed (parse:from-stream (utils:stream-from-string msg))))
+                (clue:check-equal :expected (remove-pkg:create-request
+                                                :id 5
+                                                :params (remove-pkg:create-params :name "foo"))
+                                  :actual parsed)))))
 
 
 (defun list-asdf-msg ()
@@ -476,14 +445,12 @@
                                  (format str "  \"method\": \"$/alive/listAsdfSystems\"~A" utils:*end-line*)
                                  (format str "}~A" utils:*end-line*))))
 
-        (run:test "List ASDF Systems Message"
-                  (lambda ()
-                      (let* ((msg (utils:create-msg (create-content)))
-                             (parsed (parse:from-stream (utils:stream-from-string msg))))
-                          (check:are-equal
-                              (list-asdf:create-request
-                                  :id 5)
-                              parsed))))))
+        (clue:test "List ASDF Systems Message"
+            (let* ((msg (utils:create-msg (create-content)))
+                   (parsed (parse:from-stream (utils:stream-from-string msg))))
+                (clue:check-equal :expected (list-asdf:create-request
+                                                :id 5)
+                                  :actual parsed)))))
 
 
 (defun load-asdf-system-msg ()
@@ -498,15 +465,13 @@
                                  (format str "  }~A" utils:*end-line*)
                                  (format str "}~A" utils:*end-line*))))
 
-        (run:test "Load ASDF System Message"
-                  (lambda ()
-                      (let* ((msg (utils:create-msg (create-content)))
-                             (parsed (parse:from-stream (utils:stream-from-string msg))))
-                          (check:are-equal
-                              (load-asdf:create-request
-                                  :id 5
-                                  :params (load-asdf:create-params :name "foo"))
-                              parsed))))))
+        (clue:test "Load ASDF System Message"
+            (let* ((msg (utils:create-msg (create-content)))
+                   (parsed (parse:from-stream (utils:stream-from-string msg))))
+                (clue:check-equal :expected (load-asdf:create-request
+                                                :id 5
+                                                :params (load-asdf:create-params :name "foo"))
+                                  :actual parsed)))))
 
 
 (defun hover-msg ()
@@ -527,36 +492,33 @@
                                  (format str "  }~A" utils:*end-line*)
                                  (format str "}~A" utils:*end-line*))))
 
-        (run:test "Hover Message"
-                  (lambda ()
-                      (let* ((msg (utils:create-msg (create-content)))
-                             (parsed (parse:from-stream (utils:stream-from-string msg))))
-                          (check:are-equal
-                              (hover:create-request
-                                  :id 5
-                                  :params (hover:create-params :text-document (text-doc:create :uri "file:///some/file.txt")
-                                                               :pos (pos:create 3 11)))
-                              parsed))))))
+        (clue:test "Hover Message"
+            (let* ((msg (utils:create-msg (create-content)))
+                   (parsed (parse:from-stream (utils:stream-from-string msg))))
+                (clue:check-equal :expected (hover:create-request
+                                                :id 5
+                                                :params (hover:create-params :text-document (text-doc:create :uri "file:///some/file.txt")
+                                                                             :pos (pos:create 3 11)))
+                                  :actual parsed)))))
 
 
 (defun run-all ()
-    (run:suite "LSP Messages"
-               (lambda ()
-                   (init-msg)
-                   (init-resp-msg)
-                   (did-open-msg)
-                   (did-change-msg)
-                   (sem-tokens-msg)
-                   (load-file-msg)
-                   (completion-msg)
-                   (top-form-msg)
-                   (formatting-msg)
-                   (list-threads-msg)
-                   (kill-thread-msg)
-                   (list-pkgs-msg)
-                   (unexport-symbol-msg)
-                   (eval-msg)
-                   (get-pkg-msg)
-                   (list-asdf-msg)
-                   (load-asdf-system-msg)
-                   (hover-msg))))
+    (clue:suite "LSP Messages"
+        (init-msg)
+        (init-resp-msg)
+        (did-open-msg)
+        (did-change-msg)
+        (sem-tokens-msg)
+        (load-file-msg)
+        (completion-msg)
+        (top-form-msg)
+        (formatting-msg)
+        (list-threads-msg)
+        (kill-thread-msg)
+        (list-pkgs-msg)
+        (unexport-symbol-msg)
+        (eval-msg)
+        (get-pkg-msg)
+        (list-asdf-msg)
+        (load-asdf-system-msg)
+        (hover-msg)))

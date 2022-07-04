@@ -15,71 +15,54 @@
 
 
 (defclass did-change (message:notification)
-    ((message::method :initform "textDocument/didChange")))
+        ((message::method :initform "textDocument/didChange")))
 
 
 (defmethod print-object ((obj did-change) out)
     (format out "{method: \"~A\"; params: ~A}"
-            (message:method-name obj)
-            (message:params obj)))
-
-
-(defmethod types:deep-equal-p ((a did-change) b)
-    (and (equal (type-of a) (type-of b))
-         (string-equal (message:method-name a) (message:method-name b))
-         (types:deep-equal-p (message:params a) (message:params b))))
+        (message:method-name obj)
+        (message:params obj)))
 
 
 (defun create (params)
     (make-instance 'did-change
-                   :params params))
+        :params params))
 
 
 (defclass params ()
-    ((text-document :accessor text-document
-                    :initform nil
-                    :initarg :text-document)
-     (content-changes :accessor content-changes
-                      :initform nil
-                      :initarg :content-changes)))
+        ((text-document :accessor text-document
+                        :initform nil
+                        :initarg :text-document)
+         (content-changes :accessor content-changes
+                          :initform nil
+                          :initarg :content-changes)))
 
 
 (defmethod print-object ((obj params) out)
     (format out "{text-document: ~A; content-changes: ~A}"
-            (text-document obj)
-            (content-changes obj)))
-
-
-(defmethod types:deep-equal-p ((a params) b)
-    (and (equal (type-of a) (type-of b))
-         (types:deep-equal-p (text-document a) (text-document b))
-         (types:deep-equal-p (content-changes a) (content-changes b))))
+        (text-document obj)
+        (content-changes obj)))
 
 
 (defun create-params (&key text-doc changes)
     (make-instance 'params
-                   :text-document text-doc
-                   :content-changes changes))
+        :text-document text-doc
+        :content-changes changes))
 
 
 (defclass content-change ()
-    ((text :accessor text
-           :initform nil
-           :initarg :text)))
+        ((text :accessor text
+               :initform nil
+               :initarg :text)))
 
 
 (defmethod print-object ((obj content-change) out)
     (format out "{text: \"~A\"}" (text obj)))
 
 
-(defmethod types:deep-equal-p ((a content-change) b)
-    (and (equal (type-of a) (type-of b))
-         (string-equal (text a) (text b))))
-
-
 (defun create-change (text)
     (make-instance 'content-change
-                   :text text))
+        :text text))
 
 
 (defun get-uri (msg)
@@ -98,7 +81,7 @@
 
 (defun change-from-wire (change)
     (labels ((add-param (params key value)
-                  (cond ((eq key :text) (setf (text params) value)))))
+                        (cond ((eq key :text) (setf (text params) value)))))
 
         (loop :with out-params := (make-instance 'content-change)
 
@@ -115,10 +98,10 @@
 
 (defun from-wire (params)
     (labels ((add-param (params key value)
-                  (cond ((eq key :text-document) (setf (text-document params)
-                                                       (text-doc:from-wire value)))
-                        ((eq key :content-changes) (setf (content-changes params)
-                                                         (changes-from-wire value))))))
+                        (cond ((eq key :text-document) (setf (text-document params)
+                                                           (text-doc:from-wire value)))
+                              ((eq key :content-changes) (setf (content-changes params)
+                                                             (changes-from-wire value))))))
 
         (loop :with out-params := (make-instance 'params)
               :for param :in params :do

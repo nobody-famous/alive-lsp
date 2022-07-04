@@ -56,42 +56,34 @@
 
 
 (defclass token ()
-    ((token-type :accessor token-type
-                 :initform nil
-                 :initarg :token-type)
-     (line :accessor line
-           :initform nil
-           :initarg :line)
-     (start-col :accessor start-col
-                :initform nil
-                :initarg :start-col)
-     (end-col :accessor end-col
-              :initform nil
-              :initarg :end-col)))
+        ((token-type :accessor token-type
+                     :initform nil
+                     :initarg :token-type)
+         (line :accessor line
+               :initform nil
+               :initarg :line)
+         (start-col :accessor start-col
+                    :initform nil
+                    :initarg :start-col)
+         (end-col :accessor end-col
+                  :initform nil
+                  :initarg :end-col)))
 
 
 (defmethod print-object ((obj token) out)
     (format out "{~A line ~A start ~A end ~A}"
-            (token-type obj)
-            (line obj)
-            (start-col obj)
-            (end-col obj)))
-
-
-(defmethod types:deep-equal-p ((a token) b)
-    (and (equal (type-of a) (type-of b))
-         (eq (token-type a) (token-type b))
-         (eq (line a) (line b))
-         (eq (start-col a) (start-col b))
-         (eq (end-col a) (end-col b))))
+        (token-type obj)
+        (line obj)
+        (start-col obj)
+        (end-col obj)))
 
 
 (defun create (&key token-type line start end)
     (make-instance 'token
-                   :token-type token-type
-                   :line line
-                   :start-col start
-                   :end-col end))
+        :token-type token-type
+        :line line
+        :start-col start
+        :end-col end))
 
 
 (defun from-type (value)

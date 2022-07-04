@@ -9,36 +9,30 @@
 
 
 (defclass text-document ()
-    ((uri :accessor uri
-          :initform nil
-          :initarg :uri)
-     (version :accessor version
+        ((uri :accessor uri
               :initform nil
-              :initarg :version)))
+              :initarg :uri)
+         (version :accessor version
+                  :initform nil
+                  :initarg :version)))
 
 
 (defmethod print-object ((obj text-document) out)
     (format out "{uri: \"~A\"; version: ~A}"
-            (uri obj)
-            (version obj)))
+        (uri obj)
+        (version obj)))
 
 
 (defun create (&key uri version)
     (make-instance 'text-document
-                   :uri uri
-                   :version version))
-
-
-(defmethod types:deep-equal-p ((a text-document) b)
-    (and (equal (type-of a) (type-of b))
-         (string-equal (uri a) (uri b))
-         (equalp (version a) (version b))))
+        :uri uri
+        :version version))
 
 
 (defun from-wire (fields)
     (labels ((add-field (id key value)
-                  (cond ((eq key :uri) (setf (uri id) value))
-                        ((eq key :version) (setf (version id) value)))))
+                        (cond ((eq key :uri) (setf (uri id) value))
+                              ((eq key :version) (setf (version id) value)))))
 
         (loop :with id := (make-instance 'text-document)
 

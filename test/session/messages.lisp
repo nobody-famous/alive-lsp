@@ -4,8 +4,6 @@
     (:local-nicknames (:logger :alive/logger)
                       (:init :alive/lsp/message/initialize)
                       (:utils :alive/test/utils)
-                      (:check :alive/test/harness/check)
-                      (:run :alive/test/harness/run)
                       (:session :alive/session)))
 
 (in-package :alive/test/session/messages)
@@ -103,11 +101,11 @@
 
 (defun init-msg ()
     (let ((state (create-state 'init-msg-state)))
-        (run:test "Initialize Message"
-                  (lambda ()
-                      (session::handle-msg state
-                                           (session::read-message state))
-                      (check:are-equal T (send-called state))))))
+        (clue:test "Initialize Message"
+            (session::handle-msg state
+                                 (session::read-message state))
+            (clue:check-equal :expected T
+                              :actual (send-called state)))))
 
 
 (defmethod session::get-input-stream ((obj load-file-state))
@@ -130,11 +128,11 @@
 
 (defun load-file-msg ()
     (let ((state (create-state 'load-file-state)))
-        (run:test "Load File Message"
-                  (lambda ()
-                      (session::handle-msg state
-                                           (session::read-message state))
-                      (check:are-equal t (send-called state))))))
+        (clue:test "Load File Message"
+            (session::handle-msg state
+                                 (session::read-message state))
+            (clue:check-equal :expected t
+                              :actual (send-called state)))))
 
 
 (defmethod session::get-input-stream ((obj completion-state))
@@ -165,11 +163,11 @@
 
 (defun completion-msg ()
     (let ((state (create-state 'completion-state)))
-        (run:test "Completion Message"
-                  (lambda ()
-                      (session::handle-msg state
-                                           (session::read-message state))
-                      (check:are-equal t (send-called state))))))
+        (clue:test "Completion Message"
+            (session::handle-msg state
+                                 (session::read-message state))
+            (clue:check-equal :expected t
+                              :actual (send-called state)))))
 
 
 (defmethod session::get-input-stream ((obj hover-state))
@@ -197,11 +195,11 @@
 
 (defun hover-msg ()
     (let ((state (create-state 'hover-state)))
-        (run:test "Hover Message"
-                  (lambda ()
-                      (session::handle-msg state
-                                           (session::read-message state))
-                      (check:are-equal t (send-called state))))))
+        (clue:test "Hover Message"
+            (session::handle-msg state
+                                 (session::read-message state))
+            (clue:check-equal :expected t
+                              :actual (send-called state)))))
 
 
 (defmethod session::get-input-stream ((obj top-form-state))
@@ -229,11 +227,11 @@
 
 (defun top-form-msg ()
     (let ((state (create-state 'top-form-state)))
-        (run:test "Top Form Message"
-                  (lambda ()
-                      (session::handle-msg state
-                                           (session::read-message state))
-                      (check:are-equal t (send-called state))))))
+        (clue:test "Top Form Message"
+            (session::handle-msg state
+                                 (session::read-message state))
+            (clue:check-equal :expected t
+                              :actual (send-called state)))))
 
 
 (defmethod session::get-input-stream ((obj formatting-state))
@@ -271,11 +269,11 @@
 
 (defun formatting-msg ()
     (let ((state (create-state 'formatting-state)))
-        (run:test "Range Format Message"
-                  (lambda ()
-                      (session::handle-msg state
-                                           (session::read-message state))
-                      (check:are-equal t (send-called state))))))
+        (clue:test "Range Format Message"
+            (session::handle-msg state
+                                 (session::read-message state))
+            (clue:check-equal :expected t
+                              :actual (send-called state)))))
 
 
 (defmethod session::get-input-stream ((obj list-threads-state))
@@ -294,11 +292,11 @@
 
 (defun list-threads-msg ()
     (let ((state (create-state 'list-threads-state)))
-        (run:test "List Threads Message"
-                  (lambda ()
-                      (session::handle-msg state
-                                           (session::read-message state))
-                      (check:are-equal t (send-called state))))))
+        (clue:test "List Threads Message"
+            (session::handle-msg state
+                                 (session::read-message state))
+            (clue:check-equal :expected t
+                              :actual (send-called state)))))
 
 
 (defmethod session::get-input-stream ((obj kill-thread-state))
@@ -320,11 +318,11 @@
 
 (defun kill-thread-msg ()
     (let ((state (create-state 'kill-thread-state)))
-        (run:test "Kill Thread Message"
-                  (lambda ()
-                      (session::handle-msg state
-                                           (session::read-message state))
-                      (check:are-equal t (send-called state))))))
+        (clue:test "Kill Thread Message"
+            (session::handle-msg state
+                                 (session::read-message state))
+            (clue:check-equal :expected t
+                              :actual (send-called state)))))
 
 
 (defmethod session::get-input-stream ((obj list-pkgs-state))
@@ -343,11 +341,11 @@
 
 (defun list-pkgs-msg ()
     (let ((state (create-state 'list-pkgs-state)))
-        (run:test "List Packages Message"
-                  (lambda ()
-                      (session::handle-msg state
-                                           (session::read-message state))
-                      (check:are-equal t (send-called state))))))
+        (clue:test "List Packages Message"
+            (session::handle-msg state
+                                 (session::read-message state))
+            (clue:check-equal :expected t
+                              :actual (send-called state)))))
 
 
 (defmethod session::get-input-stream ((obj unexport-state))
@@ -370,11 +368,11 @@
 
 (defun unexport-symbol-msg ()
     (let ((state (create-state 'unexport-state)))
-        (run:test "Unexport Symbol Message"
-                  (lambda ()
-                      (session::handle-msg state
-                                           (session::read-message state))
-                      (check:are-equal t (send-called state))))))
+        (clue:test "Unexport Symbol Message"
+            (session::handle-msg state
+                                 (session::read-message state))
+            (clue:check-equal :expected t
+                              :actual (send-called state)))))
 
 
 (defmethod session::get-input-stream ((obj eval-state))
@@ -397,11 +395,11 @@
 
 (defun eval-msg ()
     (let ((state (create-state 'eval-state)))
-        (run:test "Eval Message"
-                  (lambda ()
-                      (session::handle-msg state
-                                           (session::read-message state))
-                      (check:are-equal t (send-called state))))))
+        (clue:test "Eval Message"
+            (session::handle-msg state
+                                 (session::read-message state))
+            (clue:check-equal :expected t
+                              :actual (send-called state)))))
 
 
 (defmethod session::get-input-stream ((obj get-pkg-state))
@@ -429,11 +427,11 @@
 
 (defun get-pkg-msg ()
     (let ((state (create-state 'get-pkg-state)))
-        (run:test "Get Package Message"
-                  (lambda ()
-                      (session::handle-msg state
-                                           (session::read-message state))
-                      (check:are-equal t (send-called state))))))
+        (clue:test "Get Package Message"
+            (session::handle-msg state
+                                 (session::read-message state))
+            (clue:check-equal :expected t
+                              :actual (send-called state)))))
 
 
 (defmethod session::get-input-stream ((obj remove-pkg-state))
@@ -455,11 +453,11 @@
 
 (defun remove-pkg-msg ()
     (let ((state (create-state 'remove-pkg-state)))
-        (run:test "Remove Package Message"
-                  (lambda ()
-                      (session::handle-msg state
-                                           (session::read-message state))
-                      (check:are-equal t (send-called state))))))
+        (clue:test "Remove Package Message"
+            (session::handle-msg state
+                                 (session::read-message state))
+            (clue:check-equal :expected t
+                              :actual (send-called state)))))
 
 
 (defmethod session::get-input-stream ((obj list-asdf-state))
@@ -478,11 +476,11 @@
 
 (defun list-asdf-msg ()
     (let ((state (create-state 'list-asdf-state)))
-        (run:test "List ASDF Systems Message"
-                  (lambda ()
-                      (session::handle-msg state
-                                           (session::read-message state))
-                      (check:are-equal t (send-called state))))))
+        (clue:test "List ASDF Systems Message"
+            (session::handle-msg state
+                                 (session::read-message state))
+            (clue:check-equal :expected t
+                              :actual (send-called state)))))
 
 
 (defmethod session::get-input-stream ((obj load-asdf-state))
@@ -504,25 +502,24 @@
 
 (defun load-asdf-msg ()
     (let ((state (create-state 'load-asdf-state)))
-        (run:test "Load ASDF System Message"
-                  (lambda ()
-                      (session::handle-msg state
-                                           (session::read-message state))
-                      (check:are-equal t (send-called state))))))
+        (clue:test "Load ASDF System Message"
+            (session::handle-msg state
+                                 (session::read-message state))
+            (clue:check-equal :expected t
+                              :actual (send-called state)))))
 
 
 (defun run-all ()
-    (run:suite "Session Message Tests"
-               (lambda ()
-                   (init-msg)
-                   ;    (load-file-msg)
-                   (completion-msg)
-                   (top-form-msg)
-                   (formatting-msg)
-                   (list-threads-msg)
-                   (kill-thread-msg)
-                   (list-pkgs-msg)
-                   (unexport-symbol-msg)
-                   (get-pkg-msg)
-                   (list-asdf-msg)
-                   (hover-msg))))
+    (clue:suite "Session Message Tests"
+        (init-msg)
+        ;    (load-file-msg)
+        (completion-msg)
+        (top-form-msg)
+        (formatting-msg)
+        (list-threads-msg)
+        (kill-thread-msg)
+        (list-pkgs-msg)
+        (unexport-symbol-msg)
+        (get-pkg-msg)
+        (list-asdf-msg)
+        (hover-msg)))

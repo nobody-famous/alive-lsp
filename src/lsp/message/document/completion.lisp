@@ -25,13 +25,6 @@
         (message:params obj)))
 
 
-(defmethod types:deep-equal-p ((a request) b)
-    (and (equal (type-of a) (type-of b))
-        (equalp (message:id a) (message:id b))
-        (types:deep-equal-p (message:method-name a) (message:method-name b))
-        (types:deep-equal-p (message:params a) (message:params b))))
-
-
 (defclass response-body ()
         ((is-incomplete :accessor is-incomplete
                         :initform T
@@ -73,11 +66,6 @@
         (pos obj)))
 
 
-(defmethod types:deep-equal-p ((a req-params) b)
-    (and (equal (type-of a) (type-of b))
-        (types:deep-equal-p (text-document a) (text-document b))))
-
-
 (defun create-params (&key text-document pos)
     (make-instance 'req-params
         :text-document text-document
@@ -87,14 +75,14 @@
 (defun from-wire (&key jsonrpc id params)
     (labels ((add-param (out-params key value)
                         (cond ((eq key :text-document) (setf (text-document out-params) (text-doc:from-wire value)))
-                            ((eq key :position) (setf (pos out-params) (pos:from-wire value))))))
+                              ((eq key :position) (setf (pos out-params) (pos:from-wire value))))))
 
         (loop :with out-params := (make-instance 'req-params)
 
-            :for param :in params :do
-            (add-param out-params (car param) (cdr param))
+              :for param :in params :do
+                  (add-param out-params (car param) (cdr param))
 
-            :finally (return (make-instance 'request
-                                 :jsonrpc jsonrpc
-                                 :id id
-                                 :params out-params)))))
+              :finally (return (make-instance 'request
+                                   :jsonrpc jsonrpc
+                                   :id id
+                                   :params out-params)))))

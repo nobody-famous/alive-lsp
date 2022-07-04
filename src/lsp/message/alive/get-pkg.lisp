@@ -16,88 +16,76 @@
 
 
 (defclass request (message:request)
-    ((message::method :initform "$/alive/getPackageForPosition")))
+        ((message::method :initform "$/alive/getPackageForPosition")))
 
 
 (defmethod print-object ((obj request) out)
     (format out "{id: ~A; method: ~A; params: ~A}"
-            (message:id obj)
-            (message:method-name obj)
-            (message:params obj)))
-
-
-(defmethod types:deep-equal-p ((a request) b)
-    (and (equal (type-of a) (type-of b))
-         (equalp (message:id a) (message:id b))
-         (types:deep-equal-p (message:params a) (message:params b))))
+        (message:id obj)
+        (message:method-name obj)
+        (message:params obj)))
 
 
 (defun create-request (&key jsonrpc id params)
     (make-instance 'request
-                   :jsonrpc jsonrpc
-                   :id id
-                   :params params))
+        :jsonrpc jsonrpc
+        :id id
+        :params params))
 
 
 (defclass params ()
-    ((text-document :accessor text-document
-                    :initform nil
-                    :initarg :text-document)
-     (position :accessor pos
-               :initform nil
-               :initarg :pos)))
+        ((text-document :accessor text-document
+                        :initform nil
+                        :initarg :text-document)
+         (position :accessor pos
+             :initform nil
+             :initarg :pos)))
 
 
 (defmethod print-object ((obj params) out)
     (format out "{text-document: ~A; position: ~A}"
-            (text-document obj)
-            (pos obj)))
-
-
-(defmethod types:deep-equal-p ((a params) b)
-    (and (equal (type-of a) (type-of b))
-         (types:deep-equal-p (text-document a) (text-document b))
-         (types:deep-equal-p (pos a) (pos b))))
+        (text-document obj)
+        (pos obj)))
 
 
 (defun create-params (&key text-document pos)
     (make-instance 'params
-                   :text-document text-document
-                   :pos pos))
+        :text-document text-document
+        :pos pos))
 
 
 (defclass response (message:result-response)
-    ())
+        ())
 
 
 (defmethod print-object ((obj response) out)
     (format out "{id: ~A; result: ~A}"
-            (message:id obj)
-            (message:result obj)))
+        (message:id obj)
+        (message:result obj)))
 
 
 (defclass response-body ()
-    ((package :accessor pkg-name
-              :initform nil
-              :initarg :pkg-name)))
+        ((package :accessor pkg-name
+                  :initform nil
+                  :initarg :pkg-name)))
 
 
 (defmethod print-object ((obj response-body) out)
     (format out "{package: ~A}"
-            (pkg-name obj)))
+        (pkg-name obj)))
 
 
 (defun create-response (&key id pkg-name)
     (make-instance 'response
-                   :id id
-                   :result (make-instance 'response-body
-                                          :pkg-name pkg-name)))
+        :id id
+        :result (make-instance 'response-body
+                    :pkg-name pkg-name)))
 
 
 (defun from-wire (&key jsonrpc id params)
     (labels ((add-param (out-params key value)
-                  (cond ((eq key :text-document) (setf (text-document out-params) (text-doc:from-wire value)))
-                        ((eq key :position) (setf (pos out-params) (pos:from-wire value))))))
+                        (cond ((eq key :text-document) (setf (text-document out-params) (text-doc:from-wire value)))
+                              ((eq key :position) (setf (pos out-params) (pos:from-wire value))))))
 
         (loop :with out-params := (make-instance 'params)
 
@@ -105,6 +93,6 @@
                   (add-param out-params (car param) (cdr param))
 
               :finally (return (make-instance 'request
-                                              :jsonrpc jsonrpc
-                                              :id id
-                                              :params out-params)))))
+                                   :jsonrpc jsonrpc
+                                   :id id
+                                   :params out-params)))))

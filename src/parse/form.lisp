@@ -20,47 +20,38 @@
 
 
 (defclass form ()
-    ((start :accessor start
-            :initform nil
-            :initarg :start)
-     (start-offset :accessor start-offset
-                   :initform nil
-                   :initarg :start-offset)
-     (end :accessor end
-          :initform nil
-          :initarg :end)
-     (end-offset :accessor end-offset
-                 :initform nil
-                 :initarg :end-offset)
-     (form-type :accessor form-type
+        ((start :accessor start
                 :initform nil
-                :initarg :form-type)
-     (in-pkg-p :accessor in-pkg-p
+                :initarg :start)
+         (start-offset :accessor start-offset
+                       :initform nil
+                       :initarg :start-offset)
+         (end :accessor end
+              :initform nil
+              :initarg :end)
+         (end-offset :accessor end-offset
+                     :initform nil
+                     :initarg :end-offset)
+         (form-type :accessor form-type
+                    :initform nil
+                    :initarg :form-type)
+         (in-pkg-p :accessor in-pkg-p
+                   :initform nil
+                   :initarg :in-pkg-p)
+         (kids :accessor kids
                :initform nil
-               :initarg :in-pkg-p)
-     (kids :accessor kids
-           :initform nil
-           :initarg :kids)))
+               :initarg :kids)))
 
 
 (defmethod print-object ((obj form) out)
     (format out "{~A:~A(~A:~A) type: ~A; in-pkg-p: ~A; kids:~{~A~}}"
-            (start obj)
-            (end obj)
-            (start-offset obj)
-            (end-offset obj)
-            (form-type obj)
-            (in-pkg-p obj)
-            (kids obj)))
-
-
-(defmethod types:deep-equal-p ((a form) b)
-    (and (equal (type-of a) (type-of b))
-         (types:deep-equal-p (form-type a) (form-type b))
-         (types:deep-equal-p (start a) (start b))
-         (types:deep-equal-p (end a) (end b))
-         (types:deep-equal-p (in-pkg-p a) (in-pkg-p b))
-         (types:deep-equal-p (kids a) (kids b))))
+        (start obj)
+        (end obj)
+        (start-offset obj)
+        (end-offset obj)
+        (form-type obj)
+        (in-pkg-p obj)
+        (kids obj)))
 
 
 (defun add-kid (form kid)
@@ -121,10 +112,10 @@
 
 (defun create (&key start start-offset end end-offset form-type in-pkg kids)
     (make-instance 'form
-                   :start start
-                   :start-offset start-offset
-                   :end end
-                   :end-offset end-offset
-                   :form-type form-type
-                   :in-pkg-p in-pkg
-                   :kids kids))
+        :start start
+        :start-offset start-offset
+        :end end
+        :end-offset end-offset
+        :form-type form-type
+        :in-pkg-p in-pkg
+        :kids kids))

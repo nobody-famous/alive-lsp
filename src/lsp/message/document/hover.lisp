@@ -25,13 +25,6 @@
         (message:params obj)))
 
 
-(defmethod types:deep-equal-p ((a request) b)
-    (and (equal (type-of a) (type-of b))
-         (equalp (message:id a) (message:id b))
-         (types:deep-equal-p (message:method-name a) (message:method-name b))
-         (types:deep-equal-p (message:params a) (message:params b))))
-
-
 (defclass response-body ()
         ((value :accessor value
                 :initform nil
@@ -68,11 +61,6 @@
     (format out "{text-document: ~A; pos ~A}"
         (text-document obj)
         (pos obj)))
-
-
-(defmethod types:deep-equal-p ((a req-params) b)
-    (and (equal (type-of a) (type-of b))
-         (types:deep-equal-p (text-document a) (text-document b))))
 
 
 (defun create-params (&key text-document pos)
