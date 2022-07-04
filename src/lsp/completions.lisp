@@ -88,13 +88,6 @@
                         :initarg :doc-string)))
 
 
-(defmethod types:deep-equal-p ((a item) b)
-    (and (equal (type-of a) (type-of b))
-         (string-equal (label a) (label b))
-         (string-equal (insert-text a) (insert-text b))
-         (eq (kind a) (kind b))))
-
-
 (defmethod print-object ((obj item) out)
     (format out "{label: ~A; insertText: ~A; kind: ~A; documentation: ~A}"
         (label obj)

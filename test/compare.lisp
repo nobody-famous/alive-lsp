@@ -25,3 +25,10 @@
          (clue:are-equal (alive/parse/form::end a) (alive/parse/form::end b))
          (clue:are-equal (alive/parse/form::in-pkg-p a) (alive/parse/form::in-pkg-p b))
          (clue:are-equal (alive/parse/form::kids a) (alive/parse/form::kids b))))
+
+
+(defmethod clue:are-equal ((a alive/lsp/completions::item) b)
+    (and (equal (type-of a) (type-of b))
+         (string-equal (alive/lsp/completions::label a) (alive/lsp/completions::label b))
+         (string-equal (alive/lsp/completions::insert-text a) (alive/lsp/completions::insert-text b))
+         (eq (alive/lsp/completions::kind a) (alive/lsp/completions::kind b))))
