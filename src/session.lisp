@@ -196,13 +196,11 @@
                                     (let ((*standard-output* stdout))
                                         (save-thread-msg state msg)
 
-                                        (handler-case
-                                                (funcall fn)
-                                            (error (e)
-                                                (send-msg state
-                                                          (message:create-error-resp :id (message:id msg)
-                                                                                     :code errors:*request-failed*
-                                                                                     :message (format nil "~A" e)))))))
+                                        (block handler
+                                            (handler-bind ((error (lambda (err)
+                                                                      (start-debugger state err)
+                                                                      (return-from handler))))
+                                                (funcall fn)))))
                             (rem-thread-msg state))
 
                         :name (next-thread-name state (if (typep msg 'message:request)
@@ -262,17 +260,18 @@
 
 
 (defmethod handle-msg (state (msg load-file:request))
-    (let* ((path (load-file:get-path msg))
-           (msgs (file:do-load path
-                               :stdout-fn (lambda (data)
-                                              (when (load-file:show-stdout-p msg)
-                                                    (send-msg state (stdout:create data))))
-                               :stderr-fn (lambda (data)
-                                              (when (load-file:show-stderr-p msg)
-                                                    (send-msg state (stderr:create data))))))
-           (resp (load-file:create-response (message:id msg) msgs)))
+    (run-in-thread state msg (lambda ()
+                                 (let* ((path (load-file:get-path msg))
+                                        (msgs (file:do-load path
+                                                            :stdout-fn (lambda (data)
+                                                                           (when (load-file:show-stdout-p msg)
+                                                                                 (send-msg state (stdout:create data))))
+                                                            :stderr-fn (lambda (data)
+                                                                           (when (load-file:show-stderr-p msg)
+                                                                                 (send-msg state (stderr:create data))))))
+                                        (resp (load-file:create-response (message:id msg) msgs)))
 
-        (send-msg state resp)))
+                                     (send-msg state resp)))))
 
 
 (defmethod handle-msg (state (msg try-compile:request))
@@ -494,11 +493,7 @@
 
 (defmethod handle-msg (state (msg eval-msg:request))
     (run-in-thread state msg (lambda ()
-                                 (block handler
-                                     (handler-bind ((error (lambda (err)
-                                                               (start-debugger state err)
-                                                               (return-from handler))))
-                                         (process-eval state msg))))))
+                                 (process-eval state msg))))
 
 
 (defmethod handle-msg (state (msg get-pkg:request))
@@ -526,13 +521,14 @@
     (let* ((params (message:params msg))
            (name (load-asdf:get-name params)))
 
-        (asdf:load-system :name name
-                          :stdout-fn (lambda (data)
-                                         (send-msg state (stdout:create data)))
-                          :stderr-fn (lambda (data)
-                                         (send-msg state (stderr:create data))))
+        (run-in-thread state msg (lambda ()
+                                     (asdf:load-system :name name
+                                                       :stdout-fn (lambda (data)
+                                                                      (send-msg state (stdout:create data)))
+                                                       :stderr-fn (lambda (data)
+                                                                      (send-msg state (stderr:create data))))
 
-        (send-msg state (load-asdf:create-response (message:id msg)))))
+                                     (send-msg state (load-asdf:create-response (message:id msg)))))))
 
 
 (defmethod handle-msg (state (msg message:response))
