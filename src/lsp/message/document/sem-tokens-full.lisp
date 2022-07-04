@@ -17,58 +17,46 @@
 
 
 (defclass request (message:request)
-    ((message::method :initform "textDocument/semanticTokens/full")))
+        ((message::method :initform "textDocument/semanticTokens/full")))
 
 
 (defmethod print-object ((obj request) out)
     (format out "{method: \"~A\"; params: ~A}"
-            (message:method-name obj)
-            (message:params obj)))
-
-
-(defmethod types:deep-equal-p ((a request) b)
-    (and (equal (type-of a) (type-of b))
-         (equalp (message:id a) (message:id b))
-         (types:deep-equal-p (message:method-name a) (message:method-name b))
-         (types:deep-equal-p (message:params a) (message:params b))))
+        (message:method-name obj)
+        (message:params obj)))
 
 
 (defun create-request (&key id (jsonrpc "2.0") params)
     (make-instance 'request
-                   :id id
-                   :jsonrpc jsonrpc
-                   :params params))
+        :id id
+        :jsonrpc jsonrpc
+        :params params))
 
 
 (defclass req-params ()
-    ((text-document :accessor text-document
-                    :initform nil
-                    :initarg :text-document)))
+        ((text-document :accessor text-document
+                        :initform nil
+                        :initarg :text-document)))
 
 
 (defmethod print-object ((obj req-params) out)
     (format out "{text-document: ~A}"
-            (text-document obj)))
-
-
-(defmethod types:deep-equal-p ((a req-params) b)
-    (and (equal (type-of a) (type-of b))
-         (types:deep-equal-p (text-document a) (text-document b))))
+        (text-document obj)))
 
 
 (defun create-params (text-doc)
     (make-instance 'req-params
-                   :text-document text-doc))
+        :text-document text-doc))
 
 
 (defclass response (message:result-response)
-    ())
+        ())
 
 
 (defclass sem-tokens ()
-    ((data :accessor data
-           :initform nil
-           :initarg :data)))
+        ((data :accessor data
+               :initform nil
+               :initarg :data)))
 
 
 (defun to-sem-array (sem-tokens)
@@ -96,14 +84,14 @@
 
 (defun create-response (id sem-tokens)
     (make-instance 'response
-                   :id id
-                   :result (make-instance 'sem-tokens
-                                          :data (to-sem-array sem-tokens))))
+        :id id
+        :result (make-instance 'sem-tokens
+                    :data (to-sem-array sem-tokens))))
 
 
 (defun from-wire (&key jsonrpc id params)
     (labels ((add-param (out-params key value)
-                  (cond ((eq key :text-document) (setf (text-document out-params) (text-doc:from-wire value))))))
+                        (cond ((eq key :text-document) (setf (text-document out-params) (text-doc:from-wire value))))))
 
         (loop :with out-params := (make-instance 'req-params)
 
@@ -111,6 +99,6 @@
                   (add-param out-params (car param) (cdr param))
 
               :finally (return (make-instance 'request
-                                              :jsonrpc jsonrpc
-                                              :id id
-                                              :params out-params)))))
+                                   :jsonrpc jsonrpc
+                                   :id id
+                                   :params out-params)))))

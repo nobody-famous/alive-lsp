@@ -14,41 +14,29 @@
 
 
 (defclass request (message:request)
-    ((message::method :initform "$/alive/unexportSymbol")))
+        ((message::method :initform "$/alive/unexportSymbol")))
 
 
 (defmethod print-object ((obj request) out)
     (format out "{id: ~A; method: ~A; params: ~A}"
-            (message:id obj)
-            (message:method-name obj)
-            (message:params obj)))
-
-
-(defmethod types:deep-equal-p ((a request) b)
-    (and (equal (type-of a) (type-of b))
-         (equalp (message:id a) (message:id b))
-         (types:deep-equal-p (message:params a) (message:params b))))
+        (message:id obj)
+        (message:method-name obj)
+        (message:params obj)))
 
 
 (defclass params ()
-    ((symbol :accessor sym-name
-             :initform nil
-             :initarg :sym-name)
-     (package :accessor pkg-name
-              :initform nil
-              :initarg :pkg-name)))
+        ((symbol :accessor sym-name
+                 :initform nil
+                 :initarg :sym-name)
+         (package :accessor pkg-name
+                  :initform nil
+                  :initarg :pkg-name)))
 
 
 (defmethod print-object ((obj params) out)
     (format out "{symbol: ~A; package: ~A}"
-            (sym-name obj)
-            (pkg-name obj)))
-
-
-(defmethod types:deep-equal-p ((a params) b)
-    (and (equal (type-of a) (type-of b))
-         (types:deep-equal-p (sym-name a) (sym-name b))
-         (types:deep-equal-p (pkg-name a) (pkg-name b))))
+        (sym-name obj)
+        (pkg-name obj)))
 
 
 (defun get-symbol (msg)
@@ -64,38 +52,38 @@
 
 
 (defclass response (message:result-response)
-    ())
+        ())
 
 
 (defmethod print-object ((obj response) out)
     (format out "{id: ~A; result: ~A}"
-            (message:id obj)
-            (message:result obj)))
+        (message:id obj)
+        (message:result obj)))
 
 
 (defun create-response (id)
     (make-instance 'response
-                   :id id
-                   :result T))
+        :id id
+        :result T))
 
 
 (defun create-request (&key jsonrpc id params)
     (make-instance 'request
-                   :jsonrpc jsonrpc
-                   :id id
-                   :params params))
+        :jsonrpc jsonrpc
+        :id id
+        :params params))
 
 
 (defun create-params (&key sym-name pkg-name)
     (make-instance 'params
-                   :sym-name sym-name
-                   :pkg-name pkg-name))
+        :sym-name sym-name
+        :pkg-name pkg-name))
 
 
 (defun from-wire (&key jsonrpc id params)
     (labels ((add-param (params key value)
-                  (cond ((eq key :symbol) (setf (sym-name params) value))
-                        ((eq key :package) (setf (pkg-name params) value)))))
+                        (cond ((eq key :symbol) (setf (sym-name params) value))
+                              ((eq key :package) (setf (pkg-name params) value)))))
 
         (loop :with out-params := (make-instance 'params)
               :for param :in params :do

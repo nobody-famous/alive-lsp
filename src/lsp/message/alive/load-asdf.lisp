@@ -13,36 +13,25 @@
 
 
 (defclass request (message:request)
-    ((message::method :initform "$/alive/loadAsdfSystem")))
+        ((message::method :initform "$/alive/loadAsdfSystem")))
 
 
 (defmethod print-object ((obj request) out)
     (format out "{id: ~A; method: ~A; params: ~A}"
-            (message:id obj)
-            (message:method-name obj)
-            (message:params obj)))
-
-
-(defmethod types:deep-equal-p ((a request) b)
-    (and (equal (type-of a) (type-of b))
-         (equalp (message:id a) (message:id b))
-         (types:deep-equal-p (message:params a) (message:params b))))
+        (message:id obj)
+        (message:method-name obj)
+        (message:params obj)))
 
 
 (defclass params ()
-    ((name :accessor name
-           :initform nil
-           :initarg :name)))
+        ((name :accessor name
+               :initform nil
+               :initarg :name)))
 
 
 (defmethod print-object ((obj params) out)
     (format out "{name: ~A}"
-            (name obj)))
-
-
-(defmethod types:deep-equal-p ((a params) b)
-    (and (equal (type-of a) (type-of b))
-         (types:deep-equal-p (name a) (name b))))
+        (name obj)))
 
 
 (defun get-name (params)
@@ -51,17 +40,17 @@
 
 
 (defclass response (message:result-response)
-    ())
+        ())
 
 
 (defmethod print-object ((obj response) out)
     (format out "{id: ~A; result: ~A}"
-            (message:id obj)
-            (message:result obj)))
+        (message:id obj)
+        (message:result obj)))
 
 
 (defclass response-body ()
-    ())
+        ())
 
 
 (defmethod print-object ((obj response-body) out)
@@ -70,15 +59,15 @@
 
 (defun create-response (id)
     (make-instance 'response
-                   :id id
-                   :result (make-instance 'response-body)))
+        :id id
+        :result (make-instance 'response-body)))
 
 
 (defun create-request (&key jsonrpc id params)
     (make-instance 'request
-                   :jsonrpc jsonrpc
-                   :id id
-                   :params params))
+        :jsonrpc jsonrpc
+        :id id
+        :params params))
 
 
 (defun create-params (&key name)
@@ -87,7 +76,7 @@
 
 (defun from-wire (&key jsonrpc id params)
     (labels ((add-param (params key value)
-                  (cond ((eq key :name) (setf (name params) value)))))
+                        (cond ((eq key :name) (setf (name params) value)))))
 
         (loop :with out-params := (make-instance 'params)
               :for param :in params :do

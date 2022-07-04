@@ -23,12 +23,6 @@
     (format out "[~A:~A]" (start obj) (end obj)))
 
 
-(defmethod types:deep-equal-p ((a range) b)
-    (and (equal (type-of a) (type-of b))
-         (types:deep-equal-p (start a) (start b))
-         (types:deep-equal-p (end a) (end b))))
-
-
 (defun create (start end)
     (make-instance 'range
         :start start

@@ -25,12 +25,6 @@
         (message:params obj)))
 
 
-(defmethod types:deep-equal-p ((a request) b)
-    (and (equal (type-of a) (type-of b))
-        (equalp (message:id a) (message:id b))
-        (types:deep-equal-p (message:params a) (message:params b))))
-
-
 (defclass params ()
         ((package :accessor pkg-name
                   :initform nil
@@ -47,13 +41,6 @@
         (pkg-name obj)
         (text obj)
         (store-result obj)))
-
-
-(defmethod types:deep-equal-p ((a params) b)
-    (and (equal (type-of a) (type-of b))
-        (types:deep-equal-p (pkg-name a) (pkg-name b))
-        (types:deep-equal-p (text a) (text b))
-        (types:deep-equal-p (store-result a) (store-result b))))
 
 
 (defclass response (message:result-response)
@@ -114,12 +101,12 @@
 (defun from-wire (&key jsonrpc id params)
     (labels ((add-param (params key value)
                         (cond ((eq key :package) (setf (pkg-name params) value))
-                            ((eq key :text) (setf (text params) value))
-                            ((eq key :store-result) (setf (store-result params) value)))))
+                              ((eq key :text) (setf (text params) value))
+                              ((eq key :store-result) (setf (store-result params) value)))))
 
         (loop :with out-params := (make-instance 'params)
-            :for param :in params :do
-            (add-param out-params (car param) (cdr param))
-            :finally (return (create-request :jsonrpc jsonrpc
-                                             :id id
-                                             :params out-params)))))
+              :for param :in params :do
+                  (add-param out-params (car param) (cdr param))
+              :finally (return (create-request :jsonrpc jsonrpc
+                                               :id id
+                                               :params out-params)))))
