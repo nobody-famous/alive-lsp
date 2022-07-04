@@ -113,7 +113,6 @@
                                        (:file "lsp/sem-tokens")
                                        (:file "lsp/hover")
 
-                                       (:file "session/state")
                                        (:file "session/messages")
 
                                        (:file "format/range")
