@@ -10,6 +10,7 @@
                       (:did-change :alive/lsp/message/document/did-change)
                       (:hover :alive/lsp/message/document/hover)
                       (:formatting :alive/lsp/message/document/range-format)
+                      (:format-utils :alive/lsp/message/document/format-utils)
                       (:fmt-on-type :alive/lsp/message/document/fmt-on-type)
                       (:config :alive/lsp/message/workspace/config)
                       (:input :alive/lsp/message/alive/user-input)
@@ -346,7 +347,7 @@
                                    range
                                    options)))
 
-        (send-msg state (formatting:create-response (message:id msg) edits))))
+        (send-msg state (format-utils:create-response (message:id msg) edits))))
 
 
 (defmethod handle-msg (state (msg formatting:request))
@@ -376,9 +377,7 @@
 
         (format T "EDITS ~A~%" edits)
 
-        (send-msg state (message:create-error-resp :id (message:id msg)
-                                                   :code errors:*request-failed*
-                                                   :message (format nil "No callback for request: ~A" (message:id msg))))))
+        (send-msg state (format-utils:create-response (message:id msg) edits))))
 
 
 (defmethod handle-msg (state (msg list-threads:request))

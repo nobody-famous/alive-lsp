@@ -564,6 +564,28 @@
               (fmt-opts:get-indent-width opts))))
 
 
+(defun do-step (state)
+    (let ((token (next-token state))
+          (form-open (car (parse-state-opens state))))
+
+        (when (and form-open
+                   (lambda-list form-open)
+                   (not (token:is-type types:*ws* token)))
+              (when (and (not (eq 'cons (type-of (car (lambda-list form-open)))))
+                         (or (string= (the symbol (car (lambda-list form-open))) "&BODY")
+                             (string= (the symbol (car (lambda-list form-open))) "&REST")))
+                    (pop-next-indent state))
+              (pop (lambda-list form-open)))
+
+        (cond ((token:is-type *start-form* token) (process-open state token))
+              ((token:is-type types:*close-paren* token) (process-close state token))
+              ((token:is-type types:*ws* token) nil)
+              (T (process-token state token)))
+
+        (push token (parse-state-seen state))
+        (pop-token state)))
+
+
 (defun range (input range &optional opts)
     (let* ((tokens (convert-tokens (tokenizer:from-stream input)))
            (state (make-parse-state :tokens tokens
@@ -575,39 +597,40 @@
 
         (loop :while (parse-state-tokens state)
 
-              :do (let ((token (next-token state))
-                        (form-open (car (parse-state-opens state))))
-
-                      (when (and form-open
-                                 (lambda-list form-open)
-                                 (not (token:is-type types:*ws* token)))
-                            (when (and (not (eq 'cons (type-of (car (lambda-list form-open)))))
-                                       (or (string= (the symbol (car (lambda-list form-open))) "&BODY")
-                                           (string= (the symbol (car (lambda-list form-open))) "&REST")))
-                                  (pop-next-indent state))
-                            (pop (lambda-list form-open)))
-
-                      (cond ((token:is-type *start-form* token) (process-open state token))
-                            ((token:is-type types:*close-paren* token) (process-close state token))
-                            ((token:is-type types:*ws* token) nil)
-                            (T (process-token state token)))
-
-                      (push token (parse-state-seen state))
-                      (pop-token state))
+              :do (do-step state)
 
               :finally (progn (check-end-space state)
                               (return (reverse (parse-state-edits state)))))))
 
 
 (defun on-type (input &key options pos)
+    (format T "ON-TYPE ~A~%" pos)
     (let* ((tokens (convert-tokens (tokenizer:from-stream input)))
            (state (make-parse-state :tokens tokens
-                                    :range nil
+                                    :range (range:create (pos:create 0 0) pos)
                                     :cur-pkg (package-name *package*))))
 
         (when options
               (update-options state options))
 
-        (format T "OPTS ~A~%" (parse-state-options state))
-        (format T "TOKENS ~A~%" tokens)
-        (format T "POSITION ~A~%" pos)))
+        (loop :for token := (next-token state)
+              :for token-end := (token:get-end token)
+
+              :while (and token
+                          (pos:less-or-equal token-end pos))
+
+              :do (do-step state)
+
+              :finally (when token
+                             (let* ((start (token:get-start token))
+                                    (new-range (range:create pos pos)))
+
+                                 (when (eq 'cons (type-of (car (parse-state-indent state))))
+                                       (pop-next-indent state))
+
+                                 (format T "LOOP DONE TOKEN ~A~%" (token:get-text token))
+                                 (format T "LOOP DONE INDENTS ~A~%" (parse-state-indent state))
+                                 (format T "LOOP DONE ~A~%" (get-next-indent state))
+
+                                 (return (list (edit:create :range new-range
+                                                            :text (indent-string 0 (get-next-indent state))))))))))

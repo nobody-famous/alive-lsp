@@ -16,67 +16,55 @@
 
 
 (defclass request (message:request)
-    ((message::method :initform "workspace/configuration")))
+        ((message::method :initform "workspace/configuration")))
 
 
 (defmethod print-object ((obj request) out)
     (format out "{method: \"~A\"; params: ~A}"
-            (message:method-name obj)
-            (message:params obj)))
-
-
-(defmethod types:deep-equal-p ((a request) b)
-    (and (equal (type-of a) (type-of b))
-         (equalp (message:id a) (message:id b))
-         (types:deep-equal-p (message:method-name a) (message:method-name b))
-         (types:deep-equal-p (message:params a) (message:params b))))
+        (message:method-name obj)
+        (message:params obj)))
 
 
 (defclass response-body ()
-    ((is-incomplete :accessor is-incomplete
-                    :initform T
-                    :initarg :is-incomplete)
-     (items :accessor items
-            :initform nil
-            :initarg :items)))
+        ((is-incomplete :accessor is-incomplete
+                        :initform T
+                        :initarg :is-incomplete)
+         (items :accessor items
+                :initform nil
+                :initarg :items)))
 
 
 (defclass response (message:result-response)
-    ())
+        ())
 
 
 (defun create-response (&key id items)
     (make-instance 'response
-                   :id id
-                   :result (make-instance 'response-body :items items)))
+        :id id
+        :result (make-instance 'response-body :items items)))
 
 
 (defun create-request (&key id (jsonrpc "2.0") params)
     (make-instance 'request
-                   :id id
-                   :jsonrpc jsonrpc
-                   :params params))
+        :id id
+        :jsonrpc jsonrpc
+        :params params))
 
 
 (defclass req-params ()
-    ((items :accessor items
-            :initform nil
-            :initarg :items)))
+        ((items :accessor items
+                :initform nil
+                :initarg :items)))
 
 
 (defmethod print-object ((obj req-params) out)
     (format out "{items: ~A}"
-            (items obj)))
-
-
-(defmethod types:deep-equal-p ((a req-params) b)
-    (and (equal (type-of a) (type-of b))
-         (types:deep-equal-p (items a) (items b))))
+        (items obj)))
 
 
 (defun create-params (&key items)
     (make-instance 'req-params
-                   :items items))
+        :items items))
 
 
 (defun parse-items (value)
@@ -88,7 +76,7 @@
 
 (defun from-wire (&key jsonrpc id params)
     (labels ((add-param (out-params key value)
-                  (cond ((eq key :items) (setf (items out-params) (parse-items value))))))
+                        (cond ((eq key :items) (setf (items out-params) (parse-items value))))))
 
         (loop :with out-params := (make-instance 'req-params)
 
@@ -96,6 +84,6 @@
                   (add-param out-params (car param) (cdr param))
 
               :finally (return (make-instance 'request
-                                              :jsonrpc jsonrpc
-                                              :id id
-                                              :params out-params)))))
+                                   :jsonrpc jsonrpc
+                                   :id id
+                                   :params out-params)))))

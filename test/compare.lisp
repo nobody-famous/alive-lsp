@@ -307,3 +307,8 @@
          (clue:are-equal (alive/lsp/message/document/fmt-on-type::pos a) (alive/lsp/message/document/fmt-on-type::pos b))
          (clue:are-equal (alive/lsp/message/document/fmt-on-type::ch a) (alive/lsp/message/document/fmt-on-type::ch b))
          (clue:are-equal (alive/lsp/message/document/fmt-on-type::options a) (alive/lsp/message/document/fmt-on-type::options b))))
+
+
+(defmethod clue:are-equal ((a alive/lsp/types/format-options::format-options) b)
+    (and (equal (type-of a) (type-of b))
+         (clue:are-equal (alive/lsp/types/format-options::indent-width a) (alive/lsp/types/format-options::indent-width b))))

@@ -24,12 +24,6 @@
         (description obj)))
 
 
-(defmethod types:deep-equal-p ((a restart-info) b)
-    (and (equal (type-of a) (type-of b))
-         (types:deep-equal-p (name a) (name b))
-         (types:deep-equal-p (description a) (description b))))
-
-
 (defun create-item (&key name description)
     (make-instance 'restart-info
         :name name
