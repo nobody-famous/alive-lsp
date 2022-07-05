@@ -156,6 +156,15 @@
                              :initarg :trigger-characters)))
 
 
+(defclass on-type-opts ()
+        ((first-trigger-character :accessor first-trigger-character
+                                  :initform #\newline
+                                  :initarg :first-trigger-character)
+         (more-trigger-characters :accessor more-trigger-characters
+                                  :initform (list)
+                                  :initarg :more-trigger-characters)))
+
+
 (defclass server-capabilities ()
         ((text-document-sync :accessor text-document-sync
                              :initform *doc-sync-full*
@@ -171,7 +180,10 @@
                               :initarg :completion-provider)
          (document-range-formatting-provider :accessor document-range-formatting-provider
                                              :initform T
-                                             :initarg :document-range-formatting-provider)))
+                                             :initarg :document-range-formatting-provider)
+         (document-on-type-formatting-provider :accessor document-on-type-formatting-provider
+                                               :initform (make-instance 'on-type-opts)
+                                               :initarg :document-on-type-formatting-provider)))
 
 
 (defmethod print-object ((obj server-capabilities) out)

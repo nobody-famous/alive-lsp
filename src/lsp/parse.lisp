@@ -7,6 +7,7 @@
                       (:did-change :alive/lsp/message/document/did-change)
                       (:hover :alive/lsp/message/document/hover)
                       (:formatting :alive/lsp/message/document/range-format)
+                      (:on-type :alive/lsp/message/document/fmt-on-type)
                       (:eval :alive/lsp/message/alive/do-eval)
                       (:get-pkg :alive/lsp/message/alive/get-pkg)
                       (:remove-pkg :alive/lsp/message/alive/remove-pkg)
@@ -179,6 +180,11 @@
                   (formatting:from-wire :jsonrpc (jsonrpc fields)
                                         :id msg-id
                                         :params (params fields)))
+
+              ((string= "textdocument/ontypeformatting" name)
+                  (on-type:from-wire :jsonrpc (jsonrpc fields)
+                                     :id msg-id
+                                     :params (params fields)))
 
               ((string= "textdocument/semantictokens/full" name)
                   (sem-tokens:from-wire :jsonrpc (jsonrpc fields)
