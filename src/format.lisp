@@ -604,7 +604,6 @@
 
 
 (defun on-type (input &key options pos)
-    (format T "ON-TYPE ~A~%" pos)
     (let* ((tokens (convert-tokens (tokenizer:from-stream input)))
            (state (make-parse-state :tokens tokens
                                     :range (range:create (pos:create 0 0) pos)
@@ -623,14 +622,11 @@
 
               :finally (when token
                              (let* ((start (token:get-start token))
-                                    (new-range (range:create pos pos)))
+                                    (line (pos:line pos))
+                                    (new-range (range:create (pos:create line 0) pos)))
 
                                  (when (eq 'cons (type-of (car (parse-state-indent state))))
                                        (pop-next-indent state))
-
-                                 (format T "LOOP DONE TOKEN ~A~%" (token:get-text token))
-                                 (format T "LOOP DONE INDENTS ~A~%" (parse-state-indent state))
-                                 (format T "LOOP DONE ~A~%" (get-next-indent state))
 
                                  (return (list (edit:create :range new-range
                                                             :text (indent-string 0 (get-next-indent state))))))))))
