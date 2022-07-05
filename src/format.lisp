@@ -1,6 +1,7 @@
 (defpackage :alive/format
     (:use :cl)
-    (:export :range)
+    (:export :on-type
+             :range)
     (:local-nicknames (:edit :alive/text-edit)
                       (:packages :alive/packages)
                       (:pos :alive/position)
@@ -596,3 +597,17 @@
 
               :finally (progn (check-end-space state)
                               (return (reverse (parse-state-edits state)))))))
+
+
+(defun on-type (input &key options pos)
+    (let* ((tokens (convert-tokens (tokenizer:from-stream input)))
+           (state (make-parse-state :tokens tokens
+                                    :range nil
+                                    :cur-pkg (package-name *package*))))
+
+        (when options
+              (update-options state options))
+
+        (format T "OPTS ~A~%" (parse-state-options state))
+        (format T "TOKENS ~A~%" tokens)
+        (format T "POSITION ~A~%" pos)))

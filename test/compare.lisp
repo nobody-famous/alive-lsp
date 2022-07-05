@@ -301,11 +301,6 @@
          (clue:are-equal (alive/lsp/message/abstract:params a) (alive/lsp/message/abstract:params b))))
 
 
-(defmethod clue:are-equal ((a alive/lsp/types/formatting-options::options) b)
-    (and (equal (type-of a) (type-of b))
-         (clue:are-equal (alive/lsp/types/formatting-options::tab-size a) (alive/lsp/types/formatting-options::tab-size b))))
-
-
 (defmethod clue:are-equal ((a alive/lsp/message/document/fmt-on-type::params) b)
     (and (equal (type-of a) (type-of b))
          (clue:are-equal (alive/lsp/message/document/fmt-on-type::text-document a) (alive/lsp/message/document/fmt-on-type::text-document b))

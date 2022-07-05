@@ -4,8 +4,10 @@
              :create-request
              :create-response
              :from-wire
+             :ch
              :pos
              :request
+             :options
              :text-document)
     (:local-nicknames (:message :alive/lsp/message/abstract)
                       (:pos :alive/position)

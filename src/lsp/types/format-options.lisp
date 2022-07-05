@@ -1,6 +1,6 @@
 (defpackage :alive/lsp/types/format-options
     (:use :cl)
-    (:export :create-options
+    (:export :create-item
              :get-indent-width
              :from-wire)
     (:local-nicknames (:types :alive/types)))

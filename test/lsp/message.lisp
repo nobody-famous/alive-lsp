@@ -19,12 +19,12 @@
                       (:unexport :alive/lsp/message/alive/unexport-symbol)
                       (:user-input :alive/lsp/message/alive/user-input)
                       (:config-item :alive/lsp/types/config-item)
+                      (:fmt-opts :alive/lsp/types/format-options)
                       (:text-doc :alive/lsp/types/text-doc)
                       (:text-doc-item :alive/lsp/types/text-doc-item)
                       (:sem-tokens :alive/lsp/message/document/sem-tokens-full)
                       (:formatting :alive/lsp/message/document/range-format)
                       (:on-type :alive/lsp/message/document/fmt-on-type)
-                      (:fmt-opts :alive/lsp/types/formatting-options)
                       (:init :alive/lsp/message/initialize)
                       (:pos :alive/position)
                       (:range :alive/range)
@@ -534,9 +534,8 @@
                                                 :id 5
                                                 :params (on-type:create-params :text-document (text-doc:create :uri "file:///some/file.txt")
                                                                                :pos (pos:create 3 11)
-                                                                               :ch (format nil "~%" )
-                                                                               :options (fmt-opts:create-item :tab-size 4
-                                                                                                              :insert-spaces T)))
+                                                                               :ch (format nil "~%")
+                                                                               :options (fmt-opts:create-item :indent-width 4)))
                                   :actual parsed)))))
 
 
