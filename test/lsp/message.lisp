@@ -19,10 +19,12 @@
                       (:unexport :alive/lsp/message/alive/unexport-symbol)
                       (:user-input :alive/lsp/message/alive/user-input)
                       (:config-item :alive/lsp/types/config-item)
+                      (:fmt-opts :alive/lsp/types/format-options)
                       (:text-doc :alive/lsp/types/text-doc)
                       (:text-doc-item :alive/lsp/types/text-doc-item)
                       (:sem-tokens :alive/lsp/message/document/sem-tokens-full)
                       (:formatting :alive/lsp/message/document/range-format)
+                      (:on-type :alive/lsp/message/document/fmt-on-type)
                       (:init :alive/lsp/message/initialize)
                       (:pos :alive/position)
                       (:range :alive/range)
@@ -502,6 +504,41 @@
                                   :actual parsed)))))
 
 
+(defun format-on-type-msg ()
+    (labels ((create-content ()
+                             (with-output-to-string (str)
+                                 (format str "{~A" utils:*end-line*)
+                                 (format str "  \"jsonrpc\": \"2.0\",~A" utils:*end-line*)
+                                 (format str "  \"id\": 5,~A" utils:*end-line*)
+                                 (format str "  \"method\": \"textdocument/onTypeFormatting\",~A" utils:*end-line*)
+                                 (format str "  \"params\": {~A" utils:*end-line*)
+                                 (format str "    \"textDocument\": {~A" utils:*end-line*)
+                                 (format str "      \"uri\":\"file:///some/file.txt\"~A" utils:*end-line*)
+                                 (format str "    },~A" utils:*end-line*)
+                                 (format str "    \"position\": {~A" utils:*end-line*)
+                                 (format str "      \"line\": 3,~A" utils:*end-line*)
+                                 (format str "      \"character\": 11~A" utils:*end-line*)
+                                 (format str "    },~A" utils:*end-line*)
+                                 (format str "    \"ch\": \"\\n\",~A" utils:*end-line*)
+                                 (format str "    \"options\": {~A" utils:*end-line*)
+                                 (format str "      \"tabSize\": 4,~A" utils:*end-line*)
+                                 (format str "      \"insertSpaces\": true~A" utils:*end-line*)
+                                 (format str "    }~A" utils:*end-line*)
+                                 (format str "  }~A" utils:*end-line*)
+                                 (format str "}~A" utils:*end-line*))))
+
+        (clue:test "Format On Type Message"
+            (let* ((msg (utils:create-msg (create-content)))
+                   (parsed (parse:from-stream (utils:stream-from-string msg))))
+                (clue:check-equal :expected (on-type:create-request
+                                                :id 5
+                                                :params (on-type:create-params :text-document (text-doc:create :uri "file:///some/file.txt")
+                                                                               :pos (pos:create 3 11)
+                                                                               :ch (format nil "~%")
+                                                                               :options (fmt-opts:create-item :indent-width 4)))
+                                  :actual parsed)))))
+
+
 (defun run-all ()
     (clue:suite "LSP Messages"
         (init-msg)
@@ -521,4 +558,5 @@
         (get-pkg-msg)
         (list-asdf-msg)
         (load-asdf-system-msg)
-        (hover-msg)))
+        (hover-msg)
+        (format-on-type-msg)))

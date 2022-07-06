@@ -19,11 +19,6 @@
         (text obj)))
 
 
-(defmethod types:deep-equal-p ((a user-input) b)
-    (and (equal (type-of a) (type-of b))
-         (types:deep-equal-p (text a) (text b))))
-
-
 (defun create-item (&key text)
     (make-instance 'user-input
         :text text))

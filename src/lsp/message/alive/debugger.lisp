@@ -25,12 +25,6 @@
         (message:params obj)))
 
 
-(defmethod types:deep-equal-p ((a request) b)
-    (and (equal (type-of a) (type-of b))
-         (equalp (message:id a) (message:id b))
-         (types:deep-equal-p (message:params a) (message:params b))))
-
-
 (defclass params ()
         ((message :accessor message
                   :initform nil
@@ -48,13 +42,6 @@
         (message obj)
         (restarts obj)
         (stack-trace obj)))
-
-
-(defmethod types:deep-equal-p ((a params) b)
-    (and (equal (type-of a) (type-of b))
-         (types:deep-equal-p (message a) (message b))
-         (types:deep-equal-p (restarts a) (restarts b))
-         (types:deep-equal-p (stack-trace a) (stack-trace b))))
 
 
 (defclass response (message:result-response)

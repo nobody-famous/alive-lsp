@@ -24,6 +24,7 @@
                                        (:file "lsp/types/text-doc")
                                        (:file "lsp/types/text-doc-item")
                                        (:file "lsp/types/format-options")
+                                       (:file "lsp/types/formatting-options")
                                        (:file "lsp/types/debug-resp")
                                        (:file "lsp/types/user-input")
                                        (:file "lsp/types/restart-info")
@@ -78,7 +79,9 @@
                                        (:file "lsp/message/document/did-change")
                                        (:file "lsp/message/document/did-open")
                                        (:file "lsp/message/document/hover")
+                                       (:file "lsp/message/document/format-utils")
                                        (:file "lsp/message/document/range-format")
+                                       (:file "lsp/message/document/fmt-on-type")
                                        (:file "lsp/message/document/sem-tokens-full")
                                        (:file "lsp/message/workspace/config")
 
@@ -111,6 +114,7 @@
                                        (:file "session/messages")
 
                                        (:file "format/range")
+                                       (:file "format/on-type")
 
                                        (:file "eval")
                                        (:file "streams")

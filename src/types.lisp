@@ -24,9 +24,7 @@
              :*quote*
              :*back-quote*
              :*comma*
-             :*comma-at*
-
-             :deep-equal-p))
+             :*comma-at*))
 
 (in-package :alive/types)
 
@@ -57,6 +55,3 @@
 (defparameter *back-quote* 18)
 (defparameter *comma* 19)
 (defparameter *comma-at* 20)
-
-
-(defgeneric deep-equal-p (a b))

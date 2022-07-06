@@ -19,11 +19,6 @@
         (index obj)))
 
 
-(defmethod types:deep-equal-p ((a debug-resp) b)
-    (and (equal (type-of a) (type-of b))
-         (types:deep-equal-p (index a) (index b))))
-
-
 (defun create-item (&key index)
     (make-instance 'debug-resp
         :index index))

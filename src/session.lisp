@@ -10,6 +10,8 @@
                       (:did-change :alive/lsp/message/document/did-change)
                       (:hover :alive/lsp/message/document/hover)
                       (:formatting :alive/lsp/message/document/range-format)
+                      (:format-utils :alive/lsp/message/document/format-utils)
+                      (:fmt-on-type :alive/lsp/message/document/fmt-on-type)
                       (:config :alive/lsp/message/workspace/config)
                       (:input :alive/lsp/message/alive/user-input)
                       (:asdf :alive/asdf)
@@ -345,7 +347,7 @@
                                    range
                                    options)))
 
-        (send-msg state (formatting:create-response (message:id msg) edits))))
+        (send-msg state (format-utils:create-response (message:id msg) edits))))
 
 
 (defmethod handle-msg (state (msg formatting:request))
@@ -359,6 +361,21 @@
         (send-msg state (config:create-request
                             :id send-id
                             :params (config:create-params :items (list (config-item:create-item :section "alive.format")))))))
+
+
+(defmethod handle-msg (state (msg fmt-on-type:request))
+    (let* ((params (message:params msg))
+           (doc (fmt-on-type:text-document params))
+           (opts (fmt-on-type:options params))
+           (pos (fmt-on-type:pos params))
+           (uri (text-doc:uri doc))
+           (file-text (get-file-text state uri))
+           (text (if file-text file-text ""))
+           (edits (formatter:on-type (make-string-input-stream text)
+                                     :options opts
+                                     :pos pos)))
+
+        (send-msg state (format-utils:create-response (message:id msg) edits))))
 
 
 (defmethod handle-msg (state (msg list-threads:request))

@@ -25,11 +25,6 @@
         (message:method-name obj)))
 
 
-(defmethod types:deep-equal-p ((a request) b)
-    (and (equal (type-of a) (type-of b))
-        (equalp (message:id a) (message:id b))))
-
-
 (defun create-request (&key jsonrpc id)
     (make-instance 'request
         :jsonrpc jsonrpc

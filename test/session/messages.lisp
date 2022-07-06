@@ -39,6 +39,10 @@
         ())
 
 
+(defclass on-type-state (test-state)
+        ())
+
+
 (defclass list-threads-state (test-state)
         ())
 
@@ -270,6 +274,44 @@
 (defun formatting-msg ()
     (let ((state (create-state 'formatting-state)))
         (clue:test "Range Format Message"
+            (session::handle-msg state
+                                 (session::read-message state))
+            (clue:check-equal :expected t
+                              :actual (send-called state)))))
+
+
+(defmethod session::get-input-stream ((obj on-type-state))
+    (let ((content (with-output-to-string (str)
+                       (format str "{~A" utils:*end-line*)
+                       (format str "  \"jsonrpc\": \"2.0\",~A" utils:*end-line*)
+                       (format str "  \"id\": 5,~A" utils:*end-line*)
+                       (format str "  \"method\": \"textdocument/onTypeFormatting\",~A" utils:*end-line*)
+                       (format str "  \"params\": {~A" utils:*end-line*)
+                       (format str "    \"textDocument\": {~A" utils:*end-line*)
+                       (format str "      \"uri\":\"file:///some/file.txt\"~A" utils:*end-line*)
+                       (format str "    },~A" utils:*end-line*)
+                       (format str "    \"position\": {~A" utils:*end-line*)
+                       (format str "      \"line\": 3,~A" utils:*end-line*)
+                       (format str "      \"character\": 11~A" utils:*end-line*)
+                       (format str "    },~A" utils:*end-line*)
+                       (format str "    \"ch\": \"\\n\",~A" utils:*end-line*)
+                       (format str "    \"options\": {~A" utils:*end-line*)
+                       (format str "      \"tabSize\": 4,~A" utils:*end-line*)
+                       (format str "      \"insertSpaces\": true~A" utils:*end-line*)
+                       (format str "    }~A" utils:*end-line*)
+                       (format str "  }~A" utils:*end-line*)
+                       (format str "}~A" utils:*end-line*))))
+
+        (utils:stream-from-string (utils:create-msg content))))
+
+
+(defmethod session::send-msg ((obj on-type-state) msg)
+    (setf (send-called obj) T))
+
+
+(defun format-on-type-msg ()
+    (let ((state (create-state 'on-type-state)))
+        (clue:test "Format On Type Message"
             (session::handle-msg state
                                  (session::read-message state))
             (clue:check-equal :expected t
@@ -522,4 +564,5 @@
         (unexport-symbol-msg)
         (get-pkg-msg)
         (list-asdf-msg)
-        (hover-msg)))
+        (hover-msg)
+        (format-on-type-msg)))

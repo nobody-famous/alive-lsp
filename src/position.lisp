@@ -24,12 +24,6 @@
     (format out "[~A:~A]" (line obj) (col obj)))
 
 
-(defmethod types:deep-equal-p ((a pos) b)
-    (and (equal (type-of a) (type-of b))
-         (eq (line a) (line b))
-         (eq (col a) (col b))))
-
-
 (defun less-than (pos1 pos2)
     (cond ((< (line pos1) (line pos2)) T)
           ((< (line pos2) (line pos1)) NIL)

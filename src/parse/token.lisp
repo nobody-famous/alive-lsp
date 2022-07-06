@@ -49,14 +49,6 @@
             (text obj))))
 
 
-(defmethod types:deep-equal-p ((a token) b)
-    (and (equal (type-of a) (type-of b))
-         (types:deep-equal-p (start a) (start b))
-         (types:deep-equal-p (end a) (end b))
-         (string-equal (text a) (text b))
-         (eq (type-value a) (type-value b))))
-
-
 (defmethod get-type-value ((obj token))
     (type-value obj))
 

@@ -65,6 +65,12 @@
          (eq (alive/lsp/message/initialize::full a) (alive/lsp/message/initialize::full b))))
 
 
+(defmethod clue:are-equal ((a alive/lsp/message/initialize::on-type-opts) b)
+    (and (equal (type-of a) (type-of b))
+         (clue:are-equal (alive/lsp/message/initialize::first-trigger-character a) (alive/lsp/message/initialize::first-trigger-character b))
+         (clue:are-equal (alive/lsp/message/initialize::more-trigger-characters a) (alive/lsp/message/initialize::more-trigger-characters b))))
+
+
 (defmethod clue:are-equal ((a alive/lsp/message/initialize::completion-opts) b)
     (equal (type-of a) (type-of b)))
 
@@ -74,6 +80,7 @@
          (eq (alive/lsp/message/initialize::text-document-sync a) (alive/lsp/message/initialize::text-document-sync b))
          (eq (alive/lsp/message/initialize::hover-provider a) (alive/lsp/message/initialize::hover-provider b))
          (eq (alive/lsp/message/initialize::document-range-formatting-provider a) (alive/lsp/message/initialize::document-range-formatting-provider b))
+         (clue:are-equal (alive/lsp/message/initialize::document-on-type-formatting-provider a) (alive/lsp/message/initialize::document-on-type-formatting-provider b))
          (clue:are-equal (alive/lsp/message/initialize::semantic-tokens-provider a) (alive/lsp/message/initialize::semantic-tokens-provider b))))
 
 
@@ -287,3 +294,21 @@
     (and (equal (type-of a) (type-of b))
          (clue:are-equal (alive/text-edit::range a) (alive/text-edit::range b))
          (clue:are-equal (alive/text-edit::text a) (alive/text-edit::text b))))
+
+
+(defmethod clue:are-equal ((a alive/lsp/message/document/fmt-on-type::request) b)
+    (and (equal (type-of a) (type-of b))
+         (clue:are-equal (alive/lsp/message/abstract:params a) (alive/lsp/message/abstract:params b))))
+
+
+(defmethod clue:are-equal ((a alive/lsp/message/document/fmt-on-type::params) b)
+    (and (equal (type-of a) (type-of b))
+         (clue:are-equal (alive/lsp/message/document/fmt-on-type::text-document a) (alive/lsp/message/document/fmt-on-type::text-document b))
+         (clue:are-equal (alive/lsp/message/document/fmt-on-type::pos a) (alive/lsp/message/document/fmt-on-type::pos b))
+         (clue:are-equal (alive/lsp/message/document/fmt-on-type::ch a) (alive/lsp/message/document/fmt-on-type::ch b))
+         (clue:are-equal (alive/lsp/message/document/fmt-on-type::options a) (alive/lsp/message/document/fmt-on-type::options b))))
+
+
+(defmethod clue:are-equal ((a alive/lsp/types/format-options::format-options) b)
+    (and (equal (type-of a) (type-of b))
+         (clue:are-equal (alive/lsp/types/format-options::indent-width a) (alive/lsp/types/format-options::indent-width b))))

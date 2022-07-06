@@ -23,9 +23,6 @@
         (text obj)))
 
 
-
-
-
 (defun create (&key range text)
     (make-instance 'change
         :range range
