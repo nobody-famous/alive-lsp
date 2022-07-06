@@ -375,8 +375,6 @@
                                      :options opts
                                      :pos pos)))
 
-        (format T "EDITS ~A~%" edits)
-
         (send-msg state (format-utils:create-response (message:id msg) edits))))
 
 

@@ -621,12 +621,14 @@
               :do (do-step state)
 
               :finally (when token
-                             (let* ((start (token:get-start token))
+                             (let* ((form-open (car (parse-state-opens state)))
+                                    (start (token:get-start token))
                                     (line (pos:line pos))
                                     (new-range (range:create (pos:create line 0) pos)))
 
-                                 (when (eq 'cons (type-of (car (parse-state-indent state))))
-                                       (pop-next-indent state))
+                                 (format T "FORM OPEN ~A~%" form-open)
+                                 ;  (when (eq 'cons (type-of (car (parse-state-indent state))))
+                                 ;        (pop-next-indent state))
 
                                  (return (list (edit:create :range new-range
                                                             :text (indent-string 0 (get-next-indent state))))))))))
