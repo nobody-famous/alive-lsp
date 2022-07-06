@@ -609,6 +609,14 @@
                               (return (reverse (parse-state-edits state)))))))
 
 
+(defun get-on-type-indent (state token pos)
+    (let ((form-open (car (parse-state-opens state))))
+        (when (is-body-next state)
+              (pop-next-indent state))
+
+        (get-next-indent state)))
+
+
 (defun on-type (input &key options pos)
     (let* ((tokens (convert-tokens (tokenizer:from-stream input)))
            (state (make-parse-state :tokens tokens
@@ -626,14 +634,12 @@
 
               :do (do-step state)
 
-              :finally (when token
-                             (let* ((form-open (car (parse-state-opens state)))
-                                    (start (token:get-start token))
-                                    (line (pos:line pos))
-                                    (new-range (range:create (pos:create line 0) pos)))
+              :finally (let* ((indent (if token
+                                          (get-on-type-indent state token pos)
+                                          0))
+                              (start (token:get-start token))
+                              (line (pos:line pos))
+                              (new-range (range:create (pos:create line 0) pos)))
 
-                                 (when (is-body-next state)
-                                       (pop-next-indent state))
-
-                                 (return (list (edit:create :range new-range
-                                                            :text (indent-string 0 (get-next-indent state))))))))))
+                           (return (list (edit:create :range new-range
+                                                      :text (indent-string 0 indent))))))))
