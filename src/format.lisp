@@ -564,6 +564,14 @@
               (fmt-opts:get-indent-width opts))))
 
 
+(defun is-body-next (state)
+    (let ((form-open (car (parse-state-opens state))))
+        (and form-open
+             (not (eq 'cons (type-of (car (lambda-list form-open)))))
+             (or (string= (the symbol (car (lambda-list form-open))) "&BODY")
+                 (string= (the symbol (car (lambda-list form-open))) "&REST")))))
+
+
 (defun do-step (state)
     (let ((token (next-token state))
           (form-open (car (parse-state-opens state))))
@@ -571,9 +579,7 @@
         (when (and form-open
                    (lambda-list form-open)
                    (not (token:is-type types:*ws* token)))
-              (when (and (not (eq 'cons (type-of (car (lambda-list form-open)))))
-                         (or (string= (the symbol (car (lambda-list form-open))) "&BODY")
-                             (string= (the symbol (car (lambda-list form-open))) "&REST")))
+              (when (is-body-next state)
                     (pop-next-indent state))
               (pop (lambda-list form-open)))
 
@@ -626,9 +632,8 @@
                                     (line (pos:line pos))
                                     (new-range (range:create (pos:create line 0) pos)))
 
-                                 (format T "FORM OPEN ~A~%" form-open)
-                                 ;  (when (eq 'cons (type-of (car (parse-state-indent state))))
-                                 ;        (pop-next-indent state))
+                                 (when (is-body-next state)
+                                       (pop-next-indent state))
 
                                  (return (list (edit:create :range new-range
                                                             :text (indent-string 0 (get-next-indent state))))))))))
