@@ -40,5 +40,5 @@
 (defun check-exists (obj)
     (unless obj
         (error 'test-failed
-            :expected obj
+            :expected "Not NIL"
             :actual NIL)))
