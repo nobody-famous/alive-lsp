@@ -15,7 +15,7 @@
 (in-package :alive/format)
 
 
-(declaim (optimize (speed 3) (safety 0)))
+(declaim (optimize (speed 3)))
 
 
 (defparameter *force-align-targets* (list "and" "or" "cond" "not"

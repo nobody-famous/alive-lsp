@@ -10,7 +10,7 @@
 (in-package :alive/parse/forms)
 
 
-(declaim (optimize (speed 3) (safety 0)))
+(declaim (optimize (speed 3)))
 
 
 (declaim (type fixnum
