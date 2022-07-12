@@ -35,3 +35,10 @@
         (error 'test-failed
             :expected expected
             :actual actual)))
+
+
+(defun check-exists (obj)
+    (unless obj
+        (error 'test-failed
+            :expected "Not NIL"
+            :actual NIL)))

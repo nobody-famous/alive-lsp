@@ -11,7 +11,7 @@
 (in-package :alive/lsp/sem-analysis)
 
 
-(declaim (optimize (speed 3) (safety 0)))
+(declaim (optimize (speed 3)))
 
 
 (defclass open-form ()
