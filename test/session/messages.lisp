@@ -63,6 +63,10 @@
         ())
 
 
+(defclass inspect-state (test-state)
+        ())
+
+
 (defclass get-pkg-state (test-state)
         ())
 
@@ -545,6 +549,33 @@
 (defun load-asdf-msg ()
     (let ((state (create-state 'load-asdf-state)))
         (clue:test "Load ASDF System Message"
+            (session::handle-msg state
+                                 (session::read-message state))
+            (clue:check-equal :expected t
+                              :actual (send-called state)))))
+
+
+(defmethod session::get-input-stream ((obj inspect-state))
+    (let ((content (with-output-to-string (str)
+                       (format str "{~A" utils:*end-line*)
+                       (format str "  \"jsonrpc\": \"2.0\",~A" utils:*end-line*)
+                       (format str "  \"id\": 5,~A" utils:*end-line*)
+                       (format str "  \"method\": \"$/alive/inspect\",~A" utils:*end-line*)
+                       (format str "  \"params\": {~A" utils:*end-line*)
+                       (format str "    \"package\": \"cl-user\",~A" utils:*end-line*)
+                       (format str "    \"text\": \"(+ 1 2)\"~A" utils:*end-line*)
+                       (format str "  }~A" utils:*end-line*)
+                       (format str "}~A" utils:*end-line*))))
+        (utils:stream-from-string (utils:create-msg content))))
+
+
+(defmethod session::send-msg ((obj inspect-state) msg)
+    (setf (send-called obj) T))
+
+
+(defun inspect-msg ()
+    (let ((state (create-state 'inspect-state)))
+        (clue:test "Inspect Message"
             (session::handle-msg state
                                  (session::read-message state))
             (clue:check-equal :expected t

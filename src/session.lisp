@@ -16,6 +16,7 @@
                       (:input :alive/lsp/message/alive/user-input)
                       (:asdf :alive/asdf)
                       (:eval :alive/eval)
+                      (:inspect :alive/inspect)
                       (:file :alive/file)
                       (:pos :alive/position)
                       (:packages :alive/packages)
@@ -28,6 +29,7 @@
                       (:forms :alive/parse/forms)
                       (:debug :alive/lsp/message/alive/debugger)
                       (:eval-msg :alive/lsp/message/alive/do-eval)
+                      (:inspect-msg :alive/lsp/message/alive/do-inspect)
                       (:get-pkg :alive/lsp/message/alive/get-pkg)
                       (:remove-pkg :alive/lsp/message/alive/remove-pkg)
                       (:load-asdf :alive/lsp/message/alive/load-asdf)
@@ -511,6 +513,33 @@
 (defmethod handle-msg (state (msg eval-msg:request))
     (run-in-thread state msg (lambda ()
                                  (process-eval state msg))))
+
+
+(defun process-inspect (state msg)
+    (let* ((pkg-name (inspect-msg:get-package msg))
+           (text (inspect-msg:get-text msg))
+           (* (elt (history state) 0))
+           (** (elt (history state) 1))
+           (*** (elt (history state) 2))
+           (result (inspect:from-string text
+                                        :pkg-name pkg-name
+                                        :stdin-fn (lambda ()
+                                                      (wait-for-input state))
+                                        :stdout-fn (lambda (data)
+                                                       (send-msg state (stdout:create data)))
+                                        :stderr-fn (lambda (data)
+                                                       (send-msg state (stderr:create data))))))
+
+        (send-msg state
+                  (inspect-msg:create-response (message:id msg)
+                                               (format nil "~A" result)))))
+
+
+(defmethod handle-msg (state (msg inspect-msg:request))
+    (run-in-thread state msg (lambda ()
+                                 (handler-case
+                                         (process-inspect state msg)
+                                     (T (e) (format T "~A~%" e))))))
 
 
 (defmethod handle-msg (state (msg get-pkg:request))

@@ -7,6 +7,7 @@
                       (:did-open :alive/lsp/message/document/did-open)
                       (:hover :alive/lsp/message/document/hover)
                       (:eval :alive/lsp/message/alive/do-eval)
+                      (:inspect :alive/lsp/message/alive/do-inspect)
                       (:get-pkg :alive/lsp/message/alive/get-pkg)
                       (:remove-pkg :alive/lsp/message/alive/remove-pkg)
                       (:list-asdf :alive/lsp/message/alive/list-asdf)
@@ -539,6 +540,28 @@
                                   :actual parsed)))))
 
 
+(defun inspect-msg ()
+    (labels ((create-content ()
+                             (with-output-to-string (str)
+                                 (format str "{~A" utils:*end-line*)
+                                 (format str "  \"jsonrpc\": \"2.0\",~A" utils:*end-line*)
+                                 (format str "  \"id\": 5,~A" utils:*end-line*)
+                                 (format str "  \"method\": \"$/alive/inspect\",~A" utils:*end-line*)
+                                 (format str "  \"params\": {~A" utils:*end-line*)
+                                 (format str "    \"package\": \"foo\",~A" utils:*end-line*)
+                                 (format str "    \"text\": \"(+ 1 2)\"~A" utils:*end-line*)
+                                 (format str "  }~A" utils:*end-line*)
+                                 (format str "}~A" utils:*end-line*))))
+
+        (clue:test "Inspect Message"
+            (let* ((msg (utils:create-msg (create-content)))
+                   (parsed (parse:from-stream (utils:stream-from-string msg))))
+                (clue:check-equal :expected (inspect:create-request
+                                                :id 5
+                                                :params (inspect:create-params :pkg-name "foo" :text "(+ 1 2)"))
+                                  :actual parsed)))))
+
+
 (defun run-all ()
     (clue:suite "LSP Messages"
         (init-msg)
@@ -559,4 +582,5 @@
         (list-asdf-msg)
         (load-asdf-system-msg)
         (hover-msg)
-        (format-on-type-msg)))
+        (format-on-type-msg)
+        (inspect-msg)))
