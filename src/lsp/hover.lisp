@@ -12,11 +12,12 @@
 
 (defun get-symbol-doc (name pkg-name)
     (let* ((sym (alive/symbols:lookup name pkg-name)))
-
-        (if sym
-            (with-output-to-string (str)
-                (describe sym str))
-            "")))
+        (when sym
+              (with-output-to-string (str)
+                  (cond ((alive/symbols:get-lambda-list name pkg-name)
+                            (describe sym str))
+                        ((boundp sym)
+                            (format str "~A~%" (symbol-value sym))))))))
 
 
 (defun get-text (&key text pos)
