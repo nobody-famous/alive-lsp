@@ -100,12 +100,21 @@
         (mapcar #'princ-to-string obj)))
 
 
+(defun vector-to-result (result obj)
+    (setf (gethash "length" result)
+        (length obj))
+
+    (setf (gethash "value" result)
+        (map 'vector #'princ-to-string obj)))
+
+
 (defun to-result (obj)
     (let ((result (make-hash-table :test #'equalp)))
         (typecase obj
             (symbol (sym-to-result result obj))
             (hash-table (hash-table-to-result result obj))
             (cons (list-to-result result obj))
+            (vector (vector-to-result result obj))
             (otherwise (setf (gethash "value" result)
                            (princ-to-string obj))))
 

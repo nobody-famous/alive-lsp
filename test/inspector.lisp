@@ -71,10 +71,44 @@
                                   :actual (hash-table-count insp-result))))))
 
 
+(defun vector-test ()
+    (clue:test "Inspect Vector Test"
+        (let ((data (make-array 0 :fill-pointer 0)))
+
+            (vector-push-extend "First" data)
+            (vector-push-extend "Second" data)
+            (vector-push-extend "Third" data)
+
+            (let* ((insp-result (inspector:to-result data)))
+                (clue:check-equal :expected T
+                                  :actual (hash-table-p insp-result))
+                (clue:check-equal :expected 2
+                                  :actual (hash-table-count insp-result))))))
+
+
+(defun array-test ()
+    (clue:test "Inspect Array Test"
+        (let ((data (make-array 3
+                        :fill-pointer nil
+                        :adjustable nil
+                        :displaced-to nil)))
+
+            (setf (aref data 0) "First")
+            (setf (aref data 1) "Second")
+            (setf (aref data 2) "Third")
+
+            (let* ((insp-result (inspector:to-result data)))
+                (clue:check-equal :expected T
+                                  :actual (hash-table-p insp-result))
+                (clue:check-equal :expected 2
+                                  :actual (hash-table-count insp-result))))))
+
 (defun run-all ()
     (clue:suite "Inspector Tests"
         (fn-test)
         (number-test)
         (hashmap-test)
         (alist-test)
-        (string-list-test)))
+        (string-list-test)
+        (vector-test)
+        (array-test)))
