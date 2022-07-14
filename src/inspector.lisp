@@ -43,30 +43,70 @@
           (result obj)))
 
 
-(defmethod to-result ((obj fixnum))
-    (princ-to-string obj))
+(defun fn-to-result (result sym name pkg-name)
+    (setf (gethash "documentation" result)
+        (documentation sym 'function))
+
+    (setf (gethash "lambda-list" result)
+        (alive/symbols:get-lambda-list name pkg-name))
+
+    (setf (gethash "value" result)
+        (with-output-to-string (str)
+            (disassemble sym :stream str))))
 
 
-(defun fn-to-result (sym name pkg-name)
-    (let ((result (make-hash-table :test 'equalp)))
-        (setf (gethash "documentation" result)
-            (documentation sym 'function))
-
-        (setf (gethash "lambda-list" result)
-            (alive/symbols:get-lambda-list name pkg-name))
-
-        (setf (gethash "disassemble" result)
-            (with-output-to-string (str)
-                (disassemble sym :stream str)))
-
-        result))
-
-
-(defmethod to-result ((obj symbol))
+(defun sym-to-result (result obj)
     (let* ((name (string obj))
            (pkg (symbol-package obj))
            (pkg-name (package-name pkg)))
 
-        (cond ((alive/symbols:function-p name pkg-name) (fn-to-result obj name pkg-name))
-              ((alive/symbols:macro-p name pkg-name) (fn-to-result obj name pkg-name))
-              (T (princ-to-string obj)))))
+        (cond ((alive/symbols:function-p name pkg-name)
+                  (fn-to-result result obj name pkg-name))
+
+              ((alive/symbols:macro-p name pkg-name)
+                  (fn-to-result result obj name pkg-name))
+
+              (T (setf (gethash "value" result)
+                     (princ-to-string obj))))))
+
+
+(defun hash-table-to-result (result obj)
+    (setf (gethash "count" result)
+        (hash-table-count obj))
+
+    (setf (gethash "test" result)
+        (hash-table-test obj))
+
+    (setf (gethash "rehash-size" result)
+        (hash-table-rehash-size obj))
+
+    (setf (gethash "size" result)
+        (hash-table-size obj))
+
+    (let ((value-map (make-hash-table)))
+        (loop :for value :being :the :hash-values :of obj :using (hash-key key)
+              :do (setf (gethash key value-map)
+                      (princ-to-string value)))
+
+        (setf (gethash "value" result)
+            value-map)))
+
+
+(defun list-to-result (result obj)
+    (setf (gethash "length" result)
+        (length obj))
+
+    (setf (gethash "value" result)
+        (mapcar #'princ-to-string obj)))
+
+
+(defun to-result (obj)
+    (let ((result (make-hash-table :test #'equalp)))
+        (typecase obj
+            (symbol (sym-to-result result obj))
+            (hash-table (hash-table-to-result result obj))
+            (cons (list-to-result result obj))
+            (otherwise (setf (gethash "value" result)
+                           (princ-to-string obj))))
+
+        result))
