@@ -47,6 +47,7 @@
                                        (:file "format")
                                        (:file "threads")
                                        (:file "eval")
+                                       (:file "inspector")
                                        (:file "asdf")
 
                                        (:file "lsp/errors")
@@ -61,6 +62,7 @@
                                        (:file "lsp/message/initialize")
                                        (:file "lsp/message/alive/debugger")
                                        (:file "lsp/message/alive/do-eval")
+                                       (:file "lsp/message/alive/do-inspect")
                                        (:file "lsp/message/alive/get-pkg")
                                        (:file "lsp/message/alive/remove-pkg")
                                        (:file "lsp/message/alive/load-asdf")
@@ -117,6 +119,7 @@
                                        (:file "format/on-type")
 
                                        (:file "eval")
+                                       (:file "inspector")
                                        (:file "streams")
 
                                        (:file "suite")))))

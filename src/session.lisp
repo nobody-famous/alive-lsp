@@ -16,7 +16,7 @@
                       (:input :alive/lsp/message/alive/user-input)
                       (:asdf :alive/asdf)
                       (:eval :alive/eval)
-                      (:inspect :alive/inspect)
+                      (:inspector :alive/inspector)
                       (:file :alive/file)
                       (:pos :alive/position)
                       (:packages :alive/packages)
@@ -94,6 +94,12 @@
          (sent-msg-callbacks :accessor sent-msg-callbacks
                              :initform (make-hash-table :test 'equalp)
                              :initarg :sent-msg-callbacks)
+         (inspector-id :accessor inspector-id
+                       :initform 1
+                       :initarg :inspector-id)
+         (inspectors :accessor inspectors
+                     :initform (make-hash-table :test 'equalp)
+                     :initarg :inspectors)
          (input-cond-vars :accessor input-cond-vars
                           :initform (make-hash-table :test 'equalp)
                           :initarg :input-cond-vars)
@@ -155,6 +161,19 @@
         (let ((id (send-msg-id obj)))
             (incf (send-msg-id obj))
             id)))
+
+
+(defmethod next-inspector-id ((obj state))
+    (bt:with-recursive-lock-held ((lock obj))
+        (let ((id (inspector-id obj)))
+            (incf (inspector-id obj))
+            id)))
+
+
+(defmethod add-inspector ((obj state) &key id inspector)
+    (bt:with-recursive-lock-held ((lock obj))
+        (setf (gethash id (inspectors obj))
+            inspector)))
 
 
 (defmethod get-input-stream ((obj network-state))
@@ -518,17 +537,24 @@
 (defun process-inspect (state msg)
     (let* ((pkg-name (inspect-msg:get-package msg))
            (text (inspect-msg:get-text msg))
+           (id (next-inspector-id state))
            (* (elt (history state) 0))
            (** (elt (history state) 1))
            (*** (elt (history state) 2))
-           (result (inspect:from-string text
-                                        :pkg-name pkg-name
-                                        :stdin-fn (lambda ()
-                                                      (wait-for-input state))
-                                        :stdout-fn (lambda (data)
-                                                       (send-msg state (stdout:create data)))
-                                        :stderr-fn (lambda (data)
-                                                       (send-msg state (stderr:create data))))))
+           (result (eval:from-string text
+                                     :pkg-name pkg-name
+                                     :stdin-fn (lambda ()
+                                                   (wait-for-input state))
+                                     :stdout-fn (lambda (data)
+                                                    (send-msg state (stdout:create data)))
+                                     :stderr-fn (lambda (data)
+                                                    (send-msg state (stderr:create data))))))
+
+        (add-inspector state
+                       :id id
+                       :inspector (inspector:create :text text
+                                                    :pkg pkg-name
+                                                    :result result))
 
         (send-msg state
                   (inspect-msg:create-response (message:id msg)
