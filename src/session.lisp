@@ -534,21 +534,15 @@
                                  (process-eval state msg))))
 
 
-(defun process-inspect (state msg)
-    (let* ((pkg-name (inspect-msg:get-package msg))
-           (text (inspect-msg:get-text msg))
-           (id (next-inspector-id state))
-           (* (elt (history state) 0))
-           (** (elt (history state) 1))
-           (*** (elt (history state) 2))
-           (result (eval:from-string text
-                                     :pkg-name pkg-name
-                                     :stdin-fn (lambda ()
-                                                   (wait-for-input state))
-                                     :stdout-fn (lambda (data)
-                                                    (send-msg state (stdout:create data)))
-                                     :stderr-fn (lambda (data)
-                                                    (send-msg state (stderr:create data))))))
+(defun try-inspect (state id text pkg-name)
+    (let ((result (eval:from-string text
+                                    :pkg-name pkg-name
+                                    :stdin-fn (lambda ()
+                                                  (wait-for-input state))
+                                    :stdout-fn (lambda (data)
+                                                   (send-msg state (stdout:create data)))
+                                    :stderr-fn (lambda (data)
+                                                   (send-msg state (stderr:create data))))))
 
         (add-inspector state
                        :id id
@@ -556,9 +550,28 @@
                                                     :pkg pkg-name
                                                     :result result))
 
-        (send-msg state
-                  (inspect-msg:create-response (message:id msg)
-                                               (format nil "~A" result)))))
+        (inspector:to-result result)))
+
+
+(defun process-inspect (state msg)
+    (let* ((pkg-name (inspect-msg:get-package msg))
+           (text (inspect-msg:get-text msg))
+           (id (next-inspector-id state))
+           (* (elt (history state) 0))
+           (** (elt (history state) 1))
+           (*** (elt (history state) 2)))
+
+        (handler-case
+                (let ((result (try-inspect state id text pkg-name)))
+                    (send-msg state
+                              (inspect-msg:create-response (message:id msg)
+                                                           id
+                                                           result)))
+            (T (c)
+               (send-msg state
+                         (message:create-error-resp :code errors:*internal-error*
+                                                    :message (format nil "~A" c)
+                                                    :id (message:id msg)))))))
 
 
 (defmethod handle-msg (state (msg inspect-msg:request))

@@ -4,7 +4,9 @@
              :get-text
              :get-pkg
              :get-result
-             :to-result))
+             :to-result)
+    (:local-nicknames (:eval :alive/eval)
+                      (:astreams :alive/streams)))
 
 (in-package :alive/inspector)
 
@@ -48,26 +50,11 @@
         (documentation sym 'function))
 
     (setf (gethash "lambda-list" result)
-        (alive/symbols:get-lambda-list name pkg-name))
+        (princ-to-string (alive/symbols:get-lambda-list name pkg-name)))
 
     (setf (gethash "value" result)
         (with-output-to-string (str)
             (disassemble sym :stream str))))
-
-
-(defun sym-to-result (result obj)
-    (let* ((name (string obj))
-           (pkg (symbol-package obj))
-           (pkg-name (package-name pkg)))
-
-        (cond ((alive/symbols:function-p name pkg-name)
-                  (fn-to-result result obj name pkg-name))
-
-              ((alive/symbols:macro-p name pkg-name)
-                  (fn-to-result result obj name pkg-name))
-
-              (T (setf (gethash "value" result)
-                     (princ-to-string obj))))))
 
 
 (defun hash-table-to-result (result obj)
@@ -108,8 +95,27 @@
         (map 'vector #'princ-to-string obj)))
 
 
+(defun sym-to-result (result obj)
+    (let* ((name (string obj))
+           (pkg (symbol-package obj))
+           (pkg-name (package-name pkg)))
+
+        (cond ((alive/symbols:function-p name pkg-name)
+                  (fn-to-result result obj name pkg-name))
+
+              ((alive/symbols:macro-p name pkg-name)
+                  (fn-to-result result obj name pkg-name))
+
+              (T (setf (gethash "value" result)
+                     (princ-to-string obj))))))
+
+
 (defun to-result (obj)
-    (let ((result (make-hash-table :test #'equalp)))
+    (let ((result (make-hash-table :test #'equalp))
+          (obj (if (symbolp obj)
+                   (symbol-value obj)
+                   obj)))
+
         (typecase obj
             (symbol (sym-to-result result obj))
             (hash-table (hash-table-to-result result obj))

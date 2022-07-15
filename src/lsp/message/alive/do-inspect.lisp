@@ -49,19 +49,24 @@
 
 
 (defclass response-body ()
-        ((text :accessor text
-               :initform nil
-               :initarg :text)))
+        ((id :accessor id
+             :initform nil
+             :initarg :id)
+         (result :accessor result
+                 :initform nil
+                 :initarg :result)))
 
 
 (defmethod print-object ((obj response-body) out)
-    (format out "{text: ~A}" (text obj)))
+    (format out "{id: ~A; result: ~A}" (id obj) (result obj)))
 
 
-(defun create-response (id text)
+(defun create-response (id insp-id result)
     (make-instance 'response
         :id id
-        :result (make-instance 'response-body :text text)))
+        :result (make-instance 'response-body
+                    :id insp-id
+                    :result result)))
 
 
 (defun get-package (obj)
