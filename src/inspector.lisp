@@ -112,7 +112,8 @@
 
 (defun to-result (obj)
     (let ((result (make-hash-table :test #'equalp))
-          (obj (if (symbolp obj)
+          (obj (if (and (symbolp obj)
+                        (boundp obj))
                    (symbol-value obj)
                    obj)))
 
