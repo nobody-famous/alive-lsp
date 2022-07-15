@@ -101,9 +101,11 @@
            (pkg-name (package-name pkg)))
 
         (cond ((alive/symbols:function-p name pkg-name)
+                  (setf (gethash "type" result) "FUNCTION")
                   (fn-to-result result obj name pkg-name))
 
               ((alive/symbols:macro-p name pkg-name)
+                  (setf (gethash "type" result) "MACRO")
                   (fn-to-result result obj name pkg-name))
 
               (T (setf (gethash "value" result)
@@ -116,6 +118,9 @@
                         (boundp obj))
                    (symbol-value obj)
                    obj)))
+
+        (setf (gethash "type" result)
+            (princ-to-string (type-of obj)))
 
         (typecase obj
             (symbol (sym-to-result result obj))
