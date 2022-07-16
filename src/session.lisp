@@ -30,6 +30,7 @@
                       (:debug :alive/lsp/message/alive/debugger)
                       (:eval-msg :alive/lsp/message/alive/do-eval)
                       (:inspect-msg :alive/lsp/message/alive/do-inspect)
+                      (:inspect-sym-msg :alive/lsp/message/alive/do-inspect-sym)
                       (:get-pkg :alive/lsp/message/alive/get-pkg)
                       (:remove-pkg :alive/lsp/message/alive/remove-pkg)
                       (:load-asdf :alive/lsp/message/alive/load-asdf)
@@ -569,31 +570,54 @@
 
 
 (defun process-inspect (state msg)
-    (let* ((pkg-name (inspect-msg:get-package msg))
-           (text (inspect-msg:get-text msg))
-           (id (next-inspector-id state))
-           (* (elt (history state) 0))
-           (** (elt (history state) 1))
-           (*** (elt (history state) 2)))
+    (handler-case
+            (let* ((pkg-name (inspect-msg:get-package msg))
+                   (text (inspect-msg:get-text msg))
+                   (id (next-inspector-id state))
+                   (* (elt (history state) 0))
+                   (** (elt (history state) 1))
+                   (*** (elt (history state) 2)))
 
-        (handler-case
                 (let ((result (try-inspect state id text pkg-name)))
                     (send-msg state
                               (inspect-msg:create-response (message:id msg)
                                                            id
-                                                           result)))
-            (T (c)
-               (send-msg state
-                         (message:create-error-resp :code errors:*internal-error*
-                                                    :message (format nil "~A" c)
-                                                    :id (message:id msg)))))))
+                                                           result))))
+        (T (c)
+           (send-msg state
+                     (message:create-error-resp :code errors:*internal-error*
+                                                :message (format nil "~A" c)
+                                                :id (message:id msg))))))
 
 
 (defmethod handle-msg (state (msg inspect-msg:request))
     (run-in-thread state msg (lambda ()
-                                 (handler-case
-                                         (process-inspect state msg)
-                                     (T (e) (format T "~A~%" e))))))
+                                 (process-inspect state msg))))
+
+
+(defun process-inspect-sym (state msg)
+    (handler-case
+            (let* ((pkg-name (inspect-sym-msg:get-package msg))
+                   (name (inspect-sym-msg:get-symbol msg))
+                   (id (next-inspector-id state))
+                   (sym (alive/symbols:lookup name pkg-name))
+                   (result (inspector:to-result sym)))
+                (format T "SYMBOL ~A~%" sym)
+                (format T "RESULT ~A~%" result)
+                (send-msg state
+                          (inspect-msg:create-response (message:id msg)
+                                                       id
+                                                       result)))
+        (T (c)
+           (send-msg state
+                     (message:create-error-resp :code errors:*internal-error*
+                                                :message (format nil "~A" c)
+                                                :id (message:id msg))))))
+
+
+(defmethod handle-msg (state (msg inspect-sym-msg:request))
+    (run-in-thread state msg (lambda ()
+                                 (process-inspect-sym state msg))))
 
 
 (defmethod handle-msg (state (msg get-pkg:request))

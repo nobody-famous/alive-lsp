@@ -64,6 +64,7 @@
                                        (:file "lsp/message/alive/debugger")
                                        (:file "lsp/message/alive/do-eval")
                                        (:file "lsp/message/alive/do-inspect")
+                                       (:file "lsp/message/alive/do-inspect-sym")
                                        (:file "lsp/message/alive/get-pkg")
                                        (:file "lsp/message/alive/remove-pkg")
                                        (:file "lsp/message/alive/load-asdf")

@@ -8,6 +8,7 @@
                       (:hover :alive/lsp/message/document/hover)
                       (:eval :alive/lsp/message/alive/do-eval)
                       (:inspect :alive/lsp/message/alive/do-inspect)
+                      (:inspect-sym :alive/lsp/message/alive/do-inspect-sym)
                       (:get-pkg :alive/lsp/message/alive/get-pkg)
                       (:remove-pkg :alive/lsp/message/alive/remove-pkg)
                       (:list-asdf :alive/lsp/message/alive/list-asdf)
@@ -563,6 +564,28 @@
                                   :actual parsed)))))
 
 
+(defun inspect-symbol-msg ()
+    (labels ((create-content ()
+                             (with-output-to-string (str)
+                                 (format str "{~A" utils:*end-line*)
+                                 (format str "  \"jsonrpc\": \"2.0\",~A" utils:*end-line*)
+                                 (format str "  \"id\": 5,~A" utils:*end-line*)
+                                 (format str "  \"method\": \"$/alive/inspectSymbol\",~A" utils:*end-line*)
+                                 (format str "  \"params\": {~A" utils:*end-line*)
+                                 (format str "    \"package\": \"foo\",~A" utils:*end-line*)
+                                 (format str "    \"symbol\": \"bar\"~A" utils:*end-line*)
+                                 (format str "  }~A" utils:*end-line*)
+                                 (format str "}~A" utils:*end-line*))))
+
+        (clue:test "Inspect Symbol Message"
+            (let* ((msg (utils:create-msg (create-content)))
+                   (parsed (parse:from-stream (utils:stream-from-string msg))))
+                (clue:check-equal :expected (inspect-sym:create-request
+                                                :id 5
+                                                :params (inspect-sym:create-params :pkg-name "foo" :sym "bar"))
+                                  :actual parsed)))))
+
+
 (defun symbol-msg ()
     (labels ((create-content ()
                              (with-output-to-string (str)
@@ -613,4 +636,5 @@
         (hover-msg)
         (format-on-type-msg)
         (inspect-msg)
+        (inspect-symbol-msg)
         (symbol-msg)))

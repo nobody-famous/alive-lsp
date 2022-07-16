@@ -10,6 +10,7 @@
                       (:on-type :alive/lsp/message/document/fmt-on-type)
                       (:eval :alive/lsp/message/alive/do-eval)
                       (:inspect :alive/lsp/message/alive/do-inspect)
+                      (:inspect-sym :alive/lsp/message/alive/do-inspect-sym)
                       (:get-pkg :alive/lsp/message/alive/get-pkg)
                       (:remove-pkg :alive/lsp/message/alive/remove-pkg)
                       (:list-asdf :alive/lsp/message/alive/list-asdf)
@@ -202,6 +203,11 @@
                   (inspect:from-wire :jsonrpc (jsonrpc fields)
                                      :id msg-id
                                      :params (params fields)))
+
+              ((string= "$/alive/inspectsymbol" name)
+                  (inspect-sym:from-wire :jsonrpc (jsonrpc fields)
+                                         :id msg-id
+                                         :params (params fields)))
 
               ((string= "$/alive/getpackageforposition" name)
                   (get-pkg:from-wire :jsonrpc (jsonrpc fields)
