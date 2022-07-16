@@ -265,6 +265,17 @@
          (clue:are-equal (alive/lsp/message/alive/do-inspect-sym::sym a) (alive/lsp/message/alive/do-inspect-sym::sym b))))
 
 
+(defmethod clue:are-equal ((a alive/lsp/message/alive/do-inspect-close:request) b)
+    (and (equal (type-of a) (type-of b))
+         (equalp (alive/lsp/message/abstract:id a) (alive/lsp/message/abstract:id b))
+         (clue:are-equal (alive/lsp/message/abstract:params a) (alive/lsp/message/abstract:params b))))
+
+
+(defmethod clue:are-equal ((a alive/lsp/message/alive/do-inspect-close::params) b)
+    (and (equal (type-of a) (type-of b))
+         (clue:are-equal (alive/lsp/message/alive/do-inspect-close::id a) (alive/lsp/message/alive/do-inspect-close::id b))))
+
+
 (defmethod clue:are-equal ((a alive/lsp/message/alive/get-pkg::request) b)
     (and (equal (type-of a) (type-of b))
          (equalp (alive/lsp/message/abstract:id a) (alive/lsp/message/abstract:id b))

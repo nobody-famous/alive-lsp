@@ -31,6 +31,7 @@
                       (:eval-msg :alive/lsp/message/alive/do-eval)
                       (:inspect-msg :alive/lsp/message/alive/do-inspect)
                       (:inspect-sym-msg :alive/lsp/message/alive/do-inspect-sym)
+                      (:inspect-close-msg :alive/lsp/message/alive/do-inspect-close)
                       (:get-pkg :alive/lsp/message/alive/get-pkg)
                       (:remove-pkg :alive/lsp/message/alive/remove-pkg)
                       (:load-asdf :alive/lsp/message/alive/load-asdf)
@@ -176,6 +177,11 @@
     (bt:with-recursive-lock-held ((lock obj))
         (setf (gethash id (inspectors obj))
             inspector)))
+
+
+(defmethod rem-inspector ((obj state) &key id)
+    (bt:with-recursive-lock-held ((lock obj))
+        (remhash id (inspectors obj))))
 
 
 (defmethod get-input-stream ((obj network-state))
@@ -602,8 +608,13 @@
                    (id (next-inspector-id state))
                    (sym (alive/symbols:lookup name pkg-name))
                    (result (inspector:to-result sym)))
-                (format T "SYMBOL ~A~%" sym)
-                (format T "RESULT ~A~%" result)
+
+                (add-inspector state
+                               :id id
+                               :inspector (inspector:create :text name
+                                                            :pkg pkg-name
+                                                            :result result))
+
                 (send-msg state
                           (inspect-msg:create-response (message:id msg)
                                                        id
@@ -618,6 +629,14 @@
 (defmethod handle-msg (state (msg inspect-sym-msg:request))
     (run-in-thread state msg (lambda ()
                                  (process-inspect-sym state msg))))
+
+
+(defmethod handle-msg (state (msg inspect-close-msg:request))
+    (let ((insp-id (inspect-close-msg:get-id msg)))
+        (rem-inspector state :id insp-id)
+        (send-msg state
+                  (message:create-result-resp :id (message:id msg)
+                                              :result "OK"))))
 
 
 (defmethod handle-msg (state (msg get-pkg:request))

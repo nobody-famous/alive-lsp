@@ -9,6 +9,7 @@
                       (:eval :alive/lsp/message/alive/do-eval)
                       (:inspect :alive/lsp/message/alive/do-inspect)
                       (:inspect-sym :alive/lsp/message/alive/do-inspect-sym)
+                      (:inspect-close :alive/lsp/message/alive/do-inspect-close)
                       (:get-pkg :alive/lsp/message/alive/get-pkg)
                       (:remove-pkg :alive/lsp/message/alive/remove-pkg)
                       (:list-asdf :alive/lsp/message/alive/list-asdf)
@@ -586,6 +587,27 @@
                                   :actual parsed)))))
 
 
+(defun inspect-close-msg ()
+    (labels ((create-content ()
+                             (with-output-to-string (str)
+                                 (format str "{~A" utils:*end-line*)
+                                 (format str "  \"jsonrpc\": \"2.0\",~A" utils:*end-line*)
+                                 (format str "  \"id\": 5,~A" utils:*end-line*)
+                                 (format str "  \"method\": \"$/alive/inspectClose\",~A" utils:*end-line*)
+                                 (format str "  \"params\": {~A" utils:*end-line*)
+                                 (format str "    \"id\": 10~A" utils:*end-line*)
+                                 (format str "  }~A" utils:*end-line*)
+                                 (format str "}~A" utils:*end-line*))))
+
+        (clue:test "Inspect Close Message"
+            (let* ((msg (utils:create-msg (create-content)))
+                   (parsed (parse:from-stream (utils:stream-from-string msg))))
+                (clue:check-equal :expected (inspect-close:create-request
+                                                :id 5
+                                                :params (inspect-close:create-params :id 10))
+                                  :actual parsed)))))
+
+
 (defun symbol-msg ()
     (labels ((create-content ()
                              (with-output-to-string (str)
@@ -637,4 +659,5 @@
         (format-on-type-msg)
         (inspect-msg)
         (inspect-symbol-msg)
+        (inspect-close-msg)
         (symbol-msg)))
