@@ -23,6 +23,10 @@
         ())
 
 
+(defclass symbol-state (test-state)
+        ())
+
+
 (defclass completion-state (test-state)
         ())
 
@@ -576,6 +580,38 @@
 (defun inspect-msg ()
     (let ((state (create-state 'inspect-state)))
         (clue:test "Inspect Message"
+            (session::handle-msg state
+                                 (session::read-message state))
+            (clue:check-equal :expected t
+                              :actual (send-called state)))))
+
+
+(defmethod session::get-input-stream ((obj symbol-state))
+    (let ((content (with-output-to-string (str)
+                       (format str "{~A" utils:*end-line*)
+                       (format str "  \"jsonrpc\": \"2.0\",~A" utils:*end-line*)
+                       (format str "  \"id\": 5,~A" utils:*end-line*)
+                       (format str "  \"method\": \"$/alive/symbol\",~A" utils:*end-line*)
+                       (format str "  \"params\": {~A" utils:*end-line*)
+                       (format str "    \"textDocument\": {~A" utils:*end-line*)
+                       (format str "      \"uri\":\"file:///some/file.txt\"~A" utils:*end-line*)
+                       (format str "    },~A" utils:*end-line*)
+                       (format str "    \"position\": {~A" utils:*end-line*)
+                       (format str "      \"line\": 3,~A" utils:*end-line*)
+                       (format str "      \"character\": 11~A" utils:*end-line*)
+                       (format str "    }~A" utils:*end-line*)
+                       (format str "  }~A" utils:*end-line*)
+                       (format str "}~A" utils:*end-line*))))
+        (utils:stream-from-string (utils:create-msg content))))
+
+
+(defmethod session::send-msg ((obj symbol-state) msg)
+    (setf (send-called obj) T))
+
+
+(defun symbol-msg ()
+    (let ((state (create-state 'symbol-state)))
+        (clue:test "Symbol Message"
             (session::handle-msg state
                                  (session::read-message state))
             (clue:check-equal :expected t

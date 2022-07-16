@@ -1,8 +1,12 @@
 (defpackage :alive/lsp/utils
     (:use :cl)
-    (:export :find-tokens)
+    (:export :find-tokens
+             :symbol-for-pos)
     (:local-nicknames (:pos :alive/position)
-                      (:token :alive/parse/token)))
+                      (:token :alive/parse/token)
+                      (:tokenizer :alive/parse/tokenizer)
+                      (:packages :alive/packages)
+                      (:types :alive/types)))
 
 (in-package :alive/lsp/utils)
 
@@ -17,3 +21,26 @@
           :finally (return (cond ((<= 3 (length found-tokens)) (subseq (reverse found-tokens) 0 3))
                                  ((= 2 (length found-tokens)) (reverse (cons nil found-tokens)))
                                  ((= 1 (length found-tokens)) (list (first found-tokens) nil nil))))))
+
+
+(defun symbol-for-pos (&key text pos)
+    (let* ((raw-tokens (tokenizer:from-stream (make-string-input-stream text)))
+           (tokens (find-tokens raw-tokens pos))
+           (pkg-name (packages:for-pos text pos))
+           (pkg (packages:lookup pkg-name))
+           (*package* (if pkg pkg *package*)))
+
+        (if (zerop (length tokens))
+            nil
+            (destructuring-bind (token1 token2 token3) tokens
+                (cond ((and (eq (token:get-type-value token1) types:*symbol*)
+                            (eq (token:get-type-value token2) types:*colons*)
+                            (eq (token:get-type-value token3) types:*symbol*))
+                          (values (token:get-text token1)
+                              (token:get-text token3)))
+
+                      ((eq (token:get-type-value token1) types:*symbol*)
+                          (values (token:get-text token1)
+                              pkg-name))
+
+                      (T nil))))))

@@ -38,6 +38,7 @@
                       (:list-threads :alive/lsp/message/alive/list-threads)
                       (:kill-thread :alive/lsp/message/alive/kill-thread)
                       (:load-file :alive/lsp/message/alive/load-file)
+                      (:symbol :alive/lsp/message/alive/symbol)
                       (:try-compile :alive/lsp/message/alive/try-compile)
                       (:unexport :alive/lsp/message/alive/unexport-symbol)
                       (:stderr :alive/lsp/message/alive/stderr)
@@ -330,6 +331,20 @@
            (result (if hov-text hov-text "")))
 
         (send-msg state (hover:create-response
+                            :id (message:id msg)
+                            :value result))))
+
+
+(defmethod handle-msg (state (msg symbol:request))
+    (let* ((params (message:params msg))
+           (doc (symbol:text-document params))
+           (pos (symbol:pos params))
+           (uri (text-doc:uri doc))
+           (file-text (get-file-text state uri))
+           (text (if file-text file-text ""))
+           (result (alive/lsp/symbol:for-pos :text text :pos pos)))
+
+        (send-msg state (symbol:create-response
                             :id (message:id msg)
                             :value result))))
 

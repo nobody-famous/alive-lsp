@@ -18,6 +18,7 @@
                       (:kill-thread :alive/lsp/message/alive/kill-thread)
                       (:load-asdf :alive/lsp/message/alive/load-asdf)
                       (:load-file :alive/lsp/message/alive/load-file)
+                      (:symbol :alive/lsp/message/alive/symbol)
                       (:top-form :alive/lsp/message/alive/top-form)
                       (:try-compile :alive/lsp/message/alive/try-compile)
                       (:unexport :alive/lsp/message/alive/unexport-symbol)
@@ -221,6 +222,11 @@
                   (load-file:from-wire :jsonrpc (jsonrpc fields)
                                        :id msg-id
                                        :params (params fields)))
+
+              ((string= "$/alive/symbol" name)
+                  (symbol:from-wire :jsonrpc (jsonrpc fields)
+                                    :id msg-id
+                                    :params (params fields)))
 
               ((string= "$/alive/listthreads" name)
                   (list-threads:from-wire :jsonrpc (jsonrpc fields)

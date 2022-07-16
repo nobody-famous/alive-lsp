@@ -294,6 +294,18 @@
          (clue:are-equal (alive/lsp/message/document/hover::text-document a) (alive/lsp/message/document/hover::text-document b))))
 
 
+(defmethod clue:are-equal ((a alive/lsp/message/alive/symbol::request) b)
+    (and (equal (type-of a) (type-of b))
+         (equalp (alive/lsp/message/abstract:id a) (alive/lsp/message/abstract:id b))
+         (clue:are-equal (alive/lsp/message/abstract:method-name a) (alive/lsp/message/abstract:method-name b))
+         (clue:are-equal (alive/lsp/message/abstract:params a) (alive/lsp/message/abstract:params b))))
+
+
+(defmethod clue:are-equal ((a alive/lsp/message/alive/symbol::req-params) b)
+    (and (equal (type-of a) (type-of b))
+         (clue:are-equal (alive/lsp/message/alive/symbol::text-document a) (alive/lsp/message/alive/symbol::text-document b))))
+
+
 (defmethod clue:are-equal ((a alive/lsp/types/sem-tokens::token) b)
     (and (equal (type-of a) (type-of b))
          (eq (alive/lsp/types/sem-tokens::token-type a) (alive/lsp/types/sem-tokens::token-type b))

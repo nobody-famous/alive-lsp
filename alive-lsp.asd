@@ -54,6 +54,7 @@
                                        (:file "lsp/utils")
                                        (:file "lsp/completions")
                                        (:file "lsp/hover")
+                                       (:file "lsp/symbol")
 
                                        (:file "lsp/sem-analysis")
 
@@ -71,6 +72,7 @@
                                        (:file "lsp/message/alive/list-threads")
                                        (:file "lsp/message/alive/kill-thread")
                                        (:file "lsp/message/alive/load-file")
+                                       (:file "lsp/message/alive/symbol")
                                        (:file "lsp/message/alive/try-compile")
                                        (:file "lsp/message/alive/unexport-symbol")
                                        (:file "lsp/message/alive/stderr")
