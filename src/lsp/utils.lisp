@@ -36,8 +36,12 @@
                 (cond ((and (eq (token:get-type-value token1) types:*symbol*)
                             (eq (token:get-type-value token2) types:*colons*)
                             (eq (token:get-type-value token3) types:*symbol*))
-                          (values (token:get-text token1)
-                              (token:get-text token3)))
+                          (let* ((real-pkg (packages:lookup (token:get-text token3)))
+                                 (real-pkg-name (if real-pkg
+                                                    (package-name real-pkg)
+                                                    (token:get-text token3))))
+                              (values (token:get-text token1)
+                                  real-pkg-name)))
 
                       ((eq (token:get-type-value token1) types:*symbol*)
                           (values (token:get-text token1)
