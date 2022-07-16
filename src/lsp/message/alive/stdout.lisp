@@ -7,19 +7,19 @@
 
 
 (defclass notification (message:notification)
-    ((method :initform "$/alive/stdout")))
+        ((method :initform "$/alive/stdout")))
 
 
 (defmethod print-object ((obj notification) out)
     (format out "{method: ~A; params: ~A}"
-            (message:method-name obj)
-            (message:params obj)))
+        (message:method-name obj)
+        (message:params obj)))
 
 
 (defclass params ()
-    ((data :accessor data
-           :initform nil
-           :initarg :data)))
+        ((data :accessor data
+               :initform nil
+               :initarg :data)))
 
 
 (defmethod print-object ((obj params) out)
@@ -28,5 +28,5 @@
 
 (defun create (data)
     (make-instance 'notification
-                   :params (make-instance 'params
-                                          :data data)))
+        :params (make-instance 'params
+                    :data data)))

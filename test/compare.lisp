@@ -241,6 +241,41 @@
          (clue:are-equal (alive/lsp/message/alive/do-eval::store-result a) (alive/lsp/message/alive/do-eval::store-result b))))
 
 
+(defmethod clue:are-equal ((a alive/lsp/message/alive/do-inspect::request) b)
+    (and (equal (type-of a) (type-of b))
+         (equalp (alive/lsp/message/abstract:id a) (alive/lsp/message/abstract:id b))
+         (clue:are-equal (alive/lsp/message/abstract:params a) (alive/lsp/message/abstract:params b))))
+
+
+(defmethod clue:are-equal ((a alive/lsp/message/alive/do-inspect::params) b)
+    (and (equal (type-of a) (type-of b))
+         (clue:are-equal (alive/lsp/message/alive/do-inspect::pkg-name a) (alive/lsp/message/alive/do-inspect::pkg-name b))
+         (clue:are-equal (alive/lsp/message/alive/do-inspect::text a) (alive/lsp/message/alive/do-inspect::text b))))
+
+
+(defmethod clue:are-equal ((a alive/lsp/message/alive/do-inspect-sym::request) b)
+    (and (equal (type-of a) (type-of b))
+         (equalp (alive/lsp/message/abstract:id a) (alive/lsp/message/abstract:id b))
+         (clue:are-equal (alive/lsp/message/abstract:params a) (alive/lsp/message/abstract:params b))))
+
+
+(defmethod clue:are-equal ((a alive/lsp/message/alive/do-inspect-sym::params) b)
+    (and (equal (type-of a) (type-of b))
+         (clue:are-equal (alive/lsp/message/alive/do-inspect-sym::pkg-name a) (alive/lsp/message/alive/do-inspect-sym::pkg-name b))
+         (clue:are-equal (alive/lsp/message/alive/do-inspect-sym::sym a) (alive/lsp/message/alive/do-inspect-sym::sym b))))
+
+
+(defmethod clue:are-equal ((a alive/lsp/message/alive/do-inspect-close:request) b)
+    (and (equal (type-of a) (type-of b))
+         (equalp (alive/lsp/message/abstract:id a) (alive/lsp/message/abstract:id b))
+         (clue:are-equal (alive/lsp/message/abstract:params a) (alive/lsp/message/abstract:params b))))
+
+
+(defmethod clue:are-equal ((a alive/lsp/message/alive/do-inspect-close::params) b)
+    (and (equal (type-of a) (type-of b))
+         (clue:are-equal (alive/lsp/message/alive/do-inspect-close::id a) (alive/lsp/message/alive/do-inspect-close::id b))))
+
+
 (defmethod clue:are-equal ((a alive/lsp/message/alive/get-pkg::request) b)
     (and (equal (type-of a) (type-of b))
          (equalp (alive/lsp/message/abstract:id a) (alive/lsp/message/abstract:id b))
@@ -280,6 +315,18 @@
 (defmethod clue:are-equal ((a alive/lsp/message/document/hover::req-params) b)
     (and (equal (type-of a) (type-of b))
          (clue:are-equal (alive/lsp/message/document/hover::text-document a) (alive/lsp/message/document/hover::text-document b))))
+
+
+(defmethod clue:are-equal ((a alive/lsp/message/alive/symbol::request) b)
+    (and (equal (type-of a) (type-of b))
+         (equalp (alive/lsp/message/abstract:id a) (alive/lsp/message/abstract:id b))
+         (clue:are-equal (alive/lsp/message/abstract:method-name a) (alive/lsp/message/abstract:method-name b))
+         (clue:are-equal (alive/lsp/message/abstract:params a) (alive/lsp/message/abstract:params b))))
+
+
+(defmethod clue:are-equal ((a alive/lsp/message/alive/symbol::req-params) b)
+    (and (equal (type-of a) (type-of b))
+         (clue:are-equal (alive/lsp/message/alive/symbol::text-document a) (alive/lsp/message/alive/symbol::text-document b))))
 
 
 (defmethod clue:are-equal ((a alive/lsp/types/sem-tokens::token) b)

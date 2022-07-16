@@ -47,12 +47,14 @@
                                        (:file "format")
                                        (:file "threads")
                                        (:file "eval")
+                                       (:file "inspector")
                                        (:file "asdf")
 
                                        (:file "lsp/errors")
                                        (:file "lsp/utils")
                                        (:file "lsp/completions")
                                        (:file "lsp/hover")
+                                       (:file "lsp/symbol")
 
                                        (:file "lsp/sem-analysis")
 
@@ -61,6 +63,9 @@
                                        (:file "lsp/message/initialize")
                                        (:file "lsp/message/alive/debugger")
                                        (:file "lsp/message/alive/do-eval")
+                                       (:file "lsp/message/alive/do-inspect")
+                                       (:file "lsp/message/alive/do-inspect-sym")
+                                       (:file "lsp/message/alive/do-inspect-close")
                                        (:file "lsp/message/alive/get-pkg")
                                        (:file "lsp/message/alive/remove-pkg")
                                        (:file "lsp/message/alive/load-asdf")
@@ -69,6 +74,7 @@
                                        (:file "lsp/message/alive/list-threads")
                                        (:file "lsp/message/alive/kill-thread")
                                        (:file "lsp/message/alive/load-file")
+                                       (:file "lsp/message/alive/symbol")
                                        (:file "lsp/message/alive/try-compile")
                                        (:file "lsp/message/alive/unexport-symbol")
                                        (:file "lsp/message/alive/stderr")
@@ -117,6 +123,7 @@
                                        (:file "format/on-type")
 
                                        (:file "eval")
+                                       (:file "inspector")
                                        (:file "streams")
 
                                        (:file "suite")))))

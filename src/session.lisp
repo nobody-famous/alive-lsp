@@ -16,6 +16,7 @@
                       (:input :alive/lsp/message/alive/user-input)
                       (:asdf :alive/asdf)
                       (:eval :alive/eval)
+                      (:inspector :alive/inspector)
                       (:file :alive/file)
                       (:pos :alive/position)
                       (:packages :alive/packages)
@@ -28,6 +29,9 @@
                       (:forms :alive/parse/forms)
                       (:debug :alive/lsp/message/alive/debugger)
                       (:eval-msg :alive/lsp/message/alive/do-eval)
+                      (:inspect-msg :alive/lsp/message/alive/do-inspect)
+                      (:inspect-sym-msg :alive/lsp/message/alive/do-inspect-sym)
+                      (:inspect-close-msg :alive/lsp/message/alive/do-inspect-close)
                       (:get-pkg :alive/lsp/message/alive/get-pkg)
                       (:remove-pkg :alive/lsp/message/alive/remove-pkg)
                       (:load-asdf :alive/lsp/message/alive/load-asdf)
@@ -36,6 +40,7 @@
                       (:list-threads :alive/lsp/message/alive/list-threads)
                       (:kill-thread :alive/lsp/message/alive/kill-thread)
                       (:load-file :alive/lsp/message/alive/load-file)
+                      (:symbol :alive/lsp/message/alive/symbol)
                       (:try-compile :alive/lsp/message/alive/try-compile)
                       (:unexport :alive/lsp/message/alive/unexport-symbol)
                       (:stderr :alive/lsp/message/alive/stderr)
@@ -92,6 +97,12 @@
          (sent-msg-callbacks :accessor sent-msg-callbacks
                              :initform (make-hash-table :test 'equalp)
                              :initarg :sent-msg-callbacks)
+         (inspector-id :accessor inspector-id
+                       :initform 1
+                       :initarg :inspector-id)
+         (inspectors :accessor inspectors
+                     :initform (make-hash-table :test 'equalp)
+                     :initarg :inspectors)
          (input-cond-vars :accessor input-cond-vars
                           :initform (make-hash-table :test 'equalp)
                           :initarg :input-cond-vars)
@@ -153,6 +164,24 @@
         (let ((id (send-msg-id obj)))
             (incf (send-msg-id obj))
             id)))
+
+
+(defmethod next-inspector-id ((obj state))
+    (bt:with-recursive-lock-held ((lock obj))
+        (let ((id (inspector-id obj)))
+            (incf (inspector-id obj))
+            id)))
+
+
+(defmethod add-inspector ((obj state) &key id inspector)
+    (bt:with-recursive-lock-held ((lock obj))
+        (setf (gethash id (inspectors obj))
+            inspector)))
+
+
+(defmethod rem-inspector ((obj state) &key id)
+    (bt:with-recursive-lock-held ((lock obj))
+        (remhash id (inspectors obj))))
 
 
 (defmethod get-input-stream ((obj network-state))
@@ -309,6 +338,20 @@
            (result (if hov-text hov-text "")))
 
         (send-msg state (hover:create-response
+                            :id (message:id msg)
+                            :value result))))
+
+
+(defmethod handle-msg (state (msg symbol:request))
+    (let* ((params (message:params msg))
+           (doc (symbol:text-document params))
+           (pos (symbol:pos params))
+           (uri (text-doc:uri doc))
+           (file-text (get-file-text state uri))
+           (text (if file-text file-text ""))
+           (result (alive/lsp/symbol:for-pos :text text :pos pos)))
+
+        (send-msg state (symbol:create-response
                             :id (message:id msg)
                             :value result))))
 
@@ -511,6 +554,89 @@
 (defmethod handle-msg (state (msg eval-msg:request))
     (run-in-thread state msg (lambda ()
                                  (process-eval state msg))))
+
+
+(defun try-inspect (state id text pkg-name)
+    (let ((result (eval:from-string text
+                                    :pkg-name pkg-name
+                                    :stdin-fn (lambda ()
+                                                  (wait-for-input state))
+                                    :stdout-fn (lambda (data)
+                                                   (send-msg state (stdout:create data)))
+                                    :stderr-fn (lambda (data)
+                                                   (send-msg state (stderr:create data))))))
+
+        (add-inspector state
+                       :id id
+                       :inspector (inspector:create :text text
+                                                    :pkg pkg-name
+                                                    :result result))
+
+        (inspector:to-result result)))
+
+
+(defun process-inspect (state msg)
+    (handler-case
+            (let* ((pkg-name (inspect-msg:get-package msg))
+                   (text (inspect-msg:get-text msg))
+                   (id (next-inspector-id state))
+                   (* (elt (history state) 0))
+                   (** (elt (history state) 1))
+                   (*** (elt (history state) 2)))
+
+                (let ((result (try-inspect state id text pkg-name)))
+                    (send-msg state
+                              (inspect-msg:create-response (message:id msg)
+                                                           id
+                                                           result))))
+        (T (c)
+           (send-msg state
+                     (message:create-error-resp :code errors:*internal-error*
+                                                :message (format nil "~A" c)
+                                                :id (message:id msg))))))
+
+
+(defmethod handle-msg (state (msg inspect-msg:request))
+    (run-in-thread state msg (lambda ()
+                                 (process-inspect state msg))))
+
+
+(defun process-inspect-sym (state msg)
+    (handler-case
+            (let* ((pkg-name (inspect-sym-msg:get-package msg))
+                   (name (inspect-sym-msg:get-symbol msg))
+                   (id (next-inspector-id state))
+                   (sym (alive/symbols:lookup name pkg-name))
+                   (result (inspector:to-result sym)))
+
+                (add-inspector state
+                               :id id
+                               :inspector (inspector:create :text name
+                                                            :pkg pkg-name
+                                                            :result result))
+
+                (send-msg state
+                          (inspect-msg:create-response (message:id msg)
+                                                       id
+                                                       result)))
+        (T (c)
+           (send-msg state
+                     (message:create-error-resp :code errors:*internal-error*
+                                                :message (format nil "~A" c)
+                                                :id (message:id msg))))))
+
+
+(defmethod handle-msg (state (msg inspect-sym-msg:request))
+    (run-in-thread state msg (lambda ()
+                                 (process-inspect-sym state msg))))
+
+
+(defmethod handle-msg (state (msg inspect-close-msg:request))
+    (let ((insp-id (inspect-close-msg:get-id msg)))
+        (rem-inspector state :id insp-id)
+        (send-msg state
+                  (message:create-result-resp :id (message:id msg)
+                                              :result "OK"))))
 
 
 (defmethod handle-msg (state (msg get-pkg:request))

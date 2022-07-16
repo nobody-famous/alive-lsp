@@ -9,6 +9,9 @@
                       (:formatting :alive/lsp/message/document/range-format)
                       (:on-type :alive/lsp/message/document/fmt-on-type)
                       (:eval :alive/lsp/message/alive/do-eval)
+                      (:inspect :alive/lsp/message/alive/do-inspect)
+                      (:inspect-sym :alive/lsp/message/alive/do-inspect-sym)
+                      (:inspect-close :alive/lsp/message/alive/do-inspect-close)
                       (:get-pkg :alive/lsp/message/alive/get-pkg)
                       (:remove-pkg :alive/lsp/message/alive/remove-pkg)
                       (:list-asdf :alive/lsp/message/alive/list-asdf)
@@ -17,6 +20,7 @@
                       (:kill-thread :alive/lsp/message/alive/kill-thread)
                       (:load-asdf :alive/lsp/message/alive/load-asdf)
                       (:load-file :alive/lsp/message/alive/load-file)
+                      (:symbol :alive/lsp/message/alive/symbol)
                       (:top-form :alive/lsp/message/alive/top-form)
                       (:try-compile :alive/lsp/message/alive/try-compile)
                       (:unexport :alive/lsp/message/alive/unexport-symbol)
@@ -196,6 +200,21 @@
                                   :id msg-id
                                   :params (params fields)))
 
+              ((string= "$/alive/inspect" name)
+                  (inspect:from-wire :jsonrpc (jsonrpc fields)
+                                     :id msg-id
+                                     :params (params fields)))
+
+              ((string= "$/alive/inspectsymbol" name)
+                  (inspect-sym:from-wire :jsonrpc (jsonrpc fields)
+                                         :id msg-id
+                                         :params (params fields)))
+
+              ((string= "$/alive/inspectclose" name)
+                  (inspect-close:from-wire :jsonrpc (jsonrpc fields)
+                                           :id msg-id
+                                           :params (params fields)))
+
               ((string= "$/alive/getpackageforposition" name)
                   (get-pkg:from-wire :jsonrpc (jsonrpc fields)
                                      :id msg-id
@@ -215,6 +234,11 @@
                   (load-file:from-wire :jsonrpc (jsonrpc fields)
                                        :id msg-id
                                        :params (params fields)))
+
+              ((string= "$/alive/symbol" name)
+                  (symbol:from-wire :jsonrpc (jsonrpc fields)
+                                    :id msg-id
+                                    :params (params fields)))
 
               ((string= "$/alive/listthreads" name)
                   (list-threads:from-wire :jsonrpc (jsonrpc fields)
