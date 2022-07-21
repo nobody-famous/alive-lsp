@@ -261,10 +261,13 @@
     (message:create-response id
                              :result-value (list (cons :capabilities (list (cons :text-document-sync *doc-sync-full*)
                                                                            (cons :hover-provider nil)
-                                                                           (cons :semantic-tokens-provider nil)
-                                                                           (cons :completion-provider nil)
-                                                                           (cons :document-range-formatting-provider nil)
-                                                                           (cons :document-on-type-formatting-provider nil))))))
+                                                                           (cons :semantic-tokens-provider (list (cons :legend (list (cons :token-types sem-tokens:*types*)
+                                                                                                                                     (cons :token-modifiers sem-tokens:*mods*)))
+                                                                                                                 (cons :full T)))
+                                                                           (cons :completion-provider (list (cons :trigger-characters (list #\:))))
+                                                                           (cons :document-range-formatting-provider T)
+                                                                           (cons :document-on-type-formatting-provider (list (cons :first-trigger-character #\newline)
+                                                                                                                             (cons :more-trigger-characters (list)))))))))
 
 
 (defun create-initialized-notification ()

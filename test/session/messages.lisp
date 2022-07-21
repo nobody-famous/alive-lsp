@@ -4,6 +4,7 @@
     (:local-nicknames (:logger :alive/logger)
                       (:init :alive/lsp/message/initialize)
                       (:utils :alive/test/utils)
+                      (:sem-tokens :alive/lsp/types/sem-tokens)
                       (:session :alive/session)))
 
 (in-package :alive/test/session/messages)
@@ -114,10 +115,13 @@
                                      (cons :id 0)
                                      (cons :result (list (cons :capabilities (list (cons :text-document-sync 1)
                                                                                    (cons :hover-provider nil)
-                                                                                   (cons :semantic-tokens-provider nil)
-                                                                                   (cons :completion-provider nil)
-                                                                                   (cons :document-range-formatting-provider nil)
-                                                                                   (cons :document-on-type-formatting-provider nil))))))))))
+                                                                                   (cons :semantic-tokens-provider (list (cons :legend (list (cons :token-types sem-tokens:*types*)
+                                                                                                                                             (cons :token-modifiers sem-tokens:*mods*)))
+                                                                                                                         (cons :full T)))
+                                                                                   (cons :completion-provider (list (cons :trigger-characters (list #\:))))
+                                                                                   (cons :document-range-formatting-provider T)
+                                                                                   (cons :document-on-type-formatting-provider (list (cons :first-trigger-character #\newline)
+                                                                                                                                     (cons :more-trigger-characters (list)))))))))))))
 
 
 (defmethod session::get-input-stream ((obj load-file-state))
