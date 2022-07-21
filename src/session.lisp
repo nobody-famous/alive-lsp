@@ -802,11 +802,26 @@
                                         :items items)))
 
 
+(defun handle-symbol (state msg)
+    (let* ((id (cdr (assoc :id msg)))
+           (params (cdr (assoc :params msg)))
+           (doc (cdr (assoc :text-document params)))
+           (pos (cdr (assoc :pos params)))
+           (uri (cdr (assoc :uri doc)))
+           (file-text (get-file-text state uri))
+           (text (if file-text file-text ""))
+           (result (alive/lsp/symbol:for-pos :text text :pos pos)))
+
+        (symbol:create-response-new id
+                                    :value result)))
+
+
 (defparameter *handlers* (list (cons "initialize" 'handle-init)
 
                                (cons "textdocument/completion" 'handle-completion)
 
-                               (cons "$/alive/loadFile" 'handle-load-file)))
+                               (cons "$/alive/loadFile" 'handle-load-file)
+                               (cons "$/alive/symbol" 'handle-symbol)))
 
 
 (defun handle-msg-new (state msg)
