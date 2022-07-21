@@ -884,10 +884,27 @@
                             :params (config:create-params :items (list (config-item:create-item :section "alive.format")))))))
 
 
+(defun handle-on-type (state msg)
+    (let* ((id (cdr (assoc :id msg)))
+           (params (cdr (assoc :params msg)))
+           (doc (cdr (assoc :text-document params)))
+           (opts (cdr (assoc :options params)))
+           (pos (cdr (assoc :pos params)))
+           (uri (cdr (assoc :uri doc)))
+           (file-text (get-file-text state uri))
+           (text (if file-text file-text ""))
+           (edits (formatter:on-type-new (make-string-input-stream text)
+                                         :options (fmt-opts:convert opts)
+                                         :pos pos)))
+
+        (format-utils:create-response-new id edits)))
+
+
 (defparameter *handlers* (list (cons "initialize" 'handle-init)
 
                                (cons "textdocument/completion" 'handle-completion)
                                (cons "textdocument/hover" 'handle-hover)
+                               (cons "textdocument/onTypeFormatting" 'handle-on-type)
                                (cons "textdocument/rangeformatting" 'handle-formatting)
 
                                (cons "$/alive/loadFile" 'handle-load-file)

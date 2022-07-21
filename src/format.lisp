@@ -1,6 +1,7 @@
 (defpackage :alive/format
     (:use :cl)
     (:export :on-type
+             :on-type-new
              :range)
     (:local-nicknames (:edit :alive/text-edit)
                       (:packages :alive/packages)
@@ -564,6 +565,12 @@
               (fmt-opts:get-indent-width opts))))
 
 
+(defun update-options-new (state opts)
+    (when (assoc :indent-width opts)
+          (setf (options-indent-width (parse-state-options state))
+              (cdr (assoc :indent-width opts)))))
+
+
 (defun is-body-next (state)
     (let ((form-open (car (parse-state-opens state))))
         (and form-open
@@ -643,3 +650,32 @@
 
                            (return (list (edit:create :range new-range
                                                       :text (indent-string 0 indent))))))))
+
+
+(defun on-type-new (input &key options pos)
+    (let* ((tokens (convert-tokens (tokenizer:from-stream input)))
+           (state (make-parse-state :tokens tokens
+                                    :range (range:create (pos:create 0 0) pos)
+                                    :cur-pkg (package-name *package*))))
+
+        (when options
+              (update-options-new state options))
+
+        (when tokens
+              (loop :for token := (next-token state)
+                    :for token-end := (token:get-end token)
+
+                    :while (and token
+                                (pos:less-or-equal-new token-end pos))
+
+                    :do (do-step state)
+
+                    :finally (let* ((indent (if token
+                                                (get-on-type-indent state token pos)
+                                                0))
+                                    (start (token:get-start token))
+                                    (line (cdr (assoc :line pos)))
+                                    (new-range (range:create (list (cons :line line) (cons :col 0)) pos)))
+
+                                 (return (list (edit:create :range new-range
+                                                            :text (indent-string 0 indent)))))))))

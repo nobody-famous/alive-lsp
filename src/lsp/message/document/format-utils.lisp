@@ -48,8 +48,8 @@
 
 
 (defun to-lsp-pos-new (pos)
-    (list (cons :line (pos:line pos))
-          (cons :ch (pos:col pos))))
+    (list (cons :line (cdr (assoc :line pos)))
+          (cons :ch (cdr (assoc :col pos)))))
 
 
 (defun to-lsp-range (range)
@@ -59,8 +59,8 @@
 
 
 (defun to-lsp-range-new (range)
-    (list (cons :start (to-lsp-pos (range:start range)))
-          (cons :end (to-lsp-pos (range:end range)))))
+    (list (cons :start (to-lsp-pos-new (range:start range)))
+          (cons :end (to-lsp-pos-new (range:end range)))))
 
 
 (defun to-text-edits (edits)

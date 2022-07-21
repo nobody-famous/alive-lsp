@@ -1,6 +1,7 @@
 (defpackage :alive/lsp/types/format-options
     (:use :cl)
-    (:export :create-item
+    (:export :convert
+             :create-item
              :get-indent-width
              :from-wire)
     (:local-nicknames (:types :alive/types)))
@@ -38,3 +39,10 @@
                   (loop :for param :in result :do
                             (add-param item (car param) (cdr param)))
               :finally (return item))))
+
+
+(defun convert (opts)
+    (mapcar (lambda (item)
+                (cond ((eq :tab-size (car item)) (cons :indent-width (cdr item)))
+                      (T item)))
+            opts))

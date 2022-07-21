@@ -4,7 +4,9 @@
              :line
              :col
              :less-than
+             :less-than-new
              :less-or-equal
+             :less-or-equal-new
              :from-wire)
     (:local-nicknames (:types :alive/types)))
 
@@ -30,10 +32,22 @@
           (T (< (col pos1) (col pos2)))))
 
 
+(defun less-than-new (pos1 pos2)
+    (cond ((< (cdr (assoc :line pos1)) (cdr (assoc :line pos2))) T)
+          ((< (cdr (assoc :line pos2)) (cdr (assoc :line pos1))) NIL)
+          (T (< (cdr (assoc :col pos1)) (cdr (assoc :col pos2))))))
+
+
 (defun less-or-equal (pos1 pos2)
     (or (less-than pos1 pos2)
         (and (= (line pos1) (line pos2))
              (= (col pos1) (col pos2)))))
+
+
+(defun less-or-equal-new (pos1 pos2)
+    (or (less-than-new pos1 pos2)
+        (and (= (cdr (assoc :line pos1)) (cdr (assoc :line pos2)))
+             (= (cdr (assoc :col pos1)) (cdr (assoc :col pos2))))))
 
 
 (defun create (line col)

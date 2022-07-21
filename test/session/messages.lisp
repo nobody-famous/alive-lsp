@@ -16,10 +16,6 @@
                       :initarg :send-called)))
 
 
-(defclass on-type-state (test-state)
-        ())
-
-
 (defclass list-threads-state (test-state)
         ())
 
@@ -265,6 +261,10 @@
                                nil))))
 
 
+(defclass on-type-state (test-state)
+        ())
+
+
 (defmethod session::get-input-stream ((obj on-type-state))
     (let ((content (with-output-to-string (str)
                        (format str "{~A" utils:*end-line*)
@@ -290,17 +290,12 @@
         (utils:stream-from-string (utils:create-msg content))))
 
 
-(defmethod session::send-msg ((obj on-type-state) msg)
-    (setf (send-called obj) T))
-
-
 (defun format-on-type-msg ()
-    (let ((state (create-state 'on-type-state)))
+    (let ((state (make-instance 'on-type-state)))
         (clue:test "Format On Type Message"
-            (session::handle-msg state
-                                 (session::read-message state))
-            (clue:check-equal :expected t
-                              :actual (send-called state)))))
+            (utils:check-equal (session::get-next-response state)
+                               (list (cons :jsonrpc "2.0")
+                                     (cons :id 5))))))
 
 
 (defmethod session::get-input-stream ((obj list-threads-state))
