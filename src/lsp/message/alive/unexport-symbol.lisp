@@ -3,6 +3,7 @@
     (:export :create-params
              :create-request
              :create-response
+             :create-response-new
              :from-wire
              :get-package
              :get-symbol
@@ -65,6 +66,10 @@
     (make-instance 'response
         :id id
         :result T))
+
+
+(defun create-response-new (id)
+    (message:create-response id :result-value T))
 
 
 (defun create-request (&key jsonrpc id params)

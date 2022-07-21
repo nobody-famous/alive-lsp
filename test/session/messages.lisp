@@ -16,10 +16,6 @@
                       :initarg :send-called)))
 
 
-(defclass unexport-state (test-state)
-        ())
-
-
 (defclass eval-state (test-state)
         ())
 
@@ -353,6 +349,10 @@
             (utils:check-exists (session::get-next-response state)))))
 
 
+(defclass unexport-state (test-state)
+        ())
+
+
 (defmethod session::get-input-stream ((obj unexport-state))
     (let ((content (with-output-to-string (str)
                        (format str "{~A" utils:*end-line*)
@@ -367,17 +367,13 @@
         (utils:stream-from-string (utils:create-msg content))))
 
 
-(defmethod session::send-msg ((obj unexport-state) msg)
-    (setf (send-called obj) T))
-
-
 (defun unexport-symbol-msg ()
-    (let ((state (create-state 'unexport-state)))
+    (let ((state (make-instance 'unexport-state)))
         (clue:test "Unexport Symbol Message"
-            (session::handle-msg state
-                                 (session::read-message state))
-            (clue:check-equal :expected t
-                              :actual (send-called state)))))
+            (utils:check-equal (session::get-next-response state)
+                               (list (cons :jsonrpc "2.0")
+                                     (cons :id 5)
+                                     (cons :result T))))))
 
 
 (defmethod session::get-input-stream ((obj eval-state))

@@ -933,6 +933,18 @@
                                    (packages:list-all-new)))
 
 
+(defun handle-unexport (state msg)
+    (declare (ignore state))
+
+    (let* ((id (cdr (assoc :id msg)))
+           (params (cdr (assoc :params msg)))
+           (sym-name (cdr (assoc :symbol params)))
+           (pkg-name (cdr (assoc :package params))))
+
+        (packages:unexport-symbol pkg-name sym-name)
+        (unexport:create-response-new id)))
+
+
 (defparameter *handlers* (list (cons "initialize" 'handle-init)
 
                                (cons "textdocument/completion" 'handle-completion)
@@ -945,7 +957,8 @@
                                (cons "$/alive/listThreads" 'handle-list-threads)
                                (cons "$/alive/loadFile" 'handle-load-file)
                                (cons "$/alive/symbol" 'handle-symbol)
-                               (cons "$/alive/topFormBounds" 'handle-top-form)))
+                               (cons "$/alive/topFormBounds" 'handle-top-form)
+                               (cons "$/alive/unexportSymbol" 'handle-unexport)))
 
 
 (defun handle-msg-new (state msg)
