@@ -927,6 +927,12 @@
                                                                                      (cons :message (format nil "Thread ~A not found" (threads:id c)))))))))
 
 
+(defun handle-list-pkgs (state msg)
+    (declare (ignore state))
+    (list-pkgs:create-response-new (cdr (assoc :id msg))
+                                   (packages:list-all-new)))
+
+
 (defparameter *handlers* (list (cons "initialize" 'handle-init)
 
                                (cons "textdocument/completion" 'handle-completion)
@@ -935,6 +941,7 @@
                                (cons "textdocument/rangeformatting" 'handle-formatting)
 
                                (cons "$/alive/killThread" 'handle-kill-thread)
+                               (cons "$/alive/listPackages" 'handle-list-pkgs)
                                (cons "$/alive/listThreads" 'handle-list-threads)
                                (cons "$/alive/loadFile" 'handle-load-file)
                                (cons "$/alive/symbol" 'handle-symbol)

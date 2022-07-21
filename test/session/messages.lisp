@@ -16,10 +16,6 @@
                       :initarg :send-called)))
 
 
-(defclass list-pkgs-state (test-state)
-        ())
-
-
 (defclass unexport-state (test-state)
         ())
 
@@ -337,6 +333,10 @@
                                                         (cons :message "Thread 10 not found"))))))))
 
 
+(defclass list-pkgs-state (test-state)
+        ())
+
+
 (defmethod session::get-input-stream ((obj list-pkgs-state))
     (let ((content (with-output-to-string (str)
                        (format str "{~A" utils:*end-line*)
@@ -347,17 +347,10 @@
         (utils:stream-from-string (utils:create-msg content))))
 
 
-(defmethod session::send-msg ((obj list-pkgs-state) msg)
-    (setf (send-called obj) T))
-
-
 (defun list-pkgs-msg ()
-    (let ((state (create-state 'list-pkgs-state)))
+    (let ((state (make-instance 'list-pkgs-state)))
         (clue:test "List Packages Message"
-            (session::handle-msg state
-                                 (session::read-message state))
-            (clue:check-equal :expected t
-                              :actual (send-called state)))))
+            (utils:check-exists (session::get-next-response state)))))
 
 
 (defmethod session::get-input-stream ((obj unexport-state))
