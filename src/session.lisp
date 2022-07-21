@@ -910,6 +910,23 @@
                                               threads))))
 
 
+(defun handle-kill-thread (state msg)
+    (let* ((id (cdr (assoc :id msg)))
+           (params (cdr (assoc :params msg)))
+           (thread-id (cdr (assoc :id params))))
+
+        (handler-case
+                (progn (cancel-thread state
+                                      thread-id
+                                      (gethash thread-id
+                                               (thread-msgs state)))
+                       (kill-thread:create-response (cdr (assoc :id msg))))
+
+            (threads:thread-not-found (c)
+                                      (message:create-response id :error-value (list (cons :code errors:*request-failed*)
+                                                                                     (cons :message (format nil "Thread ~A not found" (threads:id c)))))))))
+
+
 (defparameter *handlers* (list (cons "initialize" 'handle-init)
 
                                (cons "textdocument/completion" 'handle-completion)
@@ -917,6 +934,7 @@
                                (cons "textdocument/onTypeFormatting" 'handle-on-type)
                                (cons "textdocument/rangeformatting" 'handle-formatting)
 
+                               (cons "$/alive/killThread" 'handle-kill-thread)
                                (cons "$/alive/listThreads" 'handle-list-threads)
                                (cons "$/alive/loadFile" 'handle-load-file)
                                (cons "$/alive/symbol" 'handle-symbol)

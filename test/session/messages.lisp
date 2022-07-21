@@ -16,10 +16,6 @@
                       :initarg :send-called)))
 
 
-(defclass kill-thread-state (test-state)
-        ())
-
-
 (defclass list-pkgs-state (test-state)
         ())
 
@@ -314,6 +310,10 @@
             (utils:check-exists (session::get-next-response state)))))
 
 
+(defclass kill-thread-state (test-state)
+        ())
+
+
 (defmethod session::get-input-stream ((obj kill-thread-state))
     (let ((content (with-output-to-string (str)
                        (format str "{~A" utils:*end-line*)
@@ -327,17 +327,14 @@
         (utils:stream-from-string (utils:create-msg content))))
 
 
-(defmethod session::send-msg ((obj kill-thread-state) msg)
-    (setf (send-called obj) T))
-
-
 (defun kill-thread-msg ()
-    (let ((state (create-state 'kill-thread-state)))
+    (let ((state (make-instance 'kill-thread-state)))
         (clue:test "Kill Thread Message"
-            (session::handle-msg state
-                                 (session::read-message state))
-            (clue:check-equal :expected t
-                              :actual (send-called state)))))
+            (utils:check-equal (session::get-next-response state)
+                               (list (cons :jsonrpc "2.0")
+                                     (cons :id 5)
+                                     (cons :error (list (cons :code alive/lsp/errors:*request-failed*)
+                                                        (cons :message "Thread 10 not found"))))))))
 
 
 (defmethod session::get-input-stream ((obj list-pkgs-state))
