@@ -47,10 +47,20 @@
         :ch (pos:col pos)))
 
 
+(defun to-lsp-pos-new (pos)
+    (list (cons :line (pos:line pos))
+          (cons :ch (pos:col pos))))
+
+
 (defun to-lsp-range (range)
     (make-instance 'lsp-range
         :start (to-lsp-pos (range:start range))
         :end (to-lsp-pos (range:end range))))
+
+
+(defun to-lsp-range-new (range)
+    (list (cons :start (to-lsp-pos (range:start range)))
+          (cons :end (to-lsp-pos (range:end range)))))
 
 
 (defun to-text-edits (edits)
@@ -63,6 +73,15 @@
         nil))
 
 
+(defun to-text-edits-new (edits)
+    (if (and edits (< 0 (length edits)))
+        (mapcar (lambda (edit)
+                    (list (cons :range (to-lsp-range-new (edit:range edit)))
+                          (cons :new-text (edit:text edit))))
+                edits)
+        nil))
+
+
 (defun create-response (id edits)
     (make-instance 'response
         :id id
@@ -71,4 +90,4 @@
 
 (defun create-response-new (id edits)
     (message:create-response id
-                             :result-value (to-text-edits edits)))
+                             :result-value (to-text-edits-new edits)))

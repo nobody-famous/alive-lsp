@@ -261,7 +261,6 @@
 (defun formatting-msg ()
     (let ((state (make-instance 'formatting-state)))
         (clue:test "Range Format Message"
-            (format T "RESP ~A~%" (session::get-next-response state))
             (utils:check-equal (session::get-next-response state)
                                nil))))
 
