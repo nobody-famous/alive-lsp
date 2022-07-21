@@ -698,10 +698,12 @@
                     (funcall (on-done listener)))))
 
 
-(defun read-message (state)
+(defun read-message (state &optional use-new-api)
     (handler-case
 
-            (parse:from-stream (get-input-stream state))
+            (if use-new-api
+                (parse:from-stream-new (get-input-stream state))
+                (parse:from-stream (get-input-stream state)))
 
         (end-of-file (c)
                      (declare (ignore c))
@@ -732,6 +734,21 @@
     (let ((name (format nil "~A - ~A" (thread-name-id state) method-name)))
         (incf (thread-name-id state))
         name))
+
+
+(defun handle-init (state msg)
+    (format T "handle-init ~A ~A~%" state msg))
+
+
+(defparameter *handlers* (list (cons "initialize" #'handle-init)))
+
+
+(defun handle-msg-new (state msg)
+    (let* ((method-name (cdr (assoc :method msg)))
+           (handler (cdr (assoc  method-name *handlers* :test #'string=))))
+        (if handler
+            (funcall handler state msg)
+            (error (format nil "No handler for ~A" method-name)))))
 
 
 (defun process-msg (state msg)

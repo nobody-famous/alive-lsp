@@ -57,15 +57,12 @@
                                  (format str "}~A" utils:*end-line*))))
 
         (clue:test "Initialize Message"
-            (let* ((msg (utils:create-msg (create-content)))
-                   (parsed (parse:from-stream (utils:stream-from-string msg))))
-                (clue:check-equal :expected (alive/lsp/message/initialize:create-request
-                                                :id 5
-                                                :params (alive/lsp/message/initialize:create-request-params
-                                                            :client-info (alive/lsp/message/initialize:create-client-info
-                                                                             :name "Visual Studio Code"
-                                                                             :version "1.62.3")))
-                                  :actual parsed)))))
+            (utils:check-equal (json:decode-json-from-string (create-content))
+                               (list (cons :jsonrpc "2.0")
+                                     (cons :id 5)
+                                     (cons :method "initialize")
+                                     (cons :params (list (cons :client-info (list (cons :name "Visual Studio Code")
+                                                                                  (cons :version "1.62.3"))))))))))
 
 
 (defun init-resp-msg ()

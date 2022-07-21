@@ -2,6 +2,7 @@
     (:use :cl)
     (:export :*end-line*
              :create-msg
+             :check-equal
              :stream-from-string))
 
 (in-package :alive/test/utils)
@@ -25,3 +26,8 @@
     (flexi-streams:make-flexi-stream
         (flexi-streams:make-in-memory-input-stream
             (flexi-streams:string-to-octets str))))
+
+
+(defun check-equal (obj1 obj2)
+    (unless (equalp obj1 obj2)
+        (error "Not equal")))

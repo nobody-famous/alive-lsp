@@ -15,10 +15,6 @@
                       :initarg :send-called)))
 
 
-(defclass init-msg-state (test-state)
-        ())
-
-
 (defclass load-file-state (test-state)
         ())
 
@@ -91,6 +87,9 @@
     (make-instance cls))
 
 
+(defclass init-msg-state (test-state)
+        ())
+
 (defmethod session::get-input-stream ((obj init-msg-state))
     (let ((content (with-output-to-string (str)
                        (format str "{~A" utils:*end-line*)
@@ -114,8 +113,8 @@
 (defun init-msg ()
     (let ((state (create-state 'init-msg-state)))
         (clue:test "Initialize Message"
-            (session::handle-msg state
-                                 (session::read-message state))
+            (session::handle-msg-new state
+                                     (session::read-message state T))
             (clue:check-equal :expected T
                               :actual (send-called state)))))
 

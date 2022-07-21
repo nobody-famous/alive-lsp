@@ -1,6 +1,7 @@
 (defpackage :alive/lsp/parse
     (:use :cl)
-    (:export :from-stream)
+    (:export :from-stream
+             :from-stream-new)
 
     (:local-nicknames (:completion :alive/lsp/message/document/completion)
                       (:did-open :alive/lsp/message/document/did-open)
@@ -314,3 +315,10 @@
            (raw-content (read-content input (packet:content-length header)))
            (content (decode-json raw-content)))
         (build-message content)))
+
+
+(defun from-stream-new (input)
+    (let* ((header (parse-header input))
+           (raw-content (read-content input (packet:content-length header)))
+           (content (decode-json raw-content)))
+        content))
