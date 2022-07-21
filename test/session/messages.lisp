@@ -16,10 +16,6 @@
                       :initarg :send-called)))
 
 
-(defclass list-threads-state (test-state)
-        ())
-
-
 (defclass kill-thread-state (test-state)
         ())
 
@@ -298,6 +294,10 @@
                                      (cons :id 5))))))
 
 
+(defclass list-threads-state (test-state)
+        ())
+
+
 (defmethod session::get-input-stream ((obj list-threads-state))
     (let ((content (with-output-to-string (str)
                        (format str "{~A" utils:*end-line*)
@@ -308,17 +308,10 @@
         (utils:stream-from-string (utils:create-msg content))))
 
 
-(defmethod session::send-msg ((obj list-threads-state) msg)
-    (setf (send-called obj) T))
-
-
 (defun list-threads-msg ()
-    (let ((state (create-state 'list-threads-state)))
+    (let ((state (make-instance 'list-threads-state)))
         (clue:test "List Threads Message"
-            (session::handle-msg state
-                                 (session::read-message state))
-            (clue:check-equal :expected t
-                              :actual (send-called state)))))
+            (utils:check-exists (session::get-next-response state)))))
 
 
 (defmethod session::get-input-stream ((obj kill-thread-state))

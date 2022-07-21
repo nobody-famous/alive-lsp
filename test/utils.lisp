@@ -3,6 +3,7 @@
     (:export :*end-line*
              :create-msg
              :check-equal
+             :check-exists
              :stream-from-string))
 
 (in-package :alive/test/utils)
@@ -31,3 +32,8 @@
 (defun check-equal (obj1 obj2)
     (unless (equalp obj1 obj2)
         (error "Not equal")))
+
+
+(defun check-exists (obj)
+    (unless obj
+        (error "Object is null")))

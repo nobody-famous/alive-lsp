@@ -1,6 +1,7 @@
 (defpackage :alive/threads
     (:use :cl)
     (:export :list-all
+             :list-all-new
              :kill
              :thread-not-found
              :get-stack-trace
@@ -40,6 +41,13 @@
                 (make-instance 'thread
                     :id (get-thread-id thread)
                     :name (bt:thread-name thread)))
+            (bt:all-threads)))
+
+
+(defun list-all-new ()
+    (mapcar (lambda (thread)
+                (list (cons :id (get-thread-id thread))
+                      (cons :name (bt:thread-name thread))))
             (bt:all-threads)))
 
 

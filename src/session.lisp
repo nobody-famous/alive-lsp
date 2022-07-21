@@ -900,6 +900,16 @@
         (format-utils:create-response-new id edits)))
 
 
+(defun handle-list-threads (state msg)
+    (bt:with-recursive-lock-held ((lock state))
+        (let ((threads (remove-if (lambda (thread)
+                                      (eq (cdr (assoc :id thread)) (threads:get-thread-id (bt:current-thread))))
+                               (threads:list-all-new))))
+
+            (list-threads:create-response-new (cdr (assoc :id msg))
+                                              threads))))
+
+
 (defparameter *handlers* (list (cons "initialize" 'handle-init)
 
                                (cons "textdocument/completion" 'handle-completion)
@@ -907,6 +917,7 @@
                                (cons "textdocument/onTypeFormatting" 'handle-on-type)
                                (cons "textdocument/rangeformatting" 'handle-formatting)
 
+                               (cons "$/alive/listThreads" 'handle-list-threads)
                                (cons "$/alive/loadFile" 'handle-load-file)
                                (cons "$/alive/symbol" 'handle-symbol)
                                (cons "$/alive/topFormBounds" 'handle-top-form)))
