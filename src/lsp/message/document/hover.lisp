@@ -3,6 +3,7 @@
     (:export :create-params
              :create-request
              :create-response
+             :create-response-new
              :from-wire
              :pos
              :request
@@ -39,6 +40,11 @@
     (make-instance 'response
         :id id
         :result (make-instance 'response-body :value value)))
+
+
+(defun create-response-new (id &key value)
+    (message:create-response id
+                             :result-value (list (cons :value value))))
 
 
 (defun create-request (&key id (jsonrpc "2.0") params)

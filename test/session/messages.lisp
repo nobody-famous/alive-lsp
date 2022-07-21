@@ -16,10 +16,6 @@
                       :initarg :send-called)))
 
 
-(defclass hover-state (test-state)
-        ())
-
-
 (defclass top-form-state (test-state)
         ())
 
@@ -172,6 +168,10 @@
                                      (cons :result (list (cons :items nil))))))))
 
 
+(defclass hover-state (test-state)
+        ())
+
+
 (defmethod session::get-input-stream ((obj hover-state))
     (let ((content (with-output-to-string (str)
                        (format str "{~A" utils:*end-line*)
@@ -191,17 +191,13 @@
         (utils:stream-from-string (utils:create-msg content))))
 
 
-(defmethod session::send-msg ((obj hover-state) msg)
-    (setf (send-called obj) T))
-
-
 (defun hover-msg ()
-    (let ((state (create-state 'hover-state)))
+    (let ((state (make-instance 'hover-state)))
         (clue:test "Hover Message"
-            (session::handle-msg state
-                                 (session::read-message state))
-            (clue:check-equal :expected t
-                              :actual (send-called state)))))
+            (utils:check-equal (session::get-next-response state)
+                               (list (cons :jsonrpc "2.0")
+                                     (cons :id 5)
+                                     (cons :result (list (cons :value ""))))))))
 
 
 (defmethod session::get-input-stream ((obj top-form-state))

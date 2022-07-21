@@ -816,9 +816,25 @@
                                     :value result)))
 
 
+(defun handle-hover (state msg)
+    (let* ((id (cdr (assoc :id msg)))
+           (params (cdr (assoc :params msg)))
+           (doc (cdr (assoc :text-document params)))
+           (pos (cdr (assoc :pos params)))
+           (uri (cdr (assoc :uri doc)))
+           (file-text (get-file-text state uri))
+           (text (if file-text file-text ""))
+           (hov-text (alive/lsp/hover:get-text :text text :pos pos))
+           (result (if hov-text hov-text "")))
+
+        (hover:create-response-new id
+                                   :value result)))
+
+
 (defparameter *handlers* (list (cons "initialize" 'handle-init)
 
                                (cons "textdocument/completion" 'handle-completion)
+                               (cons "textdocument/hover" 'handle-hover)
 
                                (cons "$/alive/loadFile" 'handle-load-file)
                                (cons "$/alive/symbol" 'handle-symbol)))
