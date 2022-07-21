@@ -1,6 +1,7 @@
 (defpackage :alive/lsp/message/document/format-utils
     (:use :cl)
-    (:export :create-response)
+    (:export :create-response
+             :create-response-new)
     (:local-nicknames (:message :alive/lsp/message/abstract)
                       (:pos :alive/position)
                       (:range :alive/range)
@@ -66,3 +67,8 @@
     (make-instance 'response
         :id id
         :result (to-text-edits edits)))
+
+
+(defun create-response-new (id edits)
+    (message:create-response id
+                             :result-value (to-text-edits edits)))

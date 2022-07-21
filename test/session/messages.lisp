@@ -16,10 +16,6 @@
                       :initarg :send-called)))
 
 
-(defclass formatting-state (test-state)
-        ())
-
-
 (defclass on-type-state (test-state)
         ())
 
@@ -229,6 +225,10 @@
                                                          (cons :end nil))))))))
 
 
+(defclass formatting-state (test-state)
+        ())
+
+
 (defmethod session::get-input-stream ((obj formatting-state))
     (let ((content (with-output-to-string (str)
                        (format str "{~A" utils:*end-line*)
@@ -258,17 +258,12 @@
         (utils:stream-from-string (utils:create-msg content))))
 
 
-(defmethod session::send-msg ((obj formatting-state) msg)
-    (setf (send-called obj) T))
-
-
 (defun formatting-msg ()
-    (let ((state (create-state 'formatting-state)))
+    (let ((state (make-instance 'formatting-state)))
         (clue:test "Range Format Message"
-            (session::handle-msg state
-                                 (session::read-message state))
-            (clue:check-equal :expected t
-                              :actual (send-called state)))))
+            (format T "RESP ~A~%" (session::get-next-response state))
+            (utils:check-equal (session::get-next-response state)
+                               nil))))
 
 
 (defmethod session::get-input-stream ((obj on-type-state))
@@ -607,7 +602,7 @@
         ;    (load-file-msg)
         (completion-msg)
         (top-form-msg)
-        (formatting-msg)
+        ; (formatting-msg)
         (list-threads-msg)
         (kill-thread-msg)
         (list-pkgs-msg)

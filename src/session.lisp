@@ -856,10 +856,39 @@
                                                              :end end)))))
 
 
+(defun handle-format-msg-new (state options msg)
+    (let* ((id (cdr (assoc :id msg)))
+           (params (cdr (assoc :params msg)))
+           (range (cdr (assoc :range params)))
+           (doc (cdr (assoc :text-document params)))
+           (uri (cdr (assoc :uri doc)))
+           (file-text (get-file-text state uri))
+           (text (if file-text file-text ""))
+           (edits (formatter:range (make-string-input-stream text)
+                                   range
+                                   options)))
+
+        (format-utils:create-response-new id edits)))
+
+
+(defun handle-formatting (state msg)
+    (let ((send-id (next-send-id state)))
+        (setf (gethash send-id (sent-msg-callbacks state))
+            (lambda (config-resp)
+                (let ((opts (when (message:result config-resp)
+                                  (fmt-opts:from-wire (message:result config-resp)))))
+                    (handle-format-msg-new state opts msg))))
+
+        (send-msg state (config:create-request
+                            :id send-id
+                            :params (config:create-params :items (list (config-item:create-item :section "alive.format")))))))
+
+
 (defparameter *handlers* (list (cons "initialize" 'handle-init)
 
                                (cons "textdocument/completion" 'handle-completion)
                                (cons "textdocument/hover" 'handle-hover)
+                               (cons "textdocument/rangeformatting" 'handle-formatting)
 
                                (cons "$/alive/loadFile" 'handle-load-file)
                                (cons "$/alive/symbol" 'handle-symbol)
