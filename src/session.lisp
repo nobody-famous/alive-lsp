@@ -211,6 +211,15 @@
             (setf (gethash thread-id table) (message:id msg)))))
 
 
+(defun save-thread-msg-new (state id)
+    (let* ((table (thread-msgs state))
+           (cur-thread (bt:current-thread))
+           (thread-id (threads:get-thread-id cur-thread)))
+
+        (bt:with-recursive-lock-held ((lock state))
+            (setf (gethash thread-id table) id))))
+
+
 (defun rem-thread-msg (state)
     (let* ((table (thread-msgs state))
            (cur-thread (bt:current-thread))
@@ -698,12 +707,14 @@
                     (funcall (on-done listener)))))
 
 
-(defun read-message (state &optional use-new-api)
+(defun read-message-new (state)
+    (parse:from-stream-new (get-input-stream state)))
+
+
+(defun read-message (state)
     (handler-case
 
-            (if use-new-api
-                (parse:from-stream-new (get-input-stream state))
-                (parse:from-stream (get-input-stream state)))
+            (parse:from-stream (get-input-stream state))
 
         (end-of-file (c)
                      (declare (ignore c))
@@ -738,10 +749,8 @@
 
 (defun handle-init (state msg)
     (declare (ignore state))
-    (let ((resp (message:create-response (cdr (assoc :id msg))
-                                         :result-value (list (cons :foo "bar")))))
-        (loop :for item :in resp
-              :do (format T "ITEM ~A~%" item))))
+
+    (init:create-response-new (cdr (assoc :id msg))))
 
 
 (defparameter *handlers* (list (cons "initialize" 'handle-init)))
@@ -749,10 +758,13 @@
 
 (defun handle-msg-new (state msg)
     (let* ((method-name (cdr (assoc :method msg)))
+           (id (cdr (assoc :id msg)))
            (handler (cdr (assoc method-name *handlers* :test #'string=))))
+
         (if handler
             (funcall handler state msg)
-            (error (format nil "No handler for ~A" method-name)))))
+            (message:create-response id :error-value (list (cons :code errors:*request-failed*)
+                                                           (cons :message (format nil "No handler for ~A" method-name)))))))
 
 
 (defun process-msg (state msg)
@@ -777,11 +789,69 @@
               (rem-thread-msg state))))
 
 
+(defun process-msg-new (state msg)
+    (let ((id (assoc :id msg)))
+
+        (unwind-protect
+                (handler-case
+
+                        (progn (when id
+                                     (save-thread-msg-new state (cdr id)))
+
+                               (when (logger:has-level logger:*trace*)
+                                     (logger:msg logger:*trace* "--> ~A~%" (json:encode-json-to-string msg)))
+
+                               (handle-msg-new state msg))
+
+                    (error (c)
+                        (logger:msg logger:*error* "Message Handler: ~A" c)
+                        (message:create-response id :error-value (list (cons :code errors:*internal-error*)
+                                                                       (cons :message (princ-to-string c))))))
+            (when id
+                  (rem-thread-msg state)))))
+
+
 (defun read-messages (state)
     (loop :while (running state)
           :do (let ((msg (read-message state)))
                   (when msg
                         (process-msg state msg)))))
+
+
+(defun get-next-response (state)
+    (handler-case
+            (let ((msg (read-message-new state)))
+                (when msg
+                      (process-msg-new state msg)))
+
+        (errors:unhandled-request (c)
+                                  (logger:msg logger:*error* "read-message: ~A" c)
+                                  (when (errors:id c)
+                                        (message:create-response (errors:id c)
+                                                                 :error-value (list (cons :code errors:*method-not-found*)
+                                                                                    (cons :message (format nil "Unhandled request: ~A" (errors:method-name c)))))))
+
+        (errors:server-error (c)
+                             (logger:msg logger:*error* "read-message: ~A" c)
+                             (when (errors:id c)
+                                   (message:create-response (errors:id c)
+                                                            :error-value (list (cons :code errors:*internal-error*)
+                                                                               (cons :message (format nil "Server error: ~A" (errors:message c)))))))
+
+        (end-of-file (c)
+                     (declare (ignore c))
+                     (stop state))
+
+        (T (c)
+           (logger:msg logger:*error* "read-message: ~A" c)
+           (stop state))))
+
+
+(defun read-messages-new (state)
+    (loop :while (running state)
+          :do (let ((resp (get-next-response state)))
+                  (when resp
+                        (send-msg state resp)))))
 
 
 (defun start-read-thread (state)

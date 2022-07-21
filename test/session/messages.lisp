@@ -106,17 +106,18 @@
         (utils:stream-from-string (utils:create-msg content))))
 
 
-(defmethod session::send-msg ((obj init-msg-state) msg)
-    (setf (send-called obj) T))
-
-
 (defun init-msg ()
-    (let ((state (create-state 'init-msg-state)))
+    (let ((state (make-instance 'init-msg-state)))
         (clue:test "Initialize Message"
-            (session::handle-msg-new state
-                                     (session::read-message state T))
-            (clue:check-equal :expected T
-                              :actual (send-called state)))))
+            (utils:check-equal (session::get-next-response state)
+                               (list (cons :jsonrpc "2.0")
+                                     (cons :id 0)
+                                     (cons :result (list (cons :capabilities (list (cons :text-document-sync 1)
+                                                                                   (cons :hover-provider nil)
+                                                                                   (cons :semantic-tokens-provider nil)
+                                                                                   (cons :completion-provider nil)
+                                                                                   (cons :document-range-formatting-provider nil)
+                                                                                   (cons :document-on-type-formatting-provider nil))))))))))
 
 
 (defmethod session::get-input-stream ((obj load-file-state))

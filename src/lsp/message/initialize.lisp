@@ -6,6 +6,7 @@
              :create-request
              :create-request-params
              :create-response
+             :create-response-new
              :create-sem-tokens-opts
              :create-initialized-notification
              :initialized
@@ -254,6 +255,16 @@
 
 (defun create-response (id)
     (make-instance 'response :id id))
+
+
+(defun create-response-new (id)
+    (message:create-response id
+                             :result-value (list (cons :capabilities (list (cons :text-document-sync *doc-sync-full*)
+                                                                           (cons :hover-provider nil)
+                                                                           (cons :semantic-tokens-provider nil)
+                                                                           (cons :completion-provider nil)
+                                                                           (cons :document-range-formatting-provider nil)
+                                                                           (cons :document-on-type-formatting-provider nil))))))
 
 
 (defun create-initialized-notification ()
