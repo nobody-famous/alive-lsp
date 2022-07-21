@@ -248,6 +248,25 @@
                                                           "response")))))
 
 
+(defun run-in-thread-new (state msg fn)
+    (let ((stdout *standard-output*))
+        (bt:make-thread (lambda ()
+                            (unwind-protect
+                                    (let ((*standard-output* stdout))
+                                        (save-thread-msg-new state (cdr (assoc :id msg)))
+
+                                        (block handler
+                                            (handler-bind ((error (lambda (err)
+                                                                      (start-debugger state err)
+                                                                      (return-from handler))))
+                                                (funcall fn)))))
+                            (rem-thread-msg state))
+
+                        :name (next-thread-name state (if (assoc :id msg)
+                                                          (cdr (assoc :method msg))
+                                                          "response")))))
+
+
 (defun cancel-thread (state thread-id msg-id)
     (when msg-id
           (send-msg state
@@ -753,7 +772,24 @@
     (init:create-response-new (cdr (assoc :id msg))))
 
 
-(defparameter *handlers* (list (cons "initialize" 'handle-init)))
+(defun handle-load-file (state msg)
+    (run-in-thread-new state msg (lambda ()
+                                     (let* ((id (cdr (assoc :id msg)))
+                                            (params (cdr (assoc :params msg)))
+                                            (path (cdr (assoc :path params)))
+                                            (msgs (file:do-load path
+                                                                :stdout-fn (lambda (data)
+                                                                               (when (load-file:show-stdout-p msg)
+                                                                                     (send-msg state (stdout:create data))))
+                                                                :stderr-fn (lambda (data)
+                                                                               (when (load-file:show-stderr-p msg)
+                                                                                     (send-msg state (stderr:create data)))))))
+
+                                         (load-file:create-response id msgs)))))
+
+
+(defparameter *handlers* (list (cons "initialize" 'handle-init)
+                               (cons "$/alive/loadFile" 'handle-load-file)))
 
 
 (defun handle-msg-new (state msg)

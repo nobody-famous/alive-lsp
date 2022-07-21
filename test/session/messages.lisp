@@ -16,10 +16,6 @@
                       :initarg :send-called)))
 
 
-(defclass load-file-state (test-state)
-        ())
-
-
 (defclass symbol-state (test-state)
         ())
 
@@ -124,6 +120,10 @@
                                                                                                                                      (cons :more-trigger-characters (list)))))))))))))
 
 
+(defclass load-file-state (test-state)
+        ())
+
+
 (defmethod session::get-input-stream ((obj load-file-state))
     (let ((content (with-output-to-string (str)
                        (format str "{~A" utils:*end-line*)
@@ -138,17 +138,12 @@
         (utils:stream-from-string (utils:create-msg content))))
 
 
-(defmethod session::send-msg ((obj load-file-state) msg)
-    (setf (send-called obj) T))
-
-
 (defun load-file-msg ()
-    (let ((state (create-state 'load-file-state)))
+    (let ((state (make-instance 'load-file-state)))
         (clue:test "Load File Message"
-            (session::handle-msg state
-                                 (session::read-message state))
-            (clue:check-equal :expected t
-                              :actual (send-called state)))))
+            (utils:check-equal (session::get-next-response state)
+                               (list (cons :jsonrpc "2.0")
+                                     (cons :id 0))))))
 
 
 (defmethod session::get-input-stream ((obj completion-state))
