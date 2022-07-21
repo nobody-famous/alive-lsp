@@ -788,7 +788,24 @@
                                          (load-file:create-response id msgs)))))
 
 
+(defun handle-completion (state msg)
+    (let* ((id (cdr (assoc :id msg)))
+           (params (cdr (assoc :params msg)))
+           (doc (cdr (assoc :text-document params)))
+           (pos (cdr (assoc :pos params)))
+           (uri (cdr (assoc :uri doc)))
+           (file-text (get-file-text state uri))
+           (text (if file-text file-text ""))
+           (items (comps:simple :text text :pos pos)))
+
+        (completion:create-response-new id
+                                        :items items)))
+
+
 (defparameter *handlers* (list (cons "initialize" 'handle-init)
+
+                               (cons "textdocument/completion" 'handle-completion)
+
                                (cons "$/alive/loadFile" 'handle-load-file)))
 
 

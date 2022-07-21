@@ -20,10 +20,6 @@
         ())
 
 
-(defclass completion-state (test-state)
-        ())
-
-
 (defclass hover-state (test-state)
         ())
 
@@ -145,6 +141,9 @@
                                (list (cons :jsonrpc "2.0")
                                      (cons :id 0))))))
 
+(defclass completion-state (test-state)
+        ())
+
 
 (defmethod session::get-input-stream ((obj completion-state))
     (let ((content (with-output-to-string (str)
@@ -168,17 +167,13 @@
         (utils:stream-from-string (utils:create-msg content))))
 
 
-(defmethod session::send-msg ((obj completion-state) msg)
-    (setf (send-called obj) T))
-
-
 (defun completion-msg ()
-    (let ((state (create-state 'completion-state)))
+    (let ((state (make-instance 'completion-state)))
         (clue:test "Completion Message"
-            (session::handle-msg state
-                                 (session::read-message state))
-            (clue:check-equal :expected t
-                              :actual (send-called state)))))
+            (utils:check-equal (session::get-next-response state)
+                               (list (cons :jsonrpc "2.0")
+                                     (cons :id 5)
+                                     (cons :result (list (cons :items nil))))))))
 
 
 (defmethod session::get-input-stream ((obj hover-state))

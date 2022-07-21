@@ -3,6 +3,7 @@
     (:export :create-params
              :create-request
              :create-response
+             :create-response-new
              :from-wire
              :pos
              :request
@@ -36,6 +37,10 @@
 
 (defclass response (message:result-response)
         ())
+
+
+(defun create-response-new (id &key items)
+    (message:create-response id :result-value (list (cons :items items))))
 
 
 (defun create-response (&key id items)
