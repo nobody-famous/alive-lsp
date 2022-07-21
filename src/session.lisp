@@ -831,13 +831,39 @@
                                    :value result)))
 
 
+(defun handle-top-form (state msg)
+    (let* ((id (cdr (assoc :id msg)))
+           (params (cdr (assoc :params msg)))
+           (doc (cdr (assoc :text-document params)))
+           (pos (cdr (assoc :pos params)))
+           (uri (cdr (assoc :uri doc)))
+           (file-text (get-file-text state uri))
+           (text (if file-text file-text ""))
+           (forms (forms:from-stream (make-string-input-stream text))))
+
+        (format T "FORMS ~A~%" forms)
+        (loop :with start := nil
+              :with end := nil
+
+              :for form :in forms :do
+                  (when (and (pos:less-or-equal (form:get-start form) pos)
+                             (pos:less-or-equal pos (form:get-end form)))
+                        (setf start (form:get-start form))
+                        (setf end (form:get-end form)))
+
+              :finally (return (top-form:create-response-new id
+                                                             :start start
+                                                             :end end)))))
+
+
 (defparameter *handlers* (list (cons "initialize" 'handle-init)
 
                                (cons "textdocument/completion" 'handle-completion)
                                (cons "textdocument/hover" 'handle-hover)
 
                                (cons "$/alive/loadFile" 'handle-load-file)
-                               (cons "$/alive/symbol" 'handle-symbol)))
+                               (cons "$/alive/symbol" 'handle-symbol)
+                               (cons "$/alive/topFormBounds" 'handle-top-form)))
 
 
 (defun handle-msg-new (state msg)
