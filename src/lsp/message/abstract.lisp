@@ -2,6 +2,7 @@
     (:use :cl)
     (:export :create-error-resp
              :create-result-resp
+             :create-response
              :error-from-wire
              :id
              :version
@@ -15,6 +16,17 @@
              :result-response))
 
 (in-package :alive/lsp/message/abstract)
+
+
+(defun create-response (id &key result-value error-value)
+    (let ((resp (list (cons :id id)
+                      (cons :jsonrpc "2.0"))))
+
+        (cond ((and error-value result-value) (error "Cannot create response with result and error"))
+              (result-value (push (cons :result result-value) resp))
+              (error-value (push (cons :error error-value) resp)))
+
+        (reverse resp)))
 
 
 (defclass message ()
@@ -94,13 +106,13 @@
 (defun error-from-wire (&key id params)
     (labels ((add-param (out-params key value)
                         (cond ((eq key :code) (setf (code out-params) value))
-                            ((eq key :message) (setf (message out-params) value)))))
+                              ((eq key :message) (setf (message out-params) value)))))
 
         (loop :with out-params := (make-instance 'error-data)
 
-            :for param :in params :do
-            (add-param out-params (car param) (cdr param))
+              :for param :in params :do
+                  (add-param out-params (car param) (cdr param))
 
-            :finally (return (make-instance 'error-response
-                                 :id id
-                                 :error out-params)))))
+              :finally (return (make-instance 'error-response
+                                   :id id
+                                   :error out-params)))))

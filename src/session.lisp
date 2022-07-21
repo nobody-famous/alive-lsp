@@ -737,15 +737,19 @@
 
 
 (defun handle-init (state msg)
-    (format T "handle-init ~A ~A~%" state msg))
+    (declare (ignore state))
+    (let ((resp (message:create-response (cdr (assoc :id msg))
+                                         :result-value (list (cons :foo "bar")))))
+        (loop :for item :in resp
+              :do (format T "ITEM ~A~%" item))))
 
 
-(defparameter *handlers* (list (cons "initialize" #'handle-init)))
+(defparameter *handlers* (list (cons "initialize" 'handle-init)))
 
 
 (defun handle-msg-new (state msg)
     (let* ((method-name (cdr (assoc :method msg)))
-           (handler (cdr (assoc  method-name *handlers* :test #'string=))))
+           (handler (cdr (assoc method-name *handlers* :test #'string=))))
         (if handler
             (funcall handler state msg)
             (error (format nil "No handler for ~A" method-name)))))
