@@ -1087,7 +1087,7 @@
         (setf (read-thread state)
             (bt:make-thread (lambda ()
                                 (let ((*standard-output* stdout))
-                                    (read-messages-new state)))
+                                    (read-messages state)))
                             :name "Session Message Reader"))))
 
 
