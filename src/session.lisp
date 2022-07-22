@@ -925,11 +925,12 @@
                                       thread-id
                                       (gethash thread-id
                                                (thread-msgs state)))
-                       (kill-thread:create-response (cdr (assoc :id msg))))
+                       (message:create-response id :result-value T))
 
             (threads:thread-not-found (c)
-                                      (message:create-response id :error-value (list (cons :code errors:*request-failed*)
-                                                                                     (cons :message (format nil "Thread ~A not found" (threads:id c)))))))))
+                                      (message:create-error id
+                                                            :code errors:*request-failed*
+                                                            :message (format nil "Thread ~A not found" (threads:id c)))))))
 
 
 (defun handle-list-pkgs (state msg)
@@ -1017,6 +1018,24 @@
                                      :pkg-name pkg)))
 
 
+(defun handle-remove-pkg (state msg)
+    (declare (ignore state))
+
+    (let* ((id (cdr (assoc :id msg)))
+           (params (cdr (assoc :params msg)))
+           (pkg-name (cdr (assoc :name params))))
+
+        (packages:do-remove pkg-name)
+        (message:create-response id :result-value T)))
+
+
+(defun handle-list-asdf (state msg)
+    (declare (ignore state))
+
+    (list-asdf:create-response-new (cdr (assoc :id msg))
+                                   (asdf:list-systems)))
+
+
 (defparameter *handlers* (list (cons "initialize" 'handle-init)
                                (cons "initialized" 'handle-initialized)
 
@@ -1030,9 +1049,11 @@
                                (cons "$/alive/eval" 'handle-eval)
                                (cons "$/alive/getPackageForPosition" 'handle-get-pkg)
                                (cons "$/alive/killThread" 'handle-kill-thread)
+                               (cons "$/alive/listAsdfSystems" 'handle-list-asdf)
                                (cons "$/alive/listPackages" 'handle-list-pkgs)
                                (cons "$/alive/listThreads" 'handle-list-threads)
                                (cons "$/alive/loadFile" 'handle-load-file)
+                               (cons "$/alive/removePackage" 'handle-remove-pkg)
                                (cons "$/alive/symbol" 'handle-symbol)
                                (cons "$/alive/topFormBounds" 'handle-top-form)
                                (cons "$/alive/unexportSymbol" 'handle-unexport)))

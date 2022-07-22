@@ -16,23 +16,7 @@
                       :initarg :send-called)))
 
 
-(defclass eval-state (test-state)
-        ())
-
-
 (defclass inspect-state (test-state)
-        ())
-
-
-(defclass get-pkg-state (test-state)
-        ())
-
-
-(defclass remove-pkg-state (test-state)
-        ())
-
-
-(defclass list-asdf-state (test-state)
         ())
 
 
@@ -42,13 +26,6 @@
 
 (defun create-state (cls)
     (make-instance cls))
-
-
-(defun to-table (from-list)
-    (loop :with table := (make-hash-table :test #'equalp)
-          :for item :in from-list
-          :do (setf (gethash (car item) table) (cdr item))
-          :finally (return table)))
 
 
 (defclass init-msg-state (test-state)
@@ -74,21 +51,37 @@
 (defun init-msg ()
     (let ((state (make-instance 'init-msg-state)))
         (clue:test "Initialize Message"
-            (let* ((sem-tok-legend (to-table (list (cons "token-types" sem-tokens:*types*)
-                                                   (cons "token-modifiers" sem-tokens:*mods*))))
-                   (sem-tok-opts (to-table (list (cons "legend" sem-tok-legend)
-                                                 (cons "full" T))))
-                   (on-type-opts (to-table (list (cons "first-trigger-character" #\newline)
-                                                 (cons "more-trigger-characters" (list)))))
-                   (caps (to-table (list (cons "text-document-sync" 1)
-                                         (cons "hover-provider" nil)
-                                         (cons "semantic-tokens-provider" sem-tok-opts)
-                                         (cons "completion-provider" (to-table (list (cons "trigger-characters" (list #\:)))))
-                                         (cons "document-range-formatting-provider" T)
-                                         (cons "document-on-type-formatting-provider" on-type-opts))))
-                   (exp (to-table (list (cons "jsonrpc" "2.0")
-                                        (cons "id" 0)
-                                        (cons "result" (to-table (list (cons "capabilities" caps))))))))
+            (let ((sem-tok-legend (make-hash-table :test #'equalp))
+                  (sem-tok-opts (make-hash-table :test #'equalp))
+                  (on-type-opts (make-hash-table :test #'equalp))
+                  (comp-opts (make-hash-table :test #'equalp))
+                  (caps (make-hash-table :test #'equalp))
+                  (result (make-hash-table :test #'equalp))
+                  (exp (make-hash-table :test #'equalp)))
+                (setf (gethash "token-types" sem-tok-legend) sem-tokens:*types*)
+                (setf (gethash "token-modifiers" sem-tok-legend) sem-tokens:*mods*)
+
+                (setf (gethash "legend" sem-tok-opts) sem-tok-legend)
+                (setf (gethash "full" sem-tok-opts) T)
+
+                (setf (gethash "first-trigger-character" on-type-opts) #\newline)
+                (setf (gethash "more-trigger-characters" on-type-opts) (list))
+
+                (setf (gethash "trigger-characters" comp-opts) (list #\:))
+
+                (setf (gethash "text-document-sync" caps) 1)
+                (setf (gethash "hover-provider" caps) nil)
+                (setf (gethash "semantic-tokens-provider" caps) sem-tok-opts)
+                (setf (gethash "completion-provider" caps) comp-opts)
+                (setf (gethash "document-range-formatting-provider" caps) T)
+                (setf (gethash "document-on-type-formatting-provider" caps) on-type-opts)
+
+                (setf (gethash "capabilities" result) caps)
+
+                (setf (gethash "jsonrpc" exp) "2.0")
+                (setf (gethash "id" exp) 0)
+                (setf (gethash "result" exp) result)
+
                 (utils:check-equal (session::get-next-response state)
                                    exp)))))
 
@@ -162,7 +155,7 @@
                        (format str "{~A" utils:*end-line*)
                        (format str "  \"jsonrpc\": \"2.0\",~A" utils:*end-line*)
                        (format str "  \"id\": 5,~A" utils:*end-line*)
-                       (format str "  \"method\": \"textdocument/hover\",~A" utils:*end-line*)
+                       (format str "  \"method\": \"textDocument/hover\",~A" utils:*end-line*)
                        (format str "  \"params\": {~A" utils:*end-line*)
                        (format str "    \"textDocument\": {~A" utils:*end-line*)
                        (format str "      \"uri\":\"file:///some/file.txt\"~A" utils:*end-line*)
@@ -177,12 +170,19 @@
 
 
 (defun hover-msg ()
-    (let ((state (make-instance 'hover-state)))
+    (let ((state (make-instance 'hover-state))
+          (exp (make-hash-table :test #'equalp))
+          (result (make-hash-table :test #'equalp)))
+
+        (setf (gethash "value" result) "")
+
+        (setf (gethash "jsonrpc" exp) "2.0")
+        (setf (gethash "id" exp) 5)
+        (setf (gethash "result" exp) result)
+
         (clue:test "Hover Message"
             (utils:check-equal (session::get-next-response state)
-                               (list (cons :jsonrpc "2.0")
-                                     (cons :id 5)
-                                     (cons :result (list (cons :value ""))))))))
+                               exp))))
 
 
 (defclass top-form-state (test-state)
@@ -209,13 +209,20 @@
 
 
 (defun top-form-msg ()
-    (let ((state (make-instance 'top-form-state)))
+    (let ((state (make-instance 'top-form-state))
+          (result (make-hash-table :test #'equalp))
+          (exp (make-hash-table :test #'equalp)))
+
+        (setf (gethash "start" result) nil)
+        (setf (gethash "end" result) nil)
+
+        (setf (gethash "jsonrpc" exp) "2.0")
+        (setf (gethash "id" exp) 5)
+        (setf (gethash "result" exp) result)
+
         (clue:test "Top Form Message"
             (utils:check-equal (session::get-next-response state)
-                               (list (cons :jsonrpc "2.0")
-                                     (cons :id 5)
-                                     (cons :result (list (cons :start nil)
-                                                         (cons :end nil))))))))
+                               exp))))
 
 
 (defclass formatting-state (test-state)
@@ -268,7 +275,7 @@
                        (format str "{~A" utils:*end-line*)
                        (format str "  \"jsonrpc\": \"2.0\",~A" utils:*end-line*)
                        (format str "  \"id\": 5,~A" utils:*end-line*)
-                       (format str "  \"method\": \"textdocument/onTypeFormatting\",~A" utils:*end-line*)
+                       (format str "  \"method\": \"textDocument/onTypeFormatting\",~A" utils:*end-line*)
                        (format str "  \"params\": {~A" utils:*end-line*)
                        (format str "    \"textDocument\": {~A" utils:*end-line*)
                        (format str "      \"uri\":\"file:///some/file.txt\"~A" utils:*end-line*)
@@ -291,9 +298,7 @@
 (defun format-on-type-msg ()
     (let ((state (make-instance 'on-type-state)))
         (clue:test "Format On Type Message"
-            (utils:check-equal (session::get-next-response state)
-                               (list (cons :jsonrpc "2.0")
-                                     (cons :id 5))))))
+            (utils:check-has-result (session::get-next-response state)))))
 
 
 (defclass list-threads-state (test-state)
@@ -313,7 +318,7 @@
 (defun list-threads-msg ()
     (let ((state (make-instance 'list-threads-state)))
         (clue:test "List Threads Message"
-            (utils:check-exists (session::get-next-response state)))))
+            (utils:check-has-result (session::get-next-response state)))))
 
 
 (defclass kill-thread-state (test-state)
@@ -334,13 +339,20 @@
 
 
 (defun kill-thread-msg ()
-    (let ((state (make-instance 'kill-thread-state)))
+    (let ((state (make-instance 'kill-thread-state))
+          (exp (make-hash-table :test #'equalp))
+          (err-map (make-hash-table :test #'equalp)))
+
+        (setf (gethash "code" err-map) alive/lsp/errors:*request-failed*)
+        (setf (gethash "message" err-map) "Thread 10 not found")
+
+        (setf (gethash "jsonrpc" exp) "2.0")
+        (setf (gethash "id" exp) 5)
+        (setf (gethash "error" exp) err-map)
+
         (clue:test "Kill Thread Message"
             (utils:check-equal (session::get-next-response state)
-                               (list (cons :jsonrpc "2.0")
-                                     (cons :id 5)
-                                     (cons :error (list (cons :code alive/lsp/errors:*request-failed*)
-                                                        (cons :message "Thread 10 not found"))))))))
+                               exp))))
 
 
 (defclass list-pkgs-state (test-state)
@@ -360,7 +372,7 @@
 (defun list-pkgs-msg ()
     (let ((state (make-instance 'list-pkgs-state)))
         (clue:test "List Packages Message"
-            (utils:check-exists (session::get-next-response state)))))
+            (utils:check-has-result (session::get-next-response state)))))
 
 
 (defclass unexport-state (test-state)
@@ -384,10 +396,11 @@
 (defun unexport-symbol-msg ()
     (let ((state (make-instance 'unexport-state)))
         (clue:test "Unexport Symbol Message"
-            (utils:check-equal (session::get-next-response state)
-                               (list (cons :jsonrpc "2.0")
-                                     (cons :id 5)
-                                     (cons :result T))))))
+            (utils:check-has-result (session::get-next-response state)))))
+
+
+(defclass eval-state (test-state)
+        ())
 
 
 (defmethod session::get-input-stream ((obj eval-state))
@@ -417,6 +430,10 @@
                               :actual (send-called state)))))
 
 
+(defclass get-pkg-state (test-state)
+        ())
+
+
 (defmethod session::get-input-stream ((obj get-pkg-state))
     (let ((content (with-output-to-string (str)
                        (format str "{~A" utils:*end-line*)
@@ -436,17 +453,14 @@
         (utils:stream-from-string (utils:create-msg content))))
 
 
-(defmethod session::send-msg ((obj get-pkg-state) msg)
-    (setf (send-called obj) T))
-
-
 (defun get-pkg-msg ()
     (let ((state (create-state 'get-pkg-state)))
         (clue:test "Get Package Message"
-            (session::handle-msg state
-                                 (session::read-message state))
-            (clue:check-equal :expected t
-                              :actual (send-called state)))))
+            (utils:check-has-result (session::get-next-response state)))))
+
+
+(defclass remove-pkg-state (test-state)
+        ())
 
 
 (defmethod session::get-input-stream ((obj remove-pkg-state))
@@ -462,17 +476,14 @@
         (utils:stream-from-string (utils:create-msg content))))
 
 
-(defmethod session::send-msg ((obj remove-pkg-state) msg)
-    (setf (send-called obj) T))
-
-
 (defun remove-pkg-msg ()
     (let ((state (create-state 'remove-pkg-state)))
         (clue:test "Remove Package Message"
-            (session::handle-msg state
-                                 (session::read-message state))
-            (clue:check-equal :expected t
-                              :actual (send-called state)))))
+            (utils:check-has-result (session::get-next-response state)))))
+
+
+(defclass list-asdf-state (test-state)
+        ())
 
 
 (defmethod session::get-input-stream ((obj list-asdf-state))
@@ -485,17 +496,10 @@
         (utils:stream-from-string (utils:create-msg content))))
 
 
-(defmethod session::send-msg ((obj list-asdf-state) msg)
-    (setf (send-called obj) T))
-
-
 (defun list-asdf-msg ()
     (let ((state (create-state 'list-asdf-state)))
         (clue:test "List ASDF Systems Message"
-            (session::handle-msg state
-                                 (session::read-message state))
-            (clue:check-equal :expected t
-                              :actual (send-called state)))))
+            (utils:check-has-result (session::get-next-response state)))))
 
 
 (defmethod session::get-input-stream ((obj load-asdf-state))
@@ -595,6 +599,7 @@
         (list-pkgs-msg)
         (unexport-symbol-msg)
         (get-pkg-msg)
+        (remove-pkg-msg)
         (list-asdf-msg)
         (hover-msg)
         (format-on-type-msg)))

@@ -43,8 +43,10 @@
 
 
 (defun create-response-new (id &key value)
-    (message:create-response id
-                             :result-value (list (cons :value value))))
+    (let ((data (make-hash-table :test #'equalp)))
+        (setf (gethash "value" data) value)
+        (message:create-response id
+                                 :result-value data)))
 
 
 (defun create-request (&key id (jsonrpc "2.0") params)

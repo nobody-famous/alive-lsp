@@ -3,6 +3,7 @@
     (:export :create-params
              :create-request
              :create-response
+             :create-response-new
              :from-wire
              :get-path
              :request)
@@ -47,6 +48,13 @@
     (make-instance 'response
         :id id
         :result (make-instance 'response-body :systems systems)))
+
+
+(defun create-response-new (id systems)
+    (let ((data (make-hash-table :test #'equalp)))
+        (setf (gethash "systems" data) systems)
+
+        (message:create-response id :result-value data)))
 
 
 (defun create-request (&key jsonrpc id params)

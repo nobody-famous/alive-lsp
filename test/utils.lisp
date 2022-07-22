@@ -4,6 +4,7 @@
              :create-msg
              :check-equal
              :check-exists
+             :check-has-result
              :stream-from-string))
 
 (in-package :alive/test/utils)
@@ -37,3 +38,8 @@
 (defun check-exists (obj)
     (unless obj
         (error "Object is null")))
+
+
+(defun check-has-result (obj)
+    (unless (gethash "result" obj)
+        (error "Object has no result")))

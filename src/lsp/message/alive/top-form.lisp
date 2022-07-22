@@ -89,7 +89,7 @@
 
 
 (defun create-response-new (id &key start end)
-    (let ((data (make-hash-table)))
+    (let ((data (make-hash-table :test #'equalp)))
 
         (setf (gethash "start" data) start)
         (setf (gethash "end" data) end)
