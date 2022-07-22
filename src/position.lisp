@@ -18,14 +18,14 @@
 
 
 (defun col (obj)
-    (cdr (assoc :col obj)))
+    (cdr (assoc :character obj)))
 
 
 (defun less-than (pos1 pos2)
     (let ((line1 (cdr (assoc :line pos1)))
-          (col1 (cdr (assoc :col pos1)))
+          (col1 (cdr (assoc :character pos1)))
           (line2 (cdr (assoc :line pos2)))
-          (col2 (cdr (assoc :col pos2))))
+          (col2 (cdr (assoc :character pos2))))
 
         (cond ((< line1 line2) T)
               ((< line2 line1) NIL)
@@ -34,11 +34,11 @@
 
 (defun less-or-equal (pos1 pos2)
     (let ((line1 (cdr (assoc :line pos1)))
-          (col1 (cdr (assoc :col pos1)))
+          (col1 (cdr (assoc :character pos1)))
           (line2 (cdr (assoc :line pos2)))
-          (col2 (cdr (assoc :col pos2))))
+          (col2 (cdr (assoc :character pos2))))
 
-        (format T "pos:less-or-equal ~A ~A ~A ~A ~A ~A~%" pos1 pos2 line1 col1 line2 col2)
+        ; (format T "pos:less-or-equal ~A ~A ~A ~A ~A ~A~%" pos1 pos2 line1 col1 line2 col2)
         (or (less-than pos1 pos2)
             (and (= line1 line2)
                  (= col1 col2)))))
@@ -46,10 +46,11 @@
 
 (defun create (line col)
     (list (cons :line line)
-          (cons :col col)))
+          (cons :character col)))
 
 
 (defun from-wire (fields)
+(format T "pos:from-wire ~A~%" fields)
     (mapcar (lambda (field)
                 (cond ((eq :character (car field)) (cons :col (cdr field)))
                       (T field)))

@@ -666,7 +666,7 @@
                     :for token-end := (token:get-end token)
 
                     :while (and token
-                                (pos:less-or-equal-new token-end pos))
+                                (pos:less-or-equal token-end pos))
 
                     :do (do-step state)
 
@@ -675,7 +675,7 @@
                                                 0))
                                     (start (token:get-start token))
                                     (line (cdr (assoc :line pos)))
-                                    (new-range (range:create (list (cons :line line) (cons :col 0)) pos)))
+                                    (new-range (range:create (pos:create line 0) pos)))
 
                                  (return (list (edit:create :range new-range
                                                             :text (indent-string 0 indent)))))))))

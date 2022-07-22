@@ -849,7 +849,6 @@
            (text (if file-text file-text ""))
            (forms (forms:from-stream (make-string-input-stream text))))
 
-        (format T "top-form ~A~%" pos)
         (loop :with start := nil
               :with end := nil
 
