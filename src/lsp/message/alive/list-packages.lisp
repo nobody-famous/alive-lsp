@@ -51,8 +51,10 @@
 
 
 (defun create-response-new (id packages)
-    (message:create-response id
-                             :result-value (list (cons :packages packages))))
+    (let ((pkgs (make-hash-table)))
+        (setf (gethash "packages" pkgs) packages)
+        (message:create-response id
+                                 :result-value pkgs)))
 
 
 (defun create-request (&key jsonrpc id params)

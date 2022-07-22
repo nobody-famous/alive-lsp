@@ -23,8 +23,8 @@
                       (cons :jsonrpc "2.0"))))
 
         (cond ((and error-value result-value) (error "Cannot create response with result and error"))
-              (result-value (push (cons :result result-value) resp))
-              (error-value (push (cons :error error-value) resp)))
+              (result-value (setf resp (acons :result result-value resp)))
+              (error-value (setf resp (acons :error error-value resp))))
 
         (reverse resp)))
 
