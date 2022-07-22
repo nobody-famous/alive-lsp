@@ -31,8 +31,8 @@
 
 (defun from-wire (fields)
     (labels ((add-field (obj key value)
-                        (cond ((eq key :start) (setf (start obj) (pos:from-wire value)))
-                              ((eq key :end) (setf (end obj) (pos:from-wire value))))))
+                        (cond ((eq key :start) (setf (start obj) value))
+                              ((eq key :end) (setf (end obj) value)))))
 
         (loop :with obj := (make-instance 'range)
 

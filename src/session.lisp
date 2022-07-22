@@ -393,12 +393,10 @@
            (text (if file-text file-text ""))
            (forms (forms:from-stream (make-string-input-stream text))))
 
-        (format T "FORMS ~A~%" (length forms))
         (loop :with start := nil
               :with end := nil
 
               :for form :in forms :do
-                  (format T "FORM ~A ~A ~A~%" pos (form:get-start form) (form:get-end form))
                   (when (and (pos:less-or-equal (form:get-start form) pos)
                              (pos:less-or-equal pos (form:get-end form)))
                         (setf start (form:get-start form))

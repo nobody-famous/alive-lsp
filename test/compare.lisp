@@ -4,12 +4,6 @@
 (in-package :alive/test/compare)
 
 
-(defmethod clue:are-equal ((a alive/position::pos) b)
-    (and (equal (type-of a) (type-of b))
-         (eq (alive/position::line a) (alive/position::line b))
-         (eq (alive/position::col a) (alive/position::col b))))
-
-
 (defmethod clue:are-equal ((a alive/parse/token::token) b)
     (and (equal (type-of a) (type-of b))
          (clue:are-equal (alive/parse/token::start a) (alive/parse/token::start b))

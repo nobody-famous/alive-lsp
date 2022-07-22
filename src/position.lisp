@@ -50,8 +50,8 @@
 
 
 (defun from-wire (fields)
-(format T "pos:from-wire ~A~%" fields)
-    (mapcar (lambda (field)
-                (cond ((eq :character (car field)) (cons :col (cdr field)))
-                      (T field)))
-            fields))
+    fields
+    #+n (mapcar (lambda (field)
+                    (cond ((eq :character (car field)) (cons :col (cdr field)))
+                          (T field)))
+                fields))
