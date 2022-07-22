@@ -393,10 +393,12 @@
            (text (if file-text file-text ""))
            (forms (forms:from-stream (make-string-input-stream text))))
 
+        (format T "FORMS ~A~%" (length forms))
         (loop :with start := nil
               :with end := nil
 
               :for form :in forms :do
+                  (format T "FORM ~A ~A ~A~%" pos (form:get-start form) (form:get-end form))
                   (when (and (pos:less-or-equal (form:get-start form) pos)
                              (pos:less-or-equal pos (form:get-end form)))
                         (setf start (form:get-start form))
@@ -772,6 +774,12 @@
     (init:create-response-new (cdr (assoc :id msg))))
 
 
+(defun handle-initialized (state msg)
+    (declare (ignore msg))
+
+    (set-initialized state T))
+
+
 (defun handle-load-file (state msg)
     (run-in-thread-new state msg (lambda ()
                                      (let* ((id (cdr (assoc :id msg)))
@@ -835,13 +843,12 @@
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
            (doc (cdr (assoc :text-document params)))
-           (pos (cdr (assoc :pos params)))
+           (pos (cdr (assoc :position params)))
            (uri (cdr (assoc :uri doc)))
            (file-text (get-file-text state uri))
            (text (if file-text file-text ""))
            (forms (forms:from-stream (make-string-input-stream text))))
 
-        (format T "FORMS ~A~%" forms)
         (loop :with start := nil
               :with end := nil
 
@@ -945,12 +952,25 @@
         (unexport:create-response-new id)))
 
 
-(defparameter *handlers* (list (cons "initialize" 'handle-init)
+(defun handle-did-open (state msg)
+    (let* ((params (cdr (assoc :params msg)))
+           (doc (cdr (assoc :text-document params)))
+           (uri (cdr (assoc :uri doc)))
+           (text (cdr (assoc :text doc))))
 
-                               (cons "textdocument/completion" 'handle-completion)
-                               (cons "textdocument/hover" 'handle-hover)
-                               (cons "textdocument/onTypeFormatting" 'handle-on-type)
-                               (cons "textdocument/rangeformatting" 'handle-formatting)
+        (when text
+              (bt:with-recursive-lock-held ((lock state))
+                  (set-file-text state uri text)))))
+
+
+(defparameter *handlers* (list (cons "initialize" 'handle-init)
+                               (cons "initialized" 'handle-initialized)
+
+                               (cons "textDocument/completion" 'handle-completion)
+                               (cons "textDocument/didOpen" 'handle-did-open)
+                               (cons "textDocument/hover" 'handle-hover)
+                               (cons "textDocument/onTypeFormatting" 'handle-on-type)
+                               (cons "textDocument/rangeformatting" 'handle-formatting)
 
                                (cons "$/alive/killThread" 'handle-kill-thread)
                                (cons "$/alive/listPackages" 'handle-list-pkgs)
@@ -968,8 +988,11 @@
 
         (if handler
             (funcall handler state msg)
-            (message:create-response id :error-value (list (cons :code errors:*request-failed*)
-                                                           (cons :message (format nil "No handler for ~A" method-name)))))))
+            (let ((error-msg (format nil "No handler for ~A" method-name)))
+                (logger:msg logger:*error* error-msg)
+                (when id (message:create-error id
+                                               :code errors:*request-failed*
+                                               :message error-msg))))))
 
 
 (defun process-msg (state msg)
@@ -995,13 +1018,13 @@
 
 
 (defun process-msg-new (state msg)
-    (let ((id (assoc :id msg)))
+    (let ((id (cdr (assoc :id msg))))
 
         (unwind-protect
                 (handler-case
 
                         (progn (when id
-                                     (save-thread-msg-new state (cdr id)))
+                                     (save-thread-msg-new state id))
 
                                (when (logger:has-level logger:*trace*)
                                      (logger:msg logger:*trace* "--> ~A~%" (json:encode-json-to-string msg)))
@@ -1064,7 +1087,7 @@
         (setf (read-thread state)
             (bt:make-thread (lambda ()
                                 (let ((*standard-output* stdout))
-                                    (read-messages state)))
+                                    (read-messages-new state)))
                             :name "Session Message Reader"))))
 
 

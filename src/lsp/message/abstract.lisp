@@ -2,6 +2,7 @@
     (:use :cl)
     (:export :create-error-resp
              :create-result-resp
+             :create-error
              :create-response
              :error-from-wire
              :id
@@ -19,14 +20,24 @@
 
 
 (defun create-response (id &key result-value error-value)
-    (let ((resp (list (cons :id id)
-                      (cons :jsonrpc "2.0"))))
+    (let ((resp (make-hash-table)))
+
+        (setf (gethash "id" resp) id)
+        (setf (gethash "jsonrpc" resp) "2.0")
 
         (cond ((and error-value result-value) (error "Cannot create response with result and error"))
-              (result-value (setf resp (acons :result result-value resp)))
-              (error-value (setf resp (acons :error error-value resp))))
+              (result-value (setf (gethash "result" resp) result-value))
+              (error-value (setf (gethash "error" resp) error-value)))
 
-        (reverse resp)))
+        resp))
+
+
+(defun create-error (id &key code message)
+    (let ((data (make-hash-table)))
+        (setf (gethash "code" data) code)
+        (setf (gethash "message" data) message)
+
+        (create-response id :error-value data)))
 
 
 (defclass message ()

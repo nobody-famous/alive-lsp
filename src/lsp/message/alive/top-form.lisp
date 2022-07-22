@@ -89,9 +89,13 @@
 
 
 (defun create-response-new (id &key start end)
-    (message:create-response id
-                             :result-value (list (cons :start start)
-                                                 (cons :end end))))
+    (let ((data (make-hash-table)))
+
+        (setf (gethash "start" data) start)
+        (setf (gethash "end" data) end)
+
+        (message:create-response id
+                                 :result-value data)))
 
 
 (defun from-wire (&key jsonrpc id params)

@@ -13,57 +13,43 @@
 (in-package :alive/position)
 
 
-(defclass pos ()
-        ((line :accessor line
-               :initform 0
-               :initarg :line)
-         (col :accessor col
-              :initform 0
-              :initarg :col)))
+(defun line (obj)
+    (cdr (assoc :line obj)))
 
 
-(defmethod print-object ((obj pos) out)
-    (format out "[~A:~A]" (line obj) (col obj)))
+(defun col (obj)
+    (cdr (assoc :col obj)))
 
 
 (defun less-than (pos1 pos2)
-    (cond ((< (line pos1) (line pos2)) T)
-          ((< (line pos2) (line pos1)) NIL)
-          (T (< (col pos1) (col pos2)))))
+    (let ((line1 (cdr (assoc :line pos1)))
+          (col1 (cdr (assoc :col pos1)))
+          (line2 (cdr (assoc :line pos2)))
+          (col2 (cdr (assoc :col pos2))))
 
-
-(defun less-than-new (pos1 pos2)
-    (cond ((< (cdr (assoc :line pos1)) (cdr (assoc :line pos2))) T)
-          ((< (cdr (assoc :line pos2)) (cdr (assoc :line pos1))) NIL)
-          (T (< (cdr (assoc :col pos1)) (cdr (assoc :col pos2))))))
+        (cond ((< line1 line2) T)
+              ((< line2 line1) NIL)
+              (T (< col1 col2)))))
 
 
 (defun less-or-equal (pos1 pos2)
-    (or (less-than pos1 pos2)
-        (and (= (line pos1) (line pos2))
-             (= (col pos1) (col pos2)))))
+    (let ((line1 (cdr (assoc :line pos1)))
+          (col1 (cdr (assoc :col pos1)))
+          (line2 (cdr (assoc :line pos2)))
+          (col2 (cdr (assoc :col pos2))))
 
-
-(defun less-or-equal-new (pos1 pos2)
-    (or (less-than-new pos1 pos2)
-        (and (= (cdr (assoc :line pos1)) (cdr (assoc :line pos2)))
-             (= (cdr (assoc :col pos1)) (cdr (assoc :col pos2))))))
+        (or (less-than pos1 pos2)
+            (and (= line1 line2)
+                 (= col1 col2)))))
 
 
 (defun create (line col)
-    (make-instance 'pos
-        :line line
-        :col col))
+    (list (cons :line line)
+          (cons :col col)))
 
 
 (defun from-wire (fields)
-    (labels ((add-field (obj key value)
-                        (cond ((eq key :line) (setf (line obj) value))
-                              ((eq key :character) (setf (col obj) value)))))
-
-        (loop :with obj := (make-instance 'pos)
-
-              :for field :in fields :do
-                  (add-field obj (car field) (cdr field))
-
-              :finally (return obj))))
+    (mapcar (lambda (field)
+                (cond ((eq :character (car field)) (cons :col (cdr field)))
+                      (T field)))
+            fields))
