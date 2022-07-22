@@ -265,23 +265,23 @@
            (comp-opts (make-hash-table :test #'equalp))
            (on-type-opts (make-hash-table :test #'equalp)))
 
-        (setf (gethash "trigger-characters" comp-opts) (list #\:))
+        (setf (gethash "triggerCharacters" comp-opts) (list #\:))
 
-        (setf (gethash "token-types" legend-opts) sem-tokens:*types*)
-        (setf (gethash "token-modifiers" legend-opts) sem-tokens:*mods*)
+        (setf (gethash "tokenTypes" legend-opts) sem-tokens:*types*)
+        (setf (gethash "tokenModifiers" legend-opts) sem-tokens:*mods*)
 
         (setf (gethash "legend" sem-opts) legend-opts)
         (setf (gethash "full" sem-opts) T)
 
-        (setf (gethash "first-trigger-character" on-type-opts) #\newline)
-        (setf (gethash "more-trigger-characters" on-type-opts) (list))
+        (setf (gethash "firstTriggerCharacter" on-type-opts) #\newline)
+        (setf (gethash "moreTriggerCharacters" on-type-opts) (list))
 
-        (setf (gethash "text-document-sync" caps) *doc-sync-full*)
-        (setf (gethash "hover-provider" caps) nil)
-        (setf (gethash "semantic-tokens-provider" caps) sem-opts)
-        (setf (gethash "completion-provider" caps) comp-opts)
-        (setf (gethash "document-range-formatting-provider" caps) T)
-        (setf (gethash "document-on-type-formatting-provider" caps) on-type-opts)
+        (setf (gethash "textDocumentSync" caps) *doc-sync-full*)
+        (setf (gethash "hoverProvider" caps) nil)
+        (setf (gethash "semanticTokensProvider" caps) sem-opts)
+        (setf (gethash "completionProvider" caps) comp-opts)
+        (setf (gethash "documentRangeFormattingProvider" caps) T)
+        (setf (gethash "documentOnTypeFormattingProvider" caps) on-type-opts)
 
         (setf (gethash "capabilities" data) caps)
 
