@@ -44,8 +44,16 @@
     (make-instance cls))
 
 
+(defun to-table (from-list)
+    (loop :with table := (make-hash-table :test #'equalp)
+          :for item :in from-list
+          :do (setf (gethash (car item) table) (cdr item))
+          :finally (return table)))
+
+
 (defclass init-msg-state (test-state)
         ())
+
 
 (defmethod session::get-input-stream ((obj init-msg-state))
     (let ((content (with-output-to-string (str)
@@ -66,18 +74,23 @@
 (defun init-msg ()
     (let ((state (make-instance 'init-msg-state)))
         (clue:test "Initialize Message"
-            (utils:check-equal (session::get-next-response state)
-                               (list (cons :jsonrpc "2.0")
-                                     (cons :id 0)
-                                     (cons :result (list (cons :capabilities (list (cons :text-document-sync 1)
-                                                                                   (cons :hover-provider nil)
-                                                                                   (cons :semantic-tokens-provider (list (cons :legend (list (cons :token-types sem-tokens:*types*)
-                                                                                                                                             (cons :token-modifiers sem-tokens:*mods*)))
-                                                                                                                         (cons :full T)))
-                                                                                   (cons :completion-provider (list (cons :trigger-characters (list #\:))))
-                                                                                   (cons :document-range-formatting-provider T)
-                                                                                   (cons :document-on-type-formatting-provider (list (cons :first-trigger-character #\newline)
-                                                                                                                                     (cons :more-trigger-characters (list)))))))))))))
+            (let* ((sem-tok-legend (to-table (list (cons "token-types" sem-tokens:*types*)
+                                                   (cons "token-modifiers" sem-tokens:*mods*))))
+                   (sem-tok-opts (to-table (list (cons "legend" sem-tok-legend)
+                                                 (cons "full" T))))
+                   (on-type-opts (to-table (list (cons "first-trigger-character" #\newline)
+                                                 (cons "more-trigger-characters" (list)))))
+                   (caps (to-table (list (cons "text-document-sync" 1)
+                                         (cons "hover-provider" nil)
+                                         (cons "semantic-tokens-provider" sem-tok-opts)
+                                         (cons "completion-provider" (to-table (list (cons "trigger-characters" (list #\:)))))
+                                         (cons "document-range-formatting-provider" T)
+                                         (cons "document-on-type-formatting-provider" on-type-opts))))
+                   (exp (to-table (list (cons "jsonrpc" "2.0")
+                                        (cons "id" 0)
+                                        (cons "result" (to-table (list (cons "capabilities" caps))))))))
+                (utils:check-equal (session::get-next-response state)
+                                   exp)))))
 
 
 (defclass load-file-state (test-state)
@@ -135,9 +148,12 @@
     (let ((state (make-instance 'completion-state)))
         (clue:test "Completion Message"
             (utils:check-equal (session::get-next-response state)
-                               (list (cons :jsonrpc "2.0")
-                                     (cons :id 5)
-                                     (cons :result (list (cons :items nil))))))))
+                               (to-table (list (cons "jsonrpc" "2.0")
+                                               (cons "id" 5)
+                                               (cons "result" (to-table (list (cons "items" nil))))))
+                               #+n (list (cons :jsonrpc "2.0")
+                                         (cons :id 5)
+                                         (cons :result (list (cons :items nil))))))))
 
 
 (defclass hover-state (test-state)
@@ -241,6 +257,7 @@
 (defun formatting-msg ()
     (let ((state (make-instance 'formatting-state)))
         (clue:test "Range Format Message"
+            (format T "RESP ~A~%" (session::get-next-response state))
             (utils:check-equal (session::get-next-response state)
                                nil))))
 

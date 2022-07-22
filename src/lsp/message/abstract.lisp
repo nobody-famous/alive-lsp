@@ -20,7 +20,7 @@
 
 
 (defun create-response (id &key result-value error-value)
-    (let ((resp (make-hash-table)))
+    (let ((resp (make-hash-table :test #'equalp)))
 
         (setf (gethash "id" resp) id)
         (setf (gethash "jsonrpc" resp) "2.0")

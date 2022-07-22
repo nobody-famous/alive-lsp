@@ -258,16 +258,34 @@
 
 
 (defun create-response-new (id)
-    (message:create-response id
-                             :result-value (list (cons :capabilities (list (cons :text-document-sync *doc-sync-full*)
-                                                                           (cons :hover-provider nil)
-                                                                           (cons :semantic-tokens-provider (list (cons :legend (list (cons :token-types sem-tokens:*types*)
-                                                                                                                                     (cons :token-modifiers sem-tokens:*mods*)))
-                                                                                                                 (cons :full T)))
-                                                                           (cons :completion-provider (list (cons :trigger-characters (list #\:))))
-                                                                           (cons :document-range-formatting-provider T)
-                                                                           (cons :document-on-type-formatting-provider (list (cons :first-trigger-character #\newline)
-                                                                                                                             (cons :more-trigger-characters (list)))))))))
+    (let* ((data (make-hash-table :test #'equalp))
+           (caps (make-hash-table :test #'equalp))
+           (sem-opts (make-hash-table :test #'equalp))
+           (legend-opts (make-hash-table :test #'equalp))
+           (comp-opts (make-hash-table :test #'equalp))
+           (on-type-opts (make-hash-table :test #'equalp)))
+
+        (setf (gethash "trigger-characters" comp-opts) (list #\:))
+
+        (setf (gethash "token-types" legend-opts) sem-tokens:*types*)
+        (setf (gethash "token-modifiers" legend-opts) sem-tokens:*mods*)
+
+        (setf (gethash "legend" sem-opts) legend-opts)
+        (setf (gethash "full" sem-opts) T)
+
+        (setf (gethash "first-trigger-character" on-type-opts) #\newline)
+        (setf (gethash "more-trigger-characters" on-type-opts) (list))
+
+        (setf (gethash "text-document-sync" caps) *doc-sync-full*)
+        (setf (gethash "hover-provider" caps) nil)
+        (setf (gethash "semantic-tokens-provider" caps) sem-opts)
+        (setf (gethash "completion-provider" caps) comp-opts)
+        (setf (gethash "document-range-formatting-provider" caps) T)
+        (setf (gethash "document-on-type-formatting-provider" caps) on-type-opts)
+
+        (setf (gethash "capabilities" data) caps)
+
+        (message:create-response id :result-value data)))
 
 
 (defun create-initialized-notification ()
