@@ -259,8 +259,8 @@
                                             (handler-bind ((error (lambda (err)
                                                                       (start-debugger state err)
                                                                       (return-from handler))))
-                                                (funcall fn)))))
-                            (rem-thread-msg state))
+                                                (funcall fn))))
+                                (rem-thread-msg state)))
 
                         :name (next-thread-name state (if (assoc :id msg)
                                                           (cdr (assoc :method msg))
@@ -849,6 +849,7 @@
            (text (if file-text file-text ""))
            (forms (forms:from-stream (make-string-input-stream text))))
 
+        (format T "top-form ~A~%" pos)
         (loop :with start := nil
               :with end := nil
 
@@ -963,6 +964,51 @@
                   (set-file-text state uri text)))))
 
 
+(defun process-eval-new (state msg)
+    (let* ((id (cdr (assoc :id msg)))
+           (params (cdr (assoc :params msg)))
+           (pkg-name (cdr (assoc :package params)))
+           (text (cdr (assoc :text params)))
+           (* (elt (history state) 0))
+           (** (elt (history state) 1))
+           (*** (elt (history state) 2))
+           (result (eval:from-string text
+                                     :pkg-name pkg-name
+                                     :stdin-fn (lambda ()
+                                                   (wait-for-input state))
+                                     :stdout-fn (lambda (data)
+                                                    (send-msg state (stdout:create data)))
+                                     :stderr-fn (lambda (data)
+                                                    (send-msg state (stderr:create data))))))
+
+        (when (cdr (assoc :store-result params))
+              (add-history state result))
+
+        (send-msg state (eval-msg:create-response-new id
+                                                      (format nil "~A" result)))))
+
+
+(defun handle-eval (state msg)
+    (run-in-thread-new state msg (lambda ()
+                                     (process-eval-new state msg)))
+    nil)
+
+
+(defun handle-get-pkg (state msg)
+    (format T "get-pkg ~A~%" msg)
+    (let* ((id (cdr (assoc :id msg)))
+           (params (cdr (assoc :params msg)))
+           (doc (cdr (assoc :text-document params)))
+           (pos (cdr (assoc :position params)))
+           (uri (cdr (assoc :uri doc)))
+           (file-text (get-file-text state uri))
+           (text (if file-text file-text ""))
+           (pkg (packages:for-pos text pos)))
+
+        (get-pkg:create-response-new id
+                                     :pkg-name pkg)))
+
+
 (defparameter *handlers* (list (cons "initialize" 'handle-init)
                                (cons "initialized" 'handle-initialized)
 
@@ -972,6 +1018,8 @@
                                (cons "textDocument/onTypeFormatting" 'handle-on-type)
                                (cons "textDocument/rangeformatting" 'handle-formatting)
 
+                               (cons "$/alive/eval" 'handle-eval)
+                               (cons "$/alive/getPackageForPosition" 'handle-get-pkg)
                                (cons "$/alive/killThread" 'handle-kill-thread)
                                (cons "$/alive/listPackages" 'handle-list-pkgs)
                                (cons "$/alive/listThreads" 'handle-list-threads)
@@ -1087,7 +1135,7 @@
         (setf (read-thread state)
             (bt:make-thread (lambda ()
                                 (let ((*standard-output* stdout))
-                                    (read-messages state)))
+                                    (read-messages-new state)))
                             :name "Session Message Reader"))))
 
 

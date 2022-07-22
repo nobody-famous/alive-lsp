@@ -3,6 +3,7 @@
     (:export :create-params
              :create-request
              :create-response
+             :create-response-new
              :from-wire
              :get-package
              :get-text
@@ -61,6 +62,13 @@
 
 (defmethod print-object ((obj response-body) out)
     (format out "{text: ~A}" (text obj)))
+
+
+(defun create-response-new (id text)
+    (let ((data (make-hash-table)))
+        (setf (gethash "text" data) text)
+        (message:create-response id
+                                 :result-value data)))
 
 
 (defun create-response (id text)

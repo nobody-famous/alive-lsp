@@ -3,6 +3,7 @@
     (:export :create-params
              :create-request
              :create-response
+             :create-response-new
              :from-wire
              :pos
              :request
@@ -80,6 +81,13 @@
         :id id
         :result (make-instance 'response-body
                     :pkg-name pkg-name)))
+
+
+(defun create-response-new (id &key pkg-name)
+    (let ((data (make-hash-table)))
+        (setf (gethash "package" data) pkg-name)
+        (message:create-response id
+                                 :result-value data)))
 
 
 (defun from-wire (&key jsonrpc id params)
