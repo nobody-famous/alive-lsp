@@ -952,6 +952,18 @@
         (unexport:create-response-new id)))
 
 
+(defun handle-did-change (state msg)
+    (let* ((params (cdr (assoc :params msg)))
+           (doc (cdr (assoc :text-document params)))
+           (uri (cdr (assoc :uri doc)))
+           (changes (cdr (assoc :content-changes params)))
+           (text (cdr (assoc :text (first changes)))))
+
+        (when text
+              (bt:with-recursive-lock-held ((lock state))
+                  (set-file-text state uri text)))))
+
+
 (defun handle-did-open (state msg)
     (let* ((params (cdr (assoc :params msg)))
            (doc (cdr (assoc :text-document params)))
@@ -994,7 +1006,6 @@
 
 
 (defun handle-get-pkg (state msg)
-    (format T "get-pkg ~A~%" msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
            (doc (cdr (assoc :text-document params)))
@@ -1012,6 +1023,7 @@
                                (cons "initialized" 'handle-initialized)
 
                                (cons "textDocument/completion" 'handle-completion)
+                               (cons "textDocument/didChange" 'handle-did-change)
                                (cons "textDocument/didOpen" 'handle-did-open)
                                (cons "textDocument/hover" 'handle-hover)
                                (cons "textDocument/onTypeFormatting" 'handle-on-type)
@@ -1134,7 +1146,7 @@
         (setf (read-thread state)
             (bt:make-thread (lambda ()
                                 (let ((*standard-output* stdout))
-                                    (read-messages-new state)))
+                                    (read-messages state)))
                             :name "Session Message Reader"))))
 
 

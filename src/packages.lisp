@@ -107,12 +107,10 @@
 
 
 (defun for-pos (text pos)
-    (format T "packages:for-pos ~A~%" pos)
     (loop :with forms := (forms:from-stream (make-string-input-stream text))
           :with pkg := "cl-user"
 
           :for form :in forms
-          :do (format T "FORM ~A ~A~%" pos (form:get-start form))
           :until (pos:less-or-equal pos (form:get-start form))
           :do (when (and (form:is-in-pkg form)
                          (<= 2 (length (form:get-kids form))))
