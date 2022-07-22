@@ -33,7 +33,7 @@
 
 
 (defun create-error (id &key code message)
-    (let ((data (make-hash-table)))
+    (let ((data (make-hash-table :test #'equalp)))
         (setf (gethash "code" data) code)
         (setf (gethash "message" data) message)
 

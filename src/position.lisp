@@ -38,7 +38,6 @@
           (line2 (cdr (assoc :line pos2)))
           (col2 (cdr (assoc :character pos2))))
 
-        ; (format T "pos:less-or-equal ~A ~A ~A ~A ~A ~A~%" pos1 pos2 line1 col1 line2 col2)
         (or (less-than pos1 pos2)
             (and (= line1 line2)
                  (= col1 col2)))))
@@ -50,8 +49,4 @@
 
 
 (defun from-wire (fields)
-    fields
-    #+n (mapcar (lambda (field)
-                    (cond ((eq :character (car field)) (cons :col (cdr field)))
-                          (T field)))
-                fields))
+    fields)

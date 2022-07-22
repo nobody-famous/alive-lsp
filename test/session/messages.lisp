@@ -127,7 +127,7 @@
                        (format str "{~A" utils:*end-line*)
                        (format str "  \"jsonrpc\": \"2.0\",~A" utils:*end-line*)
                        (format str "  \"id\": 5,~A" utils:*end-line*)
-                       (format str "  \"method\": \"textdocument/completion\",~A" utils:*end-line*)
+                       (format str "  \"method\": \"textDocument/completion\",~A" utils:*end-line*)
                        (format str "  \"params\": {~A" utils:*end-line*)
                        (format str "    \"textDocument\": {~A" utils:*end-line*)
                        (format str "      \"uri\":\"file:///some/file.txt\"~A" utils:*end-line*)
@@ -150,10 +150,7 @@
             (utils:check-equal (session::get-next-response state)
                                (to-table (list (cons "jsonrpc" "2.0")
                                                (cons "id" 5)
-                                               (cons "result" (to-table (list (cons "items" nil))))))
-                               #+n (list (cons :jsonrpc "2.0")
-                                         (cons :id 5)
-                                         (cons :result (list (cons :items nil))))))))
+                                               (cons "result" (to-table (list (cons "items" nil))))))))))
 
 
 (defclass hover-state (test-state)

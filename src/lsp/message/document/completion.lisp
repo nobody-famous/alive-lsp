@@ -40,7 +40,9 @@
 
 
 (defun create-response-new (id &key items)
-    (message:create-response id :result-value (list (cons :items items))))
+    (let ((data (make-hash-table :test #'equalp)))
+        (setf (gethash "items" data) items)
+        (message:create-response id :result-value data)))
 
 
 (defun create-response (&key id items)
