@@ -1,7 +1,6 @@
 (defpackage :alive/format
     (:use :cl)
     (:export :on-type
-             :on-type-new
              :range)
     (:local-nicknames (:edit :alive/text-edit)
                       (:packages :alive/packages)
@@ -625,34 +624,6 @@
 
 
 (defun on-type (input &key options pos)
-    (let* ((tokens (convert-tokens (tokenizer:from-stream input)))
-           (state (make-parse-state :tokens tokens
-                                    :range (range:create (pos:create 0 0) pos)
-                                    :cur-pkg (package-name *package*))))
-
-        (when options
-              (update-options state options))
-
-        (loop :for token := (next-token state)
-              :for token-end := (token:get-end token)
-
-              :while (and token
-                          (pos:less-or-equal token-end pos))
-
-              :do (do-step state)
-
-              :finally (let* ((indent (if token
-                                          (get-on-type-indent state token pos)
-                                          0))
-                              (start (token:get-start token))
-                              (line (pos:line pos))
-                              (new-range (range:create (pos:create line 0) pos)))
-
-                           (return (list (edit:create :range new-range
-                                                      :text (indent-string 0 indent))))))))
-
-
-(defun on-type-new (input &key options pos)
     (let* ((tokens (convert-tokens (tokenizer:from-stream input)))
            (state (make-parse-state :tokens tokens
                                     :range (range:create (pos:create 0 0) pos)

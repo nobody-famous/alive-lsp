@@ -44,12 +44,14 @@
         (show-stderr obj)))
 
 
-(defmethod show-stdout-p ((obj request))
-    (show-stdout (message:params obj)))
+(defmethod show-stdout-p (req)
+    (let ((params (cdr (assoc :params req))))
+        (cdr (assoc :show-stdout params))))
 
 
-(defmethod show-stderr-p ((obj request))
-    (show-stderr (message:params obj)))
+(defmethod show-stderr-p (req)
+    (let ((params (cdr (assoc :params req))))
+        (cdr (assoc :show-stderr params))))
 
 
 (defclass response (message:result-response)

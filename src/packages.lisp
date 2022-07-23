@@ -3,7 +3,6 @@
     (:export :for-pos
              :for-string
              :list-all
-             :list-all-new
              :lookup
              :package-not-found
              :do-remove
@@ -57,16 +56,6 @@
     (let ((name (package-name pkg))
           (exports (get-all-exports pkg))
           (nicknames (get-all-nicknames pkg)))
-        (make-instance 'lisp-package
-            :name name
-            :exports exports
-            :nicknames nicknames)))
-
-
-(defun create-package-new (pkg)
-    (let ((name (package-name pkg))
-          (exports (get-all-exports pkg))
-          (nicknames (get-all-nicknames pkg)))
         (list (cons :name name)
               (cons :exports exports)
               (cons :nicknames nicknames))))
@@ -75,12 +64,6 @@
 (defun list-all ()
     (mapcar (lambda (pkg)
                 (create-package pkg))
-            (list-all-packages)))
-
-
-(defun list-all-new ()
-    (mapcar (lambda (pkg)
-                (create-package-new pkg))
             (list-all-packages)))
 
 

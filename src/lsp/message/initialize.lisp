@@ -6,7 +6,6 @@
              :create-request
              :create-request-params
              :create-response
-             :create-response-new
              :create-sem-tokens-opts
              :create-initialized-notification
              :initialized
@@ -254,10 +253,6 @@
 
 
 (defun create-response (id)
-    (make-instance 'response :id id))
-
-
-(defun create-response-new (id)
     (let* ((data (make-hash-table :test #'equalp))
            (caps (make-hash-table :test #'equalp))
            (sem-opts (make-hash-table :test #'equalp))

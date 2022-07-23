@@ -1,63 +1,10 @@
 (defpackage :alive/lsp/message/document/sem-tokens-full
     (:use :cl)
-    (:export :create-params
-             :create-request
-             :create-response
-             :create-response-new
-             :from-wire
-             :request
-             :req-params
-             :text-document)
+    (:export :create-response)
     (:local-nicknames (:message :alive/lsp/message/abstract)
-                      (:types :alive/types)
-                      (:token :alive/parse/token)
-                      (:text-doc :alive/lsp/types/text-doc)
                       (:sem-types :alive/lsp/types/sem-tokens)))
 
 (in-package :alive/lsp/message/document/sem-tokens-full)
-
-
-(defclass request (message:request)
-        ((message::method :initform "textDocument/semanticTokens/full")))
-
-
-(defmethod print-object ((obj request) out)
-    (format out "{method: \"~A\"; params: ~A}"
-        (message:method-name obj)
-        (message:params obj)))
-
-
-(defun create-request (&key id (jsonrpc "2.0") params)
-    (make-instance 'request
-        :id id
-        :jsonrpc jsonrpc
-        :params params))
-
-
-(defclass req-params ()
-        ((text-document :accessor text-document
-                        :initform nil
-                        :initarg :text-document)))
-
-
-(defmethod print-object ((obj req-params) out)
-    (format out "{text-document: ~A}"
-        (text-document obj)))
-
-
-(defun create-params (text-doc)
-    (make-instance 'req-params
-        :text-document text-doc))
-
-
-(defclass response (message:result-response)
-        ())
-
-
-(defclass sem-tokens ()
-        ((data :accessor data
-               :initform nil
-               :initarg :data)))
 
 
 (defun to-sem-array (sem-tokens)
@@ -84,29 +31,7 @@
 
 
 (defun create-response (id sem-tokens)
-    (make-instance 'response
-        :id id
-        :result (make-instance 'sem-tokens
-                    :data (to-sem-array sem-tokens))))
-
-
-(defun create-response-new (id sem-tokens)
     (let ((data (make-hash-table :test #'equalp)))
         (setf (gethash "data" data) (to-sem-array sem-tokens))
         (message:create-response id
                                  :result-value data)))
-
-
-(defun from-wire (&key jsonrpc id params)
-    (labels ((add-param (out-params key value)
-                        (cond ((eq key :text-document) (setf (text-document out-params) (text-doc:from-wire value))))))
-
-        (loop :with out-params := (make-instance 'req-params)
-
-              :for param :in params :do
-                  (add-param out-params (car param) (cdr param))
-
-              :finally (return (make-instance 'request
-                                   :jsonrpc jsonrpc
-                                   :id id
-                                   :params out-params)))))
