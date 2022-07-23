@@ -894,7 +894,7 @@
            (params (cdr (assoc :params msg)))
            (doc (cdr (assoc :text-document params)))
            (opts (cdr (assoc :options params)))
-           (pos (cdr (assoc :pos params)))
+           (pos (cdr (assoc :position params)))
            (uri (cdr (assoc :uri doc)))
            (file-text (get-file-text state uri))
            (text (if file-text file-text ""))

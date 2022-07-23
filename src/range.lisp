@@ -33,7 +33,6 @@
 
 (defun create (start end)
     (list (cons :start start)
-
           (cons :end end))
     #+n (make-instance 'range
             :start start
