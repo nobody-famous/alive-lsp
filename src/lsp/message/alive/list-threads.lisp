@@ -7,5 +7,7 @@
 
 
 (defun create-response (id threads)
-    (message:create-response id
-                             :result-value (list (cons :threads threads))))
+    (let ((data (make-hash-table)))
+        (setf (gethash "threads" data) threads)
+        (message:create-response id
+                                 :result-value data)))
