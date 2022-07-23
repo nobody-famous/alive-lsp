@@ -278,25 +278,24 @@
 (defun wait-for-debug (state err restarts)
     (let ((send-id (next-send-id state))
           (cond-var (bt:make-condition-variable))
-          (params (debug:create-params :message (format nil "~A" err)
-                                       :restarts restarts
-                                       :stack-trace (mapcar (lambda (item) (princ-to-string item))
-                                                            (threads:get-stack-trace))))
           (restart-ndx nil))
 
         (setf (gethash send-id (sent-msg-callbacks state))
             (lambda (debug-resp)
-                (typecase debug-resp
-                    (message:error-response (logger:msg logger:*error* "Debugger Error ~A" debug-resp)
-                                            (bt:condition-notify cond-var))
+                (cond ((assoc :error debug-resp)
+                          (logger:msg logger:*error* "Debugger Error ~A" debug-resp))
 
-                    (message:result-response (let ((opts (when (message:result debug-resp)
-                                                               (debug-resp:from-wire (message:result debug-resp)))))
-                                                 (setf restart-ndx (debug-resp:get-index opts))
-                                                 (bt:condition-notify cond-var))))))
+                      ((assoc :result debug-resp)
+                          (let* ((result (cdr (assoc :result debug-resp))))
+                              (when result
+                                    (setf restart-ndx (cdr (assoc :index result)))))))
+                (bt:condition-notify cond-var)))
 
-        (send-msg state (debug:create-request :id send-id :params params))
-
+        (send-msg state (debug:create-request send-id
+                                              :message (princ-to-string err)
+                                              :restarts restarts
+                                              :stack-trace (mapcar (lambda (item) (princ-to-string item))
+                                                                   (threads:get-stack-trace))))
         (bt:with-recursive-lock-held ((lock state))
             (bt:condition-wait cond-var (lock state)))
 
@@ -810,8 +809,9 @@
 
                     (error (c)
                         (logger:msg logger:*error* "Message Handler: ~A" c)
-                        (message:create-response id :error-value (list (cons :code errors:*internal-error*)
-                                                                       (cons :message (princ-to-string c))))))
+                        (message:create-error id
+                                              :code errors:*internal-error*
+                                              :message (princ-to-string c))))
             (when id
                   (rem-thread-msg state)))))
 
@@ -825,16 +825,16 @@
         (errors:unhandled-request (c)
                                   (logger:msg logger:*error* "read-message: ~A" c)
                                   (when (errors:id c)
-                                        (message:create-response (errors:id c)
-                                                                 :error-value (list (cons :code errors:*method-not-found*)
-                                                                                    (cons :message (format nil "Unhandled request: ~A" (errors:method-name c)))))))
+                                        (message:create-error (errors:id c)
+                                                              :code errors:*method-not-found*
+                                                              :message (format nil "Unhandled request: ~A" (errors:method-name c)))))
 
         (errors:server-error (c)
                              (logger:msg logger:*error* "read-message: ~A" c)
                              (when (errors:id c)
-                                   (message:create-response (errors:id c)
-                                                            :error-value (list (cons :code errors:*internal-error*)
-                                                                               (cons :message (format nil "Server error: ~A" (errors:message c)))))))
+                                   (message:create-error (errors:id c)
+                                                         :code errors:*internal-error*
+                                                         :message (format nil "Server error: ~A" (errors:message c)))))
 
         (end-of-file (c)
                      (declare (ignore c))

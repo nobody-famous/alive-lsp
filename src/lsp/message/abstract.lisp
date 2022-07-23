@@ -3,6 +3,7 @@
     (:export :create-error-resp
              :create-result-resp
              :create-error
+             :create-request
              :create-response
              :error-from-wire
              :id
@@ -17,6 +18,17 @@
              :result-response))
 
 (in-package :alive/lsp/message/abstract)
+
+
+(defun create-request (id name &key params)
+    (let ((req (make-hash-table :test #'equalp)))
+
+        (setf (gethash "id" req) id)
+        (setf (gethash "jsonrpc" req) "2.0")
+        (setf (gethash "method" req) name)
+        (setf (gethash "params" req) params)
+
+        req))
 
 
 (defun create-response (id &key result-value error-value)
