@@ -257,7 +257,8 @@
                                          (text-result (if result
                                                           (cdr (assoc :text result))
                                                           "")))
-                                      (setf text text-result))))
+                                      (setf text text-result)
+                                      nil)))
                     (bt:condition-notify cond-var))))
 
         (send-msg state (message:create-request send-id "$/alive/userInput"))
@@ -641,8 +642,10 @@
                                      :stdin-fn (lambda ()
                                                    (wait-for-input state))
                                      :stdout-fn (lambda (data)
+                                                    (logger:msg logger:*error* "send stdout ~A~%" data)
                                                     (send-msg state (stdout:create data)))
                                      :stderr-fn (lambda (data)
+                                                    (logger:msg logger:*error* "send stderr ~A~%" data)
                                                     (send-msg state (stderr:create data))))))
 
         (when (cdr (assoc :store-result params))
