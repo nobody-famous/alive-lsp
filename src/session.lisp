@@ -6,8 +6,6 @@
              :start
              :stop)
     (:local-nicknames (:completion :alive/lsp/message/document/completion)
-                      (:did-open :alive/lsp/message/document/did-open)
-                      (:did-change :alive/lsp/message/document/did-change)
                       (:hover :alive/lsp/message/document/hover)
                       (:formatting :alive/lsp/message/document/range-format)
                       (:format-utils :alive/lsp/message/document/format-utils)
@@ -33,12 +31,9 @@
                       (:inspect-sym-msg :alive/lsp/message/alive/do-inspect-sym)
                       (:inspect-close-msg :alive/lsp/message/alive/do-inspect-close)
                       (:get-pkg :alive/lsp/message/alive/get-pkg)
-                      (:remove-pkg :alive/lsp/message/alive/remove-pkg)
-                      (:load-asdf :alive/lsp/message/alive/load-asdf)
                       (:list-asdf :alive/lsp/message/alive/list-asdf)
                       (:list-pkgs :alive/lsp/message/alive/list-packages)
                       (:list-threads :alive/lsp/message/alive/list-threads)
-                      (:kill-thread :alive/lsp/message/alive/kill-thread)
                       (:load-file :alive/lsp/message/alive/load-file)
                       (:symbol :alive/lsp/message/alive/symbol)
                       (:try-compile :alive/lsp/message/alive/try-compile)
@@ -438,10 +433,10 @@
                                         (path (cdr (assoc :path params)))
                                         (msgs (file:do-load path
                                                             :stdout-fn (lambda (data)
-                                                                           (when (load-file:show-stdout-p msg)
+                                                                           (when (assoc :show-stdout params)
                                                                                  (send-msg state (stdout:create data))))
                                                             :stderr-fn (lambda (data)
-                                                                           (when (load-file:show-stderr-p msg)
+                                                                           (when (assoc :show-stderr params)
                                                                                  (send-msg state (stderr:create data)))))))
 
                                      (load-file:create-response id msgs)))))
@@ -727,7 +722,7 @@
                                                                       (send-msg state (stdout:create data)))
                                                        :stderr-fn (lambda (data)
                                                                       (send-msg state (stderr:create data))))
-                                     (send-msg state (load-asdf:create-response id))))))
+                                     (send-msg state (message:create-response id :result-value T))))))
 
 
 (defparameter *handlers* (list (cons "initialize" 'handle-init)

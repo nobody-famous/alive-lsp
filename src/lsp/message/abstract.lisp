@@ -1,6 +1,7 @@
 (defpackage :alive/lsp/message/abstract
     (:use :cl)
     (:export :create-error-resp
+             :create-notification
              :create-result-resp
              :create-error
              :create-request
@@ -24,6 +25,16 @@
     (let ((req (make-hash-table :test #'equalp)))
 
         (setf (gethash "id" req) id)
+        (setf (gethash "jsonrpc" req) "2.0")
+        (setf (gethash "method" req) name)
+        (setf (gethash "params" req) params)
+
+        req))
+
+
+(defun create-notification (name &key params)
+    (let ((req (make-hash-table :test #'equalp)))
+
         (setf (gethash "jsonrpc" req) "2.0")
         (setf (gethash "method" req) name)
         (setf (gethash "params" req) params)
