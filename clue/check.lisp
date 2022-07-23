@@ -6,6 +6,7 @@
 
 (defmethod are-equal ((obj1 cons) obj2)
     (cond ((not (typep obj2 'cons)) nil)
+          ((not (typep (cdr obj1) 'cons)) (are-equal (cdr obj1) (cdr obj2)))
           ((not (eq (length obj1) (length obj2))) nil)
           (t (loop :with same := t
 

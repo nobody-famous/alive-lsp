@@ -58,9 +58,10 @@
 
 
 (defun create-response (id)
-    (make-instance 'response
-        :id id
-        :result (make-instance 'response-body)))
+    (message:create-response id :result-value T)
+    #+n (make-instance 'response
+            :id id
+            :result (make-instance 'response-body)))
 
 
 (defun create-request (&key jsonrpc id params)

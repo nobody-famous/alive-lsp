@@ -1065,6 +1065,24 @@
     nil)
 
 
+(defun handle-load-asdf (state msg)
+    (let* ((id (cdr (assoc :id msg)))
+           (params (cdr (assoc :params msg)))
+           (name (cdr (assoc :name params))))
+
+        (format T "load asdf ~A~%" name)
+        (run-in-thread-new state msg (lambda ()
+                                     (format T "BEFORE LOAD SYSTEM~%")
+                                     (asdf:load-system :name name
+                                                       :stdout-fn (lambda (data)
+                                                                      (send-msg state (stdout:create data)))
+                                                       :stderr-fn (lambda (data)
+                                                                      (send-msg state (stderr:create data))))
+                                     (format T "AFTER LOAD SYSTEM~%")
+                                     (send-msg state (load-asdf:create-response id))))
+        nil))
+
+
 (defparameter *handlers* (list (cons "initialize" 'handle-init)
                                (cons "initialized" 'handle-initialized)
 
@@ -1084,6 +1102,7 @@
                                (cons "$/alive/listPackages" 'handle-list-pkgs)
                                (cons "$/alive/listThreads" 'handle-list-threads)
                                (cons "$/alive/loadFile" 'handle-load-file)
+                               (cons "$/alive/loadAsdfSystem" 'handle-load-asdf)
                                (cons "$/alive/removePackage" 'handle-remove-pkg)
                                (cons "$/alive/symbol" 'handle-symbol)
                                (cons "$/alive/topFormBounds" 'handle-top-form)
@@ -1117,9 +1136,7 @@
 
 
 (defun handle-msg-new (state msg)
-    (let* ((method-name (cdr (assoc :method msg)))
-           (id (cdr (assoc :id msg)))
-           (handler (cdr (assoc method-name *handlers* :test #'string=))))
+    (let* ((id (cdr (assoc :id msg))))
 
         (cond ((assoc :method msg) (handle-request state msg))
               ((assoc :result msg) (handle-response state msg))

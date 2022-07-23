@@ -2,6 +2,7 @@
     (:use :cl)
     (:export :run-all)
     (:local-nicknames (:pos :alive/position)
+                      (:utils :alive/test/utils)
                       (:token :alive/parse/token)
                       (:tokens :alive/parse/tokenizer)))
 
@@ -18,7 +19,9 @@
         (clue:check-equal :expected (list (token:create
                                               :type-value alive/types:*symbol*
                                               :start (pos:create 0 0)
+                                              :start-offset 0
                                               :end (pos:create 0 3)
+                                              :end-offset 3
                                               :text "foo"))
                           :actual (tokens-for-string "foo"))))
 
