@@ -404,8 +404,8 @@
 
     (destroy state)
 
-    (loop :for listener :in (listeners state) :do
-              (when (on-done listener)
+    (loop :for listener :in (listeners state)
+          :do (when (on-done listener)
                     (funcall (on-done listener)))))
 
 
@@ -537,9 +537,8 @@
                                   (fmt-opts:from-wire (cdr (assoc :result config-resp))))))
                     (handle-format-msg state opts msg))))
 
-        (send-msg state (config:create-request
-                            :id send-id
-                            :params (config:create-params :items (list (config-item:create-item :section "alive.format")))))))
+        (send-msg state (config:create-request send-id
+                                               :items (list (config-item:create-item :section "alive.format"))))))
 
 
 (defun handle-on-type (state msg)
