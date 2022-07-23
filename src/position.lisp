@@ -4,9 +4,7 @@
              :line
              :col
              :less-than
-             :less-than-new
              :less-or-equal
-             :less-or-equal-new
              :from-wire)
     (:local-nicknames (:types :alive/types)))
 
