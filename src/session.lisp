@@ -27,7 +27,6 @@
                       (:eval-msg :alive/lsp/message/alive/do-eval)
                       (:inspect-msg :alive/lsp/message/alive/do-inspect)
                       (:inspect-sym-msg :alive/lsp/message/alive/do-inspect-sym)
-                      (:inspect-close-msg :alive/lsp/message/alive/do-inspect-close)
                       (:get-pkg :alive/lsp/message/alive/get-pkg)
                       (:list-asdf :alive/lsp/message/alive/list-asdf)
                       (:list-pkgs :alive/lsp/message/alive/list-packages)
@@ -275,14 +274,15 @@
 
         (setf (gethash send-id (sent-msg-callbacks state))
             (lambda (debug-resp)
-                (cond ((assoc :error debug-resp)
-                          (logger:msg logger:*error* "Debugger Error ~A" debug-resp))
+                (unwind-protect
+                        (cond ((assoc :error debug-resp)
+                                  (logger:msg logger:*error* "Debugger Error ~A" debug-resp))
 
-                      ((assoc :result debug-resp)
-                          (let* ((result (cdr (assoc :result debug-resp))))
-                              (when result
-                                    (setf restart-ndx (cdr (assoc :index result)))))))
-                (bt:condition-notify cond-var)))
+                              ((assoc :result debug-resp)
+                                  (let* ((result (cdr (assoc :result debug-resp))))
+                                      (when result
+                                            (setf restart-ndx (cdr (assoc :index result)))))))
+                    (bt:condition-notify cond-var))))
 
         (send-msg state (debug:create-request send-id
                                               :message (princ-to-string err)
@@ -326,67 +326,72 @@
 
 
 (defun process-inspect (state msg)
-    (handler-case
-            (let* ((pkg-name (inspect-msg:get-package msg))
-                   (text (inspect-msg:get-text msg))
-                   (id (next-inspector-id state))
-                   (* (elt (history state) 0))
-                   (** (elt (history state) 1))
-                   (*** (elt (history state) 2)))
+    (let ((id (cdr (assoc :id msg))))
 
-                (let ((result (try-inspect state id text pkg-name)))
-                    (send-msg state
-                              (inspect-msg:create-response (message:id msg)
-                                                           id
-                                                           result))))
-        (T (c)
-           (send-msg state
-                     (message:create-error-resp :code errors:*internal-error*
-                                                :message (format nil "~A" c)
-                                                :id (message:id msg))))))
+        (handler-case
+                (let* ((params (cdr (assoc :params msg)))
+                       (pkg-name (cdr (assoc :package params)))
+                       (text (cdr (assoc :text params)))
+                       (insp-id (next-inspector-id state))
+                       (* (elt (history state) 0))
+                       (** (elt (history state) 1))
+                       (*** (elt (history state) 2)))
+
+                    (let ((result (try-inspect state insp-id text pkg-name)))
+                        (send-msg state
+                                  (inspect-msg:create-response id
+                                                               :insp-id insp-id
+                                                               :result result))))
+            (T (c)
+               (send-msg state
+                         (message:create-error id
+                                               :code errors:*internal-error*
+                                               :message (princ-to-string c)))))))
 
 
-; (defmethod handle-msg (state (msg inspect-msg:request))
-;     (run-in-thread state msg (lambda ()
-;                                  (process-inspect state msg))))
+(defun handle-inspect (state msg)
+    (run-in-thread state msg (lambda ()
+                                 (process-inspect state msg))))
 
 
 (defun process-inspect-sym (state msg)
-    (handler-case
-            (let* ((pkg-name (inspect-sym-msg:get-package msg))
-                   (name (inspect-sym-msg:get-symbol msg))
-                   (id (next-inspector-id state))
-                   (sym (alive/symbols:lookup name pkg-name))
-                   (result (inspector:to-result sym)))
+    (let ((id (cdr (assoc :id msg))))
 
-                (add-inspector state
-                               :id id
-                               :inspector (inspector:create :text name
-                                                            :pkg pkg-name
-                                                            :result result))
+        (handler-case
+                (let* ((params (cdr (assoc :params msg)))
+                       (pkg-name (cdr (assoc :package params)))
+                       (name (cdr (assoc :symbol params)))
+                       (insp-id (next-inspector-id state))
+                       (sym (alive/symbols:lookup name pkg-name))
+                       (result (inspector:to-result sym)))
 
-                (send-msg state
-                          (inspect-msg:create-response (message:id msg)
-                                                       id
-                                                       result)))
-        (T (c)
-           (send-msg state
-                     (message:create-error-resp :code errors:*internal-error*
-                                                :message (format nil "~A" c)
-                                                :id (message:id msg))))))
+                    (add-inspector state
+                                   :id insp-id
+                                   :inspector (inspector:create :text name
+                                                                :pkg pkg-name
+                                                                :result result))
 
-
-; (defmethod handle-msg (state (msg inspect-sym-msg:request))
-;     (run-in-thread state msg (lambda ()
-;                                  (process-inspect-sym state msg))))
+                    (send-msg state (inspect-sym-msg:create-response id
+                                                                     :insp-id insp-id
+                                                                     :result result)))
+            (T (c)
+               (send-msg state (message:create-error id
+                                                     :code errors:*internal-error*
+                                                     :message (princ-to-string c)))))))
 
 
-; (defmethod handle-msg (state (msg inspect-close-msg:request))
-;     (let ((insp-id (inspect-close-msg:get-id msg)))
-;         (rem-inspector state :id insp-id)
-;         (send-msg state
-;                   (message:create-result-resp :id (message:id msg)
-;                                               :result "OK"))))
+(defun handle-inspect-sym (state msg)
+    (run-in-thread state msg (lambda ()
+                                 (process-inspect-sym state msg))))
+
+
+(defun handle-inspect-close (state msg)
+    (let* ((id (cdr (assoc :id msg)))
+           (params (cdr (assoc :params msg)))
+           (insp-id (cdr (assoc :id params))))
+
+        (rem-inspector state :id insp-id)
+        (message:create-response id :result-value T)))
 
 
 (defun stop (state)
@@ -421,7 +426,8 @@
 (defun handle-initialized (state msg)
     (declare (ignore msg))
 
-    (set-initialized state T))
+    (set-initialized state T)
+    nil)
 
 
 (defun handle-load-file (state msg)
@@ -605,7 +611,8 @@
 
         (when text
               (bt:with-recursive-lock-held ((lock state))
-                  (set-file-text state uri text)))))
+                  (set-file-text state uri text)
+                  nil))))
 
 
 (defun handle-did-open (state msg)
@@ -616,7 +623,8 @@
 
         (when text
               (bt:with-recursive-lock-held ((lock state))
-                  (set-file-text state uri text)))))
+                  (set-file-text state uri text)
+                  nil))))
 
 
 (defun process-eval (state msg)
@@ -737,6 +745,9 @@
 
                                (cons "$/alive/eval" 'handle-eval)
                                (cons "$/alive/getPackageForPosition" 'handle-get-pkg)
+                               (cons "$/alive/inspect" 'handle-inspect)
+                               (cons "$/alive/inspectClose" 'handle-inspect-close)
+                               (cons "$/alive/inspectSymbol" 'handle-inspect-sym)
                                (cons "$/alive/killThread" 'handle-kill-thread)
                                (cons "$/alive/listAsdfSystems" 'handle-list-asdf)
                                (cons "$/alive/listPackages" 'handle-list-pkgs)
