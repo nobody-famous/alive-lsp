@@ -79,11 +79,8 @@
                                        (:file "lsp/message/alive/top-form")
                                        (:file "lsp/message/alive/user-input")
                                        (:file "lsp/message/document/completion")
-                                       (:file "lsp/message/document/did-open")
                                        (:file "lsp/message/document/hover")
                                        (:file "lsp/message/document/format-utils")
-                                       (:file "lsp/message/document/range-format")
-                                       (:file "lsp/message/document/fmt-on-type")
                                        (:file "lsp/message/document/sem-tokens-full")
                                        (:file "lsp/message/workspace/config")
 
