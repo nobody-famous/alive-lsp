@@ -26,7 +26,6 @@
                                        (:file "lsp/types/format-options")
                                        (:file "lsp/types/formatting-options")
                                        (:file "lsp/types/debug-resp")
-                                       (:file "lsp/types/user-input")
                                        (:file "lsp/types/restart-info")
 
                                        (:file "parse/stream")

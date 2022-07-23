@@ -47,7 +47,6 @@
                       (:text-doc :alive/lsp/types/text-doc)
                       (:fmt-opts :alive/lsp/types/format-options)
                       (:debug-resp :alive/lsp/types/debug-resp)
-                      (:user-input :alive/lsp/types/user-input)
                       (:restart-info :alive/lsp/types/restart-info)
                       (:sem-tokens :alive/lsp/message/document/sem-tokens-full)))
 
@@ -234,9 +233,9 @@
 (defun cancel-thread (state thread-id msg-id)
     (when msg-id
           (send-msg state
-                    (message:create-error-resp :id msg-id
-                                               :code errors:*request-cancelled*
-                                               :message (format nil "Request ~A canceled" msg-id))))
+                    (message:create-error msg-id
+                                          :code errors:*request-cancelled*
+                                          :message (format nil "Request ~A canceled" msg-id))))
 
     (when thread-id
           (threads:kill thread-id)))
@@ -249,14 +248,17 @@
 
         (setf (gethash send-id (sent-msg-callbacks state))
             (lambda (input-resp)
-                (typecase input-resp
-                    (message:error-response (logger:msg logger:*error* "Input Error ~A" input-resp)
-                                            (bt:condition-notify cond-var))
+                (unwind-protect
+                        (cond ((assoc :error input-resp)
+                                  (logger:msg logger:*error* "Input Error ~A" input-resp))
 
-                    (message:result-response (let ((opts (when (message:result input-resp)
-                                                               (user-input:from-wire (message:result input-resp)))))
-                                                 (setf text (user-input:get-text opts))
-                                                 (bt:condition-notify cond-var))))))
+                              ((assoc :result input-resp)
+                                  (let* ((result (cdr (assoc :result input-resp)))
+                                         (text-result (if result
+                                                          (cdr (assoc :text result))
+                                                          "")))
+                                      (setf text text-result))))
+                    (bt:condition-notify cond-var))))
 
         (send-msg state (message:create-request send-id "$/alive/userInput"))
 
@@ -780,9 +782,9 @@
 
         (if cb
             (funcall cb msg)
-            (message:create-error-resp :id msg-id
-                                       :code errors:*request-failed*
-                                       :message (format nil "No callback for request: ~A" msg-id)))))
+            (message:create-error msg-id
+                                  :code errors:*request-failed*
+                                  :message (format nil "No callback for request: ~A" msg-id)))))
 
 
 (defun handle-msg (state msg)
