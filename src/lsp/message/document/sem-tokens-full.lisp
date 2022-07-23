@@ -3,6 +3,7 @@
     (:export :create-params
              :create-request
              :create-response
+             :create-response-new
              :from-wire
              :request
              :req-params
@@ -87,6 +88,13 @@
         :id id
         :result (make-instance 'sem-tokens
                     :data (to-sem-array sem-tokens))))
+
+
+(defun create-response-new (id sem-tokens)
+    (let ((data (make-hash-table :test #'equalp)))
+        (setf (gethash "data" data) (to-sem-array sem-tokens))
+        (message:create-response id
+                                 :result-value data)))
 
 
 (defun from-wire (&key jsonrpc id params)

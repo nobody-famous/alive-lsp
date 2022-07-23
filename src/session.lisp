@@ -812,7 +812,7 @@
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
            (doc (cdr (assoc :text-document params)))
-           (pos (cdr (assoc :pos params)))
+           (pos (cdr (assoc :position params)))
            (uri (cdr (assoc :uri doc)))
            (file-text (get-file-text state uri))
            (text (if file-text file-text ""))
@@ -826,7 +826,7 @@
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
            (doc (cdr (assoc :text-document params)))
-           (pos (cdr (assoc :pos params)))
+           (pos (cdr (assoc :position params)))
            (uri (cdr (assoc :uri doc)))
            (file-text (get-file-text state uri))
            (text (if file-text file-text ""))
@@ -1036,6 +1036,30 @@
                                    (asdf:list-systems)))
 
 
+(defun handle-sem-tokens (state msg)
+    (let* ((id (cdr (assoc :id msg)))
+           (params (cdr (assoc :params msg)))
+           (doc (cdr (assoc :text-document params)))
+           (uri (cdr (assoc :uri doc)))
+           (file-text (get-file-text state uri))
+           (text (if file-text file-text ""))
+           (sem-tokens (analysis:to-sem-tokens
+                           (tokenizer:from-stream
+                               (make-string-input-stream text)))))
+
+        (sem-tokens:create-response-new id sem-tokens)))
+
+
+(defun handle-try-compile (state msg)
+    (declare (ignore state))
+    (let* ((id (cdr (assoc :id msg)))
+           (params (cdr (assoc :params msg)))
+           (path (cdr (assoc :path params)))
+           (msgs (file:try-compile path)))
+
+        (try-compile:create-response id msgs)))
+
+
 (defparameter *handlers* (list (cons "initialize" 'handle-init)
                                (cons "initialized" 'handle-initialized)
 
@@ -1044,7 +1068,8 @@
                                (cons "textDocument/didOpen" 'handle-did-open)
                                (cons "textDocument/hover" 'handle-hover)
                                (cons "textDocument/onTypeFormatting" 'handle-on-type)
-                               (cons "textDocument/rangeformatting" 'handle-formatting)
+                               (cons "textDocument/rangeFormatting" 'handle-formatting)
+                               (cons "textDocument/semanticTokens/full" 'handle-sem-tokens)
 
                                (cons "$/alive/eval" 'handle-eval)
                                (cons "$/alive/getPackageForPosition" 'handle-get-pkg)
@@ -1056,6 +1081,7 @@
                                (cons "$/alive/removePackage" 'handle-remove-pkg)
                                (cons "$/alive/symbol" 'handle-symbol)
                                (cons "$/alive/topFormBounds" 'handle-top-form)
+                               (cons "$/alive/tryCompile" 'handle-try-compile)
                                (cons "$/alive/unexportSymbol" 'handle-unexport)))
 
 
@@ -1064,6 +1090,7 @@
            (id (cdr (assoc :id msg)))
            (handler (cdr (assoc method-name *handlers* :test #'string=))))
 
+        (format T "handle msg ~A ~A~%" msg handler)
         (if handler
             (funcall handler state msg)
             (let ((error-msg (format nil "No handler for ~A" method-name)))
