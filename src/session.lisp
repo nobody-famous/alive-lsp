@@ -9,7 +9,6 @@
                       (:hover :alive/lsp/message/document/hover)
                       (:format-utils :alive/lsp/message/document/format-utils)
                       (:config :alive/lsp/message/workspace/config)
-                      (:input :alive/lsp/message/alive/user-input)
                       (:asdf :alive/asdf)
                       (:eval :alive/eval)
                       (:inspector :alive/inspector)
@@ -259,7 +258,7 @@
                                                  (setf text (user-input:get-text opts))
                                                  (bt:condition-notify cond-var))))))
 
-        (send-msg state (input:create-request :id send-id))
+        (send-msg state (message:create-request send-id "$/alive/userInput"))
 
         (bt:with-recursive-lock-held ((lock state))
             (bt:condition-wait cond-var (lock state)))

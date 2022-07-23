@@ -76,7 +76,6 @@
                                        (:file "lsp/message/alive/stderr")
                                        (:file "lsp/message/alive/stdout")
                                        (:file "lsp/message/alive/top-form")
-                                       (:file "lsp/message/alive/user-input")
                                        (:file "lsp/message/document/completion")
                                        (:file "lsp/message/document/hover")
                                        (:file "lsp/message/document/format-utils")
