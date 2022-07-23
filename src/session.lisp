@@ -882,7 +882,6 @@
             (lambda (config-resp)
                 (let ((opts (when (assoc :result config-resp)
                                   (fmt-opts:from-wire (cdr (assoc :result config-resp))))))
-                    (format T "format opts ~A~%" opts)
                     (handle-format-msg-new state opts msg))))
 
         (send-msg state (config:create-request

@@ -49,7 +49,7 @@
 
 (defun to-lsp-pos-new (pos)
     (list (cons :line (cdr (assoc :line pos)))
-          (cons :ch (cdr (assoc :col pos)))))
+          (cons :character (cdr (assoc :character pos)))))
 
 
 (defun to-lsp-range (range)
