@@ -798,7 +798,7 @@
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
            (doc (cdr (assoc :text-document params)))
-           (pos (cdr (assoc :pos params)))
+           (pos (cdr (assoc :position params)))
            (uri (cdr (assoc :uri doc)))
            (file-text (get-file-text state uri))
            (text (if file-text file-text ""))
@@ -1060,12 +1060,18 @@
         (try-compile:create-response id msgs)))
 
 
+(defun handle-did-save (state msg)
+    (declare (ignore state msg))
+    nil)
+
+
 (defparameter *handlers* (list (cons "initialize" 'handle-init)
                                (cons "initialized" 'handle-initialized)
 
                                (cons "textDocument/completion" 'handle-completion)
                                (cons "textDocument/didChange" 'handle-did-change)
                                (cons "textDocument/didOpen" 'handle-did-open)
+                               (cons "textDocument/didSave" 'handle-did-save)
                                (cons "textDocument/hover" 'handle-hover)
                                (cons "textDocument/onTypeFormatting" 'handle-on-type)
                                (cons "textDocument/rangeFormatting" 'handle-formatting)
