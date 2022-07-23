@@ -880,8 +880,9 @@
     (let ((send-id (next-send-id state)))
         (setf (gethash send-id (sent-msg-callbacks state))
             (lambda (config-resp)
-                (let ((opts (when (message:result config-resp)
-                                  (fmt-opts:from-wire (message:result config-resp)))))
+                (let ((opts (when (assoc :result config-resp)
+                                  (fmt-opts:from-wire (cdr (assoc :result config-resp))))))
+                    (format T "format opts ~A~%" opts)
                     (handle-format-msg-new state opts msg))))
 
         (send-msg state (config:create-request
@@ -1085,12 +1086,11 @@
                                (cons "$/alive/unexportSymbol" 'handle-unexport)))
 
 
-(defun handle-msg-new (state msg)
-    (let* ((method-name (cdr (assoc :method msg)))
-           (id (cdr (assoc :id msg)))
+(defun handle-request (state msg)
+    (let* ((id (cdr (assoc :id msg)))
+           (method-name (cdr (assoc :method msg)))
            (handler (cdr (assoc method-name *handlers* :test #'string=))))
 
-        (format T "handle msg ~A ~A~%" msg handler)
         (if handler
             (funcall handler state msg)
             (let ((error-msg (format nil "No handler for ~A" method-name)))
@@ -1098,6 +1098,37 @@
                 (when id (message:create-error id
                                                :code errors:*request-failed*
                                                :message error-msg))))))
+
+
+(defun handle-response (state msg)
+    (let* ((msg-id (cdr (assoc :id msg)))
+           (cb (gethash msg-id (sent-msg-callbacks state))))
+
+        (if cb
+            (funcall cb msg)
+            (message:create-error-resp :id msg-id
+                                       :code errors:*request-failed*
+                                       :message (format nil "No callback for request: ~A" msg-id)))))
+
+
+(defun handle-msg-new (state msg)
+    (let* ((method-name (cdr (assoc :method msg)))
+           (id (cdr (assoc :id msg)))
+           (handler (cdr (assoc method-name *handlers* :test #'string=))))
+
+        (cond ((assoc :method msg) (handle-request state msg))
+              ((assoc :result msg) (handle-response state msg))
+              (T (message:create-error id
+                                       :code errors:*request-failed*
+                                       :message (format nil "No handler for message"))))
+
+        #+n (if handler
+                (funcall handler state msg)
+                (let ((error-msg (format nil "No handler for ~A" method-name)))
+                    (logger:msg logger:*error* error-msg)
+                    (when id (message:create-error id
+                                                   :code errors:*request-failed*
+                                                   :message error-msg))))))
 
 
 (defun process-msg (state msg)
@@ -1192,7 +1223,7 @@
         (setf (read-thread state)
             (bt:make-thread (lambda ()
                                 (let ((*standard-output* stdout))
-                                    (read-messages state)))
+                                    (read-messages-new state)))
                             :name "Session Message Reader"))))
 
 
