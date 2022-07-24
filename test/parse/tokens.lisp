@@ -81,12 +81,16 @@
         (clue:check-equal :expected (list (token:create
                                               :type-value alive/types:*open-paren*
                                               :start (pos:create 0 0)
+                                              :start-offset 0
                                               :end (pos:create 0 1)
+                                              :end-offset 1
                                               :text "(")
                                           (token:create
                                               :type-value alive/types:*close-paren*
                                               :start (pos:create 0 1)
+                                              :start-offset 1
                                               :end (pos:create 0 2)
+                                              :end-offset 2
                                               :text ")"))
                           :actual (tokens-for-string "()"))))
 
@@ -96,17 +100,23 @@
         (clue:check-equal :expected (list (token:create
                                               :type-value alive/types:*symbol*
                                               :start (pos:create 0 0)
+                                              :start-offset 0
                                               :end (pos:create 0 3)
+                                              :end-offset 3
                                               :text "foo")
                                           (token:create
                                               :type-value alive/types:*colons*
                                               :start (pos:create 0 3)
+                                              :start-offset 3
                                               :end (pos:create 0 5)
+                                              :end-offset 5
                                               :text "::")
                                           (token:create
                                               :type-value alive/types:*symbol*
                                               :start (pos:create 0 5)
+                                              :start-offset 5
                                               :end (pos:create 0 8)
+                                              :end-offset 8
                                               :text "bar"))
                           :actual (tokens-for-string "foo::bar"))))
 
