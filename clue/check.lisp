@@ -17,8 +17,12 @@
                    :finally (return same)))))
 
 
+(defmethod are-equal ((a hash-table) b)
+    (equalp a b))
+
+
 (defmethod are-equal ((a string) b)
-    (and (string-equal a b)))
+    (string-equal a b))
 
 
 (defmethod are-equal ((a integer) b)

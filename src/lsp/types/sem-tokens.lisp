@@ -55,35 +55,35 @@
 (defparameter *mods* (list))
 
 
-(defclass token ()
-        ((token-type :accessor token-type
-                     :initform nil
-                     :initarg :token-type)
-         (line :accessor line
-               :initform nil
-               :initarg :line)
-         (start-col :accessor start-col
-                    :initform nil
-                    :initarg :start-col)
-         (end-col :accessor end-col
-                  :initform nil
-                  :initarg :end-col)))
+(defun end-col (token)
+    (when token
+          (gethash "endCol" token)))
 
 
-(defmethod print-object ((obj token) out)
-    (format out "{~A line ~A start ~A end ~A}"
-        (token-type obj)
-        (line obj)
-        (start-col obj)
-        (end-col obj)))
+(defun start-col (token)
+    (when token
+          (gethash "startCol" token)))
+
+
+(defun line (token)
+    (when token
+          (gethash "line" token)))
+
+
+(defun token-type (token)
+    (when token
+          (gethash "tokenType" token)))
 
 
 (defun create (&key token-type line start end)
-    (make-instance 'token
-        :token-type token-type
-        :line line
-        :start-col start
-        :end-col end))
+    (let ((token (make-hash-table :test #'equalp)))
+
+        (setf (gethash "tokenType" token) token-type)
+        (setf (gethash "line" token) line)
+        (setf (gethash "startCol" token) start)
+        (setf (gethash "endCol" token) end)
+
+        token))
 
 
 (defun from-type (value)
