@@ -714,11 +714,6 @@
         (try-compile:create-response id msgs)))
 
 
-(defun handle-did-save (state msg)
-    (declare (ignore state msg))
-    nil)
-
-
 (defun handle-load-asdf (state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
@@ -733,17 +728,25 @@
                                      (send-msg state (message:create-response id :result-value T))))))
 
 
+(defun ignore-msg (state msg)
+    (declare (ignore state msg))
+    nil)
+
+
 (defparameter *handlers* (list (cons "initialize" 'handle-init)
                                (cons "initialized" 'handle-initialized)
 
                                (cons "textDocument/completion" 'handle-completion)
                                (cons "textDocument/didChange" 'handle-did-change)
+                               (cons "textDocument/didClose" 'handle-did-change)
                                (cons "textDocument/didOpen" 'handle-did-open)
-                               (cons "textDocument/didSave" 'handle-did-save)
+                               (cons "textDocument/didSave" 'ignore-msg)
                                (cons "textDocument/hover" 'handle-hover)
                                (cons "textDocument/onTypeFormatting" 'handle-on-type)
                                (cons "textDocument/rangeFormatting" 'handle-formatting)
                                (cons "textDocument/semanticTokens/full" 'handle-sem-tokens)
+
+                               (cons "$/setTrace" 'ignore-msg)
 
                                (cons "$/alive/eval" 'handle-eval)
                                (cons "$/alive/getPackageForPosition" 'handle-get-pkg)
