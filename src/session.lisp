@@ -188,8 +188,10 @@
           (logger:msg logger:*trace* "<-- ~A~%" (json:encode-json-to-string msg)))
 
     (bt:with-recursive-lock-held ((lock obj))
-        (write-sequence (flexi-streams:string-to-octets (packet:to-wire msg)) (usocket:socket-stream (conn obj)))
-        (force-output (usocket:socket-stream (conn obj)))))
+        (when (and (hash-table-p msg)
+                   (gethash "jsonrpc" msg))
+              (write-sequence (flexi-streams:string-to-octets (packet:to-wire msg)) (usocket:socket-stream (conn obj)))
+              (force-output (usocket:socket-stream (conn obj))))))
 
 
 (defun save-thread-msg (state id)
@@ -226,8 +228,7 @@
 
                         :name (next-thread-name state (if (assoc :id msg)
                                                           (cdr (assoc :method msg))
-                                                          "response")))
-        nil))
+                                                          "response")))))
 
 
 (defun cancel-thread (state thread-id msg-id)
@@ -257,8 +258,7 @@
                                          (text-result (if result
                                                           (cdr (assoc :text result))
                                                           "")))
-                                      (setf text text-result)
-                                      nil)))
+                                      (setf text text-result))))
                     (bt:condition-notify cond-var))))
 
         (send-msg state (message:create-request send-id "$/alive/userInput"))
@@ -642,10 +642,8 @@
                                      :stdin-fn (lambda ()
                                                    (wait-for-input state))
                                      :stdout-fn (lambda (data)
-                                                    (logger:msg logger:*error* "send stdout ~A~%" data)
                                                     (send-msg state (stdout:create data)))
                                      :stderr-fn (lambda (data)
-                                                    (logger:msg logger:*error* "send stderr ~A~%" data)
                                                     (send-msg state (stderr:create data))))))
 
         (when (cdr (assoc :store-result params))
