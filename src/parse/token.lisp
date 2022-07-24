@@ -16,27 +16,27 @@
 (in-package :alive/parse/token)
 
 
-(defmethod get-type-value ((obj hash-table))
+(defun get-type-value (obj)
     (gethash "typeValue" obj))
 
 
-(defmethod get-text ((obj hash-table))
+(defun get-text (obj)
     (gethash "text" obj))
 
 
-(defmethod get-start ((obj hash-table))
+(defun get-start (obj)
     (gethash "start" obj))
 
 
-(defmethod get-start-offset ((obj hash-table))
+(defun get-start-offset (obj)
     (gethash "startOffset" obj))
 
 
-(defmethod get-end ((obj hash-table))
+(defun get-end (obj)
     (gethash "end" obj))
 
 
-(defmethod get-end-offset ((obj hash-table))
+(defun get-end-offset (obj)
     (gethash "endOffset" obj))
 
 
@@ -64,10 +64,15 @@
         item))
 
 
-(defmethod clone ((obj hash-table) new-start new-end &optional new-text)
-    (create :type-value (get-type-value obj)
-            :text (if new-text
-                      new-text
-                      (get-text obj))
-            :start new-start
-            :end new-end))
+(defun clone (obj new-start new-end &optional new-text)
+    (loop :with copy := (make-hash-table :test #'equalp)
+
+          :for value :being :the :hash-values :of obj
+          :using (hash-key key)
+
+          :do (cond ((equalp key "start") (setf (gethash key copy) new-start))
+                    ((equalp key "end") (setf (gethash key copy) new-end))
+                    ((equalp key "text") (setf (gethash key copy) new-text))
+                    (T (setf (gethash key copy) value)))
+
+          :finally (return copy)))
