@@ -92,9 +92,7 @@
     :depends-on ("alive-lsp"
                  "clue")
     :components ((:module "test"
-                          :components ((:file "compare")
-                                       
-                                       (:file "compat/sbcl/compile")
+                          :components ((:file "compat/sbcl/compile")
                                        (:file "compat/sbcl/symbols")
 
                                        (:file "utils")
@@ -103,7 +101,6 @@
                                        (:file "parse/forms")
 
                                        (:file "lsp/completions")
-                                       (:file "lsp/message")
                                        (:file "lsp/sem-tokens")
                                        (:file "lsp/hover")
 

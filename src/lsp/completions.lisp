@@ -70,39 +70,16 @@
 (defparameter *insert-snippet* 2)
 
 
-(defclass item ()
-        ((label :accessor label
-                :initform nil
-                :initarg :label)
-         (insert-text :accessor insert-text
-                      :initform nil
-                      :initarg :insert-text)
-         (insert-text-format :accessor insert-text-format
-                             :initform 1
-                             :initarg :insert-text-format)
-         (kind :accessor kind
-               :initform nil
-               :initarg :kind)
-         (documentation :accessor doc-string
-                        :initform nil
-                        :initarg :doc-string)))
-
-
-(defmethod print-object ((obj item) out)
-    (format out "{label: ~A; insertText: ~A; kind: ~A; documentation: ~A}"
-        (label obj)
-        (insert-text obj)
-        (kind obj)
-        (doc-string obj)))
-
-
 (defun create-item (&key label kind doc-string insert-text insert-format)
-    (make-instance 'item
-        :label label
-        :kind kind
-        :doc-string doc-string
-        :insert-text insert-text
-        :insert-text-format insert-format))
+    (let ((item (make-hash-table :test 'equalp)))
+
+        (setf (gethash "label" item) label)
+        (setf (gethash "kind" item) kind)
+        (setf (gethash "docString" item) doc-string)
+        (setf (gethash "insertText" item) insert-text)
+        (setf (gethash "insertTextFormat" item) insert-format)
+
+        item))
 
 
 (defun get-ext-symbols (pkg)
@@ -253,8 +230,8 @@
 
 (defun prefix-symbols (pref items)
     (loop :for item :in items :do
-              (setf (label item) (format nil "~A~A" pref (label item)))
-              (setf (insert-text item) (format nil "~A~A" pref (insert-text item)))
+              (setf (gethash "label" item) (format nil "~A~A" pref (gethash "label" item)))
+              (setf (gethash "insertText" item) (format nil "~A~A" pref (gethash "insertText" item)))
 
           :finally (return items)))
 
