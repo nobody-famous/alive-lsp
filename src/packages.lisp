@@ -90,7 +90,7 @@
 
 
 (defun for-pos (text pos)
-    (loop :with forms := (forms:from-stream-new (make-string-input-stream text))
+    (loop :with forms := (forms:from-stream (make-string-input-stream text))
           :with pkg := "cl-user"
 
           :for form :in forms

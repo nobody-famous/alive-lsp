@@ -499,7 +499,7 @@
            (uri (cdr (assoc :uri doc)))
            (file-text (get-file-text state uri))
            (text (if file-text file-text ""))
-           (forms (forms:from-stream-new (make-string-input-stream text))))
+           (forms (forms:from-stream (make-string-input-stream text))))
 
         (loop :with start := nil
               :with end := nil

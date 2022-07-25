@@ -105,7 +105,7 @@
 
 (defun do-cmd (path cmd out)
     (with-open-file (f path)
-        (let ((forms (forms:from-stream-new f)))
+        (let ((forms (forms:from-stream f)))
             (handler-bind ((sb-c:fatal-compiler-error (fatal-error out forms))
                            (sb-c:compiler-error (compiler-error out forms))
                            (sb-ext:compiler-note (compiler-note out forms))
