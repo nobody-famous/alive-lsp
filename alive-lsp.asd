@@ -21,8 +21,6 @@
 
                                        (:file "lsp/types/config-item")
                                        (:file "lsp/types/sem-tokens")
-                                       (:file "lsp/types/text-doc")
-                                       (:file "lsp/types/text-doc-item")
                                        (:file "lsp/types/format-options")
                                        (:file "lsp/types/restart-info")
 
