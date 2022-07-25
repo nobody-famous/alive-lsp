@@ -555,7 +555,9 @@
                                      :options (fmt-opts:convert opts)
                                      :pos pos)))
 
-        (format-utils:create-response id edits)))
+        (if edits
+            (format-utils:create-response id edits)
+            (message:create-response id :result-value (make-array 0)))))
 
 
 (defun handle-list-threads (state msg)
