@@ -17,27 +17,33 @@
 
 
 (defun get-type-value (obj)
-    (gethash "typeValue" obj))
+    (when obj
+          (gethash "typeValue" obj)))
 
 
 (defun get-text (obj)
-    (gethash "text" obj))
+    (when obj
+          (gethash "text" obj)))
 
 
 (defun get-start (obj)
-    (gethash "start" obj))
+    (when obj
+          (gethash "start" obj)))
 
 
 (defun get-start-offset (obj)
-    (gethash "startOffset" obj))
+    (when obj
+          (gethash "startOffset" obj)))
 
 
 (defun get-end (obj)
-    (gethash "end" obj))
+    (when obj
+          (gethash "end" obj)))
 
 
 (defun get-end-offset (obj)
-    (gethash "endOffset" obj))
+    (when obj
+          (gethash "endOffset" obj)))
 
 
 (defun is-type (type token)
