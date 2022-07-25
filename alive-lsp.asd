@@ -19,11 +19,6 @@
                                        (:file "range")
                                        (:file "text-edit")
 
-                                       (:file "lsp/types/config-item")
-                                       (:file "lsp/types/sem-tokens")
-                                       (:file "lsp/types/format-options")
-                                       (:file "lsp/types/restart-info")
-
                                        (:file "parse/stream")
                                        (:file "parse/token")
                                        (:file "parse/tokenizer")
@@ -45,6 +40,11 @@
                                        (:file "inspector")
                                        (:file "asdf")
 
+                                       (:file "lsp/types/config-item")
+                                       (:file "lsp/types/sem-tokens")
+                                       (:file "lsp/types/format-options")
+                                       (:file "lsp/types/restart-info")
+
                                        (:file "lsp/errors")
                                        (:file "lsp/utils")
                                        (:file "lsp/completions")
@@ -53,14 +53,14 @@
 
                                        (:file "lsp/sem-analysis")
 
+                                       (:file "lsp/packet")
+                                       (:file "lsp/parse")
+
                                        (:file "lsp/message/abstract")
                                        (:file "lsp/message/format-utils")
                                        (:file "lsp/message/request")
                                        (:file "lsp/message/response")
                                        (:file "lsp/message/notification")
-
-                                       (:file "lsp/packet")
-                                       (:file "lsp/parse")
 
                                        (:file "session")
                                        (:file "server")))))
