@@ -25,7 +25,6 @@
                                        (:file "lsp/types/text-doc-item")
                                        (:file "lsp/types/format-options")
                                        (:file "lsp/types/formatting-options")
-                                       (:file "lsp/types/debug-resp")
                                        (:file "lsp/types/restart-info")
 
                                        (:file "parse/stream")

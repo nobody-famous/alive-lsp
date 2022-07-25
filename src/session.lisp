@@ -46,7 +46,6 @@
                       (:config-item :alive/lsp/types/config-item)
                       (:text-doc :alive/lsp/types/text-doc)
                       (:fmt-opts :alive/lsp/types/format-options)
-                      (:debug-resp :alive/lsp/types/debug-resp)
                       (:restart-info :alive/lsp/types/restart-info)
                       (:sem-tokens :alive/lsp/message/document/sem-tokens-full)))
 
