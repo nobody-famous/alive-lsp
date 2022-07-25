@@ -2,10 +2,19 @@
     (:use :cl)
     (:export :completion
              :do-eval
+             :do-inspect
              :format-edits
+             :get-pkg
+             :get-symbol
              :hover
-             :initialize)
+             :initialize
+             :list-items
+             :load-file
+             :sem-tokens
+             :top-form
+             :try-compile)
     (:local-nicknames (:sem-tokens :alive/lsp/types/sem-tokens)
+                      (:sem-types :alive/lsp/types/sem-tokens)
                       (:fmt-utils :alive/lsp/message/format-utils)
                       (:message :alive/lsp/message/abstract)))
 
@@ -48,17 +57,18 @@
         (message:create-response id :result-value data)))
 
 
-(defun completion (id &key items)
+(defun result (id key value)
     (let ((data (make-hash-table :test #'equalp)))
-        (setf (gethash "items" data) items)
+        (setf (gethash key data) value)
         (message:create-response id :result-value data)))
 
 
+(defun completion (id &key items)
+    (result id "items" items))
+
+
 (defun hover (id &key value)
-    (let ((data (make-hash-table :test #'equalp)))
-        (setf (gethash "value" data) value)
-        (message:create-response id
-                                 :result-value data)))
+    (result id "value" value))
 
 
 (defun format-edits (id edits)
@@ -67,7 +77,70 @@
 
 
 (defun do-eval (id text)
-    (let ((data (make-hash-table)))
-        (setf (gethash "text" data) text)
+    (result id "text" text))
+
+
+(defun do-inspect (id &key insp-id result)
+    (let ((data (make-hash-table :test #'equalp)))
+
+        (setf (gethash "id" data) insp-id)
+        (setf (gethash "result" data) result)
+
+        (message:create-response id :result-value data)))
+
+
+(defun get-pkg (id &key pkg-name)
+    (result id "package" pkg-name))
+
+
+(defun list-items (id name items)
+    (result id name items))
+
+
+(defun load-file (id msgs)
+    (result id "messages" msgs))
+
+
+(defun get-symbol (id &key value)
+    (result id "value" value))
+
+
+(defun try-compile (id msgs)
+    (result id "messages" msgs))
+
+
+(defun top-form (id &key start end)
+    (let ((data (make-hash-table :test #'equalp)))
+
+        (setf (gethash "start" data) start)
+        (setf (gethash "end" data) end)
+
         (message:create-response id
                                  :result-value data)))
+
+
+(defun to-sem-array (sem-tokens)
+    (loop :with line := 0
+          :with col := 0
+          :with out-list := nil
+
+          :for token :in sem-tokens
+          :for len := (- (sem-types:end-col token) (sem-types:start-col token))
+          :for line-diff := (- (sem-types:line token) line)
+          :for col-diff := (if (zerop line-diff)
+                               (- (sem-types:start-col token) col)
+                               (sem-types:start-col token)) :do
+
+              (push line-diff out-list)
+              (push col-diff out-list)
+              (push len out-list)
+              (push (sem-types:token-type token) out-list)
+              (push 0 out-list)
+
+              (setf line (sem-types:line token))
+              (setf col (sem-types:start-col token))
+          :finally (return (reverse out-list))))
+
+
+(defun sem-tokens (id sem-tokens)
+    (result id "data" (to-sem-array sem-tokens)))

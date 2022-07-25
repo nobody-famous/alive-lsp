@@ -7,6 +7,8 @@
              :stop)
     (:local-nicknames (:config :alive/lsp/message/workspace/config)
                       (:debug :alive/lsp/message/alive/debugger)
+                      (:stderr :alive/lsp/message/alive/stderr)
+                      (:stdout :alive/lsp/message/alive/stdout)
 
                       (:asdf :alive/asdf)
                       (:eval :alive/eval)
@@ -33,21 +35,7 @@
                       (:restart-info :alive/lsp/types/restart-info)
 
                       (:resp :alive/lsp/message/response)
-                      (:inspect-msg :alive/lsp/message/alive/do-inspect)
-                      (:inspect-sym-msg :alive/lsp/message/alive/do-inspect-sym)
-                      (:get-pkg :alive/lsp/message/alive/get-pkg)
-                      (:list-asdf :alive/lsp/message/alive/list-asdf)
-                      (:list-pkgs :alive/lsp/message/alive/list-packages)
-                      (:list-threads :alive/lsp/message/alive/list-threads)
-                      (:load-file :alive/lsp/message/alive/load-file)
-                      (:symbol :alive/lsp/message/alive/symbol)
-                      (:try-compile :alive/lsp/message/alive/try-compile)
-                      (:unexport :alive/lsp/message/alive/unexport-symbol)
-                      (:stderr :alive/lsp/message/alive/stderr)
-                      (:stdout :alive/lsp/message/alive/stdout)
-                      (:top-form :alive/lsp/message/alive/top-form)
-                      (:message :alive/lsp/message/abstract)
-                      (:sem-tokens :alive/lsp/message/document/sem-tokens-full)))
+                      (:message :alive/lsp/message/abstract)))
 
 (in-package :alive/session)
 
@@ -340,9 +328,9 @@
 
                     (let ((result (try-inspect state insp-id text pkg-name)))
                         (send-msg state
-                                  (inspect-msg:create-response id
-                                                               :insp-id insp-id
-                                                               :result result))))
+                                  (resp:do-inspect id
+                                                   :insp-id insp-id
+                                                   :result result))))
             (T (c)
                (send-msg state
                          (message:create-error id
@@ -372,9 +360,9 @@
                                                                 :pkg pkg-name
                                                                 :result result))
 
-                    (send-msg state (inspect-sym-msg:create-response id
-                                                                     :insp-id insp-id
-                                                                     :result result)))
+                    (send-msg state (resp:do-inspect id
+                                                     :insp-id insp-id
+                                                     :result result)))
             (T (c)
                (send-msg state (message:create-error id
                                                      :code errors:*internal-error*
@@ -443,7 +431,7 @@
                                                                            (when (assoc :show-stderr params)
                                                                                  (send-msg state (stderr:create data)))))))
 
-                                     (load-file:create-response id msgs)))))
+                                     (resp:load-file id msgs)))))
 
 
 (defun handle-completion (state msg)
@@ -470,8 +458,8 @@
            (text (if file-text file-text ""))
            (result (alive/lsp/symbol:for-pos :text text :pos pos)))
 
-        (symbol:create-response id
-                                :value result)))
+        (resp:get-symbol id
+                         :value result)))
 
 
 (defun handle-hover (state msg)
@@ -508,9 +496,9 @@
                         (setf start (form:get-start form))
                         (setf end (form:get-end form)))
 
-              :finally (return (top-form:create-response id
-                                                         :start start
-                                                         :end end)))))
+              :finally (return (resp:top-form id
+                                              :start start
+                                              :end end)))))
 
 
 (defun handle-format-msg (state options msg)
@@ -563,8 +551,9 @@
                                       (eq (cdr (assoc :id thread)) (threads:get-thread-id (bt:current-thread))))
                                (threads:list-all))))
 
-            (list-threads:create-response (cdr (assoc :id msg))
-                                          threads))))
+            (resp:list-items (cdr (assoc :id msg))
+                             "threads"
+                             threads))))
 
 
 (defun handle-kill-thread (state msg)
@@ -587,8 +576,10 @@
 
 (defun handle-list-pkgs (state msg)
     (declare (ignore state))
-    (list-pkgs:create-response (cdr (assoc :id msg))
-                               (packages:list-all)))
+
+    (resp:list-items (cdr (assoc :id msg))
+                     "packages"
+                     (packages:list-all)))
 
 
 (defun handle-unexport (state msg)
@@ -600,7 +591,7 @@
            (pkg-name (cdr (assoc :package params))))
 
         (packages:unexport-symbol pkg-name sym-name)
-        (unexport:create-response id)))
+        (message:create-response id :result-value T)))
 
 
 (defun handle-did-change (state msg)
@@ -667,8 +658,8 @@
            (text (if file-text file-text ""))
            (pkg (packages:for-pos text pos)))
 
-        (get-pkg:create-response id
-                                 :pkg-name pkg)))
+        (resp:get-pkg id
+                      :pkg-name pkg)))
 
 
 (defun handle-remove-pkg (state msg)
@@ -685,8 +676,9 @@
 (defun handle-list-asdf (state msg)
     (declare (ignore state))
 
-    (list-asdf:create-response (cdr (assoc :id msg))
-                               (asdf:list-systems)))
+    (resp:list-items (cdr (assoc :id msg))
+                     "systems"
+                     (asdf:list-systems)))
 
 
 (defun handle-sem-tokens (state msg)
@@ -700,7 +692,7 @@
                            (tokenizer:from-stream
                                (make-string-input-stream text)))))
 
-        (sem-tokens:create-response id sem-tokens)))
+        (resp:sem-tokens id sem-tokens)))
 
 
 (defun handle-try-compile (state msg)
@@ -710,7 +702,7 @@
            (path (cdr (assoc :path params)))
            (msgs (file:try-compile path)))
 
-        (try-compile:create-response id msgs)))
+        (resp:try-compile id msgs)))
 
 
 (defun handle-load-asdf (state msg)
