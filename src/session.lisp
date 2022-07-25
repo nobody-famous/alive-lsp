@@ -505,10 +505,10 @@
               :with end := nil
 
               :for form :in forms :do
-                  (when (and (pos:less-or-equal (form:get-start-new form) pos)
-                             (pos:less-or-equal pos (form:get-end-new form)))
-                        (setf start (form:get-start-new form))
-                        (setf end (form:get-end-new form)))
+                  (when (and (pos:less-or-equal (form:get-start form) pos)
+                             (pos:less-or-equal pos (form:get-end form)))
+                        (setf start (form:get-start form))
+                        (setf end (form:get-end form)))
 
               :finally (return (top-form:create-response id
                                                          :start start

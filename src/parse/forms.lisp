@@ -28,7 +28,7 @@
 
 
 (defun open-paren (state token)
-    (push (form:create-new :start (token:get-start token)
+    (push (form:create :start (token:get-start token)
                            :start-offset (token:get-start-offset token)
                            :end nil
                            :form-type types:*open-paren*)
@@ -37,24 +37,24 @@
 
 (defun is-open-paren (open-form)
     (and open-form
-         (= types:*open-paren* (the fixnum (form:get-form-type-new open-form)))))
+         (= types:*open-paren* (the fixnum (form:get-form-type open-form)))))
 
 
 (defun is-symbol (open-form)
     (and open-form
-         (= types:*symbol* (the fixnum (form:get-form-type-new open-form)))))
+         (= types:*symbol* (the fixnum (form:get-form-type open-form)))))
 
 
 (defun is-quote (open-form)
     (and open-form
-         (or (= types:*quote* (the fixnum (form:get-form-type-new open-form)))
-             (= types:*back-quote* (the fixnum (form:get-form-type-new open-form))))))
+         (or (= types:*quote* (the fixnum (form:get-form-type open-form)))
+             (= types:*back-quote* (the fixnum (form:get-form-type open-form))))))
 
 
 (defun is-comma (open-form)
     (and open-form
-         (or (= (the fixnum types:*comma*) (the fixnum (form:get-form-type-new open-form)))
-             (= (the fixnum types:*comma-at*) (the fixnum (form:get-form-type-new open-form))))))
+         (or (= (the fixnum types:*comma*) (the fixnum (form:get-form-type open-form)))
+             (= (the fixnum types:*comma-at*) (the fixnum (form:get-form-type open-form))))))
 
 
 (defun collapse-opens (state &optional target)
@@ -63,16 +63,16 @@
           :for cur := (car (parse-state-opens state)) :do
               (when cur
                     (when prev
-                          (form:add-kid-new cur prev)
-                          (form:set-end-new cur (form:get-end-new prev))
-                          (form:set-end-offset-new cur (form:get-end-offset-new prev)))
+                          (form:add-kid cur prev)
+                          (form:set-end cur (form:get-end prev))
+                          (form:set-end-offset cur (form:get-end-offset prev)))
 
-                    (unless (eq (form:get-form-type-new cur) target)
+                    (unless (eq (form:get-form-type cur) target)
                         (pop (parse-state-opens state))
                         (setf prev cur)))
 
           :while (and cur
-                      (not (eq (form:get-form-type-new cur) target)))
+                      (not (eq (form:get-form-type cur) target)))
 
           :finally (when (and prev
                               (not (parse-state-opens state)))
@@ -89,19 +89,19 @@
                        :end (token:get-end token)
                        :message "Unmatched close parenthesis")))
 
-        (form:set-end-new open-form (token:get-end token))
-        (form:set-end-offset-new open-form (token:get-end-offset token))
+        (form:set-end open-form (token:get-end token))
+        (form:set-end-offset open-form (token:get-end-offset token))
 
         (let ((next-open (car (parse-state-opens state))))
             (cond ((or (is-comma next-open)
                        (is-quote next-open))
-                      (form:add-kid-new next-open open-form)
-                      (form:set-end-new next-open (form:get-end-new open-form))
-                      (form:set-end-offset-new next-open (form:get-end-offset-new open-form))
+                      (form:add-kid next-open open-form)
+                      (form:set-end next-open (form:get-end open-form))
+                      (form:set-end-offset next-open (form:get-end-offset open-form))
                       (collapse-opens state types:*open-paren*))
 
                   ((is-open-paren next-open)
-                      (form:add-kid-new (car (parse-state-opens state)) open-form))
+                      (form:add-kid (car (parse-state-opens state)) open-form))
 
                   ((is-symbol next-open) nil)
 
@@ -111,7 +111,7 @@
 (defun start-quote (state token)
     (let ((open-form (car (parse-state-opens state))))
         (cond ((is-quote open-form) NIL)
-              (T (push (form:create-new :start (token:get-start token)
+              (T (push (form:create :start (token:get-start token)
                                         :start-offset (token:get-start-offset token)
                                         :end nil
                                         :form-type (token:get-type-value token))
@@ -121,7 +121,7 @@
 (defun start-comma (state token)
     (let ((open-form (car (parse-state-opens state))))
         (cond ((is-comma open-form) NIL)
-              (T (push (form:create-new :start (token:get-start token)
+              (T (push (form:create :start (token:get-start token)
                                         :start-offset (token:get-start-offset token)
                                         :end nil
                                         :form-type (token:get-type-value token))
@@ -134,22 +134,22 @@
         (cond ((or (is-open-paren open-form)
                    (is-quote open-form))
                   (when (string= "in-package" (string-downcase (token:get-text token)))
-                        (form:set-is-in-pkg-new open-form T))
-                  (form:set-end-new open-form (token:get-end token))
-                  (form:set-end-offset-new open-form (token:get-end-offset token))
-                  (push (form:create-new :start (token:get-start token)
+                        (form:set-is-in-pkg open-form T))
+                  (form:set-end open-form (token:get-end token))
+                  (form:set-end-offset open-form (token:get-end-offset token))
+                  (push (form:create :start (token:get-start token)
                                          :start-offset (token:get-start-offset token)
                                          :end (token:get-end token)
                                          :end-offset (token:get-end-offset token)
                                          :form-type types:*symbol*
-                                         :in-pkg (form:is-in-pkg-new open-form))
+                                         :in-pkg (form:is-in-pkg open-form))
                         (parse-state-opens state)))
 
               ((is-symbol open-form)
-                  (form:set-end-new open-form (token:get-end token))
-                  (form:set-end-offset-new open-form (token:get-end-offset token)))
+                  (form:set-end open-form (token:get-end token))
+                  (form:set-end-offset open-form (token:get-end-offset token)))
 
-              (T (push (form:create-new :start (token:get-start token)
+              (T (push (form:create :start (token:get-start token)
                                         :start-offset (token:get-start-offset token)
                                         :end (token:get-end token)
                                         :end-offset (token:get-end-offset token)
@@ -185,13 +185,13 @@
 
                     ((token:is-type types:*ifdef-false* token)
                         (if (parse-state-opens state)
-                            (form:add-kid-new (car (parse-state-opens state))
-                                              (form:create-new :start (token:get-start token)
+                            (form:add-kid (car (parse-state-opens state))
+                                              (form:create :start (token:get-start token)
                                                                :start-offset (token:get-start-offset token)
                                                                :end (token:get-end token)
                                                                :end-offset (token:get-end-offset token)
                                                                :form-type types:*ifdef-false*))
-                            (push (form:create-new :start (token:get-start token)
+                            (push (form:create :start (token:get-start token)
                                                    :start-offset (token:get-start-offset token)
                                                    :end (token:get-end token)
                                                    :end-offset (token:get-end-offset token)
