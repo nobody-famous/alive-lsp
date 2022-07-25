@@ -9,8 +9,7 @@
                       (:symbols :alive/symbols)
                       (:token :alive/parse/token)
                       (:tokenizer :alive/parse/tokenizer)
-                      (:types :alive/types)
-                      (:fmt-opts :alive/lsp/types/format-options)))
+                      (:types :alive/types)))
 
 (in-package :alive/format)
 
@@ -514,12 +513,6 @@
 
 
 (defun update-options (state opts)
-    (when (fmt-opts:get-indent-width opts)
-          (setf (options-indent-width (parse-state-options state))
-              (fmt-opts:get-indent-width opts))))
-
-
-(defun update-options-new (state opts)
     (when (assoc :indent-width opts)
           (setf (options-indent-width (parse-state-options state))
               (cdr (assoc :indent-width opts)))))
@@ -586,7 +579,7 @@
                                     :cur-pkg (package-name *package*))))
 
         (when options
-              (update-options-new state options))
+              (update-options state options))
 
         (when tokens
               (loop :for token := (next-token state)

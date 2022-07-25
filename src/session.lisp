@@ -533,9 +533,8 @@
     (let ((send-id (next-send-id state)))
         (setf (gethash send-id (sent-msg-callbacks state))
             (lambda (config-resp)
-                (let ((opts (when (assoc :result config-resp)
-                                  (fmt-opts:from-wire (cdr (assoc :result config-resp))))))
-                    (handle-format-msg state opts msg))))
+                (let ((opts (cdr (assoc :result config-resp))))
+                    (handle-format-msg state (first opts) msg))))
 
         (send-msg state (config:create-request send-id
                                                :items (list (config-item:create-item :section "alive.format"))))))
