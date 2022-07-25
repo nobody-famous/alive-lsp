@@ -54,10 +54,10 @@
                                        (:file "lsp/sem-analysis")
 
                                        (:file "lsp/message/abstract")
-                                       (:file "lsp/message/payload")
-                                       (:file "lsp/message/initialize")
+                                       (:file "lsp/message/format-utils")
+                                       (:file "lsp/message/response")
+
                                        (:file "lsp/message/alive/debugger")
-                                       (:file "lsp/message/alive/do-eval")
                                        (:file "lsp/message/alive/do-inspect")
                                        (:file "lsp/message/alive/do-inspect-sym")
                                        (:file "lsp/message/alive/get-pkg")
@@ -71,9 +71,6 @@
                                        (:file "lsp/message/alive/stderr")
                                        (:file "lsp/message/alive/stdout")
                                        (:file "lsp/message/alive/top-form")
-                                       (:file "lsp/message/document/completion")
-                                       (:file "lsp/message/document/hover")
-                                       (:file "lsp/message/document/format-utils")
                                        (:file "lsp/message/document/sem-tokens-full")
                                        (:file "lsp/message/workspace/config")
 

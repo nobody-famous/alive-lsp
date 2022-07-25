@@ -5,10 +5,9 @@
              :listener
              :start
              :stop)
-    (:local-nicknames (:completion :alive/lsp/message/document/completion)
-                      (:hover :alive/lsp/message/document/hover)
-                      (:format-utils :alive/lsp/message/document/format-utils)
-                      (:config :alive/lsp/message/workspace/config)
+    (:local-nicknames (:config :alive/lsp/message/workspace/config)
+                      (:debug :alive/lsp/message/alive/debugger)
+
                       (:asdf :alive/asdf)
                       (:eval :alive/eval)
                       (:inspector :alive/inspector)
@@ -17,13 +16,23 @@
                       (:packages :alive/packages)
                       (:threads :alive/threads)
                       (:formatter :alive/format)
-                      (:tokenizer :alive/parse/tokenizer)
+                      (:logger :alive/logger)
+
                       (:analysis :alive/lsp/sem-analysis)
-                      (:init :alive/lsp/message/initialize)
+                      (:comps :alive/lsp/completions)
+                      (:packet :alive/lsp/packet)
+                      (:parse :alive/lsp/parse)
+                      (:errors :alive/lsp/errors)
+
+                      (:tokenizer :alive/parse/tokenizer)
                       (:form :alive/parse/form)
                       (:forms :alive/parse/forms)
-                      (:debug :alive/lsp/message/alive/debugger)
-                      (:eval-msg :alive/lsp/message/alive/do-eval)
+
+                      (:config-item :alive/lsp/types/config-item)
+                      (:fmt-opts :alive/lsp/types/format-options)
+                      (:restart-info :alive/lsp/types/restart-info)
+
+                      (:resp :alive/lsp/message/response)
                       (:inspect-msg :alive/lsp/message/alive/do-inspect)
                       (:inspect-sym-msg :alive/lsp/message/alive/do-inspect-sym)
                       (:get-pkg :alive/lsp/message/alive/get-pkg)
@@ -37,15 +46,7 @@
                       (:stderr :alive/lsp/message/alive/stderr)
                       (:stdout :alive/lsp/message/alive/stdout)
                       (:top-form :alive/lsp/message/alive/top-form)
-                      (:logger :alive/logger)
                       (:message :alive/lsp/message/abstract)
-                      (:comps :alive/lsp/completions)
-                      (:packet :alive/lsp/packet)
-                      (:parse :alive/lsp/parse)
-                      (:errors :alive/lsp/errors)
-                      (:config-item :alive/lsp/types/config-item)
-                      (:fmt-opts :alive/lsp/types/format-options)
-                      (:restart-info :alive/lsp/types/restart-info)
                       (:sem-tokens :alive/lsp/message/document/sem-tokens-full)))
 
 (in-package :alive/session)
@@ -420,14 +421,13 @@
 (defun handle-init (state msg)
     (declare (ignore state))
 
-    (init:create-response (cdr (assoc :id msg))))
+    (resp:initialize (cdr (assoc :id msg))))
 
 
 (defun handle-initialized (state msg)
     (declare (ignore msg))
 
-    (set-initialized state T)
-    nil)
+    (set-initialized state T))
 
 
 (defun handle-load-file (state msg)
@@ -456,8 +456,8 @@
            (text (if file-text file-text ""))
            (items (comps:simple :text text :pos pos)))
 
-        (completion:create-response id
-                                    :items items)))
+        (resp:completion id
+                         :items items)))
 
 
 (defun handle-symbol (state msg)
@@ -485,8 +485,8 @@
            (hov-text (alive/lsp/hover:get-text :text text :pos pos))
            (result (if hov-text hov-text "")))
 
-        (hover:create-response id
-                               :value result)))
+        (resp:hover id
+                    :value result)))
 
 
 (defun handle-top-form (state msg)
@@ -525,7 +525,7 @@
                                    range
                                    options)))
 
-        (format-utils:create-response id edits)))
+        (resp:format-edits id edits)))
 
 
 (defun handle-formatting (state msg)
@@ -553,7 +553,7 @@
                                      :pos pos)))
 
         (if edits
-            (format-utils:create-response id edits)
+            (resp:format-edits id edits)
             (message:create-response id :result-value (make-array 0)))))
 
 
@@ -648,8 +648,8 @@
         (when (cdr (assoc :store-result params))
               (add-history state result))
 
-        (send-msg state (eval-msg:create-response id
-                                                  (format nil "~A" result)))))
+        (send-msg state (resp:do-eval id
+                                      (format nil "~A" result)))))
 
 
 (defun handle-eval (state msg)

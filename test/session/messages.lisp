@@ -2,7 +2,6 @@
     (:use :cl)
     (:export :run-all)
     (:local-nicknames (:logger :alive/logger)
-                      (:init :alive/lsp/message/initialize)
                       (:utils :alive/test/utils)
                       (:sem-tokens :alive/lsp/types/sem-tokens)
                       (:session :alive/session)))

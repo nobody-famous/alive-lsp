@@ -1,11 +1,10 @@
-(defpackage :alive/lsp/message/document/format-utils
+(defpackage :alive/lsp/message/format-utils
     (:use :cl)
-    (:export :create-response)
-    (:local-nicknames (:message :alive/lsp/message/abstract)
-                      (:range :alive/range)
+    (:export :to-text-edits)
+    (:local-nicknames (:range :alive/range)
                       (:edit :alive/text-edit)))
 
-(in-package :alive/lsp/message/document/format-utils)
+(in-package :alive/lsp/message/format-utils)
 
 
 (defun to-lsp-pos (pos)
@@ -25,8 +24,3 @@
                           (cons :new-text (edit:text edit))))
                 edits)
         nil))
-
-
-(defun create-response (id edits)
-    (message:create-response id
-                             :result-value (to-text-edits edits)))
