@@ -3,7 +3,6 @@
     (:export :completion
              :do-eval
              :do-inspect
-             :format-edits
              :get-pkg
              :get-symbol
              :hover
@@ -69,11 +68,6 @@
 
 (defun hover (id &key value)
     (result id "value" value))
-
-
-(defun format-edits (id edits)
-    (message:create-response id
-                             :result-value (fmt-utils:to-text-edits edits)))
 
 
 (defun do-eval (id text)

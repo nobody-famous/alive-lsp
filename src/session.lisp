@@ -35,7 +35,8 @@
                       (:restart-info :alive/lsp/types/restart-info)
 
                       (:resp :alive/lsp/message/response)
-                      (:message :alive/lsp/message/abstract)))
+                      (:message :alive/lsp/message/abstract)
+                      (:fmt-utils :alive/lsp/message/format-utils)))
 
 (in-package :alive/session)
 
@@ -513,7 +514,8 @@
                                    range
                                    options)))
 
-        (resp:format-edits id edits)))
+        (message:create-response id
+                                 :result-value (fmt-utils:to-text-edits edits))))
 
 
 (defun handle-formatting (state msg)
@@ -538,11 +540,12 @@
            (text (if file-text file-text ""))
            (edits (formatter:on-type (make-string-input-stream text)
                                      :options (fmt-opts:convert opts)
-                                     :pos pos)))
+                                     :pos pos))
+           (value (if edits
+                      (fmt-utils:to-text-edits edits)
+                      (make-array 0))))
 
-        (if edits
-            (resp:format-edits id edits)
-            (message:create-response id :result-value (make-array 0)))))
+        (message:create-response id :result-value value)))
 
 
 (defun handle-list-threads (state msg)
