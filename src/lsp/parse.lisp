@@ -11,27 +11,6 @@
 (defvar *nl-char* (char-code #\newline))
 
 
-(defclass fields ()
-        ((id :accessor id
-             :initform nil
-             :initarg :id)
-         (jsonrpc :accessor jsonrpc
-                  :initform nil
-                  :initarg :jsonrpc)
-         (method :accessor method-name
-                 :initform nil
-                 :initarg :method)
-         (params :accessor params
-                 :initform nil
-                 :initarg :params)
-         (result :accessor result
-                 :initform nil
-                 :initarg :result)
-         (error :accessor error-msg
-             :initform nil
-             :initarg :error)))
-
-
 (defun trim-ws (str)
     (string-trim (list #\space #\newline #\linefeed #\return)
                  str))
