@@ -72,26 +72,6 @@
         (opens obj)))
 
 
-(defclass symbol-with-pkg ()
-        ((pkg :accessor pkg
-              :initform nil
-              :initarg :pkg)
-         (colons :accessor colons
-                 :initform nil
-                 :initarg :colons)
-         (sym :accessor sym
-              :initform nil
-              :initarg :sym)))
-
-
-(defmethod print-object ((obj symbol-with-pkg) out)
-    (declare (type stream out))
-    (format out "{pkg: ~A; colons: ~A; sym: ~A}"
-        (pkg obj)
-        (colons obj)
-        (sym obj)))
-
-
 (defun peek-token (state)
     (car (lex-tokens state)))
 
