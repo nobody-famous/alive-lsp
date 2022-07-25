@@ -90,16 +90,16 @@
 
 
 (defun for-pos (text pos)
-    (loop :with forms := (forms:from-stream (make-string-input-stream text))
+    (loop :with forms := (forms:from-stream-new (make-string-input-stream text))
           :with pkg := "cl-user"
 
           :for form :in forms
-          :until (pos:less-or-equal pos (form:get-start form))
-          :do (when (and (form:is-in-pkg form)
-                         (<= 2 (length (form:get-kids form))))
+          :until (pos:less-or-equal pos (form:get-start-new form))
+          :do (when (and (form:is-in-pkg-new form)
+                         (<= 2 (length (form:get-kids-new form))))
                     (setf pkg (name-from-string (subseq text
-                                                        (form:get-start-offset (elt (form:get-kids form) 1))
-                                                        (form:get-end-offset (elt (form:get-kids form) 1))))))
+                                                        (form:get-start-offset-new (elt (form:get-kids-new form) 1))
+                                                        (form:get-end-offset-new (elt (form:get-kids-new form) 1))))))
 
           :finally (return pkg)))
 

@@ -47,8 +47,8 @@
            (source-path (when context (reverse (sb-c::compiler-error-context-original-source-path context)))))
 
         (if (not source-path)
-            (range:create (form:get-start (car forms))
-                          (form:get-end (car (reverse forms))))
+            (range:create (form:get-start-new (car forms))
+                          (form:get-end-new (car (reverse forms))))
 
             (loop :with indicies := source-path
                   :with ndx := nil
@@ -62,10 +62,10 @@
 
                       (setf form (get-nth-form forms ndx))
 
-                      (setf forms (form:get-kids form))
+                      (setf forms (form:get-kids-new form))
 
-                  :finally (return (range:create (form:get-start form)
-                                                 (form:get-end form)))))))
+                  :finally (return (range:create (form:get-start-new form)
+                                                 (form:get-end-new form)))))))
 
 
 (defun send-message (out-fn forms sev err)
@@ -105,7 +105,7 @@
 
 (defun do-cmd (path cmd out)
     (with-open-file (f path)
-        (let ((forms (forms:from-stream f)))
+        (let ((forms (forms:from-stream-new f)))
             (handler-bind ((sb-c:fatal-compiler-error (fatal-error out forms))
                            (sb-c:compiler-error (compiler-error out forms))
                            (sb-ext:compiler-note (compiler-note out forms))
