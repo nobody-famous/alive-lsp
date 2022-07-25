@@ -72,26 +72,6 @@
         (opens obj)))
 
 
-(defclass symbol-with-pkg ()
-        ((pkg :accessor pkg
-              :initform nil
-              :initarg :pkg)
-         (colons :accessor colons
-                 :initform nil
-                 :initarg :colons)
-         (sym :accessor sym
-              :initform nil
-              :initarg :sym)))
-
-
-(defmethod print-object ((obj symbol-with-pkg) out)
-    (declare (type stream out))
-    (format out "{pkg: ~A; colons: ~A; sym: ~A}"
-        (pkg obj)
-        (colons obj)
-        (sym obj)))
-
-
 (defun peek-token (state)
     (car (lex-tokens state)))
 
@@ -180,8 +160,8 @@
 (defun lookup-symbol-type (sym &optional namespace)
     (cond ((is-number sym) sem-types:*number*)
 
-          ((or (string= "NIL" (string-upcase sym))
-               (string= "T" (string-upcase sym))) sem-types:*keyword*)
+          ((or (string-equal "NIL" sym)
+               (string-equal "T" sym)) sem-types:*keyword*)
 
           ((symbols:macro-p sym namespace) sem-types:*macro*)
 
@@ -262,7 +242,7 @@
 (defun update-symbol-fn-state (state lambda-list)
     (let ((token (peek-token state))
           (open-form (car (opens state))))
-        (if (string= "in-package" (string-downcase (token:get-text token)))
+        (if (string-equal "in-package" (token:get-text token))
             (progn (setf (cur-pkg state) nil)
                    (setf (expr-type open-form) :in-package))
             (setf (expr-type open-form) :fn-call))

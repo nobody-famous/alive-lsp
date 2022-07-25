@@ -22,25 +22,6 @@
     (:report (lambda (condition stream) (format stream "Package Not Found: ~A" (name condition)))))
 
 
-(defclass lisp-package ()
-        ((name :accessor name
-               :initform nil
-               :initarg :name)
-         (exports :accessor exports
-                  :initform nil
-                  :initarg :exports)
-         (nicknames :accessor nicknames
-                    :initform nil
-                    :initarg :nicknames)))
-
-
-(defmethod print-object ((obj lisp-package) out)
-    (format out "{name: ~A; exports: ~A; nicknames: ~A}"
-        (name obj)
-        (exports obj)
-        (nicknames obj)))
-
-
 (defun get-all-exports (pkg)
     (let ((syms nil))
         (do-external-symbols (s pkg syms)
@@ -56,10 +37,9 @@
     (let ((name (package-name pkg))
           (exports (get-all-exports pkg))
           (nicknames (get-all-nicknames pkg)))
-        (make-instance 'lisp-package
-            :name name
-            :exports exports
-            :nicknames nicknames)))
+        (list (cons :name name)
+              (cons :exports exports)
+              (cons :nicknames nicknames))))
 
 
 (defun list-all ()

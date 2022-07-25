@@ -27,14 +27,6 @@
     opens)
 
 
-(defun token-to-form (token)
-    (form:create :start (token:get-start token)
-                 :start-offset (token:get-start-offset token)
-                 :end (token:get-end token)
-                 :end-offset (token:get-end-offset token)
-                 :form-type (token:get-type-value token)))
-
-
 (defun open-paren (state token)
     (push (form:create :start (token:get-start token)
                        :start-offset (token:get-start-offset token)
@@ -141,7 +133,7 @@
 
         (cond ((or (is-open-paren open-form)
                    (is-quote open-form))
-                  (when (string= "in-package" (string-downcase (token:get-text token)))
+                  (when (string-equal "in-package" (token:get-text token))
                         (form:set-is-in-pkg open-form T))
                   (form:set-end open-form (token:get-end token))
                   (form:set-end-offset open-form (token:get-end-offset token))

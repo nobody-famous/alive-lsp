@@ -9,8 +9,7 @@
                       (:symbols :alive/symbols)
                       (:token :alive/parse/token)
                       (:tokenizer :alive/parse/tokenizer)
-                      (:types :alive/types)
-                      (:fmt-opts :alive/lsp/types/format-options)))
+                      (:types :alive/types)))
 
 (in-package :alive/format)
 
@@ -39,67 +38,31 @@
     (parens-own-line *never*))
 
 
-(defclass start-form ()
-        ((start :accessor start
-                :initform nil
-                :initarg :start)
-         (end :accessor end
-              :initform nil
-              :initarg :end)
-         (aligned :accessor aligned
-                  :initform nil
-                  :initarg :aligned)
-         (cond-p :accessor cond-p
-                 :initform nil
-                 :initarg :cond-p)
-         (loop-p :accessor loop-p
-                 :initform nil
-                 :initarg :loop-p)
-         (loop-indent-p :accessor loop-indent-p
-                        :initform nil
-                        :initarg :loop-indent-p)
-         (lambda-list :accessor lambda-list
-                      :initform nil
-                      :initarg :lambda-list)
-         (is-multiline :accessor is-multiline
-                       :initform nil
-                       :initarg :is-multiline)))
+(defun create-start-form ()
+    (let ((form (make-hash-table :test #'equalp)))
 
+        (setf (gethash "start" form) nil)
+        (setf (gethash "end" form) nil)
+        (setf (gethash "aligned" form) nil)
+        (setf (gethash "isCond" form) nil)
+        (setf (gethash "isLoop" form) nil)
+        (setf (gethash "isLoopIndent" form) nil)
+        (setf (gethash "lambdaList" form) nil)
+        (setf (gethash "isMultiline" form) nil)
 
-(defmethod print-object ((obj start-form) out)
-    (declare (type stream out))
+        (setf (gethash "typeValue" form) *start-form*)
+        (setf (gethash "text" form) "(")
 
-    (format out "{[~A:~A] ML: ~A; aligned: ~A; cond-p: ~A; loop-p: ~A; lambda-list: ~A}"
-        (start obj)
-        (end obj)
-        (is-multiline obj)
-        (aligned obj)
-        (cond-p obj)
-        (loop-p obj)
-        (lambda-list obj)))
+        form))
 
 
 (defun new-start-form (token)
-    (make-instance 'start-form
-        :start (token:get-start token)
-        :end (token:get-end token)
-        :is-multiline nil))
+    (let ((form (create-start-form)))
 
+        (setf (gethash "start" form) (token:get-start token))
+        (setf (gethash "end" form) (token:get-end token))
 
-(defmethod token:get-type-value ((obj start-form))
-    *start-form*)
-
-
-(defmethod token:get-start ((obj start-form))
-    (start obj))
-
-
-(defmethod token:get-end ((obj start-form))
-    (end obj))
-
-
-(defmethod token:get-text ((obj start-form))
-    "(")
+        form))
 
 
 (defun same-line (token1 token2)
@@ -107,15 +70,6 @@
          token2
          (= (the fixnum (pos:line (token:get-start token1)))
              (the fixnum (pos:line (token:get-start token2))))))
-
-
-(defmethod token:clone ((obj start-form) new-start new-end &optional new-text)
-    (declare (ignore new-text))
-
-    (make-instance 'start-form
-        :start new-start
-        :end new-end
-        :is-multiline (is-multiline obj)))
 
 
 (defstruct parse-state
@@ -306,8 +260,7 @@
 (defun token-is (token text)
     (declare (type simple-string text))
 
-    (let ((name (string-downcase (token:get-text token))))
-        (string= name text)))
+    (string-equal text (token:get-text token)))
 
 
 (defun align-first-item (state token form-open prev-open)
@@ -316,24 +269,24 @@
            (sym (caddr (parse-state-tokens state)))
            (lambda-list (lookup-lambda-list ns colons sym)))
 
-        (when (string= "in-package" (string-downcase (token:get-text token)))
+        (when (string-equal "in-package" (token:get-text token))
               (setf (parse-state-cur-pkg state) NIL))
 
-        (cond ((token-is token "cond") (setf (cond-p form-open) T)
+        (cond ((token-is token "cond") (setf (gethash "isCond" form-open) T)
                                        (replace-indent state (pos:col (token:get-start token))))
 
-              ((token-is token "loop") (setf (loop-p form-open) T)
+              ((token-is token "loop") (setf (gethash "isLoop" form-open) T)
                                        (replace-indent state (pos:col (token:get-start token))))
 
-              ((and prev-open (cond-p prev-open))
+              ((and prev-open (gethash "isCond" prev-open))
                   (replace-indent state (the fixnum (+ (the fixnum (options-indent-width (parse-state-options state)))
                                                        (the fixnum (pos:col (token:get-start token)))
                                                        (the fixnum -1)))))
 
               ((force-aligned-p token) (replace-indent state (pos:col (token:get-start token))))
 
-              ((has-body lambda-list) (setf (aligned form-open) T)
-                                      (setf (lambda-list form-open) lambda-list)
+              ((has-body lambda-list) (setf (gethash "aligned" form-open) T)
+                                      (setf (gethash "lambdaList" form-open) lambda-list)
                                       (replace-indent state (cons (the fixnum (+ (the fixnum (* 2
                                                                                                 (the fixnum (options-indent-width (parse-state-options state)))))
                                                                                  (the fixnum (pos:col (token:get-start token)))
@@ -362,7 +315,7 @@
 
           (T (unless (parse-state-cur-pkg state)
                  (set-cur-pkg state))
-             (setf (aligned form-open) T)
+             (setf (gethash "aligned" form-open) T)
              (replace-indent state (pos:col (token:get-start token))))))
 
 
@@ -378,19 +331,19 @@
                   (align-first-item state token form-open prev-open))
 
               ((and form-open
-                    (loop-p form-open)
-                    (not (aligned form-open))
+                    (gethash "isLoop" form-open)
+                    (not (gethash "aligned" form-open))
                     (is-loop-key state token)
                     (token:is-type types:*ws* prev))
-                  (when (or (not (loop-indent-p form-open))
+                  (when (or (not (gethash "isLoopIndent" form-open))
                             (token:is-multiline prev))
-                        (setf (aligned form-open) T)
-                        (setf (loop-indent-p form-open) T)
+                        (setf (gethash "aligned" form-open) T)
+                        (setf (gethash "loopIndent" form-open) T)
                         (replace-indent state (the fixnum (+ (the fixnum (options-indent-width (parse-state-options state)))
                                                              (the fixnum (pos:col (token:get-start token))))))))
 
               ((and form-open
-                    (not (aligned form-open)))
+                    (not (gethash "aligned" form-open)))
                   (align-next-item state token form-open)))))
 
 
@@ -419,7 +372,7 @@
                             (replace-token state token ""))
 
                         ((= (the fixnum (pos:line start)) (the fixnum (pos:line end)))
-                            (if (string= " " (the simple-string (token:get-text token)))
+                            (if (string-equal " " (token:get-text token))
                                 (add-to-out-list state token)
                                 (progn (add-to-out-list state
                                                         (token:create :type-value types:*ws*
@@ -508,7 +461,7 @@
                         (if (and (token:is-type types:*ws* prev)
                                  (not (out-of-range (parse-state-range state) prev))
                                  (same-line prev token))
-                            (when (not (string= " " (the simple-string (token:get-text prev))))
+                            (when (not (string-equal " " (token:get-text prev)))
                                   (replace-token state prev " "))
                             (fix-indent state)))
 
@@ -552,36 +505,37 @@
                     (T (when (and (car opens)
                                   (not (= (the fixnum (pos:line (token:get-start (car opens))))
                                            (the fixnum (pos:line (token:get-end token))))))
-                             (setf (is-multiline (car opens)) T))
+                             (setf (gethash "isMultiline" (car opens)) T))
                        (push token converted)))
 
           :finally (return (reverse converted))))
 
 
 (defun update-options (state opts)
-    (when (fmt-opts:get-indent-width opts)
+    (when (assoc :indent-width opts)
           (setf (options-indent-width (parse-state-options state))
-              (fmt-opts:get-indent-width opts))))
+              (cdr (assoc :indent-width opts)))))
 
 
 (defun is-body-next (state)
     (let ((form-open (car (parse-state-opens state))))
         (and form-open
-             (not (eq 'cons (type-of (car (lambda-list form-open)))))
-             (or (string= (the symbol (car (lambda-list form-open))) "&BODY")
-                 (string= (the symbol (car (lambda-list form-open))) "&REST")))))
+             (not (eq 'cons (type-of (car (gethash "lambdalist" form-open)))))
+             (or (string= (the symbol (car (gethash "lambdalist" form-open))) "&BODY")
+                 (string= (the symbol (car (gethash "lambdalist" form-open))) "&REST")))))
 
 
 (defun do-step (state)
+
     (let ((token (next-token state))
           (form-open (car (parse-state-opens state))))
 
         (when (and form-open
-                   (lambda-list form-open)
+                   (gethash "lambdaList" form-open)
                    (not (token:is-type types:*ws* token)))
               (when (is-body-next state)
                     (pop-next-indent state))
-              (pop (lambda-list form-open)))
+              (pop (gethash "lambdaList" form-open)))
 
         (cond ((token:is-type *start-form* token) (process-open state token))
               ((token:is-type types:*close-paren* token) (process-close state token))
@@ -609,12 +563,11 @@
                               (return (reverse (parse-state-edits state)))))))
 
 
-(defun get-on-type-indent (state token pos)
-    (let ((form-open (car (parse-state-opens state))))
-        (when (is-body-next state)
-              (pop-next-indent state))
+(defun get-on-type-indent (state)
+    (when (is-body-next state)
+          (pop-next-indent state))
 
-        (get-next-indent state)))
+    (get-next-indent state))
 
 
 (defun on-type (input &key options pos)
@@ -626,20 +579,20 @@
         (when options
               (update-options state options))
 
-        (loop :for token := (next-token state)
-              :for token-end := (token:get-end token)
+        (when tokens
+              (loop :for token := (next-token state)
+                    :for token-end := (token:get-end token)
 
-              :while (and token
-                          (pos:less-or-equal token-end pos))
+                    :while (and token
+                                (pos:less-or-equal token-end pos))
 
-              :do (do-step state)
+                    :do (do-step state)
 
-              :finally (let* ((indent (if token
-                                          (get-on-type-indent state token pos)
-                                          0))
-                              (start (token:get-start token))
-                              (line (pos:line pos))
-                              (new-range (range:create (pos:create line 0) pos)))
+                    :finally (let* ((indent (if token
+                                                (get-on-type-indent state)
+                                                0))
+                                    (line (cdr (assoc :line pos)))
+                                    (new-range (range:create (pos:create line 0) pos)))
 
-                           (return (list (edit:create :range new-range
-                                                      :text (indent-string 0 indent))))))))
+                                 (return (list (edit:create :range new-range
+                                                            :text (indent-string 0 indent)))))))))

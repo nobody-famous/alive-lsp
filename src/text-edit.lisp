@@ -2,28 +2,25 @@
     (:use :cl)
     (:export :create
              :range
-             :text)
-    (:local-nicknames (:types :alive/types)))
+             :text))
 
 (in-package :alive/text-edit)
 
 
-(defclass change ()
-        ((range :accessor range
-                :initform nil
-                :initarg :range)
-         (text :accessor text
-               :initform nil
-               :initarg :text)))
+(defun range (obj)
+    (when obj
+          (gethash "range" obj)))
 
 
-(defmethod print-object ((obj change) out)
-    (format out "{range: ~A; text: \"~A\"}"
-        (range obj)
-        (text obj)))
+(defun text (obj)
+    (when obj
+          (gethash "text" obj)))
 
 
 (defun create (&key range text)
-    (make-instance 'change
-        :range range
-        :text text))
+    (let ((obj (make-hash-table :test #'equalp)))
+
+        (setf (gethash "range" obj) range)
+        (setf (gethash "text" obj) text)
+
+        obj))

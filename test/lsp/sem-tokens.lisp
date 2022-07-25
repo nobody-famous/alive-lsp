@@ -3,6 +3,7 @@
     (:export :run-all)
     (:local-nicknames (:analysis :alive/lsp/sem-analysis)
                       (:tokenizer :alive/parse/tokenizer)
+                      (:utils :alive/test/utils)
                       (:sem-types :alive/lsp/types/sem-tokens)))
 
 (in-package :alive/test/lsp/sem-tokens)

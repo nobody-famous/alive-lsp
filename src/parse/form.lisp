@@ -12,110 +12,80 @@
              :is-in-pkg
              :set-end
              :set-end-offset
-             :set-is-in-pkg
-             :set-token)
-    (:local-nicknames (:types :alive/types)))
+             :set-is-in-pkg))
 
 (in-package :alive/parse/form)
 
 
-(defclass form ()
-        ((start :accessor start
-                :initform nil
-                :initarg :start)
-         (start-offset :accessor start-offset
-                       :initform nil
-                       :initarg :start-offset)
-         (end :accessor end
-              :initform nil
-              :initarg :end)
-         (end-offset :accessor end-offset
-                     :initform nil
-                     :initarg :end-offset)
-         (form-type :accessor form-type
-                    :initform nil
-                    :initarg :form-type)
-         (in-pkg-p :accessor in-pkg-p
-                   :initform nil
-                   :initarg :in-pkg-p)
-         (kids :accessor kids
-               :initform nil
-               :initarg :kids)))
-
-
-(defmethod print-object ((obj form) out)
-    (format out "{~A:~A(~A:~A) type: ~A; in-pkg-p: ~A; kids:~{~A~}}"
-        (start obj)
-        (end obj)
-        (start-offset obj)
-        (end-offset obj)
-        (form-type obj)
-        (in-pkg-p obj)
-        (kids obj)))
-
-
 (defun add-kid (form kid)
-    (let* ((rev-kids (reverse (kids form))))
-        (setf (kids form) (reverse (push kid rev-kids)))))
+    (let* ((rev-kids (reverse (gethash "kids" form))))
+        (setf (gethash "kids" form) (reverse (push kid rev-kids)))))
 
 
 (defun set-end (form pos)
-    (setf (end form) pos))
+    (when form
+          (setf (gethash "end" form) pos)))
 
 
 (defun set-end-offset (form pos)
-    (setf (end-offset form) pos))
+    (when form
+          (setf (gethash "endOffset" form) pos)))
 
 
 (defun set-form-type (form value)
-    (setf (form-type form) value))
+    (when form
+          (setf (gethash "formType" form) value)))
 
 
 (defun set-is-in-pkg (form value)
-    (setf (in-pkg-p form) value))
+    (when form
+          (setf (gethash "inPkg" form) value)))
 
 
 (defun is-in-pkg (form)
     (when form
-          (in-pkg-p form)))
+          (gethash "inPkg" form)))
 
 
 (defun get-end (form)
     (when form
-          (end form)))
+          (gethash "end" form)))
 
 
 (defun get-end-offset (form)
     (when form
-          (end-offset form)))
+          (gethash "endOffset" form)))
 
 
 (defun get-kids (form)
     (when form
-          (kids form)))
+          (gethash "kids" form)))
 
 
 (defun get-start (form)
     (when form
-          (start form)))
+          (gethash "start" form)))
 
 
 (defun get-start-offset (form)
     (when form
-          (start-offset form)))
+          (gethash "startOffset" form)))
 
 
 (defun get-form-type (form)
     (when form
-          (form-type form)))
+          (gethash "formType" form)))
 
 
 (defun create (&key start start-offset end end-offset form-type in-pkg kids)
-    (make-instance 'form
-        :start start
-        :start-offset start-offset
-        :end end
-        :end-offset end-offset
-        :form-type form-type
-        :in-pkg-p in-pkg
-        :kids kids))
+    (let ((form (make-hash-table :test #'equalp)))
+
+        (setf (gethash "start" form) start)
+        (setf (gethash "startOffset" form) start-offset)
+        (setf (gethash "end" form) end)
+        (setf (gethash "endOffset" form) end-offset)
+        (setf (gethash "formType" form) form-type)
+        (setf (gethash "inPkg" form) in-pkg)
+        (setf (gethash "kids" form) kids)
+
+        form))

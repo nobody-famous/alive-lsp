@@ -138,7 +138,7 @@
 
 (defun filter-warnings (msgs)
     (remove-if (lambda (msg)
-                   (search "redefining" (comp-msg:message msg)))
+                   (search "redefining" (comp-msg:get-message msg)))
             msgs))
 
 

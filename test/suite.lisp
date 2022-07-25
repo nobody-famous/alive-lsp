@@ -8,7 +8,6 @@
 (defun run-all ()
     (clue:suite "Run all Alive LSP tests"
         (alive/test/lsp/completions:run-all)
-        (alive/test/lsp/message:run-all)
         (alive/test/lsp/sem-tokens:run-all)
         (alive/test/lsp/hover:run-all)
         (alive/test/parse/tokens:run-all)

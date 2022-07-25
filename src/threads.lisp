@@ -18,15 +18,6 @@
     (:report (lambda (condition stream) (format stream "Thread ~A Not Found" (id condition)))))
 
 
-(defclass thread ()
-        ((id :accessor id
-             :initform nil
-             :initarg :id)
-         (name :accessor name
-               :initform nil
-               :initarg :name)))
-
-
 (defun get-stack-trace ()
     #+sbcl (alive/sbcl/threads:get-stack-trace))
 
@@ -37,9 +28,8 @@
 
 (defun list-all ()
     (mapcar (lambda (thread)
-                (make-instance 'thread
-                    :id (get-thread-id thread)
-                    :name (bt:thread-name thread)))
+                (list (cons :id (get-thread-id thread))
+                      (cons :name (bt:thread-name thread))))
             (bt:all-threads)))
 
 

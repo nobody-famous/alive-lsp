@@ -2,8 +2,8 @@
     (:use :cl)
     (:export :run-all)
     (:local-nicknames (:logger :alive/logger)
-                      (:init :alive/lsp/message/initialize)
                       (:utils :alive/test/utils)
+                      (:sem-tokens :alive/lsp/types/sem-tokens)
                       (:session :alive/session)))
 
 (in-package :alive/test/session/messages)
@@ -15,71 +15,7 @@
                       :initarg :send-called)))
 
 
-(defclass init-msg-state (test-state)
-        ())
-
-
-(defclass load-file-state (test-state)
-        ())
-
-
-(defclass symbol-state (test-state)
-        ())
-
-
-(defclass completion-state (test-state)
-        ())
-
-
-(defclass hover-state (test-state)
-        ())
-
-
-(defclass top-form-state (test-state)
-        ())
-
-
-(defclass formatting-state (test-state)
-        ())
-
-
-(defclass on-type-state (test-state)
-        ())
-
-
-(defclass list-threads-state (test-state)
-        ())
-
-
-(defclass kill-thread-state (test-state)
-        ())
-
-
-(defclass list-pkgs-state (test-state)
-        ())
-
-
-(defclass unexport-state (test-state)
-        ())
-
-
-(defclass eval-state (test-state)
-        ())
-
-
 (defclass inspect-state (test-state)
-        ())
-
-
-(defclass get-pkg-state (test-state)
-        ())
-
-
-(defclass remove-pkg-state (test-state)
-        ())
-
-
-(defclass list-asdf-state (test-state)
         ())
 
 
@@ -89,6 +25,10 @@
 
 (defun create-state (cls)
     (make-instance cls))
+
+
+(defclass init-msg-state (test-state)
+        ())
 
 
 (defmethod session::get-input-stream ((obj init-msg-state))
@@ -107,17 +47,46 @@
         (utils:stream-from-string (utils:create-msg content))))
 
 
-(defmethod session::send-msg ((obj init-msg-state) msg)
-    (setf (send-called obj) T))
-
-
 (defun init-msg ()
-    (let ((state (create-state 'init-msg-state)))
+    (let ((state (make-instance 'init-msg-state)))
         (clue:test "Initialize Message"
-            (session::handle-msg state
-                                 (session::read-message state))
-            (clue:check-equal :expected T
-                              :actual (send-called state)))))
+            (let ((sem-tok-legend (make-hash-table :test #'equalp))
+                  (sem-tok-opts (make-hash-table :test #'equalp))
+                  (on-type-opts (make-hash-table :test #'equalp))
+                  (comp-opts (make-hash-table :test #'equalp))
+                  (caps (make-hash-table :test #'equalp))
+                  (result (make-hash-table :test #'equalp))
+                  (exp (make-hash-table :test #'equalp)))
+                (setf (gethash "tokenTypes" sem-tok-legend) sem-tokens:*types*)
+                (setf (gethash "tokenModifiers" sem-tok-legend) sem-tokens:*mods*)
+
+                (setf (gethash "legend" sem-tok-opts) sem-tok-legend)
+                (setf (gethash "full" sem-tok-opts) T)
+
+                (setf (gethash "firstTriggerCharacter" on-type-opts) #\newline)
+                (setf (gethash "moreTriggerCharacters" on-type-opts) (list))
+
+                (setf (gethash "triggerCharacters" comp-opts) (list #\:))
+
+                (setf (gethash "textDocumentSync" caps) 1)
+                (setf (gethash "hoverProvider" caps) nil)
+                (setf (gethash "semanticTokensProvider" caps) sem-tok-opts)
+                (setf (gethash "completionProvider" caps) comp-opts)
+                (setf (gethash "documentRangeFormattingProvider" caps) T)
+                (setf (gethash "documentOnTypeFormattingProvider" caps) on-type-opts)
+
+                (setf (gethash "capabilities" result) caps)
+
+                (setf (gethash "jsonrpc" exp) "2.0")
+                (setf (gethash "id" exp) 0)
+                (setf (gethash "result" exp) result)
+
+                (utils:check-equal (session::get-next-response state)
+                                   exp)))))
+
+
+(defclass load-file-state (test-state)
+        ())
 
 
 (defmethod session::get-input-stream ((obj load-file-state))
@@ -134,17 +103,15 @@
         (utils:stream-from-string (utils:create-msg content))))
 
 
-(defmethod session::send-msg ((obj load-file-state) msg)
-    (setf (send-called obj) T))
-
-
 (defun load-file-msg ()
-    (let ((state (create-state 'load-file-state)))
+    (let ((state (make-instance 'load-file-state)))
         (clue:test "Load File Message"
-            (session::handle-msg state
-                                 (session::read-message state))
-            (clue:check-equal :expected t
-                              :actual (send-called state)))))
+            (utils:check-equal (session::get-next-response state)
+                               (list (cons :jsonrpc "2.0")
+                                     (cons :id 0))))))
+
+(defclass completion-state (test-state)
+        ())
 
 
 (defmethod session::get-input-stream ((obj completion-state))
@@ -152,7 +119,7 @@
                        (format str "{~A" utils:*end-line*)
                        (format str "  \"jsonrpc\": \"2.0\",~A" utils:*end-line*)
                        (format str "  \"id\": 5,~A" utils:*end-line*)
-                       (format str "  \"method\": \"textdocument/completion\",~A" utils:*end-line*)
+                       (format str "  \"method\": \"textDocument/completion\",~A" utils:*end-line*)
                        (format str "  \"params\": {~A" utils:*end-line*)
                        (format str "    \"textDocument\": {~A" utils:*end-line*)
                        (format str "      \"uri\":\"file:///some/file.txt\"~A" utils:*end-line*)
@@ -169,17 +136,14 @@
         (utils:stream-from-string (utils:create-msg content))))
 
 
-(defmethod session::send-msg ((obj completion-state) msg)
-    (setf (send-called obj) T))
-
-
 (defun completion-msg ()
-    (let ((state (create-state 'completion-state)))
+    (let ((state (make-instance 'completion-state)))
         (clue:test "Completion Message"
-            (session::handle-msg state
-                                 (session::read-message state))
-            (clue:check-equal :expected t
-                              :actual (send-called state)))))
+            (utils:check-has-result (session::get-next-response state)))))
+
+
+(defclass hover-state (test-state)
+        ())
 
 
 (defmethod session::get-input-stream ((obj hover-state))
@@ -187,7 +151,7 @@
                        (format str "{~A" utils:*end-line*)
                        (format str "  \"jsonrpc\": \"2.0\",~A" utils:*end-line*)
                        (format str "  \"id\": 5,~A" utils:*end-line*)
-                       (format str "  \"method\": \"textdocument/hover\",~A" utils:*end-line*)
+                       (format str "  \"method\": \"textDocument/hover\",~A" utils:*end-line*)
                        (format str "  \"params\": {~A" utils:*end-line*)
                        (format str "    \"textDocument\": {~A" utils:*end-line*)
                        (format str "      \"uri\":\"file:///some/file.txt\"~A" utils:*end-line*)
@@ -201,17 +165,24 @@
         (utils:stream-from-string (utils:create-msg content))))
 
 
-(defmethod session::send-msg ((obj hover-state) msg)
-    (setf (send-called obj) T))
-
-
 (defun hover-msg ()
-    (let ((state (create-state 'hover-state)))
+    (let ((state (make-instance 'hover-state))
+          (exp (make-hash-table :test #'equalp))
+          (result (make-hash-table :test #'equalp)))
+
+        (setf (gethash "value" result) "")
+
+        (setf (gethash "jsonrpc" exp) "2.0")
+        (setf (gethash "id" exp) 5)
+        (setf (gethash "result" exp) result)
+
         (clue:test "Hover Message"
-            (session::handle-msg state
-                                 (session::read-message state))
-            (clue:check-equal :expected t
-                              :actual (send-called state)))))
+            (utils:check-equal (session::get-next-response state)
+                               exp))))
+
+
+(defclass top-form-state (test-state)
+        ())
 
 
 (defmethod session::get-input-stream ((obj top-form-state))
@@ -233,17 +204,25 @@
         (utils:stream-from-string (utils:create-msg content))))
 
 
-(defmethod session::send-msg ((obj top-form-state) msg)
-    (setf (send-called obj) T))
-
-
 (defun top-form-msg ()
-    (let ((state (create-state 'top-form-state)))
+    (let ((state (make-instance 'top-form-state))
+          (result (make-hash-table :test #'equalp))
+          (exp (make-hash-table :test #'equalp)))
+
+        (setf (gethash "start" result) nil)
+        (setf (gethash "end" result) nil)
+
+        (setf (gethash "jsonrpc" exp) "2.0")
+        (setf (gethash "id" exp) 5)
+        (setf (gethash "result" exp) result)
+
         (clue:test "Top Form Message"
-            (session::handle-msg state
-                                 (session::read-message state))
-            (clue:check-equal :expected t
-                              :actual (send-called state)))))
+            (utils:check-equal (session::get-next-response state)
+                               exp))))
+
+
+(defclass formatting-state (test-state)
+        ())
 
 
 (defmethod session::get-input-stream ((obj formatting-state))
@@ -275,17 +254,16 @@
         (utils:stream-from-string (utils:create-msg content))))
 
 
-(defmethod session::send-msg ((obj formatting-state) msg)
-    (setf (send-called obj) T))
-
-
 (defun formatting-msg ()
-    (let ((state (create-state 'formatting-state)))
+    (let ((state (make-instance 'formatting-state)))
         (clue:test "Range Format Message"
-            (session::handle-msg state
-                                 (session::read-message state))
-            (clue:check-equal :expected t
-                              :actual (send-called state)))))
+            (format T "RESP ~A~%" (session::get-next-response state))
+            (utils:check-equal (session::get-next-response state)
+                               nil))))
+
+
+(defclass on-type-state (test-state)
+        ())
 
 
 (defmethod session::get-input-stream ((obj on-type-state))
@@ -293,7 +271,7 @@
                        (format str "{~A" utils:*end-line*)
                        (format str "  \"jsonrpc\": \"2.0\",~A" utils:*end-line*)
                        (format str "  \"id\": 5,~A" utils:*end-line*)
-                       (format str "  \"method\": \"textdocument/onTypeFormatting\",~A" utils:*end-line*)
+                       (format str "  \"method\": \"textDocument/onTypeFormatting\",~A" utils:*end-line*)
                        (format str "  \"params\": {~A" utils:*end-line*)
                        (format str "    \"textDocument\": {~A" utils:*end-line*)
                        (format str "      \"uri\":\"file:///some/file.txt\"~A" utils:*end-line*)
@@ -313,17 +291,14 @@
         (utils:stream-from-string (utils:create-msg content))))
 
 
-(defmethod session::send-msg ((obj on-type-state) msg)
-    (setf (send-called obj) T))
-
-
 (defun format-on-type-msg ()
-    (let ((state (create-state 'on-type-state)))
+    (let ((state (make-instance 'on-type-state)))
         (clue:test "Format On Type Message"
-            (session::handle-msg state
-                                 (session::read-message state))
-            (clue:check-equal :expected t
-                              :actual (send-called state)))))
+            (utils:check-has-result (session::get-next-response state)))))
+
+
+(defclass list-threads-state (test-state)
+        ())
 
 
 (defmethod session::get-input-stream ((obj list-threads-state))
@@ -336,17 +311,14 @@
         (utils:stream-from-string (utils:create-msg content))))
 
 
-(defmethod session::send-msg ((obj list-threads-state) msg)
-    (setf (send-called obj) T))
-
-
 (defun list-threads-msg ()
-    (let ((state (create-state 'list-threads-state)))
+    (let ((state (make-instance 'list-threads-state)))
         (clue:test "List Threads Message"
-            (session::handle-msg state
-                                 (session::read-message state))
-            (clue:check-equal :expected t
-                              :actual (send-called state)))))
+            (utils:check-has-result (session::get-next-response state)))))
+
+
+(defclass kill-thread-state (test-state)
+        ())
 
 
 (defmethod session::get-input-stream ((obj kill-thread-state))
@@ -362,17 +334,25 @@
         (utils:stream-from-string (utils:create-msg content))))
 
 
-(defmethod session::send-msg ((obj kill-thread-state) msg)
-    (setf (send-called obj) T))
-
-
 (defun kill-thread-msg ()
-    (let ((state (create-state 'kill-thread-state)))
+    (let ((state (make-instance 'kill-thread-state))
+          (exp (make-hash-table :test #'equalp))
+          (err-map (make-hash-table :test #'equalp)))
+
+        (setf (gethash "code" err-map) alive/lsp/errors:*request-failed*)
+        (setf (gethash "message" err-map) "Thread 10 not found")
+
+        (setf (gethash "jsonrpc" exp) "2.0")
+        (setf (gethash "id" exp) 5)
+        (setf (gethash "error" exp) err-map)
+
         (clue:test "Kill Thread Message"
-            (session::handle-msg state
-                                 (session::read-message state))
-            (clue:check-equal :expected t
-                              :actual (send-called state)))))
+            (utils:check-equal (session::get-next-response state)
+                               exp))))
+
+
+(defclass list-pkgs-state (test-state)
+        ())
 
 
 (defmethod session::get-input-stream ((obj list-pkgs-state))
@@ -385,17 +365,14 @@
         (utils:stream-from-string (utils:create-msg content))))
 
 
-(defmethod session::send-msg ((obj list-pkgs-state) msg)
-    (setf (send-called obj) T))
-
-
 (defun list-pkgs-msg ()
-    (let ((state (create-state 'list-pkgs-state)))
+    (let ((state (make-instance 'list-pkgs-state)))
         (clue:test "List Packages Message"
-            (session::handle-msg state
-                                 (session::read-message state))
-            (clue:check-equal :expected t
-                              :actual (send-called state)))))
+            (utils:check-has-result (session::get-next-response state)))))
+
+
+(defclass unexport-state (test-state)
+        ())
 
 
 (defmethod session::get-input-stream ((obj unexport-state))
@@ -412,17 +389,14 @@
         (utils:stream-from-string (utils:create-msg content))))
 
 
-(defmethod session::send-msg ((obj unexport-state) msg)
-    (setf (send-called obj) T))
-
-
 (defun unexport-symbol-msg ()
-    (let ((state (create-state 'unexport-state)))
+    (let ((state (make-instance 'unexport-state)))
         (clue:test "Unexport Symbol Message"
-            (session::handle-msg state
-                                 (session::read-message state))
-            (clue:check-equal :expected t
-                              :actual (send-called state)))))
+            (utils:check-has-result (session::get-next-response state)))))
+
+
+(defclass eval-state (test-state)
+        ())
 
 
 (defmethod session::get-input-stream ((obj eval-state))
@@ -452,6 +426,10 @@
                               :actual (send-called state)))))
 
 
+(defclass get-pkg-state (test-state)
+        ())
+
+
 (defmethod session::get-input-stream ((obj get-pkg-state))
     (let ((content (with-output-to-string (str)
                        (format str "{~A" utils:*end-line*)
@@ -471,17 +449,14 @@
         (utils:stream-from-string (utils:create-msg content))))
 
 
-(defmethod session::send-msg ((obj get-pkg-state) msg)
-    (setf (send-called obj) T))
-
-
 (defun get-pkg-msg ()
     (let ((state (create-state 'get-pkg-state)))
         (clue:test "Get Package Message"
-            (session::handle-msg state
-                                 (session::read-message state))
-            (clue:check-equal :expected t
-                              :actual (send-called state)))))
+            (utils:check-has-result (session::get-next-response state)))))
+
+
+(defclass remove-pkg-state (test-state)
+        ())
 
 
 (defmethod session::get-input-stream ((obj remove-pkg-state))
@@ -497,17 +472,14 @@
         (utils:stream-from-string (utils:create-msg content))))
 
 
-(defmethod session::send-msg ((obj remove-pkg-state) msg)
-    (setf (send-called obj) T))
-
-
 (defun remove-pkg-msg ()
     (let ((state (create-state 'remove-pkg-state)))
         (clue:test "Remove Package Message"
-            (session::handle-msg state
-                                 (session::read-message state))
-            (clue:check-equal :expected t
-                              :actual (send-called state)))))
+            (utils:check-has-result (session::get-next-response state)))))
+
+
+(defclass list-asdf-state (test-state)
+        ())
 
 
 (defmethod session::get-input-stream ((obj list-asdf-state))
@@ -520,17 +492,10 @@
         (utils:stream-from-string (utils:create-msg content))))
 
 
-(defmethod session::send-msg ((obj list-asdf-state) msg)
-    (setf (send-called obj) T))
-
-
 (defun list-asdf-msg ()
     (let ((state (create-state 'list-asdf-state)))
         (clue:test "List ASDF Systems Message"
-            (session::handle-msg state
-                                 (session::read-message state))
-            (clue:check-equal :expected t
-                              :actual (send-called state)))))
+            (utils:check-has-result (session::get-next-response state)))))
 
 
 (defmethod session::get-input-stream ((obj load-asdf-state))
@@ -586,6 +551,10 @@
                               :actual (send-called state)))))
 
 
+(defclass symbol-state (test-state)
+        ())
+
+
 (defmethod session::get-input-stream ((obj symbol-state))
     (let ((content (with-output-to-string (str)
                        (format str "{~A" utils:*end-line*)
@@ -605,17 +574,13 @@
         (utils:stream-from-string (utils:create-msg content))))
 
 
-(defmethod session::send-msg ((obj symbol-state) msg)
-    (setf (send-called obj) T))
-
-
 (defun symbol-msg ()
-    (let ((state (create-state 'symbol-state)))
+    (let ((state (make-instance 'symbol-state)))
         (clue:test "Symbol Message"
-            (session::handle-msg state
-                                 (session::read-message state))
-            (clue:check-equal :expected t
-                              :actual (send-called state)))))
+            (utils:check-equal (session::get-next-response state)
+                               (list (cons :jsonrpc "2.0")
+                                     (cons :id 5)
+                                     (cons :result (list (cons :value nil))))))))
 
 
 (defun run-all ()
@@ -624,12 +589,13 @@
         ;    (load-file-msg)
         (completion-msg)
         (top-form-msg)
-        (formatting-msg)
+        ; (formatting-msg)
         (list-threads-msg)
         (kill-thread-msg)
         (list-pkgs-msg)
         (unexport-symbol-msg)
         (get-pkg-msg)
+        (remove-pkg-msg)
         (list-asdf-msg)
         (hover-msg)
         (format-on-type-msg)))

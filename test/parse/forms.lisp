@@ -200,19 +200,27 @@
     (clue:test "Test in-package form"
         (check-forms (format nil (format nil "(IN-PACKAGE :foo)~%bar"))
                      (list (form:create :start (pos:create 0 0)
+                                        :start-offset 0
                                         :end (pos:create 0 17)
+                                        :end-offset 17
                                         :in-pkg T
                                         :form-type types:*open-paren*
                                         :kids (list (form:create :start (pos:create 0 1)
+                                                                 :start-offset 1
                                                                  :end (pos:create 0 11)
+                                                                 :end-offset 11
                                                                  :form-type types:*symbol*
                                                                  :in-pkg T)
                                                     (form:create :start (pos:create 0 12)
+                                                                 :start-offset 12
                                                                  :end (pos:create 0 16)
+                                                                 :end-offset 16
                                                                  :form-type types:*symbol*
                                                                  :in-pkg T)))
                            (form:create :start (pos:create 1 0)
+                                        :start-offset 18
                                         :end (pos:create 1 3)
+                                        :end-offset 21
                                         :form-type types:*symbol*)))))
 
 
@@ -220,13 +228,19 @@
     (clue:test "Test symbol with package with newline"
         (check-forms (format nil (format nil "'foo:bar~%fff"))
                      (list (form:create :start (pos:create 0 0)
+                                        :start-offset 0
                                         :end (pos:create 0 8)
+                                        :end-offset 8
                                         :form-type types:*quote*
                                         :kids (list (form:create :start (pos:create 0 1)
+                                                                 :start-offset 1
                                                                  :end (pos:create 0 8)
+                                                                 :end-offset 8
                                                                  :form-type types:*symbol*)))
                            (form:create :start (pos:create 1 0)
+                                        :start-offset 9
                                         :end (pos:create 1 3)
+                                        :end-offset 12
                                         :form-type types:*symbol*)))))
 
 
