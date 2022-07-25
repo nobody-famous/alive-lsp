@@ -55,12 +55,9 @@
 
                                        (:file "lsp/message/abstract")
                                        (:file "lsp/message/format-utils")
+                                       (:file "lsp/message/request")
                                        (:file "lsp/message/response")
-
-                                       (:file "lsp/message/alive/debugger")
-                                       (:file "lsp/message/alive/stderr")
-                                       (:file "lsp/message/alive/stdout")
-                                       (:file "lsp/message/workspace/config")
+                                       (:file "lsp/message/notification")
 
                                        (:file "lsp/packet")
                                        (:file "lsp/parse")

@@ -5,12 +5,7 @@
              :listener
              :start
              :stop)
-    (:local-nicknames (:config :alive/lsp/message/workspace/config)
-                      (:debug :alive/lsp/message/alive/debugger)
-                      (:stderr :alive/lsp/message/alive/stderr)
-                      (:stdout :alive/lsp/message/alive/stdout)
-
-                      (:asdf :alive/asdf)
+    (:local-nicknames (:asdf :alive/asdf)
                       (:eval :alive/eval)
                       (:inspector :alive/inspector)
                       (:file :alive/file)
@@ -35,6 +30,8 @@
                       (:restart-info :alive/lsp/types/restart-info)
 
                       (:resp :alive/lsp/message/response)
+                      (:req :alive/lsp/message/request)
+                      (:notification :alive/lsp/message/notification)
                       (:message :alive/lsp/message/abstract)
                       (:fmt-utils :alive/lsp/message/format-utils)))
 
@@ -274,11 +271,11 @@
                                             (setf restart-ndx (cdr (assoc :index result)))))))
                     (bt:condition-notify cond-var))))
 
-        (send-msg state (debug:create-request send-id
-                                              :message (princ-to-string err)
-                                              :restarts restarts
-                                              :stack-trace (mapcar (lambda (item) (princ-to-string item))
-                                                                   (threads:get-stack-trace))))
+        (send-msg state (req:debugger send-id
+                                      :message (princ-to-string err)
+                                      :restarts restarts
+                                      :stack-trace (mapcar (lambda (item) (princ-to-string item))
+                                                           (threads:get-stack-trace))))
         (bt:with-recursive-lock-held ((lock state))
             (bt:condition-wait cond-var (lock state)))
 
@@ -302,9 +299,9 @@
                                     :stdin-fn (lambda ()
                                                   (wait-for-input state))
                                     :stdout-fn (lambda (data)
-                                                   (send-msg state (stdout:create data)))
+                                                   (send-msg state (notification:stdout data)))
                                     :stderr-fn (lambda (data)
-                                                   (send-msg state (stderr:create data))))))
+                                                   (send-msg state (notification:stderr data))))))
 
         (add-inspector state
                        :id id
@@ -427,10 +424,10 @@
                                         (msgs (file:do-load path
                                                             :stdout-fn (lambda (data)
                                                                            (when (assoc :show-stdout params)
-                                                                                 (send-msg state (stdout:create data))))
+                                                                                 (send-msg state (notification:stdout data))))
                                                             :stderr-fn (lambda (data)
                                                                            (when (assoc :show-stderr params)
-                                                                                 (send-msg state (stderr:create data)))))))
+                                                                                 (send-msg state (notification:stderr data)))))))
 
                                      (resp:load-file id msgs)))))
 
@@ -525,8 +522,8 @@
                 (let ((opts (cdr (assoc :result config-resp))))
                     (handle-format-msg state (first opts) msg))))
 
-        (send-msg state (config:create-request send-id
-                                               :items (list (config-item:create-item :section "alive.format"))))))
+        (send-msg state (req:config send-id
+                                    :items (list (config-item:create-item :section "alive.format"))))))
 
 
 (defun handle-on-type (state msg)
@@ -635,9 +632,9 @@
                                      :stdin-fn (lambda ()
                                                    (wait-for-input state))
                                      :stdout-fn (lambda (data)
-                                                    (send-msg state (stdout:create data)))
+                                                    (send-msg state (notification:stdout data)))
                                      :stderr-fn (lambda (data)
-                                                    (send-msg state (stderr:create data))))))
+                                                    (send-msg state (notification:stderr data))))))
 
         (when (cdr (assoc :store-result params))
               (add-history state result))
@@ -716,9 +713,9 @@
         (run-in-thread state msg (lambda ()
                                      (asdf:load-system :name name
                                                        :stdout-fn (lambda (data)
-                                                                      (send-msg state (stdout:create data)))
+                                                                      (send-msg state (notification:stdout data)))
                                                        :stderr-fn (lambda (data)
-                                                                      (send-msg state (stderr:create data))))
+                                                                      (send-msg state (notification:stderr data))))
                                      (send-msg state (message:create-response id :result-value T))))))
 
 
