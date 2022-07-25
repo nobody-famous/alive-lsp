@@ -260,8 +260,7 @@
 (defun token-is (token text)
     (declare (type simple-string text))
 
-    (let ((name (string-downcase (token:get-text token))))
-        (string= name text)))
+    (string-equal text (token:get-text token)))
 
 
 (defun align-first-item (state token form-open prev-open)
@@ -270,7 +269,7 @@
            (sym (caddr (parse-state-tokens state)))
            (lambda-list (lookup-lambda-list ns colons sym)))
 
-        (when (string= "in-package" (string-downcase (token:get-text token)))
+        (when (string-equal "in-package" (token:get-text token))
               (setf (parse-state-cur-pkg state) NIL))
 
         (cond ((token-is token "cond") (setf (gethash "isCond" form-open) T)
@@ -373,7 +372,7 @@
                             (replace-token state token ""))
 
                         ((= (the fixnum (pos:line start)) (the fixnum (pos:line end)))
-                            (if (string= " " (the simple-string (token:get-text token)))
+                            (if (string-equal " " (token:get-text token))
                                 (add-to-out-list state token)
                                 (progn (add-to-out-list state
                                                         (token:create :type-value types:*ws*
@@ -462,7 +461,7 @@
                         (if (and (token:is-type types:*ws* prev)
                                  (not (out-of-range (parse-state-range state) prev))
                                  (same-line prev token))
-                            (when (not (string= " " (the simple-string (token:get-text prev))))
+                            (when (not (string-equal " " (token:get-text prev)))
                                   (replace-token state prev " "))
                             (fix-indent state)))
 
@@ -564,12 +563,11 @@
                               (return (reverse (parse-state-edits state)))))))
 
 
-(defun get-on-type-indent (state token pos)
-    (let ((form-open (car (parse-state-opens state))))
-        (when (is-body-next state)
-              (pop-next-indent state))
+(defun get-on-type-indent (state)
+    (when (is-body-next state)
+          (pop-next-indent state))
 
-        (get-next-indent state)))
+    (get-next-indent state))
 
 
 (defun on-type (input &key options pos)
@@ -591,9 +589,8 @@
                     :do (do-step state)
 
                     :finally (let* ((indent (if token
-                                                (get-on-type-indent state token pos)
+                                                (get-on-type-indent state)
                                                 0))
-                                    (start (token:get-start token))
                                     (line (cdr (assoc :line pos)))
                                     (new-range (range:create (pos:create line 0) pos)))
 
