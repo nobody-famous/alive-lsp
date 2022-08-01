@@ -197,6 +197,17 @@
             (remhash thread-id table))))
 
 
+(defun start-debugger (state err)
+    (let* ((restarts (compute-restarts err))
+           (ndx (wait-for-debug state err (mapcar (lambda (item)
+                                                      (restart-info:create-item :name (restart-name item)
+                                                                                :description (princ-to-string item)))
+                                                  restarts))))
+
+        (when (<= 0 ndx (- (length restarts) 1))
+              (invoke-restart-interactively (elt restarts ndx)))))
+
+
 (defun run-in-thread (state msg fn)
     (let ((stdout *standard-output*))
         (bt:make-thread (lambda ()
@@ -205,7 +216,15 @@
                                         (save-thread-msg state (cdr (assoc :id msg)))
 
                                         (block handler
-                                            (handler-bind ((error (lambda (err)
+                                            (handler-bind ((sb-impl::step-form-condition (lambda (err)
+                                                                                             (format T "FRAME ~A~%" (sb-di::find-stepped-frame))
+                                                                                             (format T "Form number ~A~%"
+                                                                                                 (sb-di:code-location-toplevel-form-offset
+                                                                                                     (sb-debug::maybe-block-start-location
+                                                                                                         (sb-di:frame-code-location (sb-di::find-stepped-frame)))))
+                                                                                             (start-debugger state err)
+                                                                                             (return-from handler)))
+                                                           (error (lambda (err)
                                                                       (start-debugger state err)
                                                                       (return-from handler))))
                                                 (funcall fn))))
@@ -280,17 +299,6 @@
             (bt:condition-wait cond-var (lock state)))
 
         restart-ndx))
-
-
-(defun start-debugger (state err)
-    (let* ((restarts (compute-restarts err))
-           (ndx (wait-for-debug state err (mapcar (lambda (item)
-                                                      (restart-info:create-item :name (restart-name item)
-                                                                                :description (princ-to-string item)))
-                                                  restarts))))
-
-        (when (<= 0 ndx (- (length restarts) 1))
-              (invoke-restart-interactively (elt restarts ndx)))))
 
 
 (defun try-inspect (state id text pkg-name)
