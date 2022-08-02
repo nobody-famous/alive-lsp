@@ -36,6 +36,7 @@
                                        (:file "packages")
                                        (:file "format")
                                        (:file "threads")
+                                       (:file "frames")
                                        (:file "eval")
                                        (:file "inspector")
                                        (:file "asdf")

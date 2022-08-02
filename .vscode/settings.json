@@ -2,15 +2,13 @@
     "alive.format.closeParenOwnLine": "never",
     "alive.format.indentWidth": 4,
     "alive.format.maxBlankLines": 2,
-    "alive.indentMacros": true,
-    "alive.lsp.install.path": "/home/rich/work/lisp/alive-lsp",
     "lisp.trace.server": "verbose",
-    "editor.bracketPairColorization.enabled": false,
     "editor.semanticTokenColorCustomizations": {
         "rules": {
             "error": "#ff0000",
             "symbol": "#5599aa",
             "parenthesis": "#999"
         }
-    }
+    },
+    "editor.formatOnType": true
 }
