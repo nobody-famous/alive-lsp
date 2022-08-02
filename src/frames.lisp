@@ -61,4 +61,7 @@
 
 
 (defun list-debug-frames ()
-    (list-frames (sb-di::find-interrupted-frame)))
+    (let ((top-frame (or (sb-di::find-interrupted-frame)
+                         (sb-di::find-stepped-frame)
+                         (sb-di::find-caller-frame))))
+        (list-frames top-frame)))

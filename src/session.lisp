@@ -197,6 +197,28 @@
             (remhash thread-id table))))
 
 
+(defun get-frame-text (state frame)
+    (let* ((file (gethash "file" frame))
+           (file-url (format NIL "file://~A" file))
+           (files (files state)))
+
+        (gethash file-url files)))
+
+
+(defun get-frame-loc (state frame)
+    (let* ((text (get-frame-text state frame))
+           (top-ndx (gethash "topForm" frame))
+           (forms (when text
+                        (forms:from-stream (make-string-input-stream text))))
+           (top-form (when forms
+                           (nth top-ndx forms))))
+
+        (when top-form
+              (format T "KIDS ~A ~A~%"
+                  (type-of (gethash "kids" (first forms)))
+                  (gethash "start" top-form)))))
+
+
 (defun wait-for-debug (state err restarts frames)
     (let ((send-id (next-send-id state))
           (cond-var (bt:make-condition-variable))
@@ -217,9 +239,11 @@
         (send-msg state (req:debugger send-id
                                       :message (princ-to-string err)
                                       :restarts restarts
-                                      :stack-trace (mapcar (lambda (frame) (princ-to-string (format NIL "~A~%~A"
-                                                                                                (gethash "function" frame)
-                                                                                                (gethash "file" frame))))
+                                      :stack-trace (mapcar (lambda (frame)
+                                                               (get-frame-loc state frame)
+                                                               (princ-to-string (format NIL "~A~%~A"
+                                                                                    (gethash "function" frame)
+                                                                                    (gethash "file" frame))))
                                                            frames)))
         (bt:with-recursive-lock-held ((lock state))
             (bt:condition-wait cond-var (lock state)))
