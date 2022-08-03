@@ -7,6 +7,7 @@
              :stop)
     (:local-nicknames (:asdf :alive/asdf)
                       (:eval :alive/eval)
+                      (:debugger :alive/debugger)
                       (:inspector :alive/inspector)
                       (:file :alive/file)
                       (:pos :alive/position)
@@ -197,26 +198,13 @@
             (remhash thread-id table))))
 
 
-(defun get-frame-text (state frame)
-    (let* ((file (gethash "file" frame))
-           (file-url (format NIL "file://~A" file))
-           (files (files state)))
+(defun get-frame-text-stream (state file)
+    (let* ((file-url (format NIL "file://~A" file))
+           (files (files state))
+           (text (gethash file-url files)))
 
-        (gethash file-url files)))
-
-
-(defun get-frame-loc (state frame)
-    (let* ((text (get-frame-text state frame))
-           (top-ndx (gethash "topForm" frame))
-           (forms (when text
-                        (forms:from-stream (make-string-input-stream text))))
-           (top-form (when forms
-                           (nth top-ndx forms))))
-
-        (when top-form
-              (format T "KIDS ~A ~A~%"
-                  (type-of (gethash "kids" (first forms)))
-                  (gethash "start" top-form)))))
+        (when text
+              (make-string-input-stream text))))
 
 
 (defun wait-for-debug (state err restarts frames)
@@ -240,7 +228,9 @@
                                       :message (princ-to-string err)
                                       :restarts restarts
                                       :stack-trace (mapcar (lambda (frame)
-                                                               (get-frame-loc state frame)
+                                                               (debugger:get-frame-loc (get-frame-text-stream state
+                                                                                                              (gethash "file" frame))
+                                                                                       frame)
                                                                (princ-to-string (format NIL "~A~%~A"
                                                                                     (gethash "function" frame)
                                                                                     (gethash "file" frame))))
@@ -276,6 +266,9 @@
                                             (handler-bind ((sb-impl::step-form-condition (lambda (err)
                                                                                              (start-debugger state err (alive/frames:list-step-frames))
                                                                                              (return-from handler)))
+                                                           (simple-condition (lambda (err)
+                                                                                 (start-debugger state err (alive/frames:list-debug-frames))
+                                                                                 (return-from handler)))
                                                            (error (lambda (err)
                                                                       (start-debugger state err (alive/frames:list-debug-frames))
                                                                       (return-from handler))))

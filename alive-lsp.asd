@@ -40,6 +40,7 @@
                                        (:file "eval")
                                        (:file "inspector")
                                        (:file "asdf")
+                                       (:file "debugger")
 
                                        (:file "lsp/types/config-item")
                                        (:file "lsp/types/sem-tokens")
@@ -88,6 +89,7 @@
                                        (:file "format/range")
                                        (:file "format/on-type")
 
+                                       (:file "debugger")
                                        (:file "eval")
                                        (:file "inspector")
                                        (:file "streams")
