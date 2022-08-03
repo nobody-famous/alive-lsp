@@ -1,7 +1,8 @@
 (defpackage :alive/frames
     (:use :cl)
     (:export :list-step-frames
-             :list-debug-frames))
+             :list-debug-frames
+             :print-obj))
 
 (in-package :alive/frames)
 
@@ -41,6 +42,13 @@
               (setf (gethash "formNumber" obj) form-num))
 
         obj))
+
+
+(defun print-obj (frame)
+    (when frame
+          (loop :for value :being :the :hash-value :of frame
+                :using (hash-key key)
+                :do (format T "~A ~A~%" key value))))
 
 
 (defun list-frames (top &optional limit)

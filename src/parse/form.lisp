@@ -12,7 +12,8 @@
              :is-in-pkg
              :set-end
              :set-end-offset
-             :set-is-in-pkg))
+             :set-is-in-pkg
+             :to-string))
 
 (in-package :alive/parse/form)
 
@@ -89,3 +90,11 @@
         (setf (gethash "kids" form) kids)
 
         form))
+
+
+(defun to-string (form)
+    (format NIL "[~A:~A ~A ~A]"
+        (gethash "start" form)
+        (gethash "end" form)
+        (gethash "formType" form)
+        (length (gethash "kids" form))))
