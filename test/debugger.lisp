@@ -5,6 +5,7 @@
 
 (in-package :alive/test/debugger)
 
+#+n ()
 
 (defun bomb ()
     (when T

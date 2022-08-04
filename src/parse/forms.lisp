@@ -1,6 +1,7 @@
 (defpackage :alive/parse/forms
     (:use :cl)
-    (:export :from-stream)
+    (:export :from-stream
+             :get-nth-form)
     (:local-nicknames (:errors :alive/errors)
                       (:types :alive/types)
                       (:form :alive/parse/form)
@@ -202,3 +203,25 @@
 
           :finally (progn (collapse-opens state)
                           (return (reverse (parse-state-forms state))))))
+
+
+(defun get-nth-form (forms n)
+    (declare (type fixnum n))
+
+    (loop :with counted := 0
+          :with cur-form := nil
+
+          :while (<= counted n)
+
+          :do (setf cur-form (pop forms))
+
+              (cond ((or (eq types:*line-comment* (form:get-form-type cur-form))
+                         (eq types:*block-comment* (form:get-form-type cur-form)))
+                        NIL)
+
+                    ((eq types:*ifdef-false* (form:get-form-type cur-form))
+                        (pop forms))
+
+                    (T (incf counted)))
+
+          :finally (return cur-form)))

@@ -15,33 +15,6 @@
 (in-package :alive/sbcl/file)
 
 
-(defun should-skip (form-type)
-    (and form-type
-         (or (= types:*ifdef-false* form-type)
-             (= types:*line-comment* form-type)
-             (= types:*block-comment* form-type))))
-
-
-(defun get-nth-form (forms offset)
-    (loop :with counted := 0
-          :with cur-form := nil
-
-          :while (<= counted offset)
-
-          :do (setf cur-form (pop forms))
-
-              (cond ((or (= types:*line-comment* (form:get-form-type cur-form))
-                         (= types:*block-comment* (form:get-form-type cur-form)))
-                        NIL)
-
-                    ((= types:*ifdef-false* (form:get-form-type cur-form))
-                        (pop forms))
-
-                    (T (incf counted)))
-
-          :finally (return cur-form)))
-
-
 (defun get-err-location (forms)
     (let* ((context (sb-c::find-error-context nil))
            (source-path (when context (reverse (sb-c::compiler-error-context-original-source-path context)))))
@@ -60,7 +33,7 @@
                       (when (<= (length forms) ndx)
                             (error (format nil "Source ndx ~A, path ~A, form ~A" ndx source-path form)))
 
-                      (setf form (get-nth-form forms ndx))
+                      (setf form (forms:get-nth-form forms ndx))
 
                       (setf forms (form:get-kids form))
 
