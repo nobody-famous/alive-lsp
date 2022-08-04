@@ -207,6 +207,18 @@
               (make-string-input-stream text))))
 
 
+(defun frame-to-wire (state frame)
+    (let* ((obj (make-hash-table :test #'equalp))
+           (file (gethash "file" frame))
+           (pos (debugger:get-frame-loc (get-frame-text-stream state file)
+                                        frame)))
+
+        (setf (gethash "file" obj) file)
+        (setf (gethash "position" obj) pos)
+
+        obj))
+
+
 (defun wait-for-debug (state err restarts frames)
     (let ((send-id (next-send-id state))
           (cond-var (bt:make-condition-variable))
@@ -228,13 +240,9 @@
                                       :message (princ-to-string err)
                                       :restarts restarts
                                       :stack-trace (mapcar (lambda (frame)
-                                                               (debugger:get-frame-loc (get-frame-text-stream state
-                                                                                                              (gethash "file" frame))
-                                                                                       frame)
-                                                               (princ-to-string (format NIL "~A~%~A"
-                                                                                    (gethash "function" frame)
-                                                                                    (gethash "file" frame))))
+                                                               (frame-to-wire state frame))
                                                            frames)))
+
         (bt:with-recursive-lock-held ((lock state))
             (bt:condition-wait cond-var (lock state)))
 
@@ -251,7 +259,8 @@
                                         restarts)
                                 frames)))
 
-        (when (<= 0 ndx (- (length restarts) 1))
+        (when (and ndx
+                   (<= 0 ndx (- (length restarts) 1)))
               (invoke-restart-interactively (elt restarts ndx)))))
 
 
