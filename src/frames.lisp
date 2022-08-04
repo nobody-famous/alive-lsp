@@ -21,6 +21,22 @@
         (sb-di:no-debug-blocks () nil)))
 
 
+(defun get-top-form-offset (code-loc)
+    (handler-case
+            (sb-di:code-location-toplevel-form-offset code-loc)
+        (T (c)
+           (declare (ignore c))
+           nil)))
+
+
+(defun get-form-number (code-loc)
+    (handler-case
+            (sb-di:code-location-form-number code-loc)
+        (T (c)
+           (declare (ignore c))
+           nil)))
+
+
 (defun create-frame-obj (frame)
     (let* ((obj (make-hash-table :test #'equalp))
            (code-loc (sb-di:frame-code-location frame))
@@ -29,10 +45,8 @@
                           (sb-di:code-location-debug-source code-loc)))
            (src-name (when has-dbg
                            (sb-di:debug-source-namestring dbg-src)))
-           (top-form (when has-dbg
-                           (sb-di:code-location-toplevel-form-offset code-loc)))
-           (form-num (when has-dbg
-                           (sb-di:code-location-form-number code-loc))))
+           (top-form (get-top-form-offset code-loc))
+           (form-num (get-form-number code-loc)))
 
         (setf (gethash "function" obj) (get-fun-name frame))
 

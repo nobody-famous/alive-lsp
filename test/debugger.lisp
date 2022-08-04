@@ -1,7 +1,8 @@
 (defpackage :alive/test/debugger
     (:use :cl)
     (:export :run-all)
-    (:local-nicknames (:debugger :alive/debugger)))
+    (:local-nicknames (:debugger :alive/debugger)
+                      (:pos :alive/position)))
 
 (in-package :alive/test/debugger)
 
@@ -13,26 +14,44 @@
           (error "Bomb")))
 
 
-(defun find-bomb-frame (frames)
+(defun bomb-2 ()
+    (when T
+          (format NIL "Bomb called~%")
+          (format NIL "Bomb called~%"))
+    (when T
+          (error "Bomb")))
+
+
+(defun find-bomb-frame (frames name)
     (loop :for frame :in frames
-          :until (string-equal "bomb" (gethash "function" frame))
+          :until (string-equal name (gethash "function" frame))
           :finally (return frame)))
 
 
-(defun get-test-frame ()
+(defun get-test-frame (fn)
     (handler-bind ((error (lambda (err)
                               (declare (ignore err))
                               (return-from get-test-frame
-                                           (find-bomb-frame (alive/frames:list-debug-frames))))))
-        (bomb)))
+                                           (find-bomb-frame
+                                               (alive/frames:list-debug-frames)
+                                               (string fn))))))
+        (funcall fn)))
 
 
 (defun test-forms ()
-    (clue:test "Forms Test"
+    (clue:test "Bomb Test"
         (with-open-file (file "test/debugger.lisp")
-            (alive/debugger:get-frame-loc
-                file
-                (get-test-frame)))))
+            (clue:check-equal :expected (pos:create 13 10)
+                              :actual (alive/debugger:get-frame-loc
+                                          file
+                                          (get-test-frame 'bomb)))))
+
+    (clue:test "Bomb 2 Test"
+        (with-open-file (file "test/debugger.lisp")
+            (clue:check-equal :expected (pos:create 21 10)
+                              :actual (alive/debugger:get-frame-loc
+                                          file
+                                          (get-test-frame 'bomb-2))))))
 
 
 (defun run-all ()

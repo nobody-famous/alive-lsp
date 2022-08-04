@@ -29,8 +29,10 @@
 
 
 (defun get-frame-loc (stream frame)
-    (let* ((top-ndx (gethash "topForm" frame))
-           (form-num (gethash "formNumber" frame))
+    (let* ((top-ndx (when frame
+                          (gethash "topForm" frame)))
+           (form-num (when frame
+                           (gethash "formNumber" frame)))
            (forms (when stream
                         (forms:from-stream stream)))
            (top-form (when (and top-ndx forms)
@@ -39,4 +41,7 @@
         (when top-form
               (multiple-value-bind (ndx found)
                       (find-form 0 form-num (gethash "kids" top-form))
-                  (format T "~A ~A~%" ndx (when found (gethash "start" found)))))))
+                  (declare (ignore ndx))
+
+                  (when found
+                        (gethash "start" found))))))
