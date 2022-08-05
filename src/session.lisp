@@ -210,9 +210,11 @@
 (defun frame-to-wire (state frame)
     (let* ((obj (make-hash-table :test #'equalp))
            (file (gethash "file" frame))
+           (fn-name (gethash "function" frame))
            (pos (debugger:get-frame-loc (get-frame-text-stream state file)
                                         frame)))
 
+        (setf (gethash "function" obj) fn-name)
         (setf (gethash "file" obj) file)
         (setf (gethash "position" obj) pos)
 
