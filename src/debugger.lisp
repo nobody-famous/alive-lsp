@@ -10,7 +10,8 @@
 
 (defun find-form (cur-count target forms)
     (loop :with open-parens := (remove-if-not (lambda (form)
-                                                  (= types:*open-paren* (gethash "formType" form)))
+                                                  (and (= types:*open-paren* (gethash "formType" form))
+                                                       (< 0 (length (gethash "kids" form)))))
                                        forms)
           :with ndx := cur-count
 
@@ -40,7 +41,7 @@
 
         (when top-form
               (multiple-value-bind (ndx found)
-                      (find-form 0 form-num (gethash "kids" top-form))
+                      (find-form 1 form-num (gethash "kids" top-form))
                   (declare (ignore ndx))
 
                   (when found
