@@ -7,6 +7,7 @@
              :stop)
     (:local-nicknames (:asdf :alive/asdf)
                       (:eval :alive/eval)
+                      (:debugger :alive/debugger)
                       (:inspector :alive/inspector)
                       (:file :alive/file)
                       (:pos :alive/position)
@@ -197,6 +198,74 @@
             (remhash thread-id table))))
 
 
+(defun get-frame-text-stream (state file)
+    (let* ((file-url (format NIL "file://~A" file))
+           (files (files state))
+           (text (gethash file-url files)))
+
+        (when text
+              (make-string-input-stream text))))
+
+
+(defun frame-to-wire (state frame)
+    (let* ((obj (make-hash-table :test #'equalp))
+           (file (gethash "file" frame))
+           (fn-name (gethash "function" frame))
+           (pos (debugger:get-frame-loc (get-frame-text-stream state file)
+                                        frame)))
+
+        (setf (gethash "function" obj) fn-name)
+        (setf (gethash "file" obj) file)
+        (setf (gethash "position" obj) pos)
+
+        obj))
+
+
+(defun wait-for-debug (state err restarts frames)
+    (let ((send-id (next-send-id state))
+          (cond-var (bt:make-condition-variable))
+          (restart-ndx nil))
+
+        (setf (gethash send-id (sent-msg-callbacks state))
+            (lambda (debug-resp)
+                (unwind-protect
+                        (cond ((assoc :error debug-resp)
+                                  (logger:msg logger:*error* "Debugger Error ~A" debug-resp))
+
+                              ((assoc :result debug-resp)
+                                  (let* ((result (cdr (assoc :result debug-resp))))
+                                      (when result
+                                            (setf restart-ndx (cdr (assoc :index result)))))))
+                    (bt:condition-notify cond-var))))
+
+        (send-msg state (req:debugger send-id
+                                      :message (princ-to-string err)
+                                      :restarts restarts
+                                      :stack-trace (mapcar (lambda (frame)
+                                                               (frame-to-wire state frame))
+                                                           frames)))
+
+        (bt:with-recursive-lock-held ((lock state))
+            (bt:condition-wait cond-var (lock state)))
+
+        restart-ndx))
+
+
+(defun start-debugger (state err frames)
+    (let* ((restarts (compute-restarts err))
+           (ndx (wait-for-debug state
+                                err
+                                (mapcar (lambda (item)
+                                            (restart-info:create-item :name (restart-name item)
+                                                                      :description (princ-to-string item)))
+                                        restarts)
+                                frames)))
+
+        (when (and ndx
+                   (<= 0 ndx (- (length restarts) 1)))
+              (invoke-restart-interactively (elt restarts ndx)))))
+
+
 (defun run-in-thread (state msg fn)
     (let ((stdout *standard-output*))
         (bt:make-thread (lambda ()
@@ -205,8 +274,11 @@
                                         (save-thread-msg state (cdr (assoc :id msg)))
 
                                         (block handler
-                                            (handler-bind ((error (lambda (err)
-                                                                      (start-debugger state err)
+                                            (handler-bind ((sb-impl::step-form-condition (lambda (err)
+                                                                                             (start-debugger state err (alive/frames:list-step-frames))
+                                                                                             (return-from handler)))
+                                                           (error (lambda (err)
+                                                                      (start-debugger state err (alive/frames:list-debug-frames))
                                                                       (return-from handler))))
                                                 (funcall fn))))
                                 (rem-thread-msg state)))
@@ -252,45 +324,6 @@
             (bt:condition-wait cond-var (lock state)))
 
         text))
-
-
-(defun wait-for-debug (state err restarts)
-    (let ((send-id (next-send-id state))
-          (cond-var (bt:make-condition-variable))
-          (restart-ndx nil))
-
-        (setf (gethash send-id (sent-msg-callbacks state))
-            (lambda (debug-resp)
-                (unwind-protect
-                        (cond ((assoc :error debug-resp)
-                                  (logger:msg logger:*error* "Debugger Error ~A" debug-resp))
-
-                              ((assoc :result debug-resp)
-                                  (let* ((result (cdr (assoc :result debug-resp))))
-                                      (when result
-                                            (setf restart-ndx (cdr (assoc :index result)))))))
-                    (bt:condition-notify cond-var))))
-
-        (send-msg state (req:debugger send-id
-                                      :message (princ-to-string err)
-                                      :restarts restarts
-                                      :stack-trace (mapcar (lambda (item) (princ-to-string item))
-                                                           (threads:get-stack-trace))))
-        (bt:with-recursive-lock-held ((lock state))
-            (bt:condition-wait cond-var (lock state)))
-
-        restart-ndx))
-
-
-(defun start-debugger (state err)
-    (let* ((restarts (compute-restarts err))
-           (ndx (wait-for-debug state err (mapcar (lambda (item)
-                                                      (restart-info:create-item :name (restart-name item)
-                                                                                :description (princ-to-string item)))
-                                                  restarts))))
-
-        (when (<= 0 ndx (- (length restarts) 1))
-              (invoke-restart-interactively (elt restarts ndx)))))
 
 
 (defun try-inspect (state id text pkg-name)
