@@ -728,6 +728,21 @@
         (resp:sem-tokens id sem-tokens)))
 
 
+(defun handle-compile (state msg)
+    (run-in-thread state msg (lambda ()
+                                 (let* ((id (cdr (assoc :id msg)))
+                                        (params (cdr (assoc :params msg)))
+                                        (path (cdr (assoc :path params))))
+
+                                     (file:do-compile path
+                                                      :stdout-fn (lambda (data)
+                                                                     (send-msg state (notification:stdout data)))
+                                                      :stderr-fn (lambda (data)
+                                                                     (send-msg state (notification:stderr data))))
+
+                                     (send-msg state (message:create-response id :result-value "OK"))))))
+
+
 (defun handle-try-compile (state msg)
     (declare (ignore state))
     (let* ((id (cdr (assoc :id msg)))
@@ -786,6 +801,7 @@
                                (cons "$/alive/removePackage" 'handle-remove-pkg)
                                (cons "$/alive/symbol" 'handle-symbol)
                                (cons "$/alive/topFormBounds" 'handle-top-form)
+                               (cons "$/alive/compile" 'handle-compile)
                                (cons "$/alive/tryCompile" 'handle-try-compile)
                                (cons "$/alive/unexportSymbol" 'handle-unexport)))
 
