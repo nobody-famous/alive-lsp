@@ -160,6 +160,11 @@
         (remhash id (inspectors obj))))
 
 
+(defmethod get-inspector ((obj state) &key id)
+    (bt:with-recursive-lock-held ((lock obj))
+        (gethash id (inspectors obj))))
+
+
 (defmethod get-input-stream ((obj network-state))
     (flexi-streams:make-flexi-stream
         (usocket:socket-stream (conn obj))))
@@ -412,6 +417,23 @@
 
         (rem-inspector state :id insp-id)
         (message:create-response id :result-value T)))
+
+
+(defun handle-inspect-eval (state msg)
+    (let* ((id (cdr (assoc :id msg)))
+           (params (cdr (assoc :params msg)))
+           (insp-id (cdr (assoc :id params)))
+           (text (cdr (assoc :text params)))
+           (inspector (get-inspector state :id insp-id)))
+
+        (format T "EVAL ~A ~A ~A~%"
+            insp-id
+            text
+            (gethash "value" (inspector:get-result inspector)))
+
+        (send-msg state (message:create-error id
+                                              :code errors:*internal-error*
+                                              :message "Not Done Yet"))))
 
 
 (defun stop (state)
@@ -791,6 +813,7 @@
                                (cons "$/alive/getPackageForPosition" 'handle-get-pkg)
                                (cons "$/alive/inspect" 'handle-inspect)
                                (cons "$/alive/inspectClose" 'handle-inspect-close)
+                               (cons "$/alive/inspectEval" 'handle-inspect-eval)
                                (cons "$/alive/inspectSymbol" 'handle-inspect-sym)
                                (cons "$/alive/killThread" 'handle-kill-thread)
                                (cons "$/alive/listAsdfSystems" 'handle-list-asdf)
