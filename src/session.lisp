@@ -394,7 +394,7 @@
                                    :id insp-id
                                    :inspector (inspector:create :text name
                                                                 :pkg pkg-name
-                                                                :result result))
+                                                                :result sym))
 
                     (send-msg state (resp:do-inspect id
                                                      :insp-id insp-id
@@ -424,13 +424,10 @@
            (params (cdr (assoc :params msg)))
            (insp-id (cdr (assoc :id params)))
            (text (cdr (assoc :text params)))
-           (inspector (get-inspector state :id insp-id)))
+           (inspector (get-inspector state :id insp-id))
+           (* (inspector:get-result inspector)))
 
-        (format T "EVAL ~A ~A ~A~%"
-            insp-id
-            text
-            (gethash "value" (inspector:get-result inspector)))
-
+        (format T "CHECKING ~A~%" (type-of *))
         (send-msg state (message:create-error id
                                               :code errors:*internal-error*
                                               :message "Not Done Yet"))))
