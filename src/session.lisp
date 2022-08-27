@@ -424,13 +424,24 @@
            (params (cdr (assoc :params msg)))
            (insp-id (cdr (assoc :id params)))
            (text (cdr (assoc :text params)))
-           (inspector (get-inspector state :id insp-id))
-           (* (inspector:get-result inspector)))
+           (inspector (get-inspector state :id insp-id)))
 
-        (format T "CHECKING ~A~%" (type-of *))
-        (send-msg state (message:create-error id
-                                              :code errors:*internal-error*
-                                              :message "Not Done Yet"))))
+        (run-in-thread state
+                       msg
+                       (lambda ()
+                           (let* ((* (inspector:get-result inspector))
+                                  (new-result (eval:from-string text
+                                                                :pkg-name (inspector:get-pkg inspector)
+                                                                :stdin-fn (lambda ()
+                                                                              (wait-for-input state))
+                                                                :stdout-fn (lambda (data)
+                                                                               (send-msg state (notification:stdout data)))
+                                                                :stderr-fn (lambda (data)
+                                                                               (send-msg state (notification:stderr data))))))
+                               (logger:msg logger:*error* "new-result ~A~%" new-result)
+                               (send-msg state (message:create-error id
+                                                                     :code errors:*internal-error*
+                                                                     :message "Not Done Yet")))))))
 
 
 (defun stop (state)
