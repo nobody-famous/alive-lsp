@@ -424,12 +424,16 @@
            (params (cdr (assoc :params msg)))
            (insp-id (cdr (assoc :id params)))
            (text (cdr (assoc :text params)))
-           (inspector (get-inspector state :id insp-id)))
+           (inspector (get-inspector state :id insp-id))
+           (old-result (inspector:get-result inspector))
+           (old-value (if (symbolp old-result)
+                          (symbol-value old-result)
+                          old-result)))
 
         (run-in-thread state
                        msg
                        (lambda ()
-                           (let* ((* (inspector:get-result inspector))
+                           (let* ((* old-value)
                                   (new-result (eval:from-string text
                                                                 :pkg-name (inspector:get-pkg inspector)
                                                                 :stdin-fn (lambda ()
@@ -442,6 +446,22 @@
                                (send-msg state (message:create-error id
                                                                      :code errors:*internal-error*
                                                                      :message "Not Done Yet")))))))
+
+
+(defun handle-inspect-refresh (state msg)
+    (let* ((id (cdr (assoc :id msg)))
+           (params (cdr (assoc :params msg)))
+           (insp-id (cdr (assoc :id params)))
+           (inspector (get-inspector state :id insp-id))
+           (result (inspector:get-result inspector)))
+
+        (typecase result
+            (symbol (send-msg state (resp:do-inspect id
+                                                     :insp-id insp-id
+                                                     :result (inspector:to-result (symbol-value result)))))
+            (otherwise (send-msg state (message:create-error id
+                                                             :code errors:*internal-error*
+                                                             :message "Unhandled type for refresh"))))))
 
 
 (defun stop (state)
@@ -822,6 +842,7 @@
                                (cons "$/alive/inspect" 'handle-inspect)
                                (cons "$/alive/inspectClose" 'handle-inspect-close)
                                (cons "$/alive/inspectEval" 'handle-inspect-eval)
+                               (cons "$/alive/inspectRefresh" 'handle-inspect-refresh)
                                (cons "$/alive/inspectSymbol" 'handle-inspect-sym)
                                (cons "$/alive/killThread" 'handle-kill-thread)
                                (cons "$/alive/listAsdfSystems" 'handle-list-asdf)
