@@ -459,9 +459,9 @@
             (symbol (send-msg state (resp:do-inspect id
                                                      :insp-id insp-id
                                                      :result (inspector:to-result (symbol-value result)))))
-            (otherwise (send-msg state (message:create-error id
-                                                             :code errors:*internal-error*
-                                                             :message "Unhandled type for refresh"))))))
+            (otherwise (send-msg state (resp:do-inspect id
+                                                        :insp-id insp-id
+                                                        :result (inspector:to-result result)))))))
 
 
 (defun stop (state)
