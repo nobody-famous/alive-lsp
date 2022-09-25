@@ -434,18 +434,29 @@
                        msg
                        (lambda ()
                            (let* ((* old-value)
+                                  (pkg-name (inspector:get-pkg inspector))
                                   (new-result (eval:from-string text
-                                                                :pkg-name (inspector:get-pkg inspector)
+                                                                :pkg-name pkg-name
                                                                 :stdin-fn (lambda ()
                                                                               (wait-for-input state))
                                                                 :stdout-fn (lambda (data)
                                                                                (send-msg state (notification:stdout data)))
                                                                 :stderr-fn (lambda (data)
                                                                                (send-msg state (notification:stderr data))))))
-                               (logger:msg logger:*error* "new-result ~A~%" new-result)
-                               (send-msg state (message:create-error id
-                                                                     :code errors:*internal-error*
-                                                                     :message "Not Done Yet")))))))
+
+                               (if new-result
+                                   (let ((insp-id (next-inspector-id state)))
+                                       (add-inspector state
+                                                      :id insp-id
+                                                      :inspector (inspector:create :text text
+                                                                                   :pkg pkg-name
+                                                                                   :result new-result))
+                                       (send-msg state (resp:do-inspect id
+                                                                        :insp-id insp-id
+                                                                        :result new-result)))
+
+                                   (send-msg state (message:create-response id
+                                                                            :result-value (make-hash-table)))))))))
 
 
 (defun handle-inspect-refresh (state msg)
