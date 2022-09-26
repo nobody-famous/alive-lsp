@@ -331,18 +331,18 @@
         text))
 
 
-(defun send-inspect-result (state &key id text pkg-name result)
+(defun send-inspect-result (state &key id text pkg-name to-send to-save)
     (let ((insp-id (next-inspector-id state)))
         (add-inspector state
                        :id insp-id
                        :inspector (inspector:create :text text
                                                     :pkg pkg-name
-                                                    :result result))
+                                                    :result to-save))
 
         (send-msg state
                   (resp:do-inspect id
                                    :insp-id insp-id
-                                   :result (inspector:to-result result)))))
+                                   :result (inspector:to-result to-send)))))
 
 
 (defun try-inspect (state id text pkg-name)
@@ -355,7 +355,12 @@
                                     :stderr-fn (lambda (data)
                                                    (send-msg state (notification:stderr data))))))
 
-        (send-inspect-result state :id id :text text :pkg-name pkg-name :result result)))
+        (send-inspect-result state
+                             :id id
+                             :text text
+                             :pkg-name pkg-name
+                             :to-save result
+                             :to-send result)))
 
 
 (defun process-inspect (state msg)
@@ -397,7 +402,8 @@
                                          :id id
                                          :text name
                                          :pkg-name pkg-name
-                                         :result result))
+                                         :to-save sym
+                                         :to-send result))
 
             (T (c)
                (send-msg state (message:create-error id
@@ -444,7 +450,8 @@
                                  :id id
                                  :text text
                                  :pkg-name pkg-name
-                                 :result new-result)
+                                 :to-save new-result
+                                 :to-send new-result)
 
             (send-msg state (message:create-response id
                                                      :result-value (make-hash-table))))))
