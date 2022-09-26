@@ -426,11 +426,9 @@
            (text (cdr (assoc :text params)))
            (inspector (get-inspector state :id insp-id))
            (old-result (inspector:get-result inspector))
-           (old-value (if (symbolp old-result)
-                          (symbol-value old-result)
-                          old-result))
-
-           (* old-value)
+           (* (if (symbolp old-result)
+                  (symbol-value old-result)
+                  old-result))
            (pkg-name (inspector:get-pkg inspector))
            (new-result (eval:from-string text
                                          :pkg-name pkg-name
