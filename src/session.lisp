@@ -453,7 +453,7 @@
                                                                                    :result new-result))
                                        (send-msg state (resp:do-inspect id
                                                                         :insp-id insp-id
-                                                                        :result new-result)))
+                                                                        :result (inspector:to-result new-result))))
 
                                    (send-msg state (message:create-response id
                                                                             :result-value (make-hash-table)))))))))
