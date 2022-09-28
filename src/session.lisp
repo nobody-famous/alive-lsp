@@ -160,6 +160,11 @@
         (remhash id (inspectors obj))))
 
 
+(defmethod get-inspector ((obj state) &key id)
+    (bt:with-recursive-lock-held ((lock obj))
+        (gethash id (inspectors obj))))
+
+
 (defmethod get-input-stream ((obj network-state))
     (flexi-streams:make-flexi-stream
         (usocket:socket-stream (conn obj))))
@@ -326,6 +331,20 @@
         text))
 
 
+(defun send-inspect-result (state &key id text pkg-name result)
+    (let ((insp-id (next-inspector-id state)))
+        (add-inspector state
+                       :id insp-id
+                       :inspector (inspector:create :text text
+                                                    :pkg pkg-name
+                                                    :result result))
+
+        (send-msg state
+                  (resp:do-inspect id
+                                   :insp-id insp-id
+                                   :result (inspector:to-result result)))))
+
+
 (defun try-inspect (state id text pkg-name)
     (let ((result (eval:from-string text
                                     :pkg-name pkg-name
@@ -336,13 +355,11 @@
                                     :stderr-fn (lambda (data)
                                                    (send-msg state (notification:stderr data))))))
 
-        (add-inspector state
-                       :id id
-                       :inspector (inspector:create :text text
-                                                    :pkg pkg-name
-                                                    :result result))
-
-        (inspector:to-result result)))
+        (send-inspect-result state
+                             :id id
+                             :text text
+                             :pkg-name pkg-name
+                             :result result)))
 
 
 (defun process-inspect (state msg)
@@ -352,16 +369,12 @@
                 (let* ((params (cdr (assoc :params msg)))
                        (pkg-name (cdr (assoc :package params)))
                        (text (cdr (assoc :text params)))
-                       (insp-id (next-inspector-id state))
                        (* (elt (history state) 0))
                        (** (elt (history state) 1))
                        (*** (elt (history state) 2)))
 
-                    (let ((result (try-inspect state insp-id text pkg-name)))
-                        (send-msg state
-                                  (resp:do-inspect id
-                                                   :insp-id insp-id
-                                                   :result result))))
+                    (try-inspect state id text pkg-name))
+
             (T (c)
                (send-msg state
                          (message:create-error id
@@ -381,19 +394,14 @@
                 (let* ((params (cdr (assoc :params msg)))
                        (pkg-name (cdr (assoc :package params)))
                        (name (cdr (assoc :symbol params)))
-                       (insp-id (next-inspector-id state))
-                       (sym (alive/symbols:lookup name pkg-name))
-                       (result (inspector:to-result sym)))
+                       (sym (alive/symbols:lookup name pkg-name)))
 
-                    (add-inspector state
-                                   :id insp-id
-                                   :inspector (inspector:create :text name
-                                                                :pkg pkg-name
-                                                                :result result))
+                    (send-inspect-result state
+                                         :id id
+                                         :text name
+                                         :pkg-name pkg-name
+                                         :result sym))
 
-                    (send-msg state (resp:do-inspect id
-                                                     :insp-id insp-id
-                                                     :result result)))
             (T (c)
                (send-msg state (message:create-error id
                                                      :code errors:*internal-error*
@@ -412,6 +420,58 @@
 
         (rem-inspector state :id insp-id)
         (message:create-response id :result-value T)))
+
+
+(defun do-inspect-eval (state msg)
+    (let* ((id (cdr (assoc :id msg)))
+           (params (cdr (assoc :params msg)))
+           (insp-id (cdr (assoc :id params)))
+           (text (cdr (assoc :text params)))
+           (inspector (get-inspector state :id insp-id))
+           (old-result (inspector:get-result inspector))
+           (* (if (symbolp old-result)
+                  (symbol-value old-result)
+                  old-result))
+           (pkg-name (inspector:get-pkg inspector))
+           (new-result (eval:from-string text
+                                         :pkg-name pkg-name
+                                         :stdin-fn (lambda ()
+                                                       (wait-for-input state))
+                                         :stdout-fn (lambda (data)
+                                                        (send-msg state (notification:stdout data)))
+                                         :stderr-fn (lambda (data)
+                                                        (send-msg state (notification:stderr data))))))
+
+        (if new-result
+            (send-inspect-result state
+                                 :id id
+                                 :text text
+                                 :pkg-name pkg-name
+                                 :result new-result)
+
+            (send-msg state (message:create-response id
+                                                     :result-value (make-hash-table))))))
+
+
+(defun handle-inspect-eval (state msg)
+    (run-in-thread state msg (lambda ()
+                                 (do-inspect-eval state msg))))
+
+
+(defun handle-inspect-refresh (state msg)
+    (let* ((id (cdr (assoc :id msg)))
+           (params (cdr (assoc :params msg)))
+           (insp-id (cdr (assoc :id params)))
+           (inspector (get-inspector state :id insp-id))
+           (result (inspector:get-result inspector)))
+
+        (typecase result
+            (symbol (send-msg state (resp:do-inspect id
+                                                     :insp-id insp-id
+                                                     :result (inspector:to-result (symbol-value result)))))
+            (otherwise (send-msg state (resp:do-inspect id
+                                                        :insp-id insp-id
+                                                        :result (inspector:to-result result)))))))
 
 
 (defun stop (state)
@@ -791,6 +851,8 @@
                                (cons "$/alive/getPackageForPosition" 'handle-get-pkg)
                                (cons "$/alive/inspect" 'handle-inspect)
                                (cons "$/alive/inspectClose" 'handle-inspect-close)
+                               (cons "$/alive/inspectEval" 'handle-inspect-eval)
+                               (cons "$/alive/inspectRefresh" 'handle-inspect-refresh)
                                (cons "$/alive/inspectSymbol" 'handle-inspect-sym)
                                (cons "$/alive/killThread" 'handle-kill-thread)
                                (cons "$/alive/listAsdfSystems" 'handle-list-asdf)

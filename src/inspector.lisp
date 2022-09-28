@@ -80,11 +80,13 @@
 
 
 (defun list-to-result (result obj)
-    (setf (gethash "length" result)
-        (length obj))
-
-    (setf (gethash "value" result)
-        (mapcar #'princ-to-string obj)))
+    (if (consp (cdr obj))
+        (progn (setf (gethash "length" result)
+                   (length obj))
+               (setf (gethash "value" result)
+                   (mapcar #'princ-to-string obj)))
+        (progn (setf (gethash "value" result)
+                   (princ-to-string obj)))))
 
 
 (defun vector-to-result (result obj)

@@ -103,6 +103,7 @@
                 (clue:check-equal :expected 2
                                   :actual (hash-table-count insp-result))))))
 
+
 (defun run-all ()
     (clue:suite "Inspector Tests"
         (fn-test)
