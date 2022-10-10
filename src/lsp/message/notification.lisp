@@ -1,6 +1,7 @@
 (defpackage :alive/lsp/message/notification
     (:use :cl)
-    (:export :stderr
+    (:export :refresh
+             :stderr
              :stdout)
     (:local-nicknames (:message :alive/lsp/message/abstract)))
 
@@ -13,6 +14,11 @@
         (setf (gethash key params) value)
 
         (message:create-notification name :params params)))
+
+
+(defun refresh ()
+    (message:create-notification "$/alive/refresh"
+                                 :params (make-hash-table)))
 
 
 (defun stdout (value)

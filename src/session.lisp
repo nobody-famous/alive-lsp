@@ -277,6 +277,7 @@
                             (unwind-protect
                                     (let ((*standard-output* stdout))
                                         (save-thread-msg state (cdr (assoc :id msg)))
+                                        (send-msg state (notification:refresh))
 
                                         (block handler
                                             (handler-bind ((sb-impl::step-form-condition (lambda (err)
@@ -286,7 +287,8 @@
                                                                       (start-debugger state err (alive/frames:list-debug-frames))
                                                                       (return-from handler))))
                                                 (funcall fn))))
-                                (rem-thread-msg state)))
+                                (rem-thread-msg state)
+                                (send-msg state (notification:refresh))))
 
                         :name (next-thread-name state (if (assoc :id msg)
                                                           (cdr (assoc :method msg))
@@ -659,6 +661,7 @@
                                       thread-id
                                       (gethash thread-id
                                                (thread-msgs state)))
+                       (send-msg state (notification:refresh))
                        (message:create-response id :result-value T))
 
             (threads:thread-not-found (c)

@@ -75,7 +75,7 @@
 
         (setf (gethash "label" item) label)
         (setf (gethash "kind" item) kind)
-        (setf (gethash "docString" item) doc-string)
+        (setf (gethash "documentation" item) doc-string)
         (setf (gethash "insertText" item) insert-text)
         (setf (gethash "insertTextFormat" item) insert-format)
 
