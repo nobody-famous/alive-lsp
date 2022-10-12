@@ -585,9 +585,14 @@
            (params (cdr (assoc :params msg)))
            (pos (cdr (assoc :position params)))
            (forms (get-forms state msg))
-           (top-form (forms:get-top-form forms pos)))
+           (top-form (forms:get-top-form forms pos))
+           (form (forms:get-child-form top-form pos))
+           (start (when form (gethash "start" form)))
+           (end (when form (gethash "end" form))))
 
-        (format T "handle-surrounding-form ~A~%" top-form)))
+        (resp:top-form id
+                       :start start
+                       :end end)))
 
 
 (defun handle-top-form (state msg)

@@ -1,6 +1,7 @@
 (defpackage :alive/parse/forms
     (:use :cl)
     (:export :from-stream
+             :get-outer-form
              :get-nth-form
              :get-top-form)
     (:local-nicknames (:errors :alive/errors)
@@ -238,3 +239,27 @@
                     (setf top-form form))
 
           :finally (return top-form)))
+
+
+(defun get-outer-form (form pos)
+    (let* ((kids-entry (when (hash-table-p form)
+                             (gethash "kids" form)))
+           (kids (if (and kids-entry
+                          (listp kids-entry))
+                     kids-entry
+                     nil)))
+
+        (loop :with start := nil
+              :with end := nil
+              :with child := nil
+
+              :for kid :in kids
+
+              :do (setf start (gethash "start" kid))
+                  (setf end (gethash "end" kid))
+
+              :do (when (and (pos:less-or-equal start pos)
+                             (pos:less-than pos end))
+                        (setf child kid))
+
+              :finally (return child))))
