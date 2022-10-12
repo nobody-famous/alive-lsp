@@ -221,6 +221,46 @@
                                exp))))
 
 
+(defclass surrounding-form-state (test-state)
+        ())
+
+
+(defmethod session::get-input-stream ((obj surrounding-form-state))
+    (let ((content (with-output-to-string (str)
+                       (format str "{~A" utils:*end-line*)
+                       (format str "  \"jsonrpc\": \"2.0\",~A" utils:*end-line*)
+                       (format str "  \"id\": 5,~A" utils:*end-line*)
+                       (format str "  \"method\": \"$/alive/surroundingFormBounds\",~A" utils:*end-line*)
+                       (format str "  \"params\": {~A" utils:*end-line*)
+                       (format str "    \"textDocument\": {~A" utils:*end-line*)
+                       (format str "      \"uri\":\"file:///some/file.txt\"~A" utils:*end-line*)
+                       (format str "    },~A" utils:*end-line*)
+                       (format str "    \"position\": {~A" utils:*end-line*)
+                       (format str "      \"line\": 3,~A" utils:*end-line*)
+                       (format str "      \"character\": 11~A" utils:*end-line*)
+                       (format str "    }~A" utils:*end-line*)
+                       (format str "  }~A" utils:*end-line*)
+                       (format str "}~A" utils:*end-line*))))
+        (utils:stream-from-string (utils:create-msg content))))
+
+
+(defun surrounding-form-msg ()
+    (let ((state (make-instance 'surrounding-form-state))
+          (result (make-hash-table :test #'equalp))
+          (exp (make-hash-table :test #'equalp)))
+
+        (setf (gethash "start" result) nil)
+        (setf (gethash "end" result) nil)
+
+        (setf (gethash "jsonrpc" exp) "2.0")
+        (setf (gethash "id" exp) 5)
+        (setf (gethash "result" exp) result)
+
+        (clue:test "Surrounding Form Message"
+            (utils:check-equal (session::get-next-response state)
+                               exp))))
+
+
 (defclass formatting-state (test-state)
         ())
 

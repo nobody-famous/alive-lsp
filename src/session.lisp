@@ -570,28 +570,38 @@
                     :value result)))
 
 
+(defun get-forms (state msg)
+    (let* ((params (cdr (assoc :params msg)))
+           (doc (cdr (assoc :text-document params)))
+           (uri (cdr (assoc :uri doc)))
+           (file-text (get-file-text state uri))
+           (text (if file-text file-text "")))
+
+        (forms:from-stream (make-string-input-stream text))))
+
+
+(defun handle-surrounding-form (state msg)
+    (let* ((id (cdr (assoc :id msg)))
+           (params (cdr (assoc :params msg)))
+           (pos (cdr (assoc :position params)))
+           (forms (get-forms state msg))
+           (top-form (forms:get-top-form forms pos)))
+
+        (format T "handle-surrounding-form ~A~%" top-form)))
+
+
 (defun handle-top-form (state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
-           (doc (cdr (assoc :text-document params)))
            (pos (cdr (assoc :position params)))
-           (uri (cdr (assoc :uri doc)))
-           (file-text (get-file-text state uri))
-           (text (if file-text file-text ""))
-           (forms (forms:from-stream (make-string-input-stream text))))
+           (forms (get-forms state msg))
+           (form (forms:get-top-form forms pos))
+           (start (when form (gethash "start" form)))
+           (end (when form (gethash "end" form))))
 
-        (loop :with start := nil
-              :with end := nil
-
-              :for form :in forms :do
-                  (when (and (pos:less-or-equal (form:get-start form) pos)
-                             (pos:less-or-equal pos (form:get-end form)))
-                        (setf start (form:get-start form))
-                        (setf end (form:get-end form)))
-
-              :finally (return (resp:top-form id
-                                              :start start
-                                              :end end)))))
+        (resp:top-form id
+                       :start start
+                       :end end)))
 
 
 (defun handle-format-msg (state options msg)
@@ -865,6 +875,7 @@
                                (cons "$/alive/loadAsdfSystem" 'handle-load-asdf)
                                (cons "$/alive/removePackage" 'handle-remove-pkg)
                                (cons "$/alive/symbol" 'handle-symbol)
+                               (cons "$/alive/surroundingFormBounds" 'handle-surrounding-form)
                                (cons "$/alive/topFormBounds" 'handle-top-form)
                                (cons "$/alive/compile" 'handle-compile)
                                (cons "$/alive/tryCompile" 'handle-try-compile)
