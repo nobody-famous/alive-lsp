@@ -241,25 +241,26 @@
           :finally (return top-form)))
 
 
+(defun find-inner-form (form pos)
+    (let ((start (gethash "start" form))
+          (end (gethash "end" form))
+          (kids (gethash "kids" form)))
+
+        (if (and kids
+                 (pos:less-or-equal start pos)
+                 (pos:less-than pos end))
+
+            (loop :with target := form
+                  :for kid :in kids
+                  :do (let ((inner (find-inner-form kid pos)))
+                          (when inner
+                                (setf target inner)))
+                  :finally (return target))
+
+            nil)))
+
+
 (defun get-outer-form (form pos)
-    (let* ((kids-entry (when (hash-table-p form)
-                             (gethash "kids" form)))
-           (kids (if (and kids-entry
-                          (listp kids-entry))
-                     kids-entry
-                     nil)))
-
-        (loop :with start := nil
-              :with end := nil
-              :with child := nil
-
-              :for kid :in kids
-
-              :do (setf start (gethash "start" kid))
-                  (setf end (gethash "end" kid))
-
-              :do (when (and (pos:less-or-equal start pos)
-                             (pos:less-than pos end))
-                        (setf child kid))
-
-              :finally (return child))))
+    (when (and (hash-table-p form)
+               (car (gethash "kids" form)))
+          (find-inner-form form pos)))

@@ -586,7 +586,7 @@
            (pos (cdr (assoc :position params)))
            (forms (get-forms state msg))
            (top-form (forms:get-top-form forms pos))
-           (form (forms:get-child-form top-form pos))
+           (form (forms:get-outer-form top-form pos))
            (start (when form (gethash "start" form)))
            (end (when form (gethash "end" form))))
 

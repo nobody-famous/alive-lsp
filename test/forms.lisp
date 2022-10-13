@@ -10,18 +10,24 @@
 (defun get-child-form (text pos)
     (let* ((forms (forms:from-stream (make-string-input-stream text)))
            (top-form (forms:get-top-form forms pos)))
-        (forms:get-child-form top-form pos)))
+        (forms:get-outer-form top-form pos)))
 
 
 (defun test-child-form ()
     (clue:test "Child Form"
-        (let* ((text (format NIL "(if (a b) (c d))"))
+        (let* ((text (format NIL "(if (a b) (c d (e f)))"))
                (all (get-child-form text (pos:create 0 1)))
                (child-1 (get-child-form text (pos:create 0 5)))
-               (child-2 (get-child-form text (pos:create 0 12))))
-            (format T "ALL ~A~%" all)
-            (format T "CHILD-1 ~A~%" child-1)
-            (format T "CHILD-2 ~A~%" child-2))))
+               (child-2 (get-child-form text (pos:create 0 12)))
+               (child-3 (get-child-form text (pos:create 0 17))))
+            (clue:check-equal :expected (pos:create 0 0)
+                              :actual (gethash "start" all))
+            (clue:check-equal :expected (pos:create 0 4)
+                              :actual (gethash "start" child-1))
+            (clue:check-equal :expected (pos:create 0 10)
+                              :actual (gethash "start" child-2))
+            (clue:check-equal :expected (pos:create 0 15)
+                              :actual (gethash "start" child-3)))))
 
 
 (defun run-all ()
