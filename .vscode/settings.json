@@ -3,7 +3,6 @@
     "alive.format.indentWidth": 4,
     "alive.format.maxBlankLines": 2,
     "lisp.trace.server": "verbose",
-    "alive.lsp.install.path": "c:/Users/rich/work/cl/alive-lsp",
     "editor.semanticTokenColorCustomizations": {
         "rules": {
             "error": "#ff0000",
