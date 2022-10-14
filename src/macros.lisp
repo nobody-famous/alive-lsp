@@ -7,19 +7,18 @@
 (in-package :alive/macros)
 
 
-(defun do-expand (fn text)
+(defun do-expand (fn text pkg-name)
     (handler-case
-            (funcall fn (read (make-string-input-stream text)))
+            (let* ((pkg (pkgs:lookup pkg-name))
+                   (*package* (if pkg pkg *package*)))
+
+                (funcall fn (read (make-string-input-stream text))))
         (T ()
            nil)))
 
 (defun expand (text pkg-name)
-    (let* ((pkg (pkgs:lookup pkg-name))
-           (*package* (if pkg pkg *package*)))
-
-        (macroexpand (read (make-string-input-stream text)))
-        #+n (do-expand 'macroexpand text)))
+    (do-expand 'macroexpand text pkg-name))
 
 
-(defun expand-1 (text)
-    (do-expand 'macroexpand-1 text))
+(defun expand-1 (text pkg-name)
+    (do-expand 'macroexpand-1 text pkg-name))

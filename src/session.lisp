@@ -528,17 +528,25 @@
                                      (resp:load-file id msgs)))))
 
 
-(defun handle-macroexpand (state msg)
+(defun do-expand (state msg fn)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
            (pkg-name (cdr (assoc :package params)))
            (text (cdr (assoc :text params)))
-           (expanded (macros:expand text pkg-name))
+           (expanded (funcall fn text pkg-name))
            (new-text (if (consp expanded)
                          (princ-to-string expanded)
                          text)))
 
         (send-msg state (resp:macro id (princ-to-string new-text)))))
+
+
+(defun handle-macroexpand (state msg)
+    (do-expand state msg 'macros:expand))
+
+
+(defun handle-macroexpand-1 (state msg)
+    (do-expand state msg 'macros:expand-1))
 
 
 (defun handle-completion (state msg)
@@ -893,6 +901,7 @@
                                (cons "$/alive/loadFile" 'handle-load-file)
                                (cons "$/alive/loadAsdfSystem" 'handle-load-asdf)
                                (cons "$/alive/macroexpand" 'handle-macroexpand)
+                               (cons "$/alive/macroexpand1" 'handle-macroexpand-1)
                                (cons "$/alive/removePackage" 'handle-remove-pkg)
                                (cons "$/alive/symbol" 'handle-symbol)
                                (cons "$/alive/surroundingFormBounds" 'handle-surrounding-form)
