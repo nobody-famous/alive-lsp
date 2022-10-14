@@ -41,6 +41,7 @@
                                        (:file "inspector")
                                        (:file "asdf")
                                        (:file "debugger")
+                                       (:file "macros")
 
                                        (:file "lsp/types/config-item")
                                        (:file "lsp/types/sem-tokens")
@@ -91,6 +92,8 @@
 
                                        (:file "debugger")
                                        (:file "eval")
+                                       (:file "forms")
+                                       (:file "macros")
                                        (:file "inspector")
                                        (:file "streams")
 

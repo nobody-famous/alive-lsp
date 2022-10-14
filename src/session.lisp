@@ -10,6 +10,7 @@
                       (:debugger :alive/debugger)
                       (:inspector :alive/inspector)
                       (:file :alive/file)
+                      (:macros :alive/macros)
                       (:pos :alive/position)
                       (:packages :alive/packages)
                       (:threads :alive/threads)
@@ -527,6 +528,27 @@
                                      (resp:load-file id msgs)))))
 
 
+(defun do-expand (state msg fn)
+    (let* ((id (cdr (assoc :id msg)))
+           (params (cdr (assoc :params msg)))
+           (pkg-name (cdr (assoc :package params)))
+           (text (cdr (assoc :text params)))
+           (expanded (funcall fn text pkg-name))
+           (new-text (if (consp expanded)
+                         (princ-to-string expanded)
+                         text)))
+
+        (send-msg state (resp:macro id (princ-to-string new-text)))))
+
+
+(defun handle-macroexpand (state msg)
+    (do-expand state msg 'macros:expand))
+
+
+(defun handle-macroexpand-1 (state msg)
+    (do-expand state msg 'macros:expand-1))
+
+
 (defun handle-completion (state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
@@ -570,28 +592,43 @@
                     :value result)))
 
 
+(defun get-forms (state msg)
+    (let* ((params (cdr (assoc :params msg)))
+           (doc (cdr (assoc :text-document params)))
+           (uri (cdr (assoc :uri doc)))
+           (file-text (get-file-text state uri))
+           (text (if file-text file-text "")))
+
+        (forms:from-stream (make-string-input-stream text))))
+
+
+(defun handle-surrounding-form (state msg)
+    (let* ((id (cdr (assoc :id msg)))
+           (params (cdr (assoc :params msg)))
+           (pos (cdr (assoc :position params)))
+           (forms (get-forms state msg))
+           (top-form (forms:get-top-form forms pos))
+           (form (forms:get-outer-form top-form pos))
+           (start (when form (gethash "start" form)))
+           (end (when form (gethash "end" form))))
+
+        (resp:top-form id
+                       :start start
+                       :end end)))
+
+
 (defun handle-top-form (state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
-           (doc (cdr (assoc :text-document params)))
            (pos (cdr (assoc :position params)))
-           (uri (cdr (assoc :uri doc)))
-           (file-text (get-file-text state uri))
-           (text (if file-text file-text ""))
-           (forms (forms:from-stream (make-string-input-stream text))))
+           (forms (get-forms state msg))
+           (form (forms:get-top-form forms pos))
+           (start (when form (gethash "start" form)))
+           (end (when form (gethash "end" form))))
 
-        (loop :with start := nil
-              :with end := nil
-
-              :for form :in forms :do
-                  (when (and (pos:less-or-equal (form:get-start form) pos)
-                             (pos:less-or-equal pos (form:get-end form)))
-                        (setf start (form:get-start form))
-                        (setf end (form:get-end form)))
-
-              :finally (return (resp:top-form id
-                                              :start start
-                                              :end end)))))
+        (resp:top-form id
+                       :start start
+                       :end end)))
 
 
 (defun handle-format-msg (state options msg)
@@ -863,8 +900,11 @@
                                (cons "$/alive/listThreads" 'handle-list-threads)
                                (cons "$/alive/loadFile" 'handle-load-file)
                                (cons "$/alive/loadAsdfSystem" 'handle-load-asdf)
+                               (cons "$/alive/macroexpand" 'handle-macroexpand)
+                               (cons "$/alive/macroexpand1" 'handle-macroexpand-1)
                                (cons "$/alive/removePackage" 'handle-remove-pkg)
                                (cons "$/alive/symbol" 'handle-symbol)
+                               (cons "$/alive/surroundingFormBounds" 'handle-surrounding-form)
                                (cons "$/alive/topFormBounds" 'handle-top-form)
                                (cons "$/alive/compile" 'handle-compile)
                                (cons "$/alive/tryCompile" 'handle-try-compile)

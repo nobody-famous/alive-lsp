@@ -1,10 +1,13 @@
 (defpackage :alive/parse/forms
     (:use :cl)
     (:export :from-stream
-             :get-nth-form)
+             :get-outer-form
+             :get-nth-form
+             :get-top-form)
     (:local-nicknames (:errors :alive/errors)
                       (:types :alive/types)
                       (:form :alive/parse/form)
+                      (:pos :alive/position)
                       (:token :alive/parse/token)
                       (:tokenizer :alive/parse/tokenizer)))
 
@@ -225,3 +228,39 @@
                     (T (incf counted)))
 
           :finally (return cur-form)))
+
+
+(defun get-top-form (forms pos)
+    (loop :with top-form := nil
+
+          :for form :in forms :do
+              (when (and (pos:less-or-equal (form:get-start form) pos)
+                         (pos:less-or-equal pos (form:get-end form)))
+                    (setf top-form form))
+
+          :finally (return top-form)))
+
+
+(defun find-inner-form (form pos)
+    (let ((start (gethash "start" form))
+          (end (gethash "end" form))
+          (kids (gethash "kids" form)))
+
+        (if (and kids
+                 (pos:less-or-equal start pos)
+                 (pos:less-than pos end))
+
+            (loop :with target := form
+                  :for kid :in kids
+                  :do (let ((inner (find-inner-form kid pos)))
+                          (when inner
+                                (setf target inner)))
+                  :finally (return target))
+
+            nil)))
+
+
+(defun get-outer-form (form pos)
+    (when (and (hash-table-p form)
+               (car (gethash "kids" form)))
+          (find-inner-form form pos)))
