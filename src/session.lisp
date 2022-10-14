@@ -867,6 +867,21 @@
                                      (send-msg state (message:create-response id :result-value T))))))
 
 
+(defun handle-selection (state msg)
+    (let* ((id (cdr (assoc :id msg)))
+           (params (cdr (assoc :params msg)))
+           (doc (cdr (assoc :text-document params)))
+           (uri (cdr (assoc :uri doc)))
+           (file-text (get-file-text state uri))
+           (text (if file-text file-text ""))
+           (pos-list (cdr (assoc :positions params))))
+
+        (format T "SELECTION uri ~A pos-list ~A~%" uri pos-list)
+        (send-msg state (message:create-error id
+                                              :code errors:*internal-error*
+                                              :message "Not Done Yet"))))
+
+
 (defun ignore-msg (state msg)
     (declare (ignore state msg))
     nil)
@@ -884,6 +899,7 @@
                                (cons "textDocument/onTypeFormatting" 'handle-on-type)
                                (cons "textDocument/rangeFormatting" 'handle-formatting)
                                (cons "textDocument/semanticTokens/full" 'handle-sem-tokens)
+                               (cons "textDocument/selectionRange" 'handle-selection)
 
                                (cons "$/setTrace" 'ignore-msg)
 
