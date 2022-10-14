@@ -10,6 +10,7 @@
                       (:debugger :alive/debugger)
                       (:inspector :alive/inspector)
                       (:file :alive/file)
+                      (:macros :alive/macros)
                       (:pos :alive/position)
                       (:packages :alive/packages)
                       (:threads :alive/threads)
@@ -527,6 +528,19 @@
                                      (resp:load-file id msgs)))))
 
 
+(defun handle-macroexpand (state msg)
+    (let* ((id (cdr (assoc :id msg)))
+           (params (cdr (assoc :params msg)))
+           (pkg-name (cdr (assoc :package params)))
+           (text (cdr (assoc :text params)))
+           (expanded (macros:expand text pkg-name))
+           (new-text (if (consp expanded)
+                         (princ-to-string expanded)
+                         text)))
+
+        (send-msg state (resp:macro id (princ-to-string new-text)))))
+
+
 (defun handle-completion (state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
@@ -878,6 +892,7 @@
                                (cons "$/alive/listThreads" 'handle-list-threads)
                                (cons "$/alive/loadFile" 'handle-load-file)
                                (cons "$/alive/loadAsdfSystem" 'handle-load-asdf)
+                               (cons "$/alive/macroexpand" 'handle-macroexpand)
                                (cons "$/alive/removePackage" 'handle-remove-pkg)
                                (cons "$/alive/symbol" 'handle-symbol)
                                (cons "$/alive/surroundingFormBounds" 'handle-surrounding-form)

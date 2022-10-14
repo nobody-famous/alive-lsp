@@ -1,7 +1,8 @@
 (defpackage :alive/macros
     (:use :cl)
     (:export :expand
-             :expand-1))
+             :expand-1)
+    (:local-nicknames (:pkgs :alive/packages)))
 
 (in-package :alive/macros)
 
@@ -12,8 +13,12 @@
         (T ()
            nil)))
 
-(defun expand (text)
-    (do-expand 'macroexpand text))
+(defun expand (text pkg-name)
+    (let* ((pkg (pkgs:lookup pkg-name))
+           (*package* (if pkg pkg *package*)))
+
+        (macroexpand (read (make-string-input-stream text)))
+        #+n (do-expand 'macroexpand text)))
 
 
 (defun expand-1 (text)

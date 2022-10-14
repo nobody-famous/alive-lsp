@@ -8,7 +8,7 @@
 
 (defun basic ()
     (clue:test "Basic Macro Expand"
-        (let ((expanded (macros:expand "(loop :for i :below 10 :collect i)")))
+        (let ((expanded (macros:expand "(loop :for i :below 10 :collect i)" "cl-user")))
             (format T "Checking macro expand ~A~%" expanded))))
 
 

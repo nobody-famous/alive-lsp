@@ -9,6 +9,7 @@
              :initialize
              :list-items
              :load-file
+             :macro
              :sem-tokens
              :top-form
              :try-compile)
@@ -71,6 +72,10 @@
 
 
 (defun do-eval (id text)
+    (result id "text" text))
+
+
+(defun macro (id text)
     (result id "text" text))
 
 

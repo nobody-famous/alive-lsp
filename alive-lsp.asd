@@ -93,6 +93,7 @@
                                        (:file "debugger")
                                        (:file "eval")
                                        (:file "forms")
+                                       (:file "macros")
                                        (:file "inspector")
                                        (:file "streams")
 
