@@ -42,6 +42,7 @@
                                        (:file "asdf")
                                        (:file "debugger")
                                        (:file "macros")
+                                       (:file "selection")
 
                                        (:file "lsp/types/config-item")
                                        (:file "lsp/types/sem-tokens")
@@ -95,6 +96,7 @@
                                        (:file "forms")
                                        (:file "macros")
                                        (:file "inspector")
+                                       (:file "selection")
                                        (:file "streams")
 
                                        (:file "suite")))))
