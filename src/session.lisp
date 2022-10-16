@@ -12,7 +12,9 @@
                       (:file :alive/file)
                       (:macros :alive/macros)
                       (:pos :alive/position)
+                      (:range :alive/range)
                       (:packages :alive/packages)
+                      (:selection :alive/selection)
                       (:threads :alive/threads)
                       (:formatter :alive/format)
                       (:logger :alive/logger)
@@ -874,12 +876,11 @@
            (uri (cdr (assoc :uri doc)))
            (file-text (get-file-text state uri))
            (text (if file-text file-text ""))
-           (pos-list (cdr (assoc :positions params))))
+           (forms (forms:from-stream (make-string-input-stream text)))
+           (pos-list (cdr (assoc :positions params)))
+           (ranges (selection:ranges forms pos-list)))
 
-        (format T "SELECTION uri ~A pos-list ~A~%" uri pos-list)
-        (send-msg state (message:create-error id
-                                              :code errors:*internal-error*
-                                              :message "Not Done Yet"))))
+        (send-msg state (resp:selection-range id ranges))))
 
 
 (defun ignore-msg (state msg)

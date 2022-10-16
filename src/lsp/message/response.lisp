@@ -10,6 +10,7 @@
              :list-items
              :load-file
              :macro
+             :selection-range
              :sem-tokens
              :top-form
              :try-compile)
@@ -144,3 +145,26 @@
 
 (defun sem-tokens (id sem-tokens)
     (result id "data" (to-sem-array sem-tokens)))
+
+
+(defun create-selection-range (parent)
+    (let ((range (make-hash-table :test #'equalp)))
+
+        (setf (gethash "parent" range) parent)
+
+        range))
+
+
+(defun to-nested-ranges (ranges)
+    (loop :with cur-item := (create-selection-range (car ranges))
+
+          :for range :in (cdr ranges)
+          :do (setf (gethash "range" cur-item) range)
+              (setf cur-item (create-selection-range cur-item))
+
+          :finally (progn (setf (gethash "range" cur-item) range)
+                          (return cur-item))))
+
+
+(defun selection-range (id ranges)
+    (message:create-response id :result-value (to-nested-ranges ranges)))
