@@ -12,7 +12,9 @@
                       (:file :alive/file)
                       (:macros :alive/macros)
                       (:pos :alive/position)
+                      (:range :alive/range)
                       (:packages :alive/packages)
+                      (:selection :alive/selection)
                       (:threads :alive/threads)
                       (:formatter :alive/format)
                       (:logger :alive/logger)
@@ -867,6 +869,20 @@
                                      (send-msg state (message:create-response id :result-value T))))))
 
 
+(defun handle-selection (state msg)
+    (let* ((id (cdr (assoc :id msg)))
+           (params (cdr (assoc :params msg)))
+           (doc (cdr (assoc :text-document params)))
+           (uri (cdr (assoc :uri doc)))
+           (file-text (get-file-text state uri))
+           (text (if file-text file-text ""))
+           (forms (forms:from-stream (make-string-input-stream text)))
+           (pos-list (cdr (assoc :positions params)))
+           (ranges (selection:ranges forms pos-list)))
+
+        (send-msg state (resp:selection-range id ranges))))
+
+
 (defun ignore-msg (state msg)
     (declare (ignore state msg))
     nil)
@@ -884,6 +900,7 @@
                                (cons "textDocument/onTypeFormatting" 'handle-on-type)
                                (cons "textDocument/rangeFormatting" 'handle-formatting)
                                (cons "textDocument/semanticTokens/full" 'handle-sem-tokens)
+                               (cons "textDocument/selectionRange" 'handle-selection)
 
                                (cons "$/setTrace" 'ignore-msg)
 
