@@ -163,8 +163,9 @@
           :do (setf cur-item (create-selection-range range cur-item))
 
           :finally (progn (setf (gethash "range" cur-item) range)
-                          (return (list cur-item)))))
+                          (return cur-item))))
 
 
 (defun selection-range (id ranges)
-    (message:create-response id :result-value (to-nested-ranges ranges)))
+    (let ((value (mapcar #'to-nested-ranges ranges)))
+        (message:create-response id :result-value value)))
