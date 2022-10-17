@@ -11,10 +11,8 @@
 (defun basic ()
     (clue:test "Basic Selection"
         (let ((forms (forms:from-stream (make-string-input-stream (format nil "(foo bar (baz bong))~%(checking foo)"))))
-              (pos-list (list (pos:create 0 2)
-                              (pos:create 1 4))))
+              (pos-list (list (pos:create 0 12))))
             (selection:ranges forms pos-list))))
-
 
 
 (defun no-forms ()

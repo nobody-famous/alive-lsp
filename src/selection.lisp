@@ -27,9 +27,9 @@
 
                   (loop :for pos :in pos-list
                         :do (when (in-range pos form-start form-end)
+                                  (push (range:create form-start form-end) out)
                                   (loop :for kid :in (gethash "kids" form)
                                         :do (when (in-range pos (gethash "start" kid) (gethash "end" kid))
-                                                  (push (range:create form-start form-end) out)
                                                   (setf out (append out (ranges (list kid) (list pos)))))))))
 
           :finally (progn (push (range:create start end) out)
