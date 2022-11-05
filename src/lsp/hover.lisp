@@ -17,7 +17,8 @@
                   (cond ((alive/symbols:get-lambda-list name pkg-name)
                             (describe sym str))
                         ((boundp sym)
-                            (format str "~A~%" (symbol-value sym))))))))
+                            (format str "~A~%" (symbol-value sym)))
+                        (T (describe sym str)))))))
 
 
 (defun get-text (&key text pos)

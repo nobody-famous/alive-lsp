@@ -336,7 +336,7 @@
         text))
 
 
-(defun send-inspect-result (state &key id text pkg-name result)
+(defun send-inspect-result (state &key id text pkg-name result (result-type "expr"))
     (let ((insp-id (next-inspector-id state)))
         (add-inspector state
                        :id insp-id
@@ -347,6 +347,7 @@
         (send-msg state
                   (resp:do-inspect id
                                    :insp-id insp-id
+                                   :result-type result-type
                                    :result (inspector:to-result result)))))
 
 
@@ -461,6 +462,21 @@
 (defun handle-inspect-eval (state msg)
     (run-in-thread state msg (lambda ()
                                  (do-inspect-eval state msg))))
+
+
+(defun handle-inspect-macro (state msg)
+    (let* ((id (cdr (assoc :id msg)))
+           (params (cdr (assoc :params msg)))
+           (pkg-name (cdr (assoc :package params)))
+           (text (cdr (assoc :text params)))
+           (expanded (macros:expand-1 text pkg-name)))
+
+        (send-inspect-result state
+                             :id id
+                             :text text
+                             :pkg-name pkg-name
+                             :result-type "macro"
+                             :result expanded)))
 
 
 (defun handle-inspect-refresh (state msg)
@@ -590,6 +606,7 @@
            (hov-text (alive/lsp/hover:get-text :text text :pos pos))
            (result (if hov-text hov-text "")))
 
+        (format T "HOVER ~A~%" hov-text)
         (resp:hover id
                     :value result)))
 
@@ -909,6 +926,7 @@
                                (cons "$/alive/inspect" 'handle-inspect)
                                (cons "$/alive/inspectClose" 'handle-inspect-close)
                                (cons "$/alive/inspectEval" 'handle-inspect-eval)
+                               (cons "$/alive/inspectMacro" 'handle-inspect-macro)
                                (cons "$/alive/inspectRefresh" 'handle-inspect-refresh)
                                (cons "$/alive/inspectSymbol" 'handle-inspect-sym)
                                (cons "$/alive/killThread" 'handle-kill-thread)
