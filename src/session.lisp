@@ -606,7 +606,6 @@
            (hov-text (alive/lsp/hover:get-text :text text :pos pos))
            (result (if hov-text hov-text "")))
 
-        (format T "HOVER ~A~%" hov-text)
         (resp:hover id
                     :value result)))
 
