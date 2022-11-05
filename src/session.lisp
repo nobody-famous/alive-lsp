@@ -336,7 +336,7 @@
         text))
 
 
-(defun send-inspect-result (state &key id text pkg-name result (result-type "expr"))
+(defun send-inspect-result (state &key id text pkg-name result (convert T) (result-type "expr"))
     (let ((insp-id (next-inspector-id state)))
         (add-inspector state
                        :id insp-id
@@ -348,7 +348,9 @@
                   (resp:do-inspect id
                                    :insp-id insp-id
                                    :result-type result-type
-                                   :result (inspector:to-result result)))))
+                                   :result (if convert
+                                               (inspector:to-result result)
+                                               (princ-to-string result))))))
 
 
 (defun try-inspect (state id text pkg-name)
@@ -476,6 +478,7 @@
                              :text text
                              :pkg-name pkg-name
                              :result-type "macro"
+                             :convert NIL
                              :result expanded)))
 
 
