@@ -53,6 +53,7 @@
         (setf (gethash "documentRangeFormattingProvider" caps) T)
         (setf (gethash "documentOnTypeFormattingProvider" caps) on-type-opts)
         (setf (gethash "selectionRangeProvider" caps) T)
+        (setf (gethash "definitionProvider" caps) T)
 
         (setf (gethash "capabilities" data) caps)
 
