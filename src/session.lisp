@@ -623,13 +623,9 @@
            (text (if file-text file-text ""))
            (location (alive/lsp/definition:get-location :text text :pos pos)))
 
-        (destructuring-bind (file-path form-path)
+        (destructuring-bind (uri range)
                 location
-            (format T "DEFINITION ~A ~A~%" file-path form-path))
-
-        #+n (send-msg state (message:create-error id
-                                                  :code errors:*internal-error*
-                                                  :message "Not Done yet"))))
+            (send-msg state (resp:definition id :uri uri :range range)))))
 
 
 (defun get-forms (state msg)

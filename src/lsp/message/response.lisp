@@ -1,6 +1,7 @@
 (defpackage :alive/lsp/message/response
     (:use :cl)
     (:export :completion
+             :definition
              :do-eval
              :do-inspect
              :get-pkg
@@ -72,6 +73,15 @@
 
 (defun hover (id &key value)
     (result id "value" value))
+
+
+(defun definition (id &key uri range)
+    (let ((data (make-hash-table :test #'equalp)))
+
+        (setf (gethash "uri" data) uri)
+        (setf (gethash "range" data) range)
+
+        (message:create-response id :result-value data)))
 
 
 (defun do-eval (id text)
