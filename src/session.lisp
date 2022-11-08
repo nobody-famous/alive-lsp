@@ -613,6 +613,25 @@
                     :value result)))
 
 
+(defun handle-definition (state msg)
+    (let* ((id (cdr (assoc :id msg)))
+           (params (cdr (assoc :params msg)))
+           (doc (cdr (assoc :text-document params)))
+           (pos (cdr (assoc :position params)))
+           (uri (cdr (assoc :uri doc)))
+           (file-text (get-file-text state uri))
+           (text (if file-text file-text ""))
+           (location (alive/lsp/definition:get-location :text text :pos pos)))
+
+        (destructuring-bind (file-path form-path)
+                location
+            (format T "DEFINITION ~A ~A~%" file-path form-path))
+
+        #+n (send-msg state (message:create-error id
+                                                  :code errors:*internal-error*
+                                                  :message "Not Done yet"))))
+
+
 (defun get-forms (state msg)
     (let* ((params (cdr (assoc :params msg)))
            (doc (cdr (assoc :text-document params)))
@@ -911,6 +930,7 @@
                                (cons "initialized" 'handle-initialized)
 
                                (cons "textDocument/completion" 'handle-completion)
+                               (cons "textDocument/definition" 'handle-definition)
                                (cons "textDocument/didChange" 'handle-did-change)
                                (cons "textDocument/didClose" 'handle-did-change)
                                (cons "textDocument/didOpen" 'handle-did-open)

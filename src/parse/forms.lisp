@@ -3,8 +3,10 @@
     (:export :from-stream
              :get-outer-form
              :get-nth-form
+             :get-range-for-path
              :get-top-form)
     (:local-nicknames (:errors :alive/errors)
+                      (:range :alive/range)
                       (:types :alive/types)
                       (:form :alive/parse/form)
                       (:pos :alive/position)
@@ -264,3 +266,22 @@
     (when (and (hash-table-p form)
                (car (gethash "kids" form)))
           (find-inner-form form pos)))
+
+
+(defun get-range-for-path (forms source-path)
+    (loop :with indicies := source-path
+          :with ndx := nil
+          :with form := nil
+
+          :while indicies
+          :do (setf ndx (pop indicies))
+
+              (setf form (get-nth-form forms ndx))
+
+              (unless form
+                  (error (format nil "Source ndx ~A, path ~A, form ~A" ndx source-path form)))
+
+              (setf forms (form:get-kids form))
+
+          :finally (return (range:create (form:get-start form)
+                                         (form:get-end form)))))

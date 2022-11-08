@@ -52,6 +52,7 @@
                                        (:file "lsp/errors")
                                        (:file "lsp/utils")
                                        (:file "lsp/completions")
+                                       (:file "lsp/definition")
                                        (:file "lsp/hover")
                                        (:file "lsp/symbol")
 
