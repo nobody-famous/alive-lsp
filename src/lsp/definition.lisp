@@ -9,9 +9,11 @@
 
 
 (defun get-range-from-file (file source-path)
-    (with-open-file (in-stream file)
-        (let ((forms (forms:from-stream in-stream)))
-            (forms:get-range-for-path forms source-path))))
+    (handler-case
+            (with-open-file (in-stream file)
+                (let ((forms (forms:from-stream in-stream)))
+                    (forms:get-range-for-path forms source-path)))
+        (T nil)))
 
 
 (defun needs-encoding (char)
@@ -31,16 +33,55 @@
         (apply #'concatenate 'string chars)))
 
 
+(defun url-encode-filename (name)
+    (let* ((raw-pieces (uiop:split-string name :separator "/\\"))
+           (pieces (mapcar (lambda (piece)
+                               (if (string= piece "")
+                                   ""
+                                   (format NIL "/~A" (url-encode piece))))
+                           raw-pieces)))
+        (apply #'concatenate 'string pieces)))
+
+
+(defun lookup-sources (sym)
+    (let ((types (list :class
+                       :compiler-macro
+                       :condition
+                       :constant
+                       :function
+                       :generic-function
+                       :macro
+                       :method
+                       :method-combination
+                       :package
+                       :setf-expander
+                       :structure
+                       :symbol-macro
+                       :type
+                       :alien-type
+                       :variable
+                       :declaration)))
+        (reduce (lambda (acc item)
+                    (if acc
+                        acc
+                        (let ((src (sb-introspect:find-definition-sources-by-name sym item)))
+                            (if (and src (sb-introspect:definition-source-pathname (first src)))
+                                src
+                                nil))))
+                types
+            :initial-value nil)))
+
+
 (defun get-symbol-location (name pkg-name)
     (let* ((sym (alive/symbols:lookup name pkg-name))
            (src (when sym
-                      (sb-introspect:find-definition-sources-by-name sym :function)))
+                      (lookup-sources sym)))
            (def-src (when src (first src)))
            (file (when def-src (sb-introspect:definition-source-pathname def-src)))
            (form-path (when def-src (sb-introspect:definition-source-form-path def-src))))
 
         (if file
-            (list (format nil "file:///~A" (url-encode (namestring file))) (get-range-from-file file form-path))
+            (list (url-encode-filename (namestring file)) (get-range-from-file file form-path))
             (list nil nil))))
 
 
