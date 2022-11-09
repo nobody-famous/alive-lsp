@@ -621,11 +621,11 @@
            (uri (cdr (assoc :uri doc)))
            (file-text (get-file-text state uri))
            (text (if file-text file-text ""))
-           (location (alive/lsp/definition:get-location :text text :pos pos)))
+           (location (alive/lsp/definition:get-location :text text :pos pos))
+           (uri (first location))
+           (range (second location)))
 
-        (destructuring-bind (uri range)
-                location
-            (send-msg state (resp:definition id :uri uri :range range)))))
+        (send-msg state (resp:definition id :uri uri :range range))))
 
 
 (defun get-forms (state msg)
