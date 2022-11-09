@@ -61,11 +61,13 @@
                        :alien-type
                        :variable
                        :declaration)))
-        (reduce (lambda (acc item)
-                    (if acc
-                        acc
-                        (let ((src (sb-introspect:find-definition-sources-by-name sym item)))
-                            (if (and src (sb-introspect:definition-source-pathname (first src)))
+        (reduce (lambda (out item)
+                    (if out
+                        out
+                        (let* ((srcs (sb-introspect:find-definition-sources-by-name sym item))
+                               (src (first srcs)))
+                            (if (and src
+                                     (sb-introspect:definition-source-pathname src))
                                 src
                                 nil))))
                 types
@@ -76,12 +78,12 @@
     (let* ((sym (alive/symbols:lookup name pkg-name))
            (src (when sym
                       (lookup-sources sym)))
-           (def-src (when src (first src)))
-           (file (when def-src (sb-introspect:definition-source-pathname def-src)))
-           (form-path (when def-src (sb-introspect:definition-source-form-path def-src))))
+           (file (when src (sb-introspect:definition-source-pathname src)))
+           (form-path (when src (sb-introspect:definition-source-form-path src))))
 
         (if file
-            (list (url-encode-filename (namestring file)) (get-range-from-file file form-path))
+            (list (url-encode-filename (namestring file))
+                  (get-range-from-file file form-path))
             (list nil nil))))
 
 
