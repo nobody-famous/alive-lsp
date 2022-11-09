@@ -1,6 +1,7 @@
 (defpackage :alive/lsp/message/response
     (:use :cl)
     (:export :completion
+             :definition
              :do-eval
              :do-inspect
              :get-pkg
@@ -53,6 +54,7 @@
         (setf (gethash "documentRangeFormattingProvider" caps) T)
         (setf (gethash "documentOnTypeFormattingProvider" caps) on-type-opts)
         (setf (gethash "selectionRangeProvider" caps) T)
+        (setf (gethash "definitionProvider" caps) T)
 
         (setf (gethash "capabilities" data) caps)
 
@@ -71,6 +73,15 @@
 
 (defun hover (id &key value)
     (result id "value" value))
+
+
+(defun definition (id &key uri range)
+    (let ((data (make-hash-table :test #'equalp)))
+
+        (setf (gethash "uri" data) uri)
+        (setf (gethash "range" data) range)
+
+        (message:create-response id :result-value data)))
 
 
 (defun do-eval (id text)
