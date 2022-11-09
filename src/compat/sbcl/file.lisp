@@ -23,22 +23,7 @@
             (range:create (form:get-start (car forms))
                           (form:get-end (car (reverse forms))))
 
-            (loop :with indicies := source-path
-                  :with ndx := nil
-                  :with form := nil
-
-                  :while indicies
-                  :do (setf ndx (pop indicies))
-
-                      (when (<= (length forms) ndx)
-                            (error (format nil "Source ndx ~A, path ~A, form ~A" ndx source-path form)))
-
-                      (setf form (forms:get-nth-form forms ndx))
-
-                      (setf forms (form:get-kids form))
-
-                  :finally (return (range:create (form:get-start form)
-                                                 (form:get-end form)))))))
+            (forms:get-range-for-path forms source-path))))
 
 
 (defun send-message (out-fn forms sev err)
