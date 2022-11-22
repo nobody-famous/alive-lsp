@@ -1,6 +1,8 @@
 (defpackage :alive/symbols
     (:use :cl)
     (:export :callable-p
+             :get-all
+             :get-all-names
              :get-lambda-list
              :external-p
              :function-p
@@ -62,3 +64,15 @@
     (let ((pkg (find-package (string-upcase pkg-name))))
         (when pkg
               (find-symbol (string-upcase name) pkg))))
+
+
+(defun get-all (pkg)
+    (let ((syms (list)))
+        (do-symbols (s pkg syms)
+            (push s syms))))
+
+
+(defun get-all-names (pkg)
+    (let ((syms (list)))
+        (do-symbols (s pkg syms)
+            (push (string-downcase (string s)) syms))))

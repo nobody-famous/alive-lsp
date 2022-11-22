@@ -98,12 +98,6 @@
                       ((eq status :inherited) (push name inherited)))))))
 
 
-(defun get-all-symbols (pkg)
-    (let ((syms (list)))
-        (do-symbols (s pkg syms)
-            (push (string-downcase (string s)) syms))))
-
-
 (defun list-to-snippet (name lambda-list)
     (loop :with is-keys := nil
           :with skip-rest := nil
@@ -161,32 +155,13 @@
     (string= pref (subseq str 0 (length pref))))
 
 
-(defun get-found-chars (str)
-    (loop :with found := (make-hash-table)
-          :for ch :across str :do
-              (setf (gethash ch found) T)
-          :finally (return found)))
-
-
-(defun fuzzy-match (pref str)
-    (cond ((zerop (length pref)) T)
-          ((zerop (length str)) NIL)
-          (T (let ((found (get-found-chars str)))
-                 (loop :with match := (char= (char pref 0) (char str 0))
-                       :for ch :across pref :do
-                           (setf match
-                               (and match
-                                    (gethash ch found)))
-                       :finally (return match))))))
-
-
 (defun symbols-to-items (&key name symbols pkg)
     (let ((pref (string-downcase name)))
         (mapcar (lambda (name)
                     (to-item name (package-name pkg)))
                 (remove-if-not (lambda (str)
                                    (and (<= (length pref) (length str))
-                                        (fuzzy-match pref str)))
+                                        (utils:fuzzy-match pref str)))
                         symbols))))
 
 
@@ -198,7 +173,7 @@
                           :pkg pkg
                           :symbols (if (eq 1 num-colons)
                                        (get-ext-symbols pkg)
-                                       (get-all-symbols pkg)))))
+                                       (symbols:get-all-names pkg)))))
 
 
 (defun get-pkg-matches (&key name pkg-name)

@@ -1,6 +1,7 @@
 (defpackage :alive/lsp/utils
     (:use :cl)
     (:export :find-tokens
+             :fuzzy-match
              :symbol-for-pos)
     (:local-nicknames (:pos :alive/position)
                       (:token :alive/parse/token)
@@ -48,3 +49,25 @@
                               pkg-name))
 
                       (T nil))))))
+
+
+(defun get-found-chars (str)
+    (loop :with found := (make-hash-table)
+          :for ch :across str :do
+              (setf (gethash (char-upcase ch) found) T)
+              (setf (gethash (char-downcase ch) found) T)
+          :finally (return found)))
+
+
+(defun fuzzy-match (pref str)
+    (cond ((zerop (length pref)) T)
+          ((zerop (length str)) NIL)
+          (T (loop :with to-match := (elt pref 0)
+
+                   :for ch :across str :do
+                       (when (and (< 0 (length pref))
+                                  (or (char= ch (char-upcase (elt pref 0)))
+                                      (char= ch (char-downcase (elt pref 0)))))
+                             (setf pref (subseq pref 1)))
+
+                   :finally (return (and pref (= 0 (length pref))))))))
