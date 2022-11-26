@@ -33,8 +33,7 @@
                       (:symbols :alive/symbols)
                       (:token :alive/parse/token)
                       (:tokenizer :alive/parse/tokenizer)
-                      (:types :alive/types)
-                      (:utils :alive/lsp/utils)))
+                      (:types :alive/types)))
 
 (in-package :alive/lsp/completions)
 
@@ -161,7 +160,7 @@
                     (to-item name (package-name pkg)))
                 (remove-if-not (lambda (str)
                                    (and (<= (length pref) (length str))
-                                        (utils:fuzzy-match pref str)))
+                                        (alive/utils:fuzzy-match pref str)))
                         symbols))))
 
 
@@ -218,7 +217,7 @@
 
         (if (zerop (length tokens))
             '()
-            (destructuring-bind (token1 token2 token3) (utils:find-tokens tokens pos)
+            (destructuring-bind (token1 token2 token3) (alive/lsp/utils:find-tokens tokens pos)
                 (cond ((and (eq (token:get-type-value token1) types:*symbol*)
                             (eq (token:get-type-value token2) types:*colons*)
                             (eq (token:get-type-value token3) types:*symbol*))

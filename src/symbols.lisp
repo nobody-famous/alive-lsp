@@ -5,6 +5,7 @@
              :get-all-names
              :get-lambda-list
              :get-location
+             :get-source-file
              :external-p
              :function-p
              :lookup
@@ -146,9 +147,15 @@
         (T nil)))
 
 
+(defun get-source-file (sym)
+    (let* ((src (when sym (lookup-sources sym)))
+           (file (when src (sb-introspect:definition-source-pathname src))))
+
+        (when file (namestring file))))
+
+
 (defun get-location (sym)
-    (let* ((src (when sym
-                      (lookup-sources sym)))
+    (let* ((src (when sym (lookup-sources sym)))
            (file (when src (sb-introspect:definition-source-pathname src)))
            (form-path (when src (sb-introspect:definition-source-form-path src))))
 
@@ -156,3 +163,18 @@
             (list (url-encode-filename (namestring file))
                   (get-range-from-file file form-path))
             (list nil nil))))
+
+
+(defun find-syms (pkg pref)
+    (loop :with syms := ()
+          :for sym :in (alive/symbols:get-all pkg)
+
+          :do (let ((file (alive/symbols:get-source-file sym)))
+                  (when (and file
+                             (not (and (< 3 (length file))
+                                       (string= "sys" (string-downcase file) :end1 3 :end2 3)))
+                             (symbolp sym)
+                             (alive/utils:fuzzy-match pref (symbol-name sym)))
+                        (push (alive/symbols:get-location sym) syms)))
+
+          :finally (return syms)))
