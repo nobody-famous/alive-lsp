@@ -1,6 +1,7 @@
 (defpackage :alive/lsp/utils
     (:use :cl)
     (:export :find-tokens
+             :fuzzy-match
              :symbol-for-pos)
     (:local-nicknames (:pos :alive/position)
                       (:token :alive/parse/token)

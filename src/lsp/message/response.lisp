@@ -4,6 +4,7 @@
              :definition
              :do-eval
              :do-inspect
+             :doc-symbols
              :get-pkg
              :get-symbol
              :hover
@@ -55,6 +56,7 @@
         (setf (gethash "documentOnTypeFormattingProvider" caps) on-type-opts)
         (setf (gethash "selectionRangeProvider" caps) T)
         (setf (gethash "definitionProvider" caps) T)
+        (setf (gethash "documentSymbolProvider" caps) T)
 
         (setf (gethash "capabilities" data) caps)
 
@@ -181,3 +183,9 @@
 (defun selection-range (id ranges)
     (let ((value (mapcar #'to-nested-ranges ranges)))
         (message:create-response id :result-value value)))
+
+
+(defun doc-symbols (id symbols)
+    (let ((result (if symbols symbols (make-hash-table))))
+        (message:create-response id
+                                 :result-value result)))

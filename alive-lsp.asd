@@ -18,6 +18,7 @@
                                        (:file "position")
                                        (:file "range")
                                        (:file "text-edit")
+                                       (:file "utils")
 
                                        (:file "parse/stream")
                                        (:file "parse/token")

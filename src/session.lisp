@@ -917,6 +917,19 @@
         (send-msg state (resp:selection-range id ranges))))
 
 
+(defun handle-doc-symbols (state msg)
+    (let* ((id (cdr (assoc :id msg)))
+           (params (cdr (assoc :params msg)))
+           (doc (cdr (assoc :text-document params)))
+           (uri (cdr (assoc :uri doc)))
+           (file-text (get-file-text state uri))
+           (text (if file-text file-text ""))
+           (forms (forms:from-stream (make-string-input-stream text)))
+           (symbols (alive/lsp/symbol:for-document text forms)))
+
+        (send-msg state (resp:doc-symbols id symbols))))
+
+
 (defun ignore-msg (state msg)
     (declare (ignore state msg))
     nil)
@@ -931,11 +944,12 @@
                                (cons "textDocument/didClose" 'handle-did-change)
                                (cons "textDocument/didOpen" 'handle-did-open)
                                (cons "textDocument/didSave" 'ignore-msg)
+                               (cons "textDocument/documentSymbol" 'handle-doc-symbols)
                                (cons "textDocument/hover" 'handle-hover)
                                (cons "textDocument/onTypeFormatting" 'handle-on-type)
                                (cons "textDocument/rangeFormatting" 'handle-formatting)
-                               (cons "textDocument/semanticTokens/full" 'handle-sem-tokens)
                                (cons "textDocument/selectionRange" 'handle-selection)
+                               (cons "textDocument/semanticTokens/full" 'handle-sem-tokens)
 
                                (cons "$/setTrace" 'ignore-msg)
 
