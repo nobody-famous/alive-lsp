@@ -478,7 +478,10 @@
 
 (defun check-end-space (state)
     (let* ((token (car (parse-state-seen state)))
-           (nl-count (min 1 (new-line-count token)))
+           (nl-count (min 1
+                         (if token
+                             (the fixnum (new-line-count token))
+                             0)))
            (str (indent-string nl-count 0)))
         (when (and token
                    (not (out-of-range (parse-state-range state) token))

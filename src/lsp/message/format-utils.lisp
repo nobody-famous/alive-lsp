@@ -23,4 +23,4 @@
                     (list (cons :range (to-lsp-range (edit:range edit)))
                           (cons :new-text (edit:text edit))))
                 edits)
-        nil))
+        (make-array 0)))
