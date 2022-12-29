@@ -5,7 +5,7 @@ This is the language server for [Alive: The Average Lisp VSCode Environment](htt
 
 ## Running the server
 
-For newcomers it could be difficult the start with Common LISP specially if the tech stack is not known yet. This instructions helps to have the server up and running as easy as possible. Steps are:
+For newcomers it could be difficult to start with Common LISP specially if the tech stack is not known yet. These instructions helps to have the server up and running as easy as possible. Steps are:
 
 1. Install your LISP Implementation
 2. Install a library/package manager
@@ -45,7 +45,7 @@ Previous step should have created a directory in your home directory: `~/quickli
 ```
 (quicklisp-quickstart:install :path "~/.quicklisp")
 ```
-just keep in mind the directory, let's called here `$QUICKLISP_HOME`. Let's clone this repository in there in order to make it easy to load it as project:
+just keep in mind the directory, let's called here `$QUICKLISP_HOME`. Let's clone this repository in `$QUICKLISP_HOME/local-projects`, so that it will be discovered automatically by Quicklisp when loading the project:
 
 ```bash
 git clone git@github.com:nobody-famous/alive-lsp.git $QUICKLISP_HOME/local-projects/alive-lsp
