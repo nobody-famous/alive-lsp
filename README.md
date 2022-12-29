@@ -14,7 +14,7 @@ For newcomers it could be difficult the start with Common LISP specially if the 
 
 ### Install your LISP Implementation
 
-Here lets assume we install [sbcl](https://www.sbcl.org/)
+Here let's assume we install [sbcl](https://www.sbcl.org/)
 
 ```bash
 # debian
@@ -26,7 +26,7 @@ brew install sbcl
 
 ### Install a library/package manager
 
-Here lets assume we use [quicklisp](https://www.quicklisp.org/beta/)
+Here let's assume we use [quicklisp](https://www.quicklisp.org/beta/)
 
 ```bash
 curl -O https://beta.quicklisp.org/quicklisp.lisp
@@ -45,7 +45,7 @@ Previous step should have created a directory in your home directory: `~/quickli
 ```
 (quicklisp-quickstart:install :path "~/.quicklisp")
 ```
-just keep in mind the directory, lets called here `$QUICKLISP_HOME`. Lets clone this repository in there in order to make it easy to load it as project:
+just keep in mind the directory, let's called here `$QUICKLISP_HOME`. Let's clone this repository in there in order to make it easy to load it as project:
 
 ```bash
 git clone git@github.com:nobody-famous/alive-lsp.git $QUICKLISP_HOME/local-projects/alive-lsp
