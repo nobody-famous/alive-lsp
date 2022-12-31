@@ -154,20 +154,27 @@
           :do (format out "~A" str)))
 
 
+#+win32 (defparameter EOL (format nil "~A~A" #\return #\newline))
+#-win32 (defparameter EOL (format nil "~A" #\newline))
+
+
 (defun indent-string (nl-count space-count)
     (let ((out (make-string-output-stream)))
-        (do-indent out nl-count (format nil "~%"))
+        (do-indent out nl-count (format nil "~A" EOL))
         (do-indent out space-count " ")
         (get-output-stream-string out)))
 
 
 (defun replace-token (state token text)
+    (declare (optimize (speed 0)))
+
     (let* ((range (range:create (token:get-start token)
                                 (token:get-end token)))
            (edit (edit:create :range range
                               :text text)))
 
-        (push edit (parse-state-edits state))))
+        (unless (string= text (token:get-text token))
+            (push edit (parse-state-edits state)))))
 
 
 (defun insert-text (state pos text)
