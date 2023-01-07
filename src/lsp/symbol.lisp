@@ -66,6 +66,7 @@
               ((string= lc-name "defmacro") *kind-function*)
               ((string= lc-name "defclass") *kind-class*)
               ((string= lc-name "defpackage") *kind-package*)
+              ((string= lc-name "defstruct") *kind-struct*)
               ((string= lc-name "defmethod") *kind-method*))))
 
 

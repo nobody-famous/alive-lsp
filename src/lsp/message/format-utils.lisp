@@ -8,19 +8,31 @@
 
 
 (defun to-lsp-pos (pos)
-    (list (cons :line (cdr (assoc :line pos)))
-          (cons :character (cdr (assoc :character pos)))))
+    (let ((lsp-pos (make-hash-table :test #'equalp)))
+
+        (setf (gethash "line" lsp-pos) (cdr (assoc :line pos)))
+        (setf (gethash "character" lsp-pos) (cdr (assoc :character pos)))
+
+        lsp-pos))
 
 
 (defun to-lsp-range (range)
-    (list (cons :start (to-lsp-pos (range:start range)))
-          (cons :end (to-lsp-pos (range:end range)))))
+    (let ((lsp-range (make-hash-table :test #'equalp)))
+
+        (setf (gethash "start" lsp-range) (range:start range))
+        (setf (gethash "end" lsp-range) (range:end range))
+
+        lsp-range))
 
 
 (defun to-text-edits (edits)
     (if (and edits (< 0 (length edits)))
         (mapcar (lambda (edit)
-                    (list (cons :range (to-lsp-range (edit:range edit)))
-                          (cons :new-text (edit:text edit))))
+                    (let ((text-edit (make-hash-table :test #'equalp)))
+
+                        (setf (gethash "range" text-edit) (to-lsp-range (edit:range edit)))
+                        (setf (gethash "newText" text-edit) (edit:text edit))
+
+                        text-edit))
                 edits)
-        nil))
+        (make-array 0)))

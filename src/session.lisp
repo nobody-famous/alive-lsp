@@ -635,7 +635,7 @@
            (file-text (get-file-text state uri))
            (text (if file-text file-text "")))
 
-        (forms:from-stream (make-string-input-stream text))))
+        (forms:from-stream-or-nil (make-string-input-stream text))))
 
 
 (defun handle-surrounding-form (state msg)
@@ -910,7 +910,7 @@
            (uri (cdr (assoc :uri doc)))
            (file-text (get-file-text state uri))
            (text (if file-text file-text ""))
-           (forms (forms:from-stream (make-string-input-stream text)))
+           (forms (forms:from-stream-or-nil (make-string-input-stream text)))
            (pos-list (cdr (assoc :positions params)))
            (ranges (selection:ranges forms pos-list)))
 
@@ -924,7 +924,7 @@
            (uri (cdr (assoc :uri doc)))
            (file-text (get-file-text state uri))
            (text (if file-text file-text ""))
-           (forms (forms:from-stream (make-string-input-stream text)))
+           (forms (forms:from-stream-or-nil (make-string-input-stream text)))
            (symbols (alive/lsp/symbol:for-document text forms)))
 
         (send-msg state (resp:doc-symbols id symbols))))

@@ -1,6 +1,7 @@
 (defpackage :alive/parse/forms
     (:use :cl)
     (:export :from-stream
+             :from-stream-or-nil
              :get-outer-form
              :get-nth-form
              :get-range-for-path
@@ -208,6 +209,14 @@
 
           :finally (progn (collapse-opens state)
                           (return (reverse (parse-state-forms state))))))
+
+
+(defun from-stream-or-nil (input)
+    (handler-case
+            (from-stream input)
+        (T (c)
+           (declare (ignore c))
+           nil)))
 
 
 (defun get-nth-form (forms n)
