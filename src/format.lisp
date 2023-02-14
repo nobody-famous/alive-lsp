@@ -1,6 +1,7 @@
 (defpackage :alive/format
     (:use :cl)
     (:export :on-type
+             :eol
              :range)
     (:local-nicknames (:edit :alive/text-edit)
                       (:packages :alive/packages)

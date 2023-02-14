@@ -5,6 +5,7 @@
              :check-equal
              :check-exists
              :check-has-result
+             :print-hash-table
              :stream-from-string))
 
 (in-package :alive/test/utils)
@@ -43,3 +44,10 @@
 (defun check-has-result (obj)
     (unless (gethash "result" obj)
         (error "Object has no result")))
+
+
+(defun print-hash-table (label ht)
+    (format T "~A~%" label)
+    (loop :for key :being :the :hash-key :of ht
+          :using (hash-value value)
+          :do (format T "  ~A |~A|~%" key value)))
