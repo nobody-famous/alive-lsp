@@ -274,28 +274,65 @@
               (invoke-restart-interactively (elt restarts ndx)))))
 
 
+(defun run-fn (state msg fn stdout)
+    (let ((*standard-output* stdout)
+          (sb-ext:*invoke-debugger-hook* (lambda (c h)
+                                             (declare (ignore h))
+                                             (format T "CHECK TYPE ~A~%" (alive/frames:list-step-frames))
+                                             (start-debugger state c (alive/frames:list-step-frames))
+                                             (return-from run-fn)))
+          (*debugger-hook* (lambda (c h)
+                               (format T "C: ~A~%H: ~A~%" c h)
+                               (return-from run-fn))))
+        (save-thread-msg state (cdr (assoc :id msg)))
+        (send-msg state (notification:refresh))
+
+        (funcall fn)
+
+        #+n (block handler
+                (handler-bind ((sb-impl::step-form-condition (lambda (err)
+                                                                 (start-debugger state err (alive/frames:list-step-frames))
+                                                                 (return-from handler)))
+                               (error (lambda (err)
+                                          (start-debugger state err (alive/frames:list-debug-frames))
+                                          (return-from handler))))
+                    (funcall fn)))))
+
+
 (defun run-in-thread (state msg fn)
     (let ((stdout *standard-output*))
         (bt:make-thread (lambda ()
                             (unwind-protect
-                                    (let ((*standard-output* stdout))
-                                        (save-thread-msg state (cdr (assoc :id msg)))
-                                        (send-msg state (notification:refresh))
-
-                                        (block handler
-                                            (handler-bind ((sb-impl::step-form-condition (lambda (err)
-                                                                                             (start-debugger state err (alive/frames:list-step-frames))
-                                                                                             (return-from handler)))
-                                                           (error (lambda (err)
-                                                                      (start-debugger state err (alive/frames:list-debug-frames))
-                                                                      (return-from handler))))
-                                                (funcall fn))))
-                                (rem-thread-msg state)
-                                (send-msg state (notification:refresh))))
-
+                                    (run-fn state msg fn stdout))
+                            (rem-thread-msg state)
+                            (send-msg state (notification:refresh)))
                         :name (next-thread-name state (if (assoc :id msg)
                                                           (cdr (assoc :method msg))
                                                           "response")))))
+
+
+; (defun run-in-thread (state msg fn)
+;     (let ((stdout *standard-output*))
+;         (bt:make-thread (lambda ()
+;                             (unwind-protect
+;                                     (let ((*standard-output* stdout))
+;                                         (save-thread-msg state (cdr (assoc :id msg)))
+;                                         (send-msg state (notification:refresh))
+
+;                                         (block handler
+;                                             (handler-bind ((sb-impl::step-form-condition (lambda (err)
+;                                                                                              (start-debugger state err (alive/frames:list-step-frames))
+;                                                                                              (return-from handler)))
+;                                                            (error (lambda (err)
+;                                                                       (start-debugger state err (alive/frames:list-debug-frames))
+;                                                                       (return-from handler))))
+;                                                 (funcall fn))))
+;                                 (rem-thread-msg state)
+;                                 (send-msg state (notification:refresh))))
+
+;                         :name (next-thread-name state (if (assoc :id msg)
+;                                                           (cdr (assoc :method msg))
+;                                                           "response")))))
 
 
 (defun cancel-thread (state thread-id msg-id)
