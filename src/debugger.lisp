@@ -39,6 +39,8 @@
            (top-form (when (and top-ndx forms)
                            (forms:get-nth-form forms top-ndx))))
 
+        (format T "get-frame-loc ~A ~%" stream)
+
         (when top-form
               (multiple-value-bind (ndx found)
                       (find-form 1 form-num (gethash "kids" top-form))

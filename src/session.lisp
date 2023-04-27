@@ -211,6 +211,10 @@
            (files (files state))
            (text (gethash file-url files)))
 
+        (format T "get-frame-text-stream ~A ~A~%" file files)
+        (loop :for value :being :the :hash-value :of files
+              :using (hash-key key)
+              :do (format T "~A~%" key))
         (when text
               (make-string-input-stream text))))
 
@@ -221,6 +225,8 @@
            (fn-name (gethash "function" frame))
            (pos (debugger:get-frame-loc (get-frame-text-stream state file)
                                         frame)))
+
+        (format T "frame-to-wire ~A ~A~%" fn-name pos)
 
         (setf (gethash "function" obj) fn-name)
         (setf (gethash "file" obj) file)
@@ -278,25 +284,16 @@
     (let ((*standard-output* stdout)
           (sb-ext:*invoke-debugger-hook* (lambda (c h)
                                              (declare (ignore h))
-                                             (format T "CHECK TYPE ~A~%" (alive/frames:list-step-frames))
                                              (start-debugger state c (alive/frames:list-step-frames))
                                              (return-from run-fn)))
           (*debugger-hook* (lambda (c h)
-                               (format T "C: ~A~%H: ~A~%" c h)
+                               (declare (ignore h))
+                               (start-debugger state c (alive/frames:list-debug-frames))
                                (return-from run-fn))))
         (save-thread-msg state (cdr (assoc :id msg)))
         (send-msg state (notification:refresh))
 
-        (funcall fn)
-
-        #+n (block handler
-                (handler-bind ((sb-impl::step-form-condition (lambda (err)
-                                                                 (start-debugger state err (alive/frames:list-step-frames))
-                                                                 (return-from handler)))
-                               (error (lambda (err)
-                                          (start-debugger state err (alive/frames:list-debug-frames))
-                                          (return-from handler))))
-                    (funcall fn)))))
+        (funcall fn)))
 
 
 (defun run-in-thread (state msg fn)
