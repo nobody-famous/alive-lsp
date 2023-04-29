@@ -4,7 +4,8 @@
     (:local-nicknames (:formatting :alive/format)
                       (:range :alive/range)
                       (:pos :alive/position)
-                      (:edit :alive/text-edit)))
+                      (:edit :alive/text-edit)
+                      (:utils :alive/test/utils)))
 
 (in-package :alive/test/format/range)
 
@@ -39,7 +40,7 @@
         (check-format (format nil "; Do not remove~%  ")
                       (range:create (pos:create 0 0) (pos:create 1 2))
                       (list (edit:create :range (range:create (pos:create 0 15) (pos:create 1 2))
-                                         :text (format NIL "~%"))))))
+                                         :text (format NIL "~A" alive/format:eol))))))
 
 
 (defun test-quoted-list-nl ()
@@ -131,9 +132,9 @@
         (check-format (format nil "(loop :for i :from 1 :to 10~%:do~%nil)")
                       (range:create (pos:create 0 0) (pos:create 3 0))
                       (list (edit:create :range (range:create (pos:create 0 27) (pos:create 1 0))
-                                         :text (format nil "~%      "))
+                                         :text (format nil "~A      " alive/format:eol))
                             (edit:create :range (range:create (pos:create 1 3) (pos:create 2 0))
-                                         :text (format nil "~%        "))))))
+                                         :text (format nil "~A        " alive/format:eol))))))
 
 
 (defun test-indent-loop-ml ()
@@ -141,7 +142,7 @@
         (check-format (format nil "(loop :for i :from 1 :to 10 :do~%nil)")
                       (range:create (pos:create 0 0) (pos:create 3 0))
                       (list (edit:create :range (range:create (pos:create 0 31) (pos:create 1 0))
-                                         :text (format nil "~%        "))))))
+                                         :text (format nil "~A        " alive/format:eol))))))
 
 
 (defun test-indent-cond ()
@@ -149,9 +150,9 @@
         (check-format (format nil "(cond (a~%b~%c))")
                       (range:create (pos:create 0 0) (pos:create 3 0))
                       (list (edit:create :range (range:create (pos:create 0 8) (pos:create 1 0))
-                                         :text (format nil "~%        "))
+                                         :text (format nil "~A        " alive/format:eol))
                             (edit:create :range (range:create (pos:create 1 1) (pos:create 2 0))
-                                         :text (format nil "~%        "))))))
+                                         :text (format nil "~A        " alive/format:eol))))))
 
 
 (defun test-indent-and ()
@@ -159,7 +160,7 @@
         (check-format (format nil "(and nil~%nil)")
                       (range:create (pos:create 0 0) (pos:create 3 0))
                       (list (edit:create :range (range:create (pos:create 0 8) (pos:create 1 0))
-                                         :text (format nil "~%     "))))))
+                                         :text (format nil "~A     " alive/format:eol))))))
 
 
 (defun test-indent-rest ()
@@ -167,11 +168,11 @@
         (check-format (format nil "(in-package :alive/logger)~%(msg log~%\"\"~%\"\")")
                       (range:create (pos:create 0 0) (pos:create 4 0))
                       (list (edit:create :range (range:create (pos:create 0 26) (pos:create 1 0))
-                                         :text (format nil "~%"))
+                                         :text (format nil "~A" alive/format:eol))
                             (edit:create :range (range:create (pos:create 1 8) (pos:create 2 0))
-                                         :text (format nil "~%    "))
+                                         :text (format nil "~A    " alive/format:eol))
                             (edit:create :range (range:create (pos:create 2 2) (pos:create 3 0))
-                                         :text (format nil "~%  "))))))
+                                         :text (format nil "~A  " alive/format:eol))))))
 
 
 (defun test-strip-indent ()
@@ -179,7 +180,7 @@
         (check-format (format nil "(error)~%     foo")
                       (range:create (pos:create 0 0) (pos:create 3 0))
                       (list (edit:create :range (range:create (pos:create 0 7) (pos:create 1 5))
-                                         :text (format nil "~%"))))))
+                                         :text (format nil "~A" alive/format:eol))))))
 
 
 (defun test-indent-body ()
@@ -187,9 +188,9 @@
         (check-format (format nil "(defun foo~%()~%nil)")
                       (range:create (pos:create 0 0) (pos:create 3 0))
                       (list (edit:create :range (range:create (pos:create 0 10) (pos:create 1 0))
-                                         :text (format nil "~%    "))
+                                         :text (format nil "~A    " alive/format:eol))
                             (edit:create :range (range:create (pos:create 1 2) (pos:create 2 0))
-                                         :text (format nil "~%  "))))))
+                                         :text (format nil "~A  " alive/format:eol))))))
 
 
 (defun test-align-list ()
@@ -197,7 +198,7 @@
         (check-format (format nil "(a:b c~%d)")
                       (range:create (pos:create 0 0) (pos:create 2 0))
                       (list (edit:create :range (range:create (pos:create 0 6) (pos:create 1 0))
-                                         :text (format nil "~%     "))))))
+                                         :text (format nil "~A     " alive/format:eol))))))
 
 
 (defun test-align-list-2 ()
@@ -205,7 +206,7 @@
         (check-format (format nil "(:b c~%d)")
                       (range:create (pos:create 0 0) (pos:create 2 0))
                       (list (edit:create :range (range:create (pos:create 0 5) (pos:create 1 0))
-                                         :text (format nil "~%    "))))))
+                                         :text (format nil "~A    " alive/format:eol))))))
 
 
 (defun test-nl-after-open ()
@@ -213,7 +214,7 @@
         (check-format (format nil "( ; Foo~%")
                       (range:create (pos:create 0 0) (pos:create 2 0))
                       (list (edit:create :range (range:create (pos:create 0 7) (pos:create 1 0))
-                                         :text (format nil "~%"))))))
+                                         :text (format nil "~A" alive/format:eol))))))
 
 
 (defun test-nl-after-open-with-close ()
@@ -228,7 +229,7 @@
         (check-format (format nil "(a~%    b)")
                       (range:create (pos:create 1 0) (pos:create 1 6))
                       (list (edit:create :range (range:create (pos:create 0 2) (pos:create 1 4))
-                                         :text (format nil "~% "))))))
+                                         :text (format nil "~A " alive/format:eol))))))
 
 
 (defun test-align-list-4 ()
@@ -238,7 +239,7 @@
                       (list (edit:create :range (range:create (pos:create 0 1) (pos:create 0 5))
                                          :text "")
                             (edit:create :range (range:create (pos:create 0 8) (pos:create 1 0))
-                                         :text (format nil "~%   "))))))
+                                         :text (format nil "~A   " alive/format:eol))))))
 
 
 (defun test-align-nested ()
@@ -248,9 +249,9 @@
                       (list (edit:create :range (range:create (pos:create 0 1) (pos:create 0 5))
                                          :text "")
                             (edit:create :range (range:create (pos:create 0 9) (pos:create 1 0))
-                                         :text (format nil "~%    "))
+                                         :text (format nil "~A    " alive/format:eol))
                             (edit:create :range (range:create (pos:create 1 2) (pos:create 2 3))
-                                         :text (format nil "~%   "))))))
+                                         :text (format nil "~A   " alive/format:eol))))))
 
 
 (defun test-align-nested-2 ()
@@ -258,9 +259,9 @@
         (check-format (format nil "(a~%    (b~%        (c)))")
                       (range:create (pos:create 0 0) (pos:create 3 0))
                       (list (edit:create :range (range:create (pos:create 0 2) (pos:create 1 4))
-                                         :text (format nil "~% "))
+                                         :text (format nil "~A " alive/format:eol))
                             (edit:create :range (range:create (pos:create 1 6) (pos:create 2 8))
-                                         :text (format nil "~%  "))))))
+                                         :text (format nil "~A  " alive/format:eol))))))
 
 
 (defun test-align-nested-3 ()
@@ -270,9 +271,9 @@
                       (list (edit:create :range (range:create (pos:create 0 0) (pos:create 0 2))
                                          :text (format nil ""))
                             (edit:create :range (range:create (pos:create 0 4) (pos:create 1 0))
-                                         :text (format nil "~% "))
+                                         :text (format nil "~A " alive/format:eol))
                             (edit:create :range (range:create (pos:create 1 2) (pos:create 2 0))
-                                         :text (format nil "~%  "))))))
+                                         :text (format nil "~A  " alive/format:eol))))))
 
 
 (defun test-indent-defun ()
@@ -282,7 +283,7 @@
                       (list (edit:create :range (range:create (pos:create 0 1) (pos:create 0 3))
                                          :text (format nil ""))
                             (edit:create :range (range:create (pos:create 0 15) (pos:create 1 6))
-                                         :text (format nil "~%  "))))))
+                                         :text (format nil "~A  " alive/format:eol))))))
 
 
 (defun test-strip-leading-nl ()
