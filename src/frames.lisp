@@ -50,7 +50,6 @@
 
         (setf (gethash "function" obj) (get-fun-name frame))
 
-        (format T "src-name ~A~%" src-name)
         (when src-name
               (setf (gethash "file" obj) src-name)
               (setf (gethash "topForm" obj) top-form)

@@ -206,15 +206,30 @@
             (remhash thread-id table))))
 
 
+(defun is-win-file (file)
+    (and file
+         (alpha-char-p (char file 0))
+         (char= #\: (char file 1))
+         (char= #\/ (char file 2))))
+
+
+(defun escape-win-file (file)
+    (format nil "~C%3A~A"
+        (char file 0)
+        (subseq file 2)))
+
+
+(defun escape-file (file)
+    (if (is-win-file file)
+        (format nil "/~A" (escape-win-file file))
+        file))
+
+
 (defun get-frame-text-stream (state file)
-    (let* ((file-url (format NIL "file://~A" file))
+    (let* ((file-url (format NIL "file://~A" (escape-file file)))
            (files (files state))
            (text (gethash file-url files)))
 
-        (format T "get-frame-text-stream ~A ~A~%" file files)
-        (loop :for value :being :the :hash-value :of files
-              :using (hash-key key)
-              :do (format T "~A~%" key))
         (when text
               (make-string-input-stream text))))
 
@@ -225,8 +240,6 @@
            (fn-name (gethash "function" frame))
            (pos (debugger:get-frame-loc (get-frame-text-stream state file)
                                         frame)))
-
-        (format T "frame-to-wire ~A ~A~%" fn-name pos)
 
         (setf (gethash "function" obj) fn-name)
         (setf (gethash "file" obj) file)
@@ -284,7 +297,7 @@
     (let ((*standard-output* stdout)
           (sb-ext:*invoke-debugger-hook* (lambda (c h)
                                              (declare (ignore h))
-                                             (start-debugger state c (alive/frames:list-step-frames))
+                                             (start-debugger state c (alive/frames:list-debug-frames))
                                              (return-from run-fn)))
           (*debugger-hook* (lambda (c h)
                                (declare (ignore h))
@@ -306,30 +319,6 @@
                         :name (next-thread-name state (if (assoc :id msg)
                                                           (cdr (assoc :method msg))
                                                           "response")))))
-
-
-; (defun run-in-thread (state msg fn)
-;     (let ((stdout *standard-output*))
-;         (bt:make-thread (lambda ()
-;                             (unwind-protect
-;                                     (let ((*standard-output* stdout))
-;                                         (save-thread-msg state (cdr (assoc :id msg)))
-;                                         (send-msg state (notification:refresh))
-
-;                                         (block handler
-;                                             (handler-bind ((sb-impl::step-form-condition (lambda (err)
-;                                                                                              (start-debugger state err (alive/frames:list-step-frames))
-;                                                                                              (return-from handler)))
-;                                                            (error (lambda (err)
-;                                                                       (start-debugger state err (alive/frames:list-debug-frames))
-;                                                                       (return-from handler))))
-;                                                 (funcall fn))))
-;                                 (rem-thread-msg state)
-;                                 (send-msg state (notification:refresh))))
-
-;                         :name (next-thread-name state (if (assoc :id msg)
-;                                                           (cdr (assoc :method msg))
-;                                                           "response")))))
 
 
 (defun cancel-thread (state thread-id msg-id)
