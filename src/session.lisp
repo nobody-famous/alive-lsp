@@ -515,7 +515,9 @@
         (typecase result
             (symbol (send-msg state (resp:do-inspect id
                                                      :insp-id insp-id
-                                                     :result (inspector:to-result (symbol-value result)))))
+                                                     :result (inspector:to-result (if (fboundp result)
+                                                                                      result
+                                                                                      (symbol-value result))))))
             (otherwise (send-msg state (resp:do-inspect id
                                                         :insp-id insp-id
                                                         :result (inspector:to-result result)))))))
