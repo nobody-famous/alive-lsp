@@ -24,7 +24,8 @@ VSCode language extensions (such as Alive) are supported by a separate server
 that provides the Language Server Protocol (LSP) for the particular language.
 
 Developing LSP servers is quite involved.
-Start learning with the [Language Server Extension Guide](https://code.visualstudio.com/api/language-extensions/language-server-extension-guide).
+Start learning with the
+[Language Server Extension Guide](https://code.visualstudio.com/api/language-extensions/language-server-extension-guide).
 
 ## Startup
 
@@ -181,6 +182,13 @@ In the Alive-lsp directory:
 * Use the Common Lisp
   [interactive debugger](https://lispcookbook.github.io/cl-cookbook/debugging.html#the-interactive-debugger).
 
+With this configuration it is possible to add `(break)` calls in the code to cause a break in the REPL.
+Note that breaks in some areas will prevent the Alive extension from completing startup.
+For example, during startup Alive will request all known packages, ASDF systems, and threads.
+Breaking within the function `handle-list-pkgs` will halt processing of the packages request and
+the Alive extension startup will be delayed and (maybe) eventually fail.
+The next session addresses recovering from this sort of loss without resorting to `vim`.
+
 #### Debugging
 
 Debugging Lisp code, even with Alive, is different from most other languages.
@@ -190,12 +198,20 @@ The Common Lisp
 is not directly available in VSCode either.
 For the most part the developer is reliant on log statements which print to the Output panel.
 
-If the LSP server crashes badly it will prevent the Alive extension from starting.
+#### Locking Up the Alive Extension
+
+If the LSP server crashes badly in the wrong place it can prevent the Alive extension from starting.
 This will in turn block some VSCode behavior, notably editing and saving files to fix the issue.
 In this case:
 * Disable the Alive extension and execute the **Developer: Reload Window** command.
 * Edit and save files or use `git` to return them to a previous working state.
 * Re-enable the extensions and execute the **Developer: Reload Window** command again.
+
+Another way to fix this is to
+* Remove the `alive.lsp.install.path` entry from `.vscode/settings.json`
+  using an external editor such as `vim`.
+* Execute the **Developer: Reload Window** command in VSCode.
+This will enable VSCode to work again but will not remove the actual error.
 
 ## Submitting Pull Requests
 
