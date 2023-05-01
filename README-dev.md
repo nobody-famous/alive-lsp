@@ -121,14 +121,10 @@ There is no need to run a "watch" process to re-compile changes.
 
 ### Testing and Debugging
 
-There are two testing configurations that will work.
-One of them just tests changes to Alive-lsp,
-the other is useful when integrating changes to Alive and Alive-lsp.
-
-Debugging Lisp code, even with Alive, is different from most other languages.
-Breakpoints and stepping through code are not available for Common Lisp.
-Nor will the Common Lisp stack trace mechanisms be accessible since
-the LSP server is running in a thread and inaccessible to the user.
+There are three possible testing configurations:
+* Just test changes to Alive-lsp.
+* Test integration of Alive and Alive-lisp, making changes to both.
+* Run Alive-lsp in a REPL to debug crashes and set breakpoints.
 
 #### Testing Alive-lsp
 
@@ -154,23 +150,52 @@ In the Alive-lsp directory:
 In the Alive directory:
 * Bring up VSCode.
 * Make changes to the Alive code.
-* Use the **Developer: Reload Window** command to restart the extension.
 * Start the debugger (e.g. by pressing the `F5` key)
   to generate a VSCode Extension Development Host window.
-* If necessary open the Alive-lsp project.
+* If necessary change VSCode to edit the Alive-lsp project in the Host window.
 * Make changes to the Alive-lsp code.
 * Use the **Developer: Reload Window** command to restart the extension.
 * Test the Alive functionality supported by the server.
 
+#### Testing via REPL
+
+This method may help in cases where the REPL is crashing inexplicably.
+
+In the Alive-lsp directory:
+* Set the `alive.lsp.install.path` to the root of the Alive-lsp code.
+* Set the `alive.lsp.install.host` to `"127.0.0.1"`.
+* Set the `alive.lsp.install.port` to some number (e.g. `8006`).
+* Start the server in the SBCL REPL:
+```
+        sbcl --eval "(asdf:load-system :alive-lsp)" \
+             --eval "(alive/server:start :port 8006)"
+```
+* Use the **Developer: Reload Window** command to restart the extension.
+* Exercise the server via the Alive extension.
+  Some of this (e.g. acquiring defined packages)
+  may happen automatically at startup.
+* The REPL will crash and complain
+  `The current thread is not at the foreground`.
+* Execute `(sb-thread:release-foreground)`.
+  The REPL prompt may not be visible, just enter the command.
+* Use the Common Lisp
+  [interactive debugger](https://lispcookbook.github.io/cl-cookbook/debugging.html#the-interactive-debugger).
+
 #### Debugging
 
 Debugging Lisp code, even with Alive, is different from most other languages.
-Breakpoints and stepping through code are not available for Common Lisp.
-Nor will the Common Lisp stack trace mechanisms be accessible since
-the LSP server is running in a thread and inaccessible to the developer.
+Breakpoints can not be marked in the editor window and stepped through in VSCode.
+The Common Lisp
+[interactive debugger](https://lispcookbook.github.io/cl-cookbook/debugging.html#the-interactive-debugger)
+is not directly available in VSCode either.
+For the most part the developer is reliant on log statements which print to the Output panel.
 
-The forces the developer to depend upon tracing with log statements.
-Add them where necessary and use the Output panel to see what they say.
+If the LSP server crashes badly it will prevent the Alive extension from starting.
+This will in turn block some VSCode behavior, notably editing and saving files to fix the issue.
+In this case:
+* Disable the Alive extension and execute the **Developer: Reload Window** command.
+* Edit and save files or use `git` to return them to a previous working state.
+* Re-enable the extensions and execute the **Developer: Reload Window** command again.
 
 ## Submitting Pull Requests
 
