@@ -22,6 +22,7 @@ Make sure to read the Alive
 
 VSCode language extensions (such as Alive) are supported by a separate server
 that provides the Language Server Protocol (LSP) for the particular language.
+The Alive-lsp project provides the LSP server for the Alive extension.
 
 Developing LSP servers is quite involved.
 Start learning with the
@@ -58,7 +59,7 @@ Pull Requests (PRs) are made from a branch in that fork
 into the Alive repository.
 
 * [Create a fork](https://docs.github.com/en/get-started/quickstart/fork-a-repo)
-  of the Alive code into your own `github` account.
+  of the Alive=lsp code into your own `github` account.
 * [Clone your fork](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository)
   onto your development machine.
 
@@ -67,7 +68,7 @@ for Alive development.
 
 ### Inital Steps
 
-Launch VSCode in the downloaded Alive-lsp directory.
+Launch VSCode and open a workspace with the downloaded Alive-lsp directory.
 Edit the `.vscode/settings.json` file to set `alive.lsp.install.path`
 to point to the root directory where the Alive-lsp code is installed.
 For example:
@@ -143,7 +144,7 @@ There are three possible testing configurations:
 
 Test Alive-lsp "by itself" by using VSCode with the Alive extension installed.
 In this configuration it is not possible to make changes to Alive.
-Only changes within Alive-lsp code can be made.
+Only changes within Alive-lsp code can be made in this configuration.
 
 This is basically described above in **Initial Steps**. In the Alive-lsp directory:
 * Bring up VSCode.
@@ -167,10 +168,10 @@ In the Alive directory:
 * Make changes to the Alive code.
 * Start the debugger (e.g. by pressing the `F5` key)
   to generate a VSCode Extension Development Host window.
-* If necessary change VSCode to edit the Alive-lsp project in the Host window.
+* If necessary tell VSCode to open the Alive-lsp project in the Extension Development Host window.
 * Make changes to the Alive-lsp code.
 * Use the **Developer: Reload Window** command to restart the extension.
-* Test the Alive functionality supported by the server.
+* Exercise the Alive functionality supported by the server.
 * Log data from Alive-lsp will be in the `Output` view.
 
 #### Testing via REPL
@@ -178,7 +179,7 @@ In the Alive directory:
 This method may help in cases where the REPL is crashing inexplicably.
 Consider this the configuration of last resort.
 
-Running VSCode in the Alive-lsp directory:
+In the Alive-lsp directory:
 * Do _not_ set the `alive.lsp.install.path` to the root of the Alive-lsp code.
 * Set the `alive.lsp.remote.host` to `"127.0.0.1"`.
 * Set the `alive.lsp.remote.port` to some number (e.g. `8006`).
@@ -187,8 +188,6 @@ Running VSCode in the Alive-lsp directory:
         sbcl --eval "(asdf:load-system :alive-lsp)" \
              --eval "(alive/server:start :port 8006)"
 ```
-The REPL can be run in a shell window from the Alive-lsp directory or in the
-`Terminal` view at the bottom of the VSCode workbench.
 * Use the **Developer: Reload Window** command to restart the extension.
 * Exercise the server via the Alive extension to invoke the broken server code.
   Some of this (e.g. acquiring defined packages)
@@ -199,6 +198,10 @@ The REPL can be run in a shell window from the Alive-lsp directory or in the
   The REPL prompt may not be visible, just enter the command.
 * Use the Common Lisp
   [interactive debugger](https://lispcookbook.github.io/cl-cookbook/debugging.html#the-interactive-debugger).
+
+The REPL can be run in a shell window from the Alive-lsp directory or in the
+`Terminal` view at the bottom of the VSCode workbench.
+Executing in a shell window may be marginally less confusing.
 
 With this configuration it is possible to add `(break)` calls in the code to cause a break in the REPL.
 Note that breaks in some areas will prevent the Alive extension from completing startup.
@@ -214,7 +217,7 @@ Debugging Lisp code, even with Alive, is different from most other languages.
 Breakpoints can not be marked in the editor window and stepped through in VSCode.
 The Common Lisp
 [interactive debugger](https://lispcookbook.github.io/cl-cookbook/debugging.html#the-interactive-debugger)
-is not directly available in VSCode either.
+is not directly available in VSCode.
 For the most part the developer is reliant on log statements which print to the `Output` view.
 
 #### Locking Up the Alive Extension
