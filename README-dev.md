@@ -205,7 +205,7 @@ Note that breaks in some areas will prevent the Alive extension from completing 
 For example, during startup Alive will request all known packages, ASDF systems, and threads.
 Breaking within the function `handle-list-pkgs` will halt processing of the packages request and
 the Alive extension startup will be delayed and (maybe) eventually fail.
-The next session addresses recovering from this sort of loss without resorting to `vim`.
+The `Locking Up the Alive Extension` section below addresses recovering from this sort of loss without resorting to `vim`.
 
 #### Debugging
 
@@ -230,6 +230,8 @@ Another way to fix this is to
   using an external editor such as `vim`.
 * Execute the **Developer: Reload Window** command in VSCode.
 This will enable VSCode to work again but will not remove the actual error.
+Removing `alive.lsp.install.path` just allows Alive to go back to using the latest releaase of
+the LSP server downloaded from the release server.
 
 ## Submitting Pull Requests
 
