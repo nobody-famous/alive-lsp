@@ -78,6 +78,18 @@ That way edits made to Alive-lsp code will be executed during testing.
 _Avoid checking this change back into the repository_.
 
 Test this by bringing up VSCode in the Alive-lsp directory.
+Show the `Output` view at the bottom of the screen (`<ctrl-K><ctrl-H> or
+the **Output: Focus on Output View** command) or just select the tab on the bottom panel.
+On the right part of the title bar there is a dropdown to show output from different threads.
+Choose the `Alive LSP` thread which should be available assuming that
+the Alive extension is properly installed and the Alive-lsp server is running.
+
+The Output view should show the following:
+```
+; compilation finished in <duration>
+* [4/30/2023 17:02:03][INFO] Started on port <port-number>
+```
+
 Edit the file `src/server.lisp` to add an extra message on startup:
 ```
 (defun start (&key (port *default-port*))
@@ -85,22 +97,20 @@ Edit the file `src/server.lisp` to add an extra message on startup:
         (logger:msg logger:*error* "Server already running")
 
         (progn (logger:init *standard-output* logger:*info*)
-               (logger:msg logger:*info* "Happy!")
                (setf *server* (make-instance 'lsp-server))
                (start-server *server* port))))
 ```
 The added line shows "Happy!".
 
-Use the **Developer: Reload Window** command to restart the extension,
-restarting the Alive-lsp server.
-The Output panel at the bottom of the screen should include the additional message:
+Use the **Developer: Reload Window** command to restart the extension, restarting the Alive-lsp server.
+The Output view should now look like this:
 ```
 ; compilation finished in <duration>
 [4/30/2023 17:02:03][INFO] Happy!
 [4/30/2023 17:02:03][INFO] Started on port <port-number>
 ```
 
-Remove the extra message line so it won't get uploaded with the code.
+Remove the extra message line so that it won't get uploaded with the code.
 
 ## Development and Debugging
 
