@@ -205,7 +205,7 @@ Note that breaks in some areas will prevent the Alive extension from completing 
 For example, during startup Alive will request all known packages, ASDF systems, and threads.
 Breaking within the function `handle-list-pkgs` will halt processing of the packages request and
 the Alive extension startup will be delayed and (maybe) eventually fail.
-The `Locking Up the Alive Extension` section below addresses recovering from this sort of loss without resorting to `vim`.
+The **Locking Up the Alive Extension** section below addresses recovering from this sort of loss without resorting to `vim`.
 
 #### Debugging
 
