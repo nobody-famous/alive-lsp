@@ -62,33 +62,36 @@ into the Alive repository.
 * [Clone your fork](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository)
   onto your development machine.
 
-This is the same process documented for Alive development.
+This is the same process [documented](https://github.com/nobody-famous/alive/blob/master/README-dev.md)
+for Alive development.
 
 ### Inital Steps
 
-In the `.vscode/settings.json` file set `alive.lsp.install.path`
+Launch VSCode in the downloaded Alive-lsp directory.
+Edit the `.vscode/settings.json` file to set `alive.lsp.install.path`
 to point to the root directory where the Alive-lsp code is installed.
 For example:
-
+```
     "alive.lsp.install.path": "/home/<user>/work/lisp/alive-lsp",
-
-This will cause the Alive extension installed into VSCode to find the
+```
+This setting will cause the Alive extension installed in VSCode to find the
 source code for the Alive-lsp project instead of downloading the latest release.
 That way edits made to Alive-lsp code will be executed during testing.
 _Avoid checking this change back into the repository_.
 
-Test this by bringing up VSCode in the Alive-lsp directory.
 Show the `Output` view at the bottom of the screen (`<ctrl-K><ctrl-H> or
-the **Output: Focus on Output View** command) or just select the tab on the bottom panel.
-On the right part of the title bar there is a dropdown to show output from different threads.
-Choose the `Alive LSP` thread which should be available assuming that
+the **Output: Focus on Output View** command) or just select the `Output` tab on the bottom panel.
+On the right part of the title bar there is a dropdown to choose output from different threads.
+Choose the `Alive LSP` thread which should be available when
 the Alive extension is properly installed and the Alive-lsp server is running.
+This choice seems to persist but if the `Output` view becomes mysteriously blank check this first.
 
-The Output view should show the following:
+The Output view should show the following (at the end):
 ```
 ; compilation finished in <duration>
 * [4/30/2023 17:02:03][INFO] Started on port <port-number>
 ```
+This is output from Alive-lsp when it starts up.
 
 Edit the file `src/server.lisp` to add an extra message on startup:
 ```
@@ -97,20 +100,21 @@ Edit the file `src/server.lisp` to add an extra message on startup:
         (logger:msg logger:*error* "Server already running")
 
         (progn (logger:init *standard-output* logger:*info*)
+               (logger:msg logger:*info* "Happy!")
                (setf *server* (make-instance 'lsp-server))
                (start-server *server* port))))
 ```
-The added line shows "Happy!".
+The added line logs "Happy!" at startup..
 
 Use the **Developer: Reload Window** command to restart the extension, restarting the Alive-lsp server.
 The Output view should now look like this:
 ```
 ; compilation finished in <duration>
 [4/30/2023 17:02:03][INFO] Happy!
-[4/30/2023 17:02:03][INFO] Started on port <port-number>
+* [4/30/2023 17:02:03][INFO] Started on port <port-number>
 ```
 
-Remove the extra message line so that it won't get uploaded with the code.
+Remove the extra `"Happy!"` log message line so that it won't get uploaded with the code.
 
 ## Development and Debugging
 
@@ -144,11 +148,13 @@ In this configuration it is not possible to make changes to Alive.
 Only changes within Alive-lsp code can be made.
 
 This is basically described above in **Initial Steps**. In the Alive-lsp directory:
-* Set the `alive.lsp.install.path` to the root of the Alive-lsp code.
 * Bring up VSCode.
-* Make changes to the Alive-lsp code.
+* Set the `alive.lsp.install.path` to the root of the Alive-lsp code.
+* Set the `Output` view to show output from the `Alive LSP` thread.
+* Make changes to the Alive-lsp code (like logging `"Happy!"` at startup).
 * Use the **Developer: Reload Window** command to restart the extension.
 * Test the Alive functionality supported by the server.
+* Log data will be in the `Output` view.
 
 #### Testing Alive *and* Alive-lsp
 
@@ -167,6 +173,7 @@ In the Alive directory:
 * Make changes to the Alive-lsp code.
 * Use the **Developer: Reload Window** command to restart the extension.
 * Test the Alive functionality supported by the server.
+* Log data from Alive-lsp will be in the `Output` view.
 
 #### Testing via REPL
 
