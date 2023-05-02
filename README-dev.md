@@ -79,21 +79,20 @@ source code for the Alive-lsp project instead of downloading the latest release.
 That way edits made to Alive-lsp code will be executed during testing.
 _Avoid checking this change back into the repository_.
 
-Show the `Output` view at the bottom of the screen (`<ctrl-K><ctrl-H> or
+Show the `Output` view at the bottom of the screen (`<ctrl-K><ctrl-H>` or
 the **Output: Focus on Output View** command) or just select the `Output` tab on the bottom panel.
 On the right part of the title bar there is a dropdown to choose output from different threads.
 Choose the `Alive LSP` thread which should be available when
 the Alive extension is properly installed and the Alive-lsp server is running.
 This choice seems to persist but if the `Output` view becomes mysteriously blank check this first.
 
-The Output view should show the following (at the end):
+The `Output` view should show the following at the end:
 ```
-; compilation finished in <duration>
-* [4/30/2023 17:02:03][INFO] Started on port <port-number>
+* [<timestamp>][INFO] Started on port <port-number>
 ```
 This is output from Alive-lsp when it starts up.
 
-Edit the file `src/server.lisp` to add an extra message on startup:
+Edit the file `src/server.lisp` to add an extra log message when the server starts:
 ```
 (defun start (&key (port *default-port*))
     (if *server*
@@ -104,14 +103,13 @@ Edit the file `src/server.lisp` to add an extra message on startup:
                (setf *server* (make-instance 'lsp-server))
                (start-server *server* port))))
 ```
-The added line logs "Happy!" at startup..
+The added line logs "Happy!" at startup.
 
 Use the **Developer: Reload Window** command to restart the extension, restarting the Alive-lsp server.
-The Output view should now look like this:
+The `Output` view should now look like this:
 ```
-; compilation finished in <duration>
-[4/30/2023 17:02:03][INFO] Happy!
-* [4/30/2023 17:02:03][INFO] Started on port <port-number>
+[<timestamp> 17:02:03][INFO] Happy!
+* [<timestamp> 17:02:03][INFO] Started on port <port-number>
 ```
 
 Remove the extra `"Happy!"` log message line so that it won't get uploaded with the code.
@@ -178,18 +176,21 @@ In the Alive directory:
 #### Testing via REPL
 
 This method may help in cases where the REPL is crashing inexplicably.
+Consider this the configuration of last resort.
 
-In the Alive-lsp directory:
-* Set the `alive.lsp.install.path` to the root of the Alive-lsp code.
-* Set the `alive.lsp.install.host` to `"127.0.0.1"`.
-* Set the `alive.lsp.install.port` to some number (e.g. `8006`).
-* Start the server in the SBCL REPL:
+Running VSCode in the Alive-lsp directory:
+* Do _not_ set the `alive.lsp.install.path` to the root of the Alive-lsp code.
+* Set the `alive.lsp.remote.host` to `"127.0.0.1"`.
+* Set the `alive.lsp.remote.port` to some number (e.g. `8006`).
+* Start the server in an SBCL REPL using the same port number:
 ```
         sbcl --eval "(asdf:load-system :alive-lsp)" \
              --eval "(alive/server:start :port 8006)"
 ```
+The REPL can be run in a shell window from the Alive-lsp directory or in the
+`Terminal` view at the bottom of the VSCode workbench.
 * Use the **Developer: Reload Window** command to restart the extension.
-* Exercise the server via the Alive extension.
+* Exercise the server via the Alive extension to invoke the broken server code.
   Some of this (e.g. acquiring defined packages)
   may happen automatically at startup.
 * The REPL will crash and complain
@@ -213,7 +214,7 @@ Breakpoints can not be marked in the editor window and stepped through in VSCode
 The Common Lisp
 [interactive debugger](https://lispcookbook.github.io/cl-cookbook/debugging.html#the-interactive-debugger)
 is not directly available in VSCode either.
-For the most part the developer is reliant on log statements which print to the Output panel.
+For the most part the developer is reliant on log statements which print to the `Output` view.
 
 #### Locking Up the Alive Extension
 
@@ -222,7 +223,7 @@ This will in turn block some VSCode behavior, notably editing and saving files t
 In this case:
 * Disable the Alive extension and execute the **Developer: Reload Window** command.
 * Edit and save files or use `git` to return them to a previous working state.
-* Re-enable the extensions and execute the **Developer: Reload Window** command again.
+* Re-enable the Alive extension and execute the **Developer: Reload Window** command again.
 
 Another way to fix this is to
 * Remove the `alive.lsp.install.path` entry from `.vscode/settings.json`
