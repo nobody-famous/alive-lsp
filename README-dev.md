@@ -180,18 +180,21 @@ This method may help in cases where the REPL is crashing inexplicably.
 Consider this the configuration of last resort.
 
 In the Alive-lsp directory:
-* Do _not_ set the `alive.lsp.install.path` to the root of the Alive-lsp code.
-* Set the `alive.lsp.remote.host` to `"127.0.0.1"`.
-* Set the `alive.lsp.remote.port` to some number (e.g. `8006`).
 * Start the server in an SBCL REPL using the same port number:
 ```
         sbcl --eval "(asdf:load-system :alive-lsp)" \
              --eval "(alive/server:start :port 8006)"
 ```
+
+In the Alive directory:
+* Set the `alive.lsp.remote.host` to `"127.0.0.1"`.
+* Set the `alive.lsp.remote.port` to some number (e.g. `8006`).
 * Use the **Developer: Reload Window** command to restart the extension.
 * Exercise the server via the Alive extension to invoke the broken server code.
   Some of this (e.g. acquiring defined packages)
   may happen automatically at startup.
+
+In the Alive-lsp directory:
 * The REPL will crash and complain
   `The current thread is not at the foreground`.
 * Execute `(sb-thread:release-foreground)`.
