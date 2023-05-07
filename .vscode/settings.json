@@ -10,8 +10,6 @@
             "parenthesis": "#999"
         }
     },
-    "editor.formatOnType": true,
-    "[lisp]": {
-        "editor.wordSeparators": "`|;:'\",()"
+    "editor.formatOnType": true
     }
 }
