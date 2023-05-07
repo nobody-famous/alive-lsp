@@ -570,9 +570,7 @@
                                                             :stderr-fn (lambda (data)
                                                                            (when (assoc :show-stderr params)
                                                                                  (send-msg state (notification:stderr data)))))))
-                                     ;  (send-msg state (message:create-response id :result-value T))
-                                     (send-msg state (resp:load-file id msgs))
-                                     (resp:load-file id msgs)))))
+                                     (send-msg state (resp:load-file id msgs))))))
 
 
 (defun do-expand (state msg fn)
