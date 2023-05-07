@@ -35,6 +35,7 @@ Start learning with the
 Install the following tools:
 * git
 * Steel Bank Common Lisp (SBCL)
+* asdf (comes with SBCL)
 
 You should be able to execute the following programs:
 * `git` (or whatever tool you prefer)
@@ -42,6 +43,24 @@ You should be able to execute the following programs:
 
 The rest of this document assumes the command-line use of `git`.
 You may prefer a different tool (including VSCode).
+
+#### Check ASDF Version
+
+Some older SBCL distributions may have an old version of ASDF.
+You must have version 3.2 or 3.3.
+To check this start the SBCL REPL and execute:
+```
+*features*
+(:quicklisp :asdf3.3 :asdf3.2 :asdf3.1 :asdf3 :asdf2 :asdf :os-unix
+ :non-base-chars-exist-p :asdf-unicode :arena-allocator :x86-64 :gencgc :64-bit
+ :ansi-cl :common-lisp :elf :ieee-floating-point :linux :little-endian
+ :package-local-nicknames :sb-ldb :sb-package-locks :sb-thread :sb-unicode
+ :sbcl :unix)
+```
+Note the symbols starting with `:asdf`.
+In the above case, in `SBCL 2.3.2` as shown when the REPL starts,
+the highest version of ASDF is `:asdf3.3`.
+This is sufficient for work on Alive-lsp.
 
 ### Install Alive
 
