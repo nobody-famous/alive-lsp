@@ -571,7 +571,7 @@
                                                                            (when (assoc :show-stderr params)
                                                                                  (send-msg state (notification:stderr data)))))))
 
-                                     (resp:load-file id msgs)))))
+                                     (send-msg state (resp:load-file id msgs))))))
 
 
 (defun do-expand (state msg fn)
