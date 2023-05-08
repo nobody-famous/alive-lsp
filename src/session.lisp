@@ -313,9 +313,9 @@
     (let ((stdout *standard-output*))
         (bt:make-thread (lambda ()
                             (unwind-protect
-                                    (run-fn state msg fn stdout))
-                            (rem-thread-msg state)
-                            (send-msg state (notification:refresh)))
+                                    (run-fn state msg fn stdout)
+                                (rem-thread-msg state)
+                                (send-msg state (notification:refresh))))
                         :name (next-thread-name state (if (assoc :id msg)
                                                           (cdr (assoc :method msg))
                                                           "response")))))
@@ -571,7 +571,7 @@
                                                                            (when (assoc :show-stderr params)
                                                                                  (send-msg state (notification:stderr data)))))))
 
-                                     (resp:load-file id msgs)))))
+                                     (send-msg state (resp:load-file id msgs))))))
 
 
 (defun do-expand (state msg fn)
