@@ -102,15 +102,19 @@ _Avoid checking this change back into the repository_.
 Show the `Output` view at the bottom of the screen (`<ctrl-K><ctrl-H>` or
 the **Output: Focus on Output View** command) or just select the `Output` tab on the bottom panel.
 On the right part of the title bar there is a dropdown to choose output from different threads.
-Choose the `Alive LSP` thread which should be available when
-the Alive extension is properly installed and the Alive-lsp server is running.
-This choice seems to persist but if the `Output` view becomes mysteriously blank check this first.
 
-The `Output` view should show the following at the end:
+Two of these are relevant to Alive and should be running
+when the Alive extension is properly installed:
+
+* `Alive LSP` shows the output of the SBCL process running the Alive-lsp server.
+* `Alive Log` shows the protocol trace between the server and client.
+
+With `Alive LSP` the following should show:
 ```
 * [<timestamp>][INFO] Started on port <port-number>
 ```
-This is output from Alive-lsp when it starts up.
+This is output from the REPL when it starts up
+and a good indication that things are running.
 
 Edit the file `src/server.lisp` to add an extra log message when the server starts:
 ```
@@ -230,16 +234,15 @@ Note that breaks in some areas will prevent the Alive extension from completing 
 For example, during startup Alive will request all known packages, ASDF systems, and threads.
 Breaking within the function `handle-list-pkgs` will halt processing of the packages request and
 the Alive extension startup will be delayed and (maybe) eventually fail.
-The **Locking Up the Alive Extension** section below addresses recovering from this sort of problem
-without resorting to `vim`.
+The **Locking Up the Alive Extension** section below addresses recovering from this sort of problem.
 
 #### Debugging
 
 Debugging Lisp code, even with Alive, is different from most other languages.
 Breakpoints can not be marked in the editor window and stepped through in VSCode.
-The Common Lisp
+Integration with the Common Lisp
 [interactive debugger](https://lispcookbook.github.io/cl-cookbook/debugging.html#the-interactive-debugger)
-is not directly available in VSCode.
+is still a work in progress.
 For the most part the developer is reliant on log statements which print to the `Output` view.
 
 #### Locking Up the Alive Extension
@@ -250,14 +253,6 @@ In this case:
 * Disable the Alive extension and execute the **Developer: Reload Window** command.
 * Edit and save files or use `git` to return them to a previous working state.
 * Re-enable the Alive extension and execute the **Developer: Reload Window** command again.
-
-Another way to fix this is to
-* Remove the `alive.lsp.install.path` entry from `.vscode/settings.json`
-  using an external editor such as `vim`.
-* Execute the **Developer: Reload Window** command in VSCode.
-This will enable VSCode to work again but will not remove the actual error.
-Removing `alive.lsp.install.path` just allows Alive to go back to using the latest releaase of
-the LSP server downloaded from the release server.
 
 ## Submitting Pull Requests
 
