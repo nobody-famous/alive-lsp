@@ -102,19 +102,15 @@ _Avoid checking this change back into the repository_.
 Show the `Output` view at the bottom of the screen (`<ctrl-K><ctrl-H>` or
 the **Output: Focus on Output View** command) or just select the `Output` tab on the bottom panel.
 On the right part of the title bar there is a dropdown to choose output from different threads.
+Choices relevant to Alive-lsp are discussed in the **Debugging** section below.
 
-Two of these are relevant to Alive and should be running
-when the Alive extension is properly installed:
-
-* `Alive LSP` shows the output of the SBCL process running the Alive-lsp server.
-* `Alive Log` shows the protocol trace between the server and client.
-
-With `Alive LSP` the following should show:
+For now choose `Alive LSP` which should be available when the Alive extension is installed.
+This should show:
 ```
 * [<timestamp>][INFO] Started on port <port-number>
 ```
-This is output from the REPL when it starts up
-and a good indication that things are running.
+This is output from the REPL running the LSP server when it starts up
+and is a good indication that things are running properly.
 
 Edit the file `src/server.lisp` to add an extra log message when the server starts:
 ```
@@ -243,7 +239,14 @@ Breakpoints can not be marked in the editor window and stepped through in VSCode
 Integration with the Common Lisp
 [interactive debugger](https://lispcookbook.github.io/cl-cookbook/debugging.html#the-interactive-debugger)
 is still a work in progress.
+
 For the most part the developer is reliant on log statements which print to the `Output` view.
+As mentioned previously, there are various choices in the dropdown to the right of `Output`.
+For Alive-lsp development the following are important:
+
+* `Alive Client` shows the protocol trace between the server and client.
+* `Alive LSP` shows the output of the SBCL process running the Alive-lsp server.
+* `Alive Log` shows the typescript `console.log()` statements.
 
 #### Locking Up the Alive Extension
 
