@@ -246,7 +246,7 @@ For Alive-lsp development the following are important:
 
 * `Alive Client` shows the protocol trace between the server and client.
 * `Alive LSP` shows the output of the SBCL process running the Alive-lsp server.
-* `Alive Log` shows the typescript `console.log()` statements.
+* `Alive Log` shows the typescript logging statements.
 
 #### Locking Up the Alive Extension
 
