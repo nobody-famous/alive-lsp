@@ -5,6 +5,7 @@
 (in-package :alive/test/coverage)
 
 
+#-win32
 (defun run ()
     (require :sb-cover)
 
@@ -17,3 +18,7 @@
     (sb-cover:report "coverage/")
 
     (declaim (optimize (sb-cover:store-coverage-data 0))))
+
+#+win32
+(defun run ()
+    (format T "Code coverage not available on Windows~%"))

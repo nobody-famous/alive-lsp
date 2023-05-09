@@ -101,4 +101,6 @@
                                        (:file "selection")
                                        (:file "streams")
 
+                                       (:file "coverage")
+
                                        (:file "suite")))))
