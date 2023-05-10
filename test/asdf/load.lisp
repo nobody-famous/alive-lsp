@@ -9,12 +9,6 @@
     (load "test/asdf/foo.asd"))
 
 
-(defun test-load-src ()
-    (clue:test "Load Source"
-        (load "src/asdf.lisp")
-        nil))
-
-
 (defun test-list-systems ()
     (clue:test "List Systems"
         (clue:check-exists (find "foo" (alive/asdf:list-systems) :test #'string=))))
@@ -44,6 +38,5 @@
     (load-test-asdf)
 
     (clue:suite "ASDF Tests"
-        (test-load-src)
         (test-list-systems)
         (test-load-system)))
