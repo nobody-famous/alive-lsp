@@ -74,7 +74,8 @@
 
 (defsystem "alive-lsp/test"
     :depends-on ("alive-lsp"
-                 "clue")
+                 "clue"
+                 "sb-cover")
     :components ((:module "test"
                           :components ((:file "compat/sbcl/compile")
                                        (:file "compat/sbcl/symbols")
@@ -101,6 +102,5 @@
                                        (:file "selection")
                                        (:file "streams")
 
-                                       (:file "coverage")
-
-                                       (:file "suite")))))
+                                       (:file "suite")
+                                       (:file "coverage")))))

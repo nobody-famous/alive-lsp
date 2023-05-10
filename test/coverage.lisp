@@ -4,20 +4,17 @@
 
 (in-package :alive/test/coverage)
 
-
 #-win32
 (defun run ()
-    (require :sb-cover)
+    (progn (declaim (optimize (sb-cover:store-coverage-data 3)))
 
-    (declaim (optimize (sb-cover:store-coverage-data 3)))
+           (asdf:oos 'asdf:load-op :alive-lsp :force t)
 
-    (asdf:oos 'asdf:load-op :alive-lsp :force t)
+           (alive/test/suite:run-all)
 
-    (alive/test/suite:run-all)
+           (sb-cover:report "coverage/")
 
-    (sb-cover:report "coverage/")
-
-    (declaim (optimize (sb-cover:store-coverage-data 0))))
+           (declaim (optimize (sb-cover:store-coverage-data 0)))))
 
 #+win32
 (defun run ()
