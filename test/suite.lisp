@@ -16,4 +16,5 @@
         (alive/test/format/range:run-all)
         (alive/test/eval:run-all)
         (alive/test/streams:run-all)
-        (alive/test/forms:run-all)))
+        (alive/test/forms:run-all)
+        (alive/test/asdf/load:run-all)))

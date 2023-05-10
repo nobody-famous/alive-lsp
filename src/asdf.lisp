@@ -11,7 +11,7 @@
     (mapcar #'string-downcase (asdf:registered-systems)))
 
 
-(defun load-system (&key name stdout-fn stderr-fn)
+(defun load-system (&key name stdout-fn stderr-fn force)
     (let* ((orig-stdout *standard-output*)
            (orig-stderr *error-output*)
            (out-stream (astreams:make-output-stream))
@@ -33,4 +33,4 @@
                                                (*error-output* orig-stderr))
                                              (funcall stderr-fn data)))))
 
-        (asdf:load-system name)))
+        (asdf:load-system name :force force)))

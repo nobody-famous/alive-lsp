@@ -94,6 +94,8 @@
                                        (:file "format/range")
                                        (:file "format/on-type")
 
+                                       (:file "asdf/load")
+
                                        (:file "debugger")
                                        (:file "eval")
                                        (:file "forms")
