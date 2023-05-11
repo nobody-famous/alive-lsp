@@ -96,6 +96,7 @@
 
                                        (:file "asdf/load")
 
+                                       (:file "compile")
                                        (:file "debugger")
                                        (:file "eval")
                                        (:file "forms")
