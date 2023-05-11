@@ -140,6 +140,7 @@
                      :token-type types:*line-comment*
                      :predicate (lambda (ch)
                                     (and ch
+                                         (not (char= ch #\return))
                                          (not (char= ch #\newline))))))
 
 

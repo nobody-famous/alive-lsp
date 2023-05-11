@@ -165,7 +165,10 @@
 
 (defun test-indent-rest ()
     (clue:test "Test indent rest"
-        (check-format (format nil "(in-package :alive/logger)~%(msg log~%\"\"~%\"\")")
+        (check-format (format nil "(in-package :alive/logger)~A(msg log~A\"\"~A\"\")"
+                          alive/format:eol
+                          alive/format:eol
+                          alive/format:eol)
                       (range:create (pos:create 0 0) (pos:create 4 0))
                       (list (edit:create :range (range:create (pos:create 1 8) (pos:create 2 0))
                                          :text (format nil "~A    " alive/format:eol))
@@ -209,14 +212,14 @@
 
 (defun test-nl-after-open ()
     (clue:test "Test newline after open parens"
-        (check-format (format nil "( ; Foo~%")
+        (check-format (format nil "( ; Foo~A" alive/format:eol)
                       (range:create (pos:create 0 0) (pos:create 2 0))
                       (list))))
 
 
 (defun test-nl-after-open-with-close ()
     (clue:test "Test newline after open with close parens"
-        (check-format (format nil "( ; Foo~%)")
+        (check-format (format nil "( ; Foo~A)" alive/format:eol)
                       (range:create (pos:create 0 0) (pos:create 2 0))
                       (list))))
 
