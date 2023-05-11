@@ -6,13 +6,11 @@
 
 
 (defun do-compile (path)
-    (let ((msgs (alive/file:do-compile path
-                                       :stdout-fn (lambda (data)
-                                                      #+n (declare (ignore data))
-                                                      (format T "STDOUT ~A~%" data))
-                                       :stderr-fn (lambda (data)
-                                                      #+n (declare (ignore data))
-                                                      (format T "STDERR ~A~%" data)))))
+    (let ((msgs (alive/file:try-compile path
+                                        :stdout-fn (lambda (data)
+                                                       (declare (ignore data)))
+                                        :stderr-fn (lambda (data)
+                                                       (declare (ignore data))))))
 
         (format T "MSGS ~A~%" msgs)
         (mapcar (lambda (msg) (gethash "message" msg))
