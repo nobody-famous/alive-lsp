@@ -9,6 +9,7 @@
                       (:token :alive/parse/token)
                       (:errors :alive/errors)
                       (:range :alive/range)
+                      (:pos :alive/position)
                       (:types :alive/types)
                       (:comp-msg :alive/compile-message)))
 
@@ -100,6 +101,15 @@
             msgs))
 
 
+(defun already-have-msg-p (new-msg msgs)
+    (find-if (lambda (msg)
+                 (and (string= (gethash "severity" new-msg)
+                               (gethash "severity" msg))
+                      (string= (gethash "message" new-msg)
+                               (gethash "message" msg))))
+            msgs))
+
+
 (defun try-compile (path)
     (with-open-file (f path)
         (let ((msgs nil))
@@ -120,26 +130,13 @@
             ;; way to account for that. I haven't figured it out, yet.
             ;;
 
-            (handler-case
-                    (progn (do-cmd path 'compile-file
-                                   (lambda (msg)
-                                       (setf msgs (cons msg msgs))))
-
-                           msgs)
-                (errors:input-error (e)
-                                    (push (comp-msg:create :severity types:*sev-error*
-                                                           :location (range:create (errors:start e) (errors:end e))
-                                                           :message (format nil "~A" e))
-                                          msgs)
-                                    msgs)
-                (sb-ext:package-does-not-exist (e)
-                                               (declare (ignore e))
-                                               msgs)
-
-                (sb-c::simple-package-error (e)
-                                            (declare (ignore e))
-                                            msgs)
-
-                (T (e)
-                   (declare (ignore e))
-                   (filter-warnings msgs))))))
+            (handler-bind ((T (lambda (e)
+                                  (let ((skip (or (find-restart 'muffle-warning e)
+                                                  (find-restart 'continue e))))
+                                      (when skip
+                                            (invoke-restart skip))))))
+                (do-cmd path 'compile-file
+                        (lambda (msg)
+                            (unless (already-have-msg-p msg msgs)
+                                (setf msgs (cons msg msgs)))))
+                msgs))))

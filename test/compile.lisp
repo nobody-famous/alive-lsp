@@ -12,16 +12,15 @@
                                         :stderr-fn (lambda (data)
                                                        (declare (ignore data))))))
 
-        (format T "MSGS ~A~%" msgs)
-        (mapcar (lambda (msg) (gethash "message" msg))
+        (mapcar (lambda (msg) (gethash "severity" msg))
                 msgs)))
 
 
 (defun test-try-compile ()
     (clue:test "Try Compile"
         (clue:check-equal :actual (do-compile "test/files/compile/broken.lisp")
-                          :expected (list "The variable B is defined but never used."
-                                          "The variable B is defined but never used."))))
+                          :expected (list alive/types:*sev-error*
+                                          alive/types:*sev-warn*))))
 
 
 (defun run-all ()
