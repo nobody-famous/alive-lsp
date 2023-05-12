@@ -95,12 +95,6 @@
         msgs))
 
 
-(defun filter-warnings (msgs)
-    (remove-if (lambda (msg)
-                   (search "redefining" (comp-msg:get-message msg)))
-            msgs))
-
-
 (defun already-have-msg-p (new-msg msgs)
     (find-if (lambda (msg)
                  (and (string= (gethash "severity" new-msg)
@@ -108,6 +102,10 @@
                       (string= (gethash "message" new-msg)
                                (gethash "message" msg))))
             msgs))
+
+
+(defun should-filter-p (msg)
+    (search "redefining" (comp-msg:get-message msg)))
 
 
 (defun try-compile (path)
@@ -131,12 +129,16 @@
             ;;
 
             (handler-bind ((T (lambda (e)
+                                  (format T "~A~%" (type-of e))
+                                  (loop :for item :in (compute-restarts e)
+                                        :do (format T "  ~A~%" (restart-name item)))
                                   (let ((skip (or (find-restart 'muffle-warning e)
                                                   (find-restart 'continue e))))
                                       (when skip
                                             (invoke-restart skip))))))
                 (do-cmd path 'compile-file
                         (lambda (msg)
-                            (unless (already-have-msg-p msg msgs)
+                            (unless (or (already-have-msg-p msg msgs)
+                                        (should-filter-p msg))
                                 (setf msgs (cons msg msgs)))))
                 msgs))))

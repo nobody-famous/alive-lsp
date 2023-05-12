@@ -20,6 +20,8 @@
     (clue:test "Try Compile"
         (clue:check-equal :actual (do-compile "test/files/compile/broken.lisp")
                           :expected (list alive/types:*sev-error*
+                                          alive/types:*sev-info*
+                                          alive/types:*sev-warn*
                                           alive/types:*sev-warn*))))
 
 

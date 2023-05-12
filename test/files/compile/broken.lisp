@@ -10,4 +10,13 @@
            (z (+ x y)))
         (format T "FOO CALLED ~A~%" z)))
 
+(defmacro bar ()
+    nil)
+
+(defmacro bar ()
+    nil)
+
+(let ((x))
+    (if (typep x 'null) "a" "b"))
+
 (
