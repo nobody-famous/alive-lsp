@@ -74,27 +74,6 @@
                 (funcall cmd path)))))
 
 
-(defun do-compile (path)
-    (let ((msgs nil))
-        (do-cmd path 'compile-file
-                (lambda (msg)
-                    (setf msgs (cons msg msgs))))
-        msgs))
-
-
-(defun do-load (path)
-    (let ((msgs nil))
-        (do-cmd path 'compile-file
-                (lambda (msg)
-                    (setf msgs (cons msg msgs))))
-
-        (do-cmd path 'load
-                (lambda (msg)
-                    (setf msgs (cons msg msgs))))
-
-        msgs))
-
-
 (defun already-have-msg-p (new-msg msgs)
     (find-if (lambda (msg)
                  (and (string= (gethash "severity" new-msg)
@@ -106,6 +85,30 @@
 
 (defun should-filter-p (msg)
     (search "redefining" (comp-msg:get-message msg)))
+
+
+(defun add-message (msgs msg)
+    (if (or (already-have-msg-p msg msgs)
+            (should-filter-p msg))
+        msgs
+        (cons msg msgs)))
+
+
+(defun do-compile (path)
+    (let ((msgs nil))
+        (do-cmd path 'compile-file
+                (lambda (msg)
+                    (setf msgs (add-message msgs msg))))
+        msgs))
+
+
+(defun do-load (path)
+    (let ((msgs (do-compile path)))
+        (do-cmd path 'load
+                (lambda (msg)
+                    (setf msgs (add-message msgs msg))))
+
+        msgs))
 
 
 (defun try-compile (path)
@@ -129,16 +132,11 @@
             ;;
 
             (handler-bind ((T (lambda (e)
-                                  (format T "~A~%" (type-of e))
-                                  (loop :for item :in (compute-restarts e)
-                                        :do (format T "  ~A~%" (restart-name item)))
                                   (let ((skip (or (find-restart 'muffle-warning e)
                                                   (find-restart 'continue e))))
                                       (when skip
                                             (invoke-restart skip))))))
                 (do-cmd path 'compile-file
                         (lambda (msg)
-                            (unless (or (already-have-msg-p msg msgs)
-                                        (should-filter-p msg))
-                                (setf msgs (cons msg msgs)))))
+                            (setf msgs (add-message msgs msg))))
                 msgs))))
