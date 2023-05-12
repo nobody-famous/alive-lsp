@@ -34,9 +34,6 @@
          (out-listener :accessor out-listener
                        :initform nil
                        :initarg :out-listener)
-         (out-closed-p :accessor out-closed-p
-                       :initform nil
-                       :initarg :out-closed-p)
          (out-eof-p :accessor out-eof-p
                     :initform nil
                     :initarg :out-eof-p)
@@ -60,17 +57,16 @@
     (bt:with-recursive-lock-held ((in-lock obj))
         (flush-out-buffer obj)
 
-        (unless (in-buffer obj)
-            (setf (in-buffer obj)
-                (funcall (in-listener obj))))
+        (when (and (in-listener obj)
+                   (not (in-buffer obj)))
+              (setf (in-buffer obj)
+                  (funcall (in-listener obj))))
 
         (if (or (eq :eof (in-buffer obj))
-                (zerop (length (in-buffer obj)))
-                (not (in-buffer obj)))
+                (zerop (length (in-buffer obj))))
 
-            (progn
-             (setf (in-buffer obj) nil)
-             #\newline)
+            (progn (setf (in-buffer obj) nil)
+                   #\newline)
 
             (let ((ch (elt (in-buffer obj) 0)))
                 (setf (in-buffer obj)
@@ -90,7 +86,6 @@
     (declare (ignore abort))
 
     (bt:with-recursive-lock-held ((out-lock obj))
-        (setf (out-closed-p obj) T)
         (bt:condition-notify (out-cond-var obj))))
 
 
@@ -114,24 +109,6 @@
 (defun set-out-listener (obj listener)
     (when obj
           (setf (out-listener obj) listener)))
-
-
-(defun end-out-stream (obj)
-    (setf (out-eof-p obj) T)
-    :eof)
-
-
-(defun next-out-buffer-line (obj)
-    (let* ((pos (position #\linefeed (out-buffer obj)))
-           (line nil))
-
-        (if pos
-            (progn (setf line (subseq (out-buffer obj) 0 pos))
-                   (setf (out-buffer obj) (subseq (out-buffer obj) (+ 1 pos))))
-            (progn (setf line (subseq (out-buffer obj) 0))
-                   (setf (out-buffer obj) nil)))
-
-        line))
 
 
 (defclass input-stream (sb-gray:fundamental-character-input-stream)

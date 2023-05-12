@@ -114,23 +114,6 @@
 (defun try-compile (path)
     (with-open-file (f path)
         (let ((msgs nil))
-
-            ;;
-            ;; Compiling a file corrupts the environment. The goal here is to compile without
-            ;; that happening and just get a list of compiler messages for the file.
-            ;;
-            ;; One idea was to fork and have the child process do the compile. That would keep
-            ;; the parent from getting corrupted. That approach hit some problems.
-            ;;   1. sbcl won't fork if there's multiple threads active
-            ;;   2. sbcl only implements fork for unix, anyway, so wouldn't work on Windows
-            ;;
-            ;; One possible solution to the fork issue would be to use FFI to call the C fork
-            ;; function directly. That seems problematic.
-            ;;
-            ;; The main issue is that def* calls will update the environment. There may be some
-            ;; way to account for that. I haven't figured it out, yet.
-            ;;
-
             (handler-bind ((T (lambda (e)
                                   (let ((skip (or (find-restart 'muffle-warning e)
                                                   (find-restart 'continue e))))
