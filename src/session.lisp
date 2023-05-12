@@ -178,8 +178,7 @@
 
 
 (defmethod send-msg ((obj network-state) msg)
-    (when (logger:has-level logger:*trace*)
-          (logger:msg logger:*trace* "<-- ~A~%" (json:encode-json-to-string msg)))
+    (logger:msg logger:*trace* "<-- ~A~%" (json:encode-json-to-string msg))
 
     (bt:with-recursive-lock-held ((lock obj))
         (when (and (hash-table-p msg)
@@ -524,8 +523,7 @@
 
 
 (defun stop (state)
-    (when (logger:has-level logger:*info*)
-          (logger:msg logger:*info* "Stopping state ~A" state))
+    (logger:msg logger:*info* "Stopping state ~A" state)
 
     (setf (running state) NIL)
 
@@ -1047,8 +1045,7 @@
                         (progn (when id
                                      (save-thread-msg state id))
 
-                               (when (logger:has-level logger:*trace*)
-                                     (logger:msg logger:*trace* "--> ~A~%" (json:encode-json-to-string msg)))
+                               (logger:msg logger:*trace* "--> ~A~%" (json:encode-json-to-string msg))
 
                                (handle-msg state msg))
 
@@ -1111,5 +1108,4 @@
 
     (start-read-thread state)
 
-    (when (logger:has-level logger:*info*)
-          (logger:msg logger:*info* "Started state ~A" state)))
+    (logger:msg logger:*info* "Started state ~A" state))

@@ -51,13 +51,25 @@
         (format nil "~d/~d/~d ~2,'0d:~2,'0d:~2,'0d" month day year hour minute sec)))
 
 
-(defun msg (level fmt &rest args)
+(defun msg-internal (level fmt &rest args)
     (when *logger*
           (bt:with-recursive-lock-held ((lock *logger*))
               (let* ((new-fmt (format nil "~&[~A][~A] ~A~&" (get-timestamp) (level-name level) fmt))
                      (params (concatenate 'list (list (out *logger*) new-fmt) args)))
                   (apply #'format params)))))
 
+
+#+n (defun msg (level fmt &rest args)
+    (when *logger*
+          (bt:with-recursive-lock-held ((lock *logger*))
+              (let* ((new-fmt (format nil "~&[~A][~A] ~A~&" (get-timestamp) (level-name level) fmt))
+                     (params (concatenate 'list (list (out *logger*) new-fmt) args)))
+                  (apply #'format params)))))
+
+
+(defmacro msg (level fmt &rest args)
+    `(when (has-level ,level)
+           (msg-internal ,level ,fmt ,@args)))
 
 (defun has-level (level)
     (when *logger*

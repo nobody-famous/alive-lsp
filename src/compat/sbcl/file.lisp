@@ -6,6 +6,7 @@
     (:local-nicknames (:parse :alive/parse/stream)
                       (:form :alive/parse/form)
                       (:forms :alive/parse/forms)
+                      (:logger :alive/logger)
                       (:token :alive/parse/token)
                       (:errors :alive/errors)
                       (:range :alive/range)
@@ -84,7 +85,7 @@
 
 
 (defun should-filter-p (msg)
-    (search "redefining" (comp-msg:get-message msg)))
+    (search "redefin" (comp-msg:get-message msg)))
 
 
 (defun add-message (msgs msg)
@@ -112,13 +113,18 @@
 
 
 (defun try-compile (path)
+    (logger:msg logger:*debug* "try-compile ~A" path)
+
     (with-open-file (f path)
         (let ((msgs nil))
-            (handler-bind ((T (lambda (e)
-                                  (let ((skip (or (find-restart 'muffle-warning e)
-                                                  (find-restart 'continue e))))
-                                      (when skip
-                                            (invoke-restart skip))))))
+            (handler-bind ((warning (lambda (e)
+                                        (let ((skip (find-restart 'muffle-warning e)))
+                                            (if skip
+                                                (invoke-restart skip)
+                                                (return-from try-compile msgs)))))
+                           (T (lambda (e)
+                                  (logger:msg logger:*debug* "Unhandled error ~A" e)
+                                  (return-from try-compile msgs))))
                 (do-cmd path 'compile-file
                         (lambda (msg)
                             (setf msgs (add-message msgs msg))))
