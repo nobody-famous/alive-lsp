@@ -89,7 +89,8 @@
 
 (defun flush-out-buffer (obj)
     (let ((str (get-output-stream-string (out-buffer obj))))
-        (when (< 0 (length str))
+        (when (and (out-listener obj)
+                   (< 0 (length str)))
               (funcall (out-listener obj) str))))
 
 
@@ -145,7 +146,8 @@
 (defun flush-buffer (obj)
     (loop :with str := (get-output-stream-string (buffer obj))
           :for listener :in (listeners obj) :do
-              (when (< 0 (length str))
+              (when (and listener
+                         (< 0 (length str)))
                     (funcall listener str))))
 
 

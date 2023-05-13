@@ -65,15 +65,15 @@
         (cons msg msgs)))
 
 
-(defun do-cmd (path cmd)
+(defun do-cmd (path cmd &optional (stop-on-error nil))
     (with-forms (path)
-
         (let* ((msgs nil)
                (capture-msg (lambda (msg)
                                 (setf msgs (add-message msgs msg))))
                (handle-error (lambda (err)
                                  (send-message capture-msg forms types:*sev-error* err)
-                                 (return-from do-cmd msgs))))
+                                 (when stop-on-error
+                                       (return-from do-cmd msgs)))))
             (labels ((handle-skippable (sev)
                                        (lambda (err)
                                            (send-message capture-msg forms sev err)
@@ -99,4 +99,4 @@
     (do-cmd path 'load))
 
 (defun try-compile (path)
-    (do-cmd path 'compile-file))
+    (do-cmd path 'compile-file T))

@@ -562,6 +562,8 @@
                                         (params (cdr (assoc :params msg)))
                                         (path (cdr (assoc :path params)))
                                         (msgs (file:do-load path
+                                                            :stdin-fn (lambda ()
+                                                                          (wait-for-input state))
                                                             :stdout-fn (lambda (data)
                                                                            (when (assoc :show-stdout params)
                                                                                  (send-msg state (notification:stdout data))))
