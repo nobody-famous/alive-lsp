@@ -17,7 +17,7 @@
 
 
 (defun test-defun ()
-    (clue:test "Test defun"
+    (clue:test "Defun"
         (check-format :text (format NIL "(defun foo ()~%~%)")
                       :pos (pos:create 1 0)
                       :expected (list (edit:create :range (range:create (pos:create 1 0) (pos:create 1 0))

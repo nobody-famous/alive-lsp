@@ -18,7 +18,7 @@
 
 
 (defun test-insert-between-lists ()
-    (clue:test "Test insert between lists"
+    (clue:test "Insert between lists"
         (check-format (format nil "()()")
                       (range:create (pos:create 0 0) (pos:create 1 0))
                       (list (edit:create :range (range:create (pos:create 0 2) (pos:create 0 2))
@@ -26,7 +26,7 @@
 
 
 (defun test-before-after-list ()
-    (clue:test "Test before/after list"
+    (clue:test "Before/after list"
         (check-format (format nil "a()b")
                       (range:create (pos:create 0 0) (pos:create 1 0))
                       (list (edit:create :range (range:create (pos:create 0 1) (pos:create 0 1))
@@ -36,7 +36,7 @@
 
 
 (defun test-nl-after-comment ()
-    (clue:test "Test newline after comment"
+    (clue:test "Newline after comment"
         (check-format (format nil "; Do not remove~%  ")
                       (range:create (pos:create 0 0) (pos:create 1 2))
                       (list (edit:create :range (range:create (pos:create 0 15) (pos:create 1 2))
@@ -44,7 +44,7 @@
 
 
 (defun test-quoted-list-nl ()
-    (clue:test "Test quoted list with newline"
+    (clue:test "Quoted list with newline"
         (check-format (format nil "'(1 2 3 4~%   5 6 7 8)")
                       (range:create (pos:create 0 0) (pos:create 1 3))
                       (list (edit:create :range (range:create (pos:create 0 9) (pos:create 1 3))
@@ -52,7 +52,7 @@
 
 
 (defun test-comment-after-open ()
-    (clue:test "Test comment after open paren"
+    (clue:test "Comment after open paren"
         (check-format (format nil " ( ; Do not remove~%)  ")
                       (range:create (pos:create 0 0) (pos:create 1 3))
                       (list (edit:create :range (range:create (pos:create 0 0) (pos:create 0 1))
@@ -62,7 +62,7 @@
 
 
 (defun test-comment-after-open-spaces ()
-    (clue:test "Test comment after open multiple spaces"
+    (clue:test "Comment after open multiple spaces"
         (check-format (format nil " (   ; Do not remove~%)  ")
                       (range:create (pos:create 0 0) (pos:create 2 0))
                       (list (edit:create :range (range:create (pos:create 0 0) (pos:create 0 1))
@@ -74,7 +74,7 @@
 
 
 (defun test-list ()
-    (clue:test "Test list"
+    (clue:test "List"
         (check-format (format nil " ( a  b  )  ")
                       (range:create (pos:create 0 0) (pos:create 1 0))
                       (list (edit:create :range (range:create (pos:create 0 0) (pos:create 0 1))
@@ -90,7 +90,7 @@
 
 
 (defun test-list-range ()
-    (clue:test "Test list range"
+    (clue:test "List range"
         (check-format (format nil " ( a  b  )  ")
                       (range:create (pos:create 0 3) (pos:create 0 7))
                       (list (edit:create :range (range:create (pos:create 0 4) (pos:create 0 6))
@@ -98,7 +98,7 @@
 
 
 (defun test-ml-range ()
-    (clue:test "Test multiline range"
+    (clue:test "Multiline range"
         (check-format (format nil "dd~%( a~%    b~%      c)")
                       (range:create (pos:create 2 0) (pos:create 3 0))
                       (list (edit:create :range (range:create (pos:create 1 3) (pos:create 2 4))
@@ -106,7 +106,7 @@
 
 
 (defun test-stack-close-parens ()
-    (clue:test "Test stack close parens"
+    (clue:test "Stack close parens"
         (check-format (format nil " (((( a  b  ~%  )~%)~%)~%)  ")
                       (range:create (pos:create 0 0) (pos:create 5 0))
                       (list (edit:create :range (range:create (pos:create 0 0) (pos:create 0 1))
@@ -128,7 +128,7 @@
 
 
 (defun test-indent-loop ()
-    (clue:test "Test indent loop"
+    (clue:test "Indent loop"
         (check-format (format nil "(loop :for i :from 1 :to 10~%:do~%nil)")
                       (range:create (pos:create 0 0) (pos:create 3 0))
                       (list (edit:create :range (range:create (pos:create 0 27) (pos:create 1 0))
@@ -138,7 +138,7 @@
 
 
 (defun test-indent-loop-ml ()
-    (clue:test "Test indent loop multiline"
+    (clue:test "Indent loop multiline"
         (check-format (format nil "(loop :for i :from 1 :to 10 :do~%nil)")
                       (range:create (pos:create 0 0) (pos:create 3 0))
                       (list (edit:create :range (range:create (pos:create 0 31) (pos:create 1 0))
@@ -146,7 +146,7 @@
 
 
 (defun test-indent-cond ()
-    (clue:test "Test indent cond"
+    (clue:test "Indent cond"
         (check-format (format nil "(cond (a~%b~%c))")
                       (range:create (pos:create 0 0) (pos:create 3 0))
                       (list (edit:create :range (range:create (pos:create 0 8) (pos:create 1 0))
@@ -156,7 +156,7 @@
 
 
 (defun test-indent-and ()
-    (clue:test "Test indent and"
+    (clue:test "Indent and"
         (check-format (format nil "(and nil~%nil)")
                       (range:create (pos:create 0 0) (pos:create 3 0))
                       (list (edit:create :range (range:create (pos:create 0 8) (pos:create 1 0))
@@ -164,7 +164,7 @@
 
 
 (defun test-indent-rest ()
-    (clue:test "Test indent rest"
+    (clue:test "Indent rest"
         (check-format (format nil "(in-package :alive/logger)~A(msg log~A\"\"~A\"\")"
                           alive/format:eol
                           alive/format:eol
@@ -177,7 +177,7 @@
 
 
 (defun test-strip-indent ()
-    (clue:test "Test strip indent"
+    (clue:test "Strip indent"
         (check-format (format nil "(error)~%     foo")
                       (range:create (pos:create 0 0) (pos:create 3 0))
                       (list (edit:create :range (range:create (pos:create 0 7) (pos:create 1 5))
@@ -185,7 +185,7 @@
 
 
 (defun test-indent-body ()
-    (clue:test "Test indent body"
+    (clue:test "Indent body"
         (check-format (format nil "(defun foo~%()~%nil)")
                       (range:create (pos:create 0 0) (pos:create 3 0))
                       (list (edit:create :range (range:create (pos:create 0 10) (pos:create 1 0))
@@ -195,7 +195,7 @@
 
 
 (defun test-align-list ()
-    (clue:test "Test align list"
+    (clue:test "Align list"
         (check-format (format nil "(a:b c~%d)")
                       (range:create (pos:create 0 0) (pos:create 2 0))
                       (list (edit:create :range (range:create (pos:create 0 6) (pos:create 1 0))
@@ -203,7 +203,7 @@
 
 
 (defun test-align-list-2 ()
-    (clue:test "Test align list 2"
+    (clue:test "Align list 2"
         (check-format (format nil "(:b c~%d)")
                       (range:create (pos:create 0 0) (pos:create 2 0))
                       (list (edit:create :range (range:create (pos:create 0 5) (pos:create 1 0))
@@ -211,21 +211,21 @@
 
 
 (defun test-nl-after-open ()
-    (clue:test "Test newline after open parens"
+    (clue:test "Newline after open parens"
         (check-format (format nil "( ; Foo~A" alive/format:eol)
                       (range:create (pos:create 0 0) (pos:create 2 0))
                       (list))))
 
 
 (defun test-nl-after-open-with-close ()
-    (clue:test "Test newline after open with close parens"
+    (clue:test "Newline after open with close parens"
         (check-format (format nil "( ; Foo~A)" alive/format:eol)
                       (range:create (pos:create 0 0) (pos:create 2 0))
                       (list))))
 
 
 (defun test-align-list-3 ()
-    (clue:test "Test align list 3"
+    (clue:test "Align list 3"
         (check-format (format nil "(a~%    b)")
                       (range:create (pos:create 1 0) (pos:create 1 6))
                       (list (edit:create :range (range:create (pos:create 0 2) (pos:create 1 4))
@@ -233,7 +233,7 @@
 
 
 (defun test-align-list-4 ()
-    (clue:test "Test align list 4"
+    (clue:test "Align list 4"
         (check-format (format nil "(    a b~%c d)")
                       (range:create (pos:create 0 0) (pos:create 1 3))
                       (list (edit:create :range (range:create (pos:create 0 1) (pos:create 0 5))
@@ -243,7 +243,7 @@
 
 
 (defun test-align-nested ()
-    (clue:test "Test align nested lists"
+    (clue:test "Align nested lists"
         (check-format (format nil "(    a (b~%c)   ~%   d)")
                       (range:create (pos:create 0 0) (pos:create 2 5))
                       (list (edit:create :range (range:create (pos:create 0 1) (pos:create 0 5))
@@ -255,7 +255,7 @@
 
 
 (defun test-align-nested-2 ()
-    (clue:test "Test align nested lists 2"
+    (clue:test "Align nested lists 2"
         (check-format (format nil "(a~%    (b~%        (c)))")
                       (range:create (pos:create 0 0) (pos:create 3 0))
                       (list (edit:create :range (range:create (pos:create 0 2) (pos:create 1 4))
@@ -265,7 +265,7 @@
 
 
 (defun test-align-nested-3 ()
-    (clue:test "Test align nested lists 3"
+    (clue:test "Align nested lists 3"
         (check-format (format nil "  (a~%(b~%c))")
                       (range:create (pos:create 0 0) (pos:create 3 0))
                       (list (edit:create :range (range:create (pos:create 0 0) (pos:create 0 2))
@@ -277,7 +277,7 @@
 
 
 (defun test-indent-defun ()
-    (clue:test "Test indent defun"
+    (clue:test "Indent defun"
         (check-format (format nil "(  defun foo ()~%      nil)")
                       (range:create (pos:create 0 0) (pos:create 3 0))
                       (list (edit:create :range (range:create (pos:create 0 1) (pos:create 0 3))
@@ -287,7 +287,7 @@
 
 
 (defun test-strip-leading-nl ()
-    (clue:test "Test strip leading newlines"
+    (clue:test "Strip leading newlines"
         (check-format (format nil "~%~%()")
                       (range:create (pos:create 0 0) (pos:create 3 0))
                       (list (edit:create :range (range:create (pos:create 0 0) (pos:create 2 0))
@@ -295,7 +295,7 @@
 
 
 (defun test-strip-nl-in-list ()
-    (clue:test "Test strip newlines in list"
+    (clue:test "Strip newlines in list"
         (check-format (format nil "(~%~%)")
                       (range:create (pos:create 0 0) (pos:create 3 0))
                       (list (edit:create :range (range:create (pos:create 0 1) (pos:create 2 0))

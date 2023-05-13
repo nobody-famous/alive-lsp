@@ -15,7 +15,7 @@
 
 
 (defun test-foo ()
-    (clue:test "Test foo symbol"
+    (clue:test "Foo symbol"
         (clue:check-equal :expected (list (token:create
                                               :type-value alive/types:*symbol*
                                               :start (pos:create 0 0)
@@ -27,7 +27,7 @@
 
 
 (defun test-defun ()
-    (clue:test "Test defun symbol"
+    (clue:test "Defun symbol"
         (clue:check-equal :expected (list (token:create
                                               :type-value alive/types:*symbol*
                                               :start (pos:create 0 0)
@@ -37,7 +37,7 @@
 
 
 (defun test-comment ()
-    (clue:test "Test comment"
+    (clue:test "Comment"
         (clue:check-equal :expected (list (token:create
                                               :type-value alive/types:*line-comment*
                                               :start (pos:create 0 0)
@@ -47,7 +47,7 @@
 
 
 (defun test-string ()
-    (clue:test "Test string"
+    (clue:test "String"
         (clue:check-equal :expected (list (token:create
                                               :type-value alive/types:*string*
                                               :start (pos:create 0 0)
@@ -57,7 +57,7 @@
 
 
 (defun test-basic-macro ()
-    (clue:test "Test basic macro"
+    (clue:test "Basic macro"
         (clue:check-equal :expected (list (token:create
                                               :type-value alive/types:*macro*
                                               :start (pos:create 0 0)
@@ -67,7 +67,7 @@
 
 
 (defun test-ifdef-macro ()
-    (clue:test "Test ifdef macro"
+    (clue:test "Ifdef macro"
         (clue:check-equal :expected (list (token:create
                                               :type-value alive/types:*ifdef-false*
                                               :start (pos:create 0 0)
@@ -77,7 +77,7 @@
 
 
 (defun test-parens ()
-    (clue:test "Test parens"
+    (clue:test "Parens"
         (clue:check-equal :expected (list (token:create
                                               :type-value alive/types:*open-paren*
                                               :start (pos:create 0 0)
@@ -96,7 +96,7 @@
 
 
 (defun test-sym-with-pkg ()
-    (clue:test "Test symbol with package"
+    (clue:test "Symbol with package"
         (clue:check-equal :expected (list (token:create
                                               :type-value alive/types:*symbol*
                                               :start (pos:create 0 0)
@@ -122,7 +122,7 @@
 
 
 (defun run-all ()
-    (clue:suite "Test parse tokens"
+    (clue:suite "Parse tokens"
         (test-foo)
         (test-defun)
         (test-comment)
