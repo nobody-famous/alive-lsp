@@ -1,13 +1,9 @@
 (defpackage :alive/streams
     (:use :cl)
-    (:export :add-listener
-             :set-in-listener
+    (:export :set-in-listener
              :set-out-listener
-             :eof-p
-             :flush-stream
              :flush-out-stream
              :make-io-stream
-             :make-output-stream
              :with-redirect-streams))
 
 (in-package :alive/streams)
@@ -17,20 +13,8 @@
     #+sbcl (make-instance 'alive/sbcl/streams:io-stream))
 
 
-(defun make-output-stream ()
-    #+sbcl (make-instance 'alive/sbcl/streams:output-stream))
-
-
-(defun flush-stream (obj)
-    #+sbcl (alive/sbcl/streams:flush-buffer obj))
-
-
 (defun flush-out-stream (obj)
     #+sbcl (alive/sbcl/streams:flush-out-buffer obj))
-
-
-(defun add-listener (obj listener)
-    #+sbcl (alive/sbcl/streams:add-listener obj listener))
 
 
 (defun set-in-listener (obj listener)
@@ -39,10 +23,6 @@
 
 (defun set-out-listener (obj listener)
     #+sbcl (alive/sbcl/streams:set-out-listener obj listener))
-
-
-(defun eof-p (obj)
-    #+sbcl (alive/sbcl/streams:eof-p obj))
 
 
 (defmacro with-redirect-streams ((&key stdin-fn stdout-fn stderr-fn) &body body)

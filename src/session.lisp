@@ -896,6 +896,8 @@
                                         (path (cdr (assoc :path params))))
 
                                      (file:do-compile path
+                                                      :stdin-fn (lambda ()
+                                                                    (wait-for-input state))
                                                       :stdout-fn (lambda (data)
                                                                      (send-msg state (notification:stdout data)))
                                                       :stderr-fn (lambda (data)
@@ -921,6 +923,8 @@
 
         (run-in-thread state msg (lambda ()
                                      (asdf:load-system :name name
+                                                       :stdin-fn (lambda ()
+                                                                     (wait-for-input state))
                                                        :stdout-fn (lambda (data)
                                                                       (send-msg state (notification:stdout data)))
                                                        :stderr-fn (lambda (data)

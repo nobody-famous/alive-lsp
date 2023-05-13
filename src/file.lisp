@@ -13,9 +13,10 @@
         (funcall cmd path)))
 
 
-(defun do-compile (path &key stdout-fn stderr-fn)
+(defun do-compile (path &key stdin-fn stdout-fn stderr-fn)
     (do-cmd #+sbcl 'alive/sbcl/file:do-compile
             path
+            :stdin-fn stdin-fn
             :stdout-fn stdout-fn
             :stderr-fn stderr-fn))
 

@@ -51,20 +51,38 @@
                                              :actual (stream-element-type io))
 
                            (clue:check-equal :expected #\newline
-                                             :actual (read-char io))
+                                             :actual (read-char io)))
+                (close io)))))
 
-                           (astreams:set-in-listener io (lambda () "a"))
+
+(defun test-unread ()
+    (clue:test "Unread char"
+        (let ((io (alive/streams:make-io-stream)))
+            (unwind-protect
+                    (progn (astreams:set-in-listener io (lambda () "a"))
                            (clue:check-equal :expected #\a
                                              :actual (read-char io))
 
                            (sb-gray:stream-unread-char io #\a)
                            (clue:check-equal :expected #\a
-                                             :actual (sb-gray:stream-read-char io)))
+                                             :actual (read-char io))
+
+                           (clue:check-equal :expected ""
+                                             :actual (read-line io))
+
+                           (astreams:set-in-listener io (lambda () "def"))
+                           (clue:check-equal :expected #\d
+                                             :actual (read-char io))
+
+                           (sb-gray:stream-unread-char io #\a)
+                           (clue:check-equal :expected "aef"
+                                             :actual (read-line io)))
                 (close io)))))
 
 
 (defun run-all ()
     (clue:suite "Alive Streams Tests"
         (test-io-stream)
+        (test-unread)
         (test-stdout)
         (test-stdin)))
