@@ -18,4 +18,5 @@
         (alive/test/streams:run-all)
         (alive/test/forms:run-all)
         (alive/test/asdf/load:run-all)
-        (alive/test/compile:run-all)))
+        (alive/test/compile:run-all)
+        (alive/test/debugger:run-all)))
