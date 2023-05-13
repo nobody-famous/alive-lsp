@@ -17,6 +17,13 @@
 (in-package :alive/sbcl/file)
 
 
+(defmacro with-forms ((path) &body body)
+    (let ((file-id (gensym)))
+        `(with-open-file (,file-id ,path)
+             (let ((forms (forms:from-stream ,file-id)))
+                 ,@body))))
+
+
 (defun get-err-location (forms)
     (let* ((context (sb-c::find-error-context nil))
            (source-path (when context (reverse (sb-c::compiler-error-context-original-source-path context)))))
@@ -36,43 +43,6 @@
 
         (when loc
               (funcall out-fn msg))))
-
-
-(defun fatal-error (out-fn forms)
-    (lambda (err)
-        (send-message out-fn forms types:*sev-error* err)))
-
-
-(defun compiler-error (out-fn forms)
-    (lambda (err)
-        (send-message out-fn forms types:*sev-error* err)))
-
-
-(defun compiler-note (out-fn forms)
-    (lambda (err)
-        (send-message out-fn forms types:*sev-info* err)))
-
-
-(defun handle-error (out-fn forms)
-    (lambda (err)
-        (send-message out-fn forms types:*sev-error* err)))
-
-
-(defun handle-warning (out-fn forms)
-    (lambda (err)
-        (send-message out-fn forms types:*sev-warn* err)))
-
-
-(defun do-cmd (path cmd out)
-    (with-open-file (f path)
-        (let ((forms (forms:from-stream f)))
-            (handler-bind ((sb-c:fatal-compiler-error (fatal-error out forms))
-                           (sb-c:compiler-error (compiler-error out forms))
-                           (sb-ext:compiler-note (compiler-note out forms))
-                           (sb-ext::simple-style-warning (handle-warning out forms))
-                           (error (handle-error out forms))
-                           (warning (handle-warning out forms)))
-                (funcall cmd path)))))
 
 
 (defun already-have-msg-p (new-msg msgs)
@@ -95,37 +65,38 @@
         (cons msg msgs)))
 
 
-(defun do-compile (path)
-    (let ((msgs nil))
-        (do-cmd path 'compile-file
-                (lambda (msg)
-                    (setf msgs (add-message msgs msg))))
-        msgs))
+(defun do-cmd (path cmd)
+    (with-forms (path)
 
+        (let* ((msgs nil)
+               (capture-msg (lambda (msg)
+                                (setf msgs (add-message msgs msg))))
+               (handle-error (lambda (err)
+                                 (send-message capture-msg forms types:*sev-error* err)
+                                 (return-from do-cmd msgs))))
+            (labels ((handle-skippable (sev)
+                                       (lambda (err)
+                                           (send-message capture-msg forms sev err)
+                                           (let ((skip (find-restart 'muffle-warning err)))
+                                               (if skip
+                                                   (invoke-restart skip)
+                                                   (return-from do-cmd msgs))))))
+                (handler-bind ((sb-ext::simple-style-warning (handle-skippable types:*sev-warn*))
+                               (sb-ext:compiler-note (handle-skippable types:*sev-info*))
+                               (warning (handle-skippable types:*sev-warn*))
+                               (sb-c:fatal-compiler-error handle-error)
+                               (sb-c:compiler-error handle-error)
+                               (error handle-error))
+                    (funcall cmd path)
+                    msgs)))))
+
+
+(defun do-compile (path)
+    (do-cmd path 'compile-file))
 
 (defun do-load (path)
-    (let ((msgs (do-compile path)))
-        (do-cmd path 'load
-                (lambda (msg)
-                    (setf msgs (add-message msgs msg))))
-
-        msgs))
-
+    (do-compile path)
+    (do-cmd path 'load))
 
 (defun try-compile (path)
-    (logger:msg logger:*debug* "try-compile ~A" path)
-
-    (with-open-file (f path)
-        (let ((msgs nil))
-            (handler-bind ((warning (lambda (e)
-                                        (let ((skip (find-restart 'muffle-warning e)))
-                                            (if skip
-                                                (invoke-restart skip)
-                                                (return-from try-compile msgs)))))
-                           (T (lambda (e)
-                                  (logger:msg logger:*debug* "Unhandled error ~A" e)
-                                  (return-from try-compile msgs))))
-                (do-cmd path 'compile-file
-                        (lambda (msg)
-                            (setf msgs (add-message msgs msg))))
-                msgs))))
+    (do-cmd path 'compile-file))
