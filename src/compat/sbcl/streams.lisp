@@ -1,13 +1,11 @@
 (defpackage :alive/sbcl/streams
     (:use :cl)
-    (:export :input-stream
-             :output-stream
+    (:export :output-stream
              :io-stream
              :eof-p
              :flush-buffer
              :flush-out-buffer
              :add-listener
-             :set-listener
              :set-in-listener
              :set-out-listener))
 
@@ -111,53 +109,6 @@
           (setf (out-listener obj) listener)))
 
 
-(defclass input-stream (sb-gray:fundamental-character-input-stream)
-        ((buffer :accessor buffer
-                 :initform nil
-                 :initarg :buffer)
-         (listener :accessor listener
-                   :initform nil
-                   :initarg :listener)
-         (lock :accessor lock
-               :initform (bt:make-recursive-lock)
-               :initarg :lock)
-         (cond-var :accessor cond-var
-                   :initform (bt:make-condition-variable)
-                   :initarg :cond-var)))
-
-
-(defmethod sb-gray:stream-unread-char ((obj input-stream) ch)
-    (if (eq :eof (buffer obj))
-        (setf (buffer obj) (princ-to-string ch))
-        (setf (buffer obj) (format nil "~C~A" ch (buffer obj))))
-
-    nil)
-
-
-(defmethod sb-gray:stream-read-char ((obj input-stream))
-    (bt:with-recursive-lock-held ((lock obj))
-        (unless (buffer obj)
-            (setf (buffer obj)
-                (funcall (listener obj))))
-
-        (if (or (eq :eof (buffer obj))
-                (zerop (length (buffer obj)))
-                (not (buffer obj)))
-
-            (progn
-             (setf (buffer obj) nil)
-             :eof)
-
-            (let ((ch (elt (buffer obj) 0)))
-                (setf (buffer obj)
-                    (subseq (buffer obj) 1))
-
-                (when (zerop (length (buffer obj)))
-                      (setf (buffer obj) :eof))
-
-                ch))))
-
-
 (defclass output-stream (sb-gray:fundamental-character-output-stream)
         ((buffer :accessor buffer
                  :initform (make-string-output-stream)
@@ -206,11 +157,6 @@
 
 (defun add-listener (obj listener)
     (push listener (listeners obj)))
-
-
-(defun set-listener (obj listener)
-    (when obj
-          (setf (listener obj) listener)))
 
 
 (defun end-stream (obj)

@@ -1,15 +1,13 @@
 (defpackage :alive/streams
     (:use :cl)
     (:export :add-listener
-             :set-listener
              :set-in-listener
              :set-out-listener
              :eof-p
              :flush-stream
              :flush-out-stream
              :make-io-stream
-             :make-output-stream
-             :make-input-stream))
+             :make-output-stream))
 
 (in-package :alive/streams)
 
@@ -22,10 +20,6 @@
     #+sbcl (make-instance 'alive/sbcl/streams:output-stream))
 
 
-(defun make-input-stream ()
-    #+sbcl (make-instance 'alive/sbcl/streams:input-stream))
-
-
 (defun flush-stream (obj)
     #+sbcl (alive/sbcl/streams:flush-buffer obj))
 
@@ -36,10 +30,6 @@
 
 (defun add-listener (obj listener)
     #+sbcl (alive/sbcl/streams:add-listener obj listener))
-
-
-(defun set-listener (obj listener)
-    #+sbcl (alive/sbcl/streams:set-listener obj listener))
 
 
 (defun set-in-listener (obj listener)

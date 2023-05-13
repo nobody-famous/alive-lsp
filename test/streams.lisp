@@ -66,5 +66,5 @@
 (defun run-all ()
     (clue:suite "Alive Streams Tests"
         (test-io-stream)
-        #+n (test-stdout)
-        #+n (test-stdin)))
+        (test-stdout)
+        (test-stdin)))
