@@ -443,13 +443,6 @@
         (pop (parse-state-indent state))))
 
 
-(defun start-of-last-placed (state)
-    (let* ((item (car (parse-state-out-list state))))
-        (if item
-            (pos:col (token:get-start item))
-            0)))
-
-
 (defun is-loop-key (state token)
     (let ((prev (car (parse-state-seen state)))
           (key (if (token:is-type types:*colons* token)

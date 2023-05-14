@@ -12,6 +12,17 @@
                           :actual (eval:from-string "(+ 1 2)"))))
 
 
+(defun test-bad-pkg ()
+    (clue:test "Invalid package"
+        (handler-case
+                (progn (eval:from-string "(+ 1 2)" :pkg-name "foo")
+                       (clue:fail "Expected condition"))
+            (alive/packages:package-not-found (e)
+                                              (declare (ignore e)))
+            (T (e)
+               (clue:fail (format nil "Wrong condition: ~A" e))))))
+
+
 (defun errors ()
     (clue:test "Errors Eval"
         (handler-bind ((T (lambda (c)
@@ -38,7 +49,7 @@
         (let ((text nil))
             (eval:from-string (format nil "(format T \"~A\")" test-string)
                               :stdout-fn (lambda (data)
-                                             test-string))
+                                             (setf text data)))
             (clue:check-equal :expected test-string
                               :actual text))))
 
@@ -46,4 +57,6 @@
 (defun run-all ()
     (clue:suite "Eval Tests"
         (test-basic)
+        (test-bad-pkg)
+        (test-stdin)
         (test-stdin)))

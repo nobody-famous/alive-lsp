@@ -47,3 +47,8 @@
         (error 'test-failed
             :expected "Not NIL"
             :actual NIL)))
+
+
+(defun fail (reason)
+    (error 'test-failed
+        :reason reason))
