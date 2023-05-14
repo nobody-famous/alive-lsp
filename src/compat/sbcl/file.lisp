@@ -55,12 +55,12 @@
 
 
 (defun should-filter-p (msg)
-    (search "redefin" (comp-msg:get-message msg)))
+    (search "redefin" msg))
 
 
 (defun add-message (msgs msg)
     (if (or (already-have-msg-p msg msgs)
-            (should-filter-p msg))
+            (should-filter-p (comp-msg:get-message msg)))
         msgs
         (cons msg msgs)))
 
@@ -72,8 +72,19 @@
                                 (setf msgs (add-message msgs msg))))
                (handle-error (lambda (err)
                                  (send-message capture-msg forms types:*sev-error* err)
-                                 (when stop-on-error
-                                       (return-from do-cmd msgs)))))
+                                 (when (and (not (should-filter-p (format NIL "~A" err)))
+                                            stop-on-error)
+                                       (return-from do-cmd msgs))))
+               (handle-defconstant (lambda (err)
+                                       (when stop-on-error
+                                             ; Redefining a constant is an error, not a warning. If we ignore it, it'll
+                                             ; trigger the debugger. One of the restarts is to keep the old value, so
+                                             ; find and invoke it.
+                                             (progn (loop :for item :in (compute-restarts err)
+                                                          :do (when (search "old value" (format nil "~A" item))
+                                                                    (invoke-restart item)))
+                                                    ; Didn't find the restart, so just bail
+                                                    (return-from do-cmd msgs))))))
             (labels ((handle-skippable (sev)
                                        (lambda (err)
                                            (send-message capture-msg forms sev err)
@@ -83,6 +94,7 @@
                                                    (return-from do-cmd msgs))))))
                 (handler-bind ((sb-ext::simple-style-warning (handle-skippable types:*sev-warn*))
                                (sb-ext:compiler-note (handle-skippable types:*sev-info*))
+                               (sb-ext:defconstant-uneql handle-defconstant)
                                (warning (handle-skippable types:*sev-warn*))
                                (sb-c:fatal-compiler-error handle-error)
                                (sb-c:compiler-error handle-error)

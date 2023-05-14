@@ -6,10 +6,21 @@
 (in-package :alive/test/eval)
 
 
-(defun basic ()
+(defun test-basic ()
     (clue:test "Basic Eval"
         (clue:check-equal :expected 3
                           :actual (eval:from-string "(+ 1 2)"))))
+
+
+(defun test-bad-pkg ()
+    (clue:test "Invalid package"
+        (handler-case
+                (progn (eval:from-string "(+ 1 2)" :pkg-name "foo")
+                       (clue:fail "Expected condition"))
+            (alive/packages:package-not-found (e)
+                                              (declare (ignore e)))
+            (T (e)
+               (clue:fail (format nil "Wrong condition: ~A" e))))))
 
 
 (defun errors ()
@@ -22,15 +33,30 @@
             (eval:from-string "(/ 5 0)"))))
 
 
-(defun stdin ()
+(defconstant test-string "Test data")
+
+
+(defun test-stdin ()
     (clue:test "Stdin Eval"
-        (eval:from-string "(read-line)"
-                          :stdin-fn (lambda ()
-                                        (format T "STDIN-FN CALLED~%"))
-                          :stdout-fn (lambda (data)
-                                         (format T "STDOUT ~A~%" data)))))
+        (clue:check-equal :expected test-string
+                          :actual (eval:from-string "(read-line)"
+                                                    :stdin-fn (lambda ()
+                                                                  test-string)))))
+
+
+(defun test-stdout ()
+    (clue:test "Stdout Eval"
+        (let ((text nil))
+            (eval:from-string (format nil "(format T \"~A\")" test-string)
+                              :stdout-fn (lambda (data)
+                                             (setf text data)))
+            (clue:check-equal :expected test-string
+                              :actual text))))
 
 
 (defun run-all ()
     (clue:suite "Eval Tests"
-        (basic)))
+        (test-basic)
+        (test-bad-pkg)
+        (test-stdin)
+        (test-stdin)))
