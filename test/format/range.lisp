@@ -302,6 +302,16 @@
                                          :text (format nil ""))))))
 
 
+(defun test-macro-body ()
+    (clue:test "Macro body"
+        (check-format (format nil "(unwind-protect~%nil~%nil)")
+                      (range:create (pos:create 0 0) (pos:create 3 0))
+                      (list (edit:create :range (range:create (pos:create 0 15) (pos:create 1 0))
+                                         :text (format nil "~A    " alive/format:eol))
+                            (edit:create :range (range:create (pos:create 1 3) (pos:create 2 0))
+                                         :text (format nil "~A  " alive/format:eol))))))
+
+
 (defun run-all ()
     (clue:suite "Range Format Tests"
         (test-insert-between-lists)
@@ -332,4 +342,5 @@
         (test-align-nested-3)
         (test-indent-defun)
         (test-strip-leading-nl)
-        (test-strip-nl-in-list)))
+        (test-strip-nl-in-list)
+        (test-macro-body)))

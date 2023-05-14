@@ -440,14 +440,7 @@
 
         (add-to-out-list state token)
         (pop (parse-state-opens state))
-        (pop (parse-state-indent state))))
-
-
-(defun start-of-last-placed (state)
-    (let* ((item (car (parse-state-out-list state))))
-        (if item
-            (pos:col (token:get-start item))
-            0)))
+        (pop-next-indent state)))
 
 
 (defun is-loop-key (state token)

@@ -27,7 +27,7 @@
 (defun discard (input &optional expected)
     (let ((ch (read-char input nil nil)))
         (unless ch
-                (error (format nil "End of input")))
+            (error "End of input"))
 
         (when (and expected
                    (not (char= ch expected)))
@@ -50,17 +50,17 @@
 
 (defun parse-expr (input)
     (flet ((parse-list ()
-                (discard input *open-parens*)
-                (skip-ws input)
+                       (discard input *open-parens*)
+                       (skip-ws input)
 
-                (loop :until (or (not (look-ahead input))
-                                 (char= (look-ahead input) *close-parens*))
-                      :collect (parse-expr input) :into parts
-                      :finally (progn (discard input *close-parens*)
-                                      (return parts))))
+                       (loop :until (or (not (look-ahead input))
+                                        (char= (look-ahead input) *close-parens*))
+                             :collect (parse-expr input) :into parts
+                             :finally (progn (discard input *close-parens*)
+                                             (return parts))))
 
            (parse-atom ()
-                (read-next input)))
+                       (read-next input)))
 
         (skip-ws input)
 
@@ -72,9 +72,9 @@
                                          (t (parse-atom)))
                                (T (c)
                                   (error (make-instance 'errors:input-error
-                                                        :start start
-                                                        :end (file-position input)
-                                                        :message (format nil "~A" c))))))
+                                             :start start
+                                             :end (file-position input)
+                                             :message (format nil "~A" c))))))
                      (end (1- (file-position input))))
                   (skip-ws input)
                   (list start end expr)))))
