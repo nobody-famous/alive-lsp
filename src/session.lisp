@@ -304,8 +304,6 @@
                                (start-debugger state c (alive/frames:list-debug-frames))
                                (return-from run-fn))))
         (save-thread-msg state (cdr (assoc :id msg)))
-        (send-msg state (notification:refresh))
-
         (funcall fn)))
 
 
