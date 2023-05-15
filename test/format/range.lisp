@@ -343,6 +343,8 @@
 
 
 (defun test-invalid-fn ()
+    (alive/logger:msg alive/logger:*info* "test-invalid-fn")
+
     (clue:test "Invalid function"
         (check-format (format nil "(assoc::~%a~%b)")
                       (range:create (pos:create 0 0) (pos:create 3 0))
