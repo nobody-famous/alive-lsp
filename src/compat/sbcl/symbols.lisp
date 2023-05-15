@@ -18,7 +18,7 @@
                           *package*)))
 
         (ignore-errors (sb-introspect:function-lambda-list
-                        (find-symbol (string-upcase fn-name))))))
+                           (find-symbol (string-upcase fn-name))))))
 
 
 (defun function-p (sym-name &optional pkg-name)

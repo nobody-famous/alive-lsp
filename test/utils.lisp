@@ -47,7 +47,7 @@
 
 
 (defun print-hash-table (label ht)
-    (alive/logger:msg alive/logger:*info* "~A~%" label)
+    (alive/logger:msg alive/logger:*info* "~A" label)
     (loop :for key :being :the :hash-key :of ht
           :using (hash-value value)
-          :do (alive/logger:msg alive/logger:*info* "  ~A |~A|~%" key value)))
+          :do (alive/logger:msg alive/logger:*info* "  ~A |~A|" key value)))

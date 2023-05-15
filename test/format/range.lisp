@@ -332,6 +332,26 @@
                       nil)))
 
 
+(defun test-assoc ()
+    (clue:test "Assoc"
+        (check-format (format nil "(assoc~%a~%b)")
+                      (range:create (pos:create 0 0) (pos:create 3 0))
+                      (list (edit:create :range (range:create (pos:create 0 6) (pos:create 1 0))
+                                         :text (format nil "~A  " alive/format:eol))
+                            (edit:create :range (range:create (pos:create 1 1) (pos:create 2 0))
+                                         :text (format nil "~A  " alive/format:eol))))))
+
+
+(defun test-invalid-fn ()
+    (clue:test "Invalid function"
+        (check-format (format nil "(assoc::~%a~%b)")
+                      (range:create (pos:create 0 0) (pos:create 3 0))
+                      (list (edit:create :range (range:create (pos:create 0 8) (pos:create 1 0))
+                                         :text (format nil "~A      " alive/format:eol))
+                            (edit:create :range (range:create (pos:create 1 1) (pos:create 2 0))
+                                         :text (format nil "~A      " alive/format:eol))))))
+
+
 (defun run-all ()
     (clue:suite "Range Format Tests"
         (test-insert-between-lists)
@@ -365,4 +385,6 @@
         (test-strip-nl-in-list)
         (test-macro-body)
         (test-in-package)
-        (test-insert-range)))
+        (test-insert-range)
+        (test-assoc)
+        (test-invalid-fn)))
