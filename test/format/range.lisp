@@ -312,6 +312,26 @@
                                          :text (format nil "~A  " alive/format:eol))))))
 
 
+(defun test-in-package ()
+    (clue:test "in-package"
+        (check-format (format nil "(in-package~A#:foo)" alive/format:eol)
+                      (range:create (pos:create 0 0) (pos:create 2 0))
+                      (list (edit:create :range (range:create (pos:create 0 11) (pos:create 1 0))
+                                         :text (format nil "~A  " alive/format:eol))))
+
+        (check-format (format nil "(in-package~Abar:foo)" alive/format:eol)
+                      (range:create (pos:create 0 0) (pos:create 2 0))
+                      (list (edit:create :range (range:create (pos:create 0 11) (pos:create 1 0))
+                                         :text (format nil "~A  " alive/format:eol))))))
+
+
+(defun test-insert-range ()
+    (clue:test "Insert range"
+        (check-format (format nil "()foo")
+                      (range:create (pos:create 0 0) (pos:create 0 1))
+                      nil)))
+
+
 (defun run-all ()
     (clue:suite "Range Format Tests"
         (test-insert-between-lists)
@@ -343,4 +363,6 @@
         (test-indent-defun)
         (test-strip-leading-nl)
         (test-strip-nl-in-list)
-        (test-macro-body)))
+        (test-macro-body)
+        (test-in-package)
+        (test-insert-range)))

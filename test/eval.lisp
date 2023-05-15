@@ -33,7 +33,7 @@
             (eval:from-string "(/ 5 0)"))))
 
 
-(defconstant test-string "Test data")
+(defparameter test-string "Test data")
 
 
 (defun test-stdin ()
