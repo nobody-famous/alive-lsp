@@ -47,7 +47,6 @@
         (setf (gethash "aligned" form) nil)
         (setf (gethash "isCond" form) nil)
         (setf (gethash "isLoop" form) nil)
-        (setf (gethash "isLoopIndent" form) nil)
         (setf (gethash "lambdaList" form) nil)
         (setf (gethash "isMultiline" form) nil)
 
@@ -343,12 +342,10 @@
                     (not (gethash "aligned" form-open))
                     (is-loop-key state token)
                     (token:is-type types:*ws* prev))
-                  (when (or (not (gethash "isLoopIndent" form-open))
-                            (token:is-multiline prev))
-                        (setf (gethash "aligned" form-open) T)
-                        (setf (gethash "loopIndent" form-open) T)
-                        (replace-indent state (the fixnum (+ (the fixnum (options-indent-width (parse-state-options state)))
-                                                             (the fixnum (pos:col (token:get-start token))))))))
+                  (setf (gethash "aligned" form-open) T)
+                  (setf (gethash "loopIndent" form-open) T)
+                  (replace-indent state (the fixnum (+ (the fixnum (options-indent-width (parse-state-options state)))
+                                                       (the fixnum (pos:col (token:get-start token)))))))
 
               ((and form-open
                     (not (gethash "aligned" form-open)))

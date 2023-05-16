@@ -63,10 +63,6 @@
 
 (defun next-char (state)
     (let ((ch (read-char (input state) nil nil)))
-        #+n (unless ch
-                (alive/logger:msg alive/logger:*info* "tokenizer::next-char nil ch")
-                (loop :for frame :in (alive/frames:list-debug-frames)
-                      :do (alive/test/utils:print-hash-table "frame" frame)))
         (cond ((char= ch #\newline) (incf (line state))
                                     (setf (col state) 0))
               (T (incf (col state))))
@@ -272,5 +268,6 @@
 
 (defun from-stream (input)
     (loop :with state := (make-instance 'parse-state :input input)
+
           :while (look-ahead state)
           :collect (next-token state)))

@@ -145,6 +145,14 @@
                                          :text (format nil "~A        " alive/format:eol))))))
 
 
+(defun test-indent-loop-ml-token ()
+    (clue:test "Indent loop multiline token"
+        (check-format (format nil "(#|~ASome stuff~A|# loop :for i :from 1 :to 10 :do~%nil)" alive/format:eol alive/format:eol)
+                      (range:create (pos:create 0 0) (pos:create 5 0))
+                      (list (edit:create :range (range:create (pos:create 0 31) (pos:create 1 0))
+                                         :text (format nil "~A        " alive/format:eol))))))
+
+
 (defun test-indent-cond ()
     (clue:test "Indent cond"
         (check-format (format nil "(cond (a~%b~%c))")
@@ -343,8 +351,6 @@
 
 
 (defun test-invalid-fn ()
-    (alive/logger:msg alive/logger:*info* "test-invalid-fn")
-
     (clue:test "Invalid function"
         (check-format (format nil "(assoc::~%a~%b)")
                       (range:create (pos:create 0 0) (pos:create 3 0))
@@ -368,6 +374,7 @@
         (test-stack-close-parens)
         (test-indent-loop)
         (test-indent-loop-ml)
+        (test-indent-loop-ml-token)
         (test-indent-cond)
         (test-indent-and)
         (test-indent-rest)
