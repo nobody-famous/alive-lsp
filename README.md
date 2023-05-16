@@ -105,7 +105,10 @@ note that `alive.lsp.startCommand` could also be the one used before in the REPL
 
 just be sure to also configure the port if you specify one on the command for starting the server.
 
-
 ## Using the server outside of vscode
 
 Take a look at thread [#31](https://github.com/nobody-famous/alive-lsp/issues/31)
+
+## Developing Alive-lsp Code
+
+If you are interesting in making changes to Alive-lsp you should take a look at the [Development Notes](README-dev.md).
