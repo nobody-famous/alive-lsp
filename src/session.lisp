@@ -303,8 +303,6 @@
                                (start-debugger state c (alive/frames:list-debug-frames))
                                (return-from run-fn))))
         (save-thread-msg state (cdr (assoc :id msg)))
-        (send-msg state (notification:refresh))
-
         (funcall fn)))
 
 
@@ -312,7 +310,8 @@
     (let ((stdout *standard-output*))
         (bt:make-thread (lambda ()
                             (unwind-protect
-                                    (run-fn state msg fn stdout)
+                                    (progn (send-msg state (notification:refresh))
+                                           (run-fn state msg fn stdout))
                                 (rem-thread-msg state)
                                 (send-msg state (notification:refresh))))
                         :name (next-thread-name state (if (assoc :id msg)
