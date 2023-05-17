@@ -1,8 +1,7 @@
 (defpackage :alive/frames
     (:use :cl)
     (:export :list-step-frames
-             :list-debug-frames
-             :print-obj))
+             :list-debug-frames))
 
 (in-package :alive/frames)
 
@@ -58,13 +57,6 @@
         obj))
 
 
-(defun print-obj (frame)
-    (when frame
-          (loop :for value :being :the :hash-value :of frame
-                :using (hash-key key)
-                :do (format T "~A ~A~%" key value))))
-
-
 (defun list-frames (top &optional limit)
     (loop :with frame := top
           :with ndx := 0
@@ -82,8 +74,10 @@
     (list-frames (sb-di::find-stepped-frame)))
 
 
-(defun list-debug-frames ()
+(defun list-debug-frames (&optional (limit nil))
     (let ((top-frame (or (sb-di::find-interrupted-frame)
                          (sb-di::find-stepped-frame)
                          (sb-di::find-caller-frame))))
-        (list-frames top-frame)))
+        (if limit
+            (list-frames top-frame limit)
+            (list-frames top-frame))))
