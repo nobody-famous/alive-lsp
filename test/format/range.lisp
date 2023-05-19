@@ -10,9 +10,11 @@
 (in-package :alive/test/format/range)
 
 
-(defun check-format (text range expected)
+(defun check-format (text range expected &optional opts)
     (with-input-from-string (s text)
-        (let ((actual (formatting:range s range)))
+        (let ((actual (if opts
+                          (formatting:range s range opts)
+                          (formatting:range s range))))
             (clue:check-equal :expected expected
                               :actual actual))))
 
@@ -49,6 +51,14 @@
                       (range:create (pos:create 0 0) (pos:create 1 3))
                       (list (edit:create :range (range:create (pos:create 0 9) (pos:create 1 3))
                                          :text (format nil "~%    "))))))
+
+
+(defun test-comment-out-of-range ()
+    (clue:test "Comment out of range"
+        (check-format (format nil " ( ; Do not remove~%)  ")
+                      (range:create (pos:create 0 0) (pos:create 0 1))
+                      (list (edit:create :range (range:create (pos:create 0 0) (pos:create 0 1))
+                                         :text "")))))
 
 
 (defun test-comment-after-open ()
@@ -200,6 +210,25 @@
                                          :text (format nil "~A    " alive/format:eol))
                             (edit:create :range (range:create (pos:create 1 2) (pos:create 2 0))
                                          :text (format nil "~A  " alive/format:eol))))))
+
+
+(defun test-indent-body-width ()
+    (clue:test "Indent body indent width"
+        (check-format (format nil "(defun foo~%()~%nil)")
+                      (range:create (pos:create 0 0) (pos:create 3 0))
+                      (list (edit:create :range (range:create (pos:create 0 10) (pos:create 1 0))
+                                         :text (format nil "~A        " alive/format:eol))
+                            (edit:create :range (range:create (pos:create 1 2) (pos:create 2 0))
+                                         :text (format nil "~A    " alive/format:eol)))
+                      (list '(:indent-width . 4)))
+
+        (check-format (format nil "(defun foo~%()~%nil)")
+                      (range:create (pos:create 0 0) (pos:create 3 0))
+                      (list (edit:create :range (range:create (pos:create 0 10) (pos:create 1 0))
+                                         :text (format nil "~A    " alive/format:eol))
+                            (edit:create :range (range:create (pos:create 1 2) (pos:create 2 0))
+                                         :text (format nil "~A  " alive/format:eol)))
+                      (list '(:foo . 4)))))
 
 
 (defun test-align-list ()
@@ -366,6 +395,7 @@
         (test-before-after-list)
         (test-nl-after-comment)
         (test-quoted-list-nl)
+        (test-comment-out-of-range)
         (test-comment-after-open)
         (test-comment-after-open-spaces)
         (test-list)
@@ -380,6 +410,7 @@
         (test-indent-rest)
         (test-strip-indent)
         (test-indent-body)
+        (test-indent-body-width)
         (test-align-list)
         (test-align-list-2)
         (test-align-list-3)
