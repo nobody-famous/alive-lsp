@@ -83,7 +83,7 @@
             (clue:check-equal :expected nil
                               :actual (alive/debugger:get-frame-loc
                                           file
-                                          (get-test-frame 'bomb 2))))))
+                                          (get-test-frame 'bomb 1))))))
 
 
 (defun test-bomb-2 ()
