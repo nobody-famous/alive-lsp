@@ -140,6 +140,7 @@
                      :token-type types:*line-comment*
                      :predicate (lambda (ch)
                                     (and ch
+                                         (not (char= ch #\return))
                                          (not (char= ch #\newline))))))
 
 
@@ -267,5 +268,6 @@
 
 (defun from-stream (input)
     (loop :with state := (make-instance 'parse-state :input input)
+
           :while (look-ahead state)
           :collect (next-token state)))

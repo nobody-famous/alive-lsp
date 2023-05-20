@@ -178,8 +178,7 @@
 
 
 (defmethod send-msg ((obj network-state) msg)
-    (when (logger:has-level logger:*trace*)
-          (logger:msg logger:*trace* "<-- ~A~%" (json:encode-json-to-string msg)))
+    (logger:msg logger:*trace* "<-- ~A~%" (json:encode-json-to-string msg))
 
     (bt:with-recursive-lock-held ((lock obj))
         (when (and (hash-table-p msg)
@@ -304,8 +303,6 @@
                                (start-debugger state c (alive/frames:list-debug-frames))
                                (return-from run-fn))))
         (save-thread-msg state (cdr (assoc :id msg)))
-        (send-msg state (notification:refresh))
-
         (funcall fn)))
 
 
@@ -313,7 +310,8 @@
     (let ((stdout *standard-output*))
         (bt:make-thread (lambda ()
                             (unwind-protect
-                                    (run-fn state msg fn stdout)
+                                    (progn (send-msg state (notification:refresh))
+                                           (run-fn state msg fn stdout))
                                 (rem-thread-msg state)
                                 (send-msg state (notification:refresh))))
                         :name (next-thread-name state (if (assoc :id msg)
@@ -524,8 +522,7 @@
 
 
 (defun stop (state)
-    (when (logger:has-level logger:*info*)
-          (logger:msg logger:*info* "Stopping state ~A" state))
+    (logger:msg logger:*info* "Stopping state ~A" state)
 
     (setf (running state) NIL)
 
@@ -564,6 +561,8 @@
                                         (params (cdr (assoc :params msg)))
                                         (path (cdr (assoc :path params)))
                                         (msgs (file:do-load path
+                                                            :stdin-fn (lambda ()
+                                                                          (wait-for-input state))
                                                             :stdout-fn (lambda (data)
                                                                            (when (assoc :show-stdout params)
                                                                                  (send-msg state (notification:stdout data))))
@@ -896,6 +895,8 @@
                                         (path (cdr (assoc :path params))))
 
                                      (file:do-compile path
+                                                      :stdin-fn (lambda ()
+                                                                    (wait-for-input state))
                                                       :stdout-fn (lambda (data)
                                                                      (send-msg state (notification:stdout data)))
                                                       :stderr-fn (lambda (data)
@@ -921,6 +922,8 @@
 
         (run-in-thread state msg (lambda ()
                                      (asdf:load-system :name name
+                                                       :stdin-fn (lambda ()
+                                                                     (wait-for-input state))
                                                        :stdout-fn (lambda (data)
                                                                       (send-msg state (notification:stdout data)))
                                                        :stderr-fn (lambda (data)
@@ -1047,8 +1050,7 @@
                         (progn (when id
                                      (save-thread-msg state id))
 
-                               (when (logger:has-level logger:*trace*)
-                                     (logger:msg logger:*trace* "--> ~A~%" (json:encode-json-to-string msg)))
+                               (logger:msg logger:*trace* "--> ~A~%" (json:encode-json-to-string msg))
 
                                (handle-msg state msg))
 
@@ -1111,5 +1113,4 @@
 
     (start-read-thread state)
 
-    (when (logger:has-level logger:*info*)
-          (logger:msg logger:*info* "Started state ~A" state)))
+    (logger:msg logger:*info* "Started state ~A" state))

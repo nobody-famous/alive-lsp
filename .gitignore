@@ -1,2 +1,3 @@
 .vscode/alive/
 *.fasl
+coverage/

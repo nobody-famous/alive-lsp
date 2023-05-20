@@ -26,7 +26,7 @@
 
 
 (defun test-quoted-list ()
-    (clue:test "Test quoted list"
+    (clue:test "Quoted list"
         (check-forms (format nil "('(1))")
                      (list (form:create :start (pos:create 0 0)
                                         :end (pos:create 0 6)
@@ -44,7 +44,7 @@
 
 
 (defun test-quoted-sym-with-pkg ()
-    (clue:test "Test quoted symbol with package"
+    (clue:test "Quoted symbol with package"
         (check-forms (format nil "'foo:bar")
                      (list (form:create :start (pos:create 0 0)
                                         :end (pos:create 0 8)
@@ -56,7 +56,7 @@
 
 
 (defun test-sym-with-pkg ()
-    (clue:test "Test symbol with package"
+    (clue:test "Symbol with package"
         (check-forms (format nil "foo:bar")
                      (list (form:create :start (pos:create 0 0)
                                         :end (pos:create 0 7)
@@ -65,13 +65,13 @@
 
 
 (defun test-empty-text ()
-    (clue:test "Test empty text"
+    (clue:test "Empty text"
         (check-forms ""
                      (list))))
 
 
 (defun test-foo ()
-    (clue:test "Test foo symbol"
+    (clue:test "Foo symbol"
         (check-forms "foo"
                      (list (form:create :start (pos:create 0 0)
                                         :end (pos:create 0 3)
@@ -79,7 +79,7 @@
 
 
 (defun test-empty-list ()
-    (clue:test "Test empty list"
+    (clue:test "Empty list"
         (check-forms "()"
                      (list (form:create :start (pos:create 0 0)
                                         :end (pos:create 0 2)
@@ -87,7 +87,7 @@
 
 
 (defun test-empty-list-with-nl ()
-    (clue:test "Test empty list with newline"
+    (clue:test "Empty list with newline"
         (check-forms (format nil "(~%)")
                      (list (form:create :start (pos:create 0 0)
                                         :end (pos:create 1 1)
@@ -95,7 +95,7 @@
 
 
 (defun test-quoted-list-with-foo ()
-    (clue:test "Test quoted list with foo symbol"
+    (clue:test "Quoted list with foo symbol"
         (check-forms (format nil "'(foo)")
                      (list (form:create :start (pos:create 0 0)
                                         :end (pos:create 0 6)
@@ -109,7 +109,7 @@
 
 
 (defun test-back-quote-with-comma ()
-    (clue:test "Test back quote with comma"
+    (clue:test "Back quote with comma"
         (check-forms (format nil "`(foo ,bar)")
                      (list (form:create :start (pos:create 0 0)
                                         :end (pos:create 0 11)
@@ -131,7 +131,7 @@
 
 
 (defun test-double-quote-with-comma ()
-    (clue:test "Test double quote with comma"
+    (clue:test "Double quote with comma"
         (check-forms (format nil "''(foo ,bar)")
                      (list (form:create :start (pos:create 0 0)
                                         :end (pos:create 0 12)
@@ -153,7 +153,7 @@
 
 
 (defun test-quoted-symbol ()
-    (clue:test "Test quoted symbol"
+    (clue:test "Quoted symbol"
         (check-forms (format nil "'foo")
                      (list (form:create :start (pos:create 0 0)
                                         :end (pos:create 0 4)
@@ -165,7 +165,7 @@
 
 
 (defun test-back-quoted-symbol ()
-    (clue:test "Test back quoted symbol"
+    (clue:test "Back quoted symbol"
         (check-forms (format nil "`foo")
                      (list (form:create :start (pos:create 0 0)
                                         :end (pos:create 0 4)
@@ -177,7 +177,7 @@
 
 
 (defun test-symbols-list ()
-    (clue:test "Test list of symbols"
+    (clue:test "List of symbols"
         (check-forms (format nil "(a bb cccc)")
                      (list (form:create :start (pos:create 0 0)
                                         :end (pos:create 0 11)
@@ -197,7 +197,7 @@
 
 
 (defun test-in-package ()
-    (clue:test "Test in-package form"
+    (clue:test "In-package form"
         (check-forms (format nil (format nil "(IN-PACKAGE :foo)~%bar"))
                      (list (form:create :start (pos:create 0 0)
                                         :start-offset 0
@@ -225,7 +225,7 @@
 
 
 (defun test-sym-with-pkg-nl ()
-    (clue:test "Test symbol with package with newline"
+    (clue:test "Symbol with package with newline"
         (check-forms (format nil (format nil "'foo:bar~%fff"))
                      (list (form:create :start (pos:create 0 0)
                                         :start-offset 0
@@ -245,7 +245,7 @@
 
 
 (defun run-all ()
-    (clue:suite "Test parse forms"
+    (clue:suite "Parse forms"
         (test-quoted-list)
         (test-quoted-sym-with-pkg)
         (test-sym-with-pkg)

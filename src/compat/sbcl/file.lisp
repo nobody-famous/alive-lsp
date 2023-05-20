@@ -6,13 +6,22 @@
     (:local-nicknames (:parse :alive/parse/stream)
                       (:form :alive/parse/form)
                       (:forms :alive/parse/forms)
+                      (:logger :alive/logger)
                       (:token :alive/parse/token)
                       (:errors :alive/errors)
                       (:range :alive/range)
+                      (:pos :alive/position)
                       (:types :alive/types)
                       (:comp-msg :alive/compile-message)))
 
 (in-package :alive/sbcl/file)
+
+
+(defmacro with-forms ((path) &body body)
+    (let ((file-id (gensym)))
+        `(with-open-file (,file-id ,path)
+             (let ((forms (forms:from-stream ,file-id)))
+                 ,@body))))
 
 
 (defun get-err-location (forms)
@@ -36,110 +45,70 @@
               (funcall out-fn msg))))
 
 
-(defun fatal-error (out-fn forms)
-    (lambda (err)
-        (send-message out-fn forms types:*sev-error* err)))
-
-
-(defun compiler-error (out-fn forms)
-    (lambda (err)
-        (send-message out-fn forms types:*sev-error* err)))
-
-
-(defun compiler-note (out-fn forms)
-    (lambda (err)
-        (send-message out-fn forms types:*sev-info* err)))
-
-
-(defun handle-error (out-fn forms)
-    (lambda (err)
-        (send-message out-fn forms types:*sev-error* err)))
-
-
-(defun handle-warning (out-fn forms)
-    (lambda (err)
-        (send-message out-fn forms types:*sev-warn* err)))
-
-
-(defun do-cmd (path cmd out)
-    (with-open-file (f path)
-        (let ((forms (forms:from-stream f)))
-            (handler-bind ((sb-c:fatal-compiler-error (fatal-error out forms))
-                           (sb-c:compiler-error (compiler-error out forms))
-                           (sb-ext:compiler-note (compiler-note out forms))
-                           (sb-ext::simple-style-warning (handle-warning out forms))
-                           (error (handle-error out forms))
-                           (warning (handle-warning out forms)))
-                (funcall cmd path)))))
-
-
-(defun do-compile (path)
-    (let ((msgs nil))
-        (do-cmd path 'compile-file
-                (lambda (msg)
-                    (setf msgs (cons msg msgs))))
-        msgs))
-
-
-(defun do-load (path)
-    (let ((msgs nil))
-        (do-cmd path 'compile-file
-                (lambda (msg)
-                    (setf msgs (cons msg msgs))))
-
-        (do-cmd path 'load
-                (lambda (msg)
-                    (setf msgs (cons msg msgs))))
-
-        msgs))
-
-
-(defun filter-warnings (msgs)
-    (remove-if (lambda (msg)
-                   (search "redefining" (comp-msg:get-message msg)))
+(defun already-have-msg-p (new-msg msgs)
+    (find-if (lambda (msg)
+                 (and (string= (gethash "severity" new-msg)
+                               (gethash "severity" msg))
+                      (string= (gethash "message" new-msg)
+                               (gethash "message" msg))))
             msgs))
 
 
+(defun should-filter-p (msg)
+    (search "redefin" msg))
+
+
+(defun add-message (msgs msg)
+    (if (or (already-have-msg-p msg msgs)
+            (should-filter-p (comp-msg:get-message msg)))
+        msgs
+        (cons msg msgs)))
+
+
+(defun do-cmd (path cmd &optional (stop-on-error nil))
+    (with-forms (path)
+        (let* ((msgs nil)
+               (capture-msg (lambda (msg)
+                                (setf msgs (add-message msgs msg))))
+               (handle-error (lambda (err)
+                                 (send-message capture-msg forms types:*sev-error* err)
+                                 (when (and (not (should-filter-p (format NIL "~A" err)))
+                                            stop-on-error)
+                                       (return-from do-cmd msgs))))
+               (handle-defconstant (lambda (err)
+                                       (when stop-on-error
+                                             ; Redefining a constant is an error, not a warning. If we ignore it, it'll
+                                             ; trigger the debugger. One of the restarts is to keep the old value, so
+                                             ; find and invoke it.
+                                             (progn (loop :for item :in (compute-restarts err)
+                                                          :do (when (search "old value" (format nil "~A" item))
+                                                                    (invoke-restart item)))
+                                                    ; Didn't find the restart, so just bail
+                                                    (return-from do-cmd msgs))))))
+            (labels ((handle-skippable (sev)
+                                       (lambda (err)
+                                           (send-message capture-msg forms sev err)
+                                           (let ((skip (find-restart 'muffle-warning err)))
+                                               (if skip
+                                                   (invoke-restart skip)
+                                                   (return-from do-cmd msgs))))))
+                (handler-bind ((sb-ext::simple-style-warning (handle-skippable types:*sev-warn*))
+                               (sb-ext:compiler-note (handle-skippable types:*sev-info*))
+                               (sb-ext:defconstant-uneql handle-defconstant)
+                               (warning (handle-skippable types:*sev-warn*))
+                               (sb-c:fatal-compiler-error handle-error)
+                               (sb-c:compiler-error handle-error)
+                               (error handle-error))
+                    (funcall cmd path)
+                    msgs)))))
+
+
+(defun do-compile (path)
+    (do-cmd path 'compile-file))
+
+(defun do-load (path)
+    (do-compile path)
+    (do-cmd path 'load))
+
 (defun try-compile (path)
-    (with-open-file (f path)
-        (let ((msgs nil))
-
-            ;;
-            ;; Compiling a file corrupts the environment. The goal here is to compile without
-            ;; that happening and just get a list of compiler messages for the file.
-            ;;
-            ;; One idea was to fork and have the child process do the compile. That would keep
-            ;; the parent from getting corrupted. That approach hit some problems.
-            ;;   1. sbcl won't fork if there's multiple threads active
-            ;;   2. sbcl only implements fork for unix, anyway, so wouldn't work on Windows
-            ;;
-            ;; One possible solution to the fork issue would be to use FFI to call the C fork
-            ;; function directly. That seems problematic.
-            ;;
-            ;; The main issue is that def* calls will update the environment. There may be some
-            ;; way to account for that. I haven't figured it out, yet.
-            ;;
-
-            (handler-case
-                    (progn (do-cmd path 'compile-file
-                                   (lambda (msg)
-                                       (setf msgs (cons msg msgs))))
-
-                           msgs)
-                (errors:input-error (e)
-                                    (push (comp-msg:create :severity types:*sev-error*
-                                                           :location (range:create (errors:start e) (errors:end e))
-                                                           :message (format nil "~A" e))
-                                          msgs)
-                                    msgs)
-                (sb-ext:package-does-not-exist (e)
-                                               (declare (ignore e))
-                                               msgs)
-
-                (sb-c::simple-package-error (e)
-                                            (declare (ignore e))
-                                            msgs)
-
-                (T (e)
-                   (declare (ignore e))
-                   (filter-warnings msgs))))))
+    (do-cmd path 'compile-file T))

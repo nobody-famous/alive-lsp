@@ -39,7 +39,7 @@
            (top-form (when (and top-ndx forms)
                            (forms:get-nth-form forms top-ndx))))
 
-        (when top-form
+        (when (and form-num top-form)
               (multiple-value-bind (ndx found)
                       (find-form 1 form-num (gethash "kids" top-form))
                   (declare (ignore ndx))

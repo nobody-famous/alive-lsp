@@ -3,7 +3,6 @@
     (:export :list-all
              :kill
              :thread-not-found
-             :get-stack-trace
              :get-thread-id
              :find-by-id
              :id))
@@ -16,10 +15,6 @@
              :initform nil
              :initarg :id))
     (:report (lambda (condition stream) (format stream "Thread ~A Not Found" (id condition)))))
-
-
-(defun get-stack-trace ()
-    #+sbcl (alive/sbcl/threads:get-stack-trace))
 
 
 (defun get-thread-id (thread)

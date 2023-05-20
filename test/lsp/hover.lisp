@@ -8,7 +8,7 @@
 
 
 (defun test-defun ()
-    (clue:test "Test defun hover"
+    (clue:test "Defun hover"
         (clue:check-equal :expected T
                           :actual (stringp (hover:get-text :text "defun"
                                                            :pos (pos:create 0 3))))))
