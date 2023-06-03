@@ -194,6 +194,18 @@
                                          :text (format nil "~A  " alive/format:eol))))))
 
 
+(defun test-indent-empty-rest ()
+    (clue:test "Indent empty rest"
+        (check-format (format nil "(if (y-or-n-p)~A()~A())"
+                          alive/format:eol
+                          alive/format:eol)
+                      (range:create (pos:create 0 0) (pos:create 4 0))
+                      (list (edit:create :range (range:create (pos:create 0 14) (pos:create 1 0))
+                                         :text (format nil "~A    " alive/format:eol))
+                            (edit:create :range (range:create (pos:create 1 2) (pos:create 2 0))
+                                         :text (format nil "~A    " alive/format:eol))))))
+
+
 (defun test-strip-indent ()
     (clue:test "Strip indent"
         (check-format (format nil "(error)~%     foo")
@@ -408,6 +420,7 @@
         (test-indent-cond)
         (test-indent-and)
         (test-indent-rest)
+        (test-indent-empty-rest)
         (test-strip-indent)
         (test-indent-body)
         (test-indent-body-width)

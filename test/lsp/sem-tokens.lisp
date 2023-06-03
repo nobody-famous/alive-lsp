@@ -170,6 +170,20 @@
                                     :end 2)))))
 
 
+(defun test-string-utf8 ()
+    (clue:test "String UTF8"
+        (check-combo "\"る\" 472" (list (sem-types:create
+                                          :token-type sem-types:*string*
+                                          :line 0
+                                          :start 0
+                                          :end 3)
+                                      (sem-types:create
+                                          :token-type sem-types:*number*
+                                          :line 0
+                                          :start 4
+                                          :end 7)))))
+
+
 (defun test-in-pkg-macro ()
     (clue:test "In-package macro"
         (check-combo "(in-package #:alive/errors) start" (list (sem-types:create
@@ -1038,6 +1052,7 @@
         (test-block-comment)
         (test-line-comment)
         (test-string)
+        (test-string-utf8)
         (test-macro)
         (test-colon)
         (test-double-colon)
