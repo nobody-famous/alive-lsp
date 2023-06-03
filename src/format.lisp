@@ -437,7 +437,7 @@
 
         (add-to-out-list state token)
         (pop (parse-state-opens state))
-        (pop-next-indent state)))
+        (pop (parse-state-indent state))))
 
 
 (defun is-loop-key (state token)
