@@ -50,4 +50,5 @@
     (alive/logger:msg alive/logger:*info* "~A" label)
     (loop :for key :being :the :hash-key :of ht
           :using (hash-value value)
-          :do (alive/logger:msg alive/logger:*info* "  ~A |~A|" key value)))
+          :do #+n (alive/logger:msg alive/logger:*info* "  ~A |~A|" key value)
+              (format T "  ~A |~A|~%" key value)))
