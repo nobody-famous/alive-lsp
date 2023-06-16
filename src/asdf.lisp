@@ -11,26 +11,6 @@
     (mapcar #'string-downcase (asdf:registered-systems)))
 
 
-(defun load-system (&key name stdout-fn stderr-fn)
-    (let* ((orig-stdout *standard-output*)
-           (orig-stderr *error-output*)
-           (out-stream (astreams:make-output-stream))
-           (err-stream (astreams:make-output-stream))
-           (*standard-output* out-stream)
-           (*error-output* err-stream))
-
-        (when stdout-fn
-              (astreams:add-listener out-stream
-                                     (lambda (data)
-                                         (let ((*standard-output* orig-stdout)
-                                               (*error-output* orig-stderr))
-                                             (funcall stdout-fn data)))))
-
-        (when stderr-fn
-              (astreams:add-listener err-stream
-                                     (lambda (data)
-                                         (let ((*standard-output* orig-stdout)
-                                               (*error-output* orig-stderr))
-                                             (funcall stderr-fn data)))))
-
-        (asdf:load-system name)))
+(defun load-system (&key name stdin-fn stdout-fn stderr-fn force)
+    (astreams:with-redirect-streams (:stdin-fn stdin-fn :stdout-fn stdout-fn :stderr-fn stderr-fn)
+        (asdf:load-system name :force force)))

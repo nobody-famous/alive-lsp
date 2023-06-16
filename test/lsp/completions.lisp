@@ -7,7 +7,7 @@
 (in-package :alive/test/lsp/completions)
 
 (defun test-symbols-m ()
-    (clue:test "Test symbols:m"
+    (clue:test "Symbols:m"
         (let ((actual (comps:simple :text "some text alive/symbols:m"
                                     :pos (pos:create 0 27))))
 
@@ -16,7 +16,7 @@
 
 
 (defun test-defmacro ()
-    (clue:test "Test defmacro"
+    (clue:test "Defmacro"
         (let ((actual (comps:simple :text "some text cl-user:defmacro"
                                     :pos (pos:create 0 26))))
 
@@ -25,7 +25,7 @@
 
 
 (defun test-symbols ()
-    (clue:test "Test symbols"
+    (clue:test "Symbols"
         (let ((actual (comps:simple :text "alive/symbols:"
                                     :pos (pos:create 0 14))))
             (clue:check-equal :expected 10
@@ -33,7 +33,7 @@
 
 
 (defun test-debug-io ()
-    (clue:test "Test debug-io"
+    (clue:test "Debug-io"
         (let ((actual (comps:simple :text "*debug-io"
                                     :pos (pos:create 0 9))))
             (clue:check-equal :expected 2

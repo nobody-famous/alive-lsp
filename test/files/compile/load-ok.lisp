@@ -1,8 +1,11 @@
 (defpackage :alive/test/files
     (:use :cl))
 
+
 (in-package :alive/test/files)
 
 
-(defmacro bar ()
-    (format T "BAR
+(defun divide (x y)
+    (/ x y))
+
+(divide 3 5)

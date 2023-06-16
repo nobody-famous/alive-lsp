@@ -30,7 +30,7 @@
 
 
 (defun test-reader-macro ()
-    (clue:test "Test reader macro"
+    (clue:test "Reader macro"
         (check-symbol "#\\Replacement_Character" (sem-types:create
                                                      :token-type sem-types:*macro*
                                                      :line 0
@@ -39,7 +39,7 @@
 
 
 (defun test-block-comment ()
-    (clue:test "Test block comment"
+    (clue:test "Block comment"
         (check-symbol "#| Stuff |#" (sem-types:create
                                         :token-type sem-types:*comment*
                                         :line 0
@@ -48,7 +48,7 @@
 
 
 (defun test-line-comment ()
-    (clue:test "Test line comment"
+    (clue:test "Line comment"
         (check-symbol "; Stuff" (sem-types:create
                                     :token-type sem-types:*comment*
                                     :line 0
@@ -57,7 +57,7 @@
 
 
 (defun test-string ()
-    (clue:test "Test string"
+    (clue:test "String"
         (check-symbol "\"String\"" (sem-types:create
                                        :token-type sem-types:*string*
                                        :line 0
@@ -66,7 +66,7 @@
 
 
 (defun test-macro ()
-    (clue:test "Test macro"
+    (clue:test "Macro"
         (check-symbol "#foo" (sem-types:create
                                  :token-type sem-types:*macro*
                                  :line 0
@@ -75,7 +75,7 @@
 
 
 (defun test-colon ()
-    (clue:test "Test colon"
+    (clue:test "Colon"
         (check-symbol ":" (sem-types:create
                               :token-type sem-types:*symbol*
                               :line 0
@@ -84,7 +84,7 @@
 
 
 (defun test-double-colon ()
-    (clue:test "Test double colon"
+    (clue:test "Double colon"
         (check-symbol "::" (sem-types:create
                                :token-type sem-types:*symbol*
                                :line 0
@@ -93,7 +93,7 @@
 
 
 (defun test-integer ()
-    (clue:test "Test integer"
+    (clue:test "Integer"
         (check-symbol "123" (sem-types:create
                                 :token-type sem-types:*number*
                                 :line 0
@@ -102,7 +102,7 @@
 
 
 (defun test-ratio ()
-    (clue:test "Test ratio"
+    (clue:test "Ratio"
         (check-symbol "123/45" (sem-types:create
                                    :token-type sem-types:*number*
                                    :line 0
@@ -111,7 +111,7 @@
 
 
 (defun test-float ()
-    (clue:test "Test float"
+    (clue:test "Float"
         (check-symbol "123.45" (sem-types:create
                                    :token-type sem-types:*number*
                                    :line 0
@@ -120,17 +120,17 @@
 
 
 (defun test-invalid-ratio ()
-    (clue:test "Test invalid ratio"
+    (clue:test "Invalid ratio"
         (check-symbol "123/" nil)))
 
 
 (defun test-invalid-float ()
-    (clue:test "Test invalid float"
+    (clue:test "Invalid float"
         (check-symbol "123." nil)))
 
 
 (defun test-open-parens ()
-    (clue:test "Test open parens"
+    (clue:test "Open parens"
         (check-symbol "(" (sem-types:create
                               :token-type sem-types:*parenthesis*
                               :line 0
@@ -139,7 +139,7 @@
 
 
 (defun test-close-parens ()
-    (clue:test "Test close parens"
+    (clue:test "Close parens"
         (check-symbol ")" (sem-types:create
                               :token-type sem-types:*parenthesis*
                               :line 0
@@ -148,12 +148,12 @@
 
 
 (defun test-foo ()
-    (clue:test "Test foo"
+    (clue:test "Foo"
         (check-symbol "foo" nil)))
 
 
 (defun test-defun ()
-    (clue:test "Test defun"
+    (clue:test "Defun"
         (check-symbol "defun" (sem-types:create
                                   :token-type sem-types:*macro*
                                   :line 0
@@ -162,7 +162,7 @@
 
 
 (defun test-open-comment ()
-    (clue:test "Test open comment"
+    (clue:test "Open comment"
         (check-combo "#|" (list (sem-types:create
                                     :token-type sem-types:*comment*
                                     :line 0
@@ -170,8 +170,22 @@
                                     :end 2)))))
 
 
+(defun test-string-utf8 ()
+    (clue:test "String UTF8"
+        (check-combo "\"る\" 472" (list (sem-types:create
+                                          :token-type sem-types:*string*
+                                          :line 0
+                                          :start 0
+                                          :end 3)
+                                      (sem-types:create
+                                          :token-type sem-types:*number*
+                                          :line 0
+                                          :start 4
+                                          :end 7)))))
+
+
 (defun test-in-pkg-macro ()
-    (clue:test "Test in-package macro"
+    (clue:test "In-package macro"
         (check-combo "(in-package #:alive/errors) start" (list (sem-types:create
                                                                    :token-type sem-types:*parenthesis*
                                                                    :line 0
@@ -200,7 +214,7 @@
 
 
 (defun test-in-pkg-symbol ()
-    (clue:test "Test in-package symbol"
+    (clue:test "In-package symbol"
         (check-combo "(in-package :alive/errors) start" (list (sem-types:create
                                                                   :token-type sem-types:*parenthesis*
                                                                   :line 0
@@ -234,7 +248,7 @@
 
 
 (defun test-in-pkg-string ()
-    (clue:test "Test in-package string"
+    (clue:test "In-package string"
         (check-combo "(in-package \"alive/errors\") start" (list (sem-types:create
                                                                      :token-type sem-types:*parenthesis*
                                                                      :line 0
@@ -263,7 +277,7 @@
 
 
 (defun test-after-if-false ()
-    (clue:test "Test after if-false"
+    (clue:test "After if-false"
         (check-combo "#+n (+ (+ (+ 'foo))) ()" (list (sem-types:create
                                                          :token-type sem-types:*comment*
                                                          :line 0
@@ -337,7 +351,7 @@
 
 
 (defun test-defun-keys ()
-    (clue:test "Test defun keys"
+    (clue:test "Defun keys"
         (check-combo "(defun foo (&key a))" (list (sem-types:create
                                                       :token-type sem-types:*parenthesis*
                                                       :line 0
@@ -376,7 +390,7 @@
 
 
 (defun test-if-false ()
-    (clue:test "Test if false"
+    (clue:test "If false"
         (check-combo "#+n (* () () ())" (list (sem-types:create
                                                   :token-type sem-types:*comment*
                                                   :line 0
@@ -430,7 +444,7 @@
 
 
 (defun test-octets ()
-    (clue:test "Test octets"
+    (clue:test "Octets"
         (check-combo (format nil "(sb-ext:octets-to-string octets~%'())~%(+ () () ())")
                      (list (sem-types:create
                                :token-type sem-types:*parenthesis*
@@ -520,7 +534,7 @@
 
 
 (defun test-long-ifdef ()
-    (clue:test "Test long ifdef"
+    (clue:test "Long ifdef"
         (check-combo "#+nnnnn (or (not (not)))" (list (sem-types:create
                                                           :token-type sem-types:*comment*
                                                           :line 0
@@ -574,7 +588,7 @@
 
 
 (defun test-do ()
-    (clue:test "Test do"
+    (clue:test "Do"
         (check-combo ":do" (list (sem-types:create
                                      :token-type sem-types:*symbol*
                                      :line 0
@@ -588,7 +602,7 @@
 
 
 (defun test-quote-foo ()
-    (clue:test "Test quote foo"
+    (clue:test "Quote foo"
         (check-combo (format nil "'foo") (list (sem-types:create
                                                    :token-type sem-types:*keyword*
                                                    :line 0
@@ -597,7 +611,7 @@
 
 
 (defun test-list-spaces ()
-    (clue:test "Test list spaces"
+    (clue:test "List spaces"
         (check-combo "(  )" (list (sem-types:create
                                       :token-type sem-types:*parenthesis*
                                       :line 0
@@ -611,7 +625,7 @@
 
 
 (defun test-unclosed-list ()
-    (clue:test "Test unclosed list"
+    (clue:test "Unclosed list"
         (check-combo "(123" (list (sem-types:create
                                       :token-type sem-types:*parenthesis*
                                       :line 0
@@ -625,7 +639,7 @@
 
 
 (defun test-unopened-list ()
-    (clue:test "Test unopened list"
+    (clue:test "Unopened list"
         (check-combo "123)" (list (sem-types:create
                                       :token-type sem-types:*number*
                                       :line 0
@@ -639,7 +653,7 @@
 
 
 (defun test-pkg-symbol ()
-    (clue:test "Test package symbol"
+    (clue:test "Package symbol"
         (check-combo "foo:bar" (list (sem-types:create
                                          :token-type sem-types:*namespace*
                                          :line 0
@@ -653,7 +667,7 @@
 
 
 (defun test-pkg-symbol-double ()
-    (clue:test "Test package symbol double colon"
+    (clue:test "Package symbol double colon"
         (check-combo "foo::bar" (list (sem-types:create
                                           :token-type sem-types:*namespace*
                                           :line 0
@@ -667,7 +681,7 @@
 
 
 (defun test-symbol-in-list ()
-    (clue:test "Test symbol in list"
+    (clue:test "Symbol in list"
         (check-combo "( :bar )" (list (sem-types:create
                                           :token-type sem-types:*parenthesis*
                                           :line 0
@@ -691,7 +705,7 @@
 
 
 (defun test-text-after-ifdef ()
-    (clue:test "Test text after ifdef"
+    (clue:test "Text after ifdef"
         (check-combo "#+n (+ (+ 1)) (foo)" (list (sem-types:create
                                                      :token-type sem-types:*comment*
                                                      :line 0
@@ -745,7 +759,7 @@
 
 
 (defun test-ifdef-in-list ()
-    (clue:test "Test ifdef in list"
+    (clue:test "Ifdef in list"
         (check-combo "( + ( #+n a a ) b ) ( c )" (list (sem-types:create
                                                            :token-type sem-types:*parenthesis*
                                                            :line 0
@@ -794,7 +808,7 @@
 
 
 (defun test-let ()
-    (clue:test "Test let"
+    (clue:test "Let"
         (check-combo "( let ( ( a b ) ) NIL )" (list (sem-types:create
                                                          :token-type sem-types:*parenthesis*
                                                          :line 0
@@ -838,7 +852,7 @@
 
 
 (defun test-defun-call ()
-    (clue:test "Test defun call"
+    (clue:test "Defun call"
         (check-combo "(cl:defun)" (list (sem-types:create
                                             :token-type sem-types:*parenthesis*
                                             :line 0
@@ -867,7 +881,7 @@
 
 
 (defun test-defun-with-ifdef ()
-    (clue:test "Test defun with ifdef"
+    (clue:test "Defun with ifdef"
         (check-combo "(defun foo (#+n a b))" (list (sem-types:create
                                                        :token-type sem-types:*parenthesis*
                                                        :line 0
@@ -911,7 +925,7 @@
 
 
 (defun test-defun-spaces ()
-    (clue:test "Test defun spaces"
+    (clue:test "Defun spaces"
         (check-combo "(defun foo ( ) bar)" (list (sem-types:create
                                                      :token-type sem-types:*parenthesis*
                                                      :line 0
@@ -940,7 +954,7 @@
 
 
 (defun test-defun-nested-args ()
-    (clue:test "Test defun nested arguments"
+    (clue:test "Defun nested arguments"
         (check-combo "( defun foo ( ( a b ) c ) )" (list (sem-types:create
                                                              :token-type sem-types:*parenthesis*
                                                              :line 0
@@ -989,7 +1003,7 @@
 
 
 (defun test-defun-args ()
-    (clue:test "Test defun args"
+    (clue:test "Defun args"
         (check-combo "(defun foo (a b) nil)" (list (sem-types:create
                                                        :token-type sem-types:*parenthesis*
                                                        :line 0
@@ -1038,6 +1052,7 @@
         (test-block-comment)
         (test-line-comment)
         (test-string)
+        (test-string-utf8)
         (test-macro)
         (test-colon)
         (test-double-colon)

@@ -74,8 +74,7 @@
 
 (defun listen-for-conns (server port)
     (let ((socket (usocket:socket-listen "127.0.0.1" port :reuse-address T)))
-        (when (logger:has-level logger:*info*)
-              (logger:msg logger:*info* "Started on port ~A~%" (usocket:get-local-port socket)))
+        (logger:msg logger:*info* "Started on port ~A~%" (usocket:get-local-port socket))
 
         (unwind-protect
                 (progn (setf (socket server) socket)
@@ -94,8 +93,7 @@
                         :name "Alive LSP Server")))
 
 (defun stop ()
-    (when (logger:has-level logger:*info*)
-          (logger:msg logger:*info* "Stop server~%"))
+    (logger:msg logger:*info* "Stop server~%")
 
     (stop-server *server*)
 

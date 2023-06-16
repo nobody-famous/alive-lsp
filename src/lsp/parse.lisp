@@ -76,7 +76,8 @@
 
 (defun read-content (input size)
     (let ((content (flexi-streams:octets-to-string
-                       (read-content-bytes input size))))
+                       (read-content-bytes input size)
+                       :external-format :utf-8)))
         content))
 
 

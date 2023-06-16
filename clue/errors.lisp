@@ -7,8 +7,14 @@
                    :initarg :expected)
          (actual :accessor actual
                  :initform nil
-                 :initarg :actual))
+                 :initarg :actual)
+         (reason :accessor reason
+                 :initform nil
+                 :initarg :reason))
     (:report (lambda (condition stream)
-                 (format stream "Expected ~A, found ~A"
-                     (expected condition)
-                     (actual condition)))))
+                 (if (reason condition)
+                     (format stream "~A"
+                         (reason condition))
+                     (format stream "Expected ~A, found ~A"
+                         (expected condition)
+                         (actual condition))))))

@@ -178,8 +178,7 @@
 
 
 (defmethod send-msg ((obj network-state) msg)
-    (when (logger:has-level logger:*trace*)
-          (logger:msg logger:*trace* "<-- ~A~%" (json:encode-json-to-string msg)))
+    (logger:msg logger:*trace* "<-- ~A~%" (json:encode-json-to-string msg))
 
     (bt:with-recursive-lock-held ((lock obj))
         (when (and (hash-table-p msg)
@@ -206,8 +205,27 @@
             (remhash thread-id table))))
 
 
+(defun is-win-file (file)
+    (and file
+         (alpha-char-p (char file 0))
+         (char= #\: (char file 1))
+         (char= #\/ (char file 2))))
+
+
+(defun escape-win-file (file)
+    (format nil "~C%3A~A"
+        (char file 0)
+        (subseq file 2)))
+
+
+(defun escape-file (file)
+    (if (is-win-file file)
+        (format nil "/~A" (escape-win-file file))
+        file))
+
+
 (defun get-frame-text-stream (state file)
-    (let* ((file-url (format NIL "file://~A" file))
+    (let* ((file-url (format NIL "file://~A" (escape-file file)))
            (files (files state))
            (text (gethash file-url files)))
 
@@ -274,25 +292,28 @@
               (invoke-restart-interactively (elt restarts ndx)))))
 
 
+(defun run-fn (state msg fn stdout)
+    (let ((*standard-output* stdout)
+          (sb-ext:*invoke-debugger-hook* (lambda (c h)
+                                             (declare (ignore h))
+                                             (start-debugger state c (alive/frames:list-debug-frames))
+                                             (return-from run-fn)))
+          (*debugger-hook* (lambda (c h)
+                               (declare (ignore h))
+                               (start-debugger state c (alive/frames:list-debug-frames))
+                               (return-from run-fn))))
+        (save-thread-msg state (cdr (assoc :id msg)))
+        (funcall fn)))
+
+
 (defun run-in-thread (state msg fn)
     (let ((stdout *standard-output*))
         (bt:make-thread (lambda ()
                             (unwind-protect
-                                    (let ((*standard-output* stdout))
-                                        (save-thread-msg state (cdr (assoc :id msg)))
-                                        (send-msg state (notification:refresh))
-
-                                        (block handler
-                                            (handler-bind ((sb-impl::step-form-condition (lambda (err)
-                                                                                             (start-debugger state err (alive/frames:list-step-frames))
-                                                                                             (return-from handler)))
-                                                           (error (lambda (err)
-                                                                      (start-debugger state err (alive/frames:list-debug-frames))
-                                                                      (return-from handler))))
-                                                (funcall fn))))
+                                    (progn (send-msg state (notification:refresh))
+                                           (run-fn state msg fn stdout))
                                 (rem-thread-msg state)
                                 (send-msg state (notification:refresh))))
-
                         :name (next-thread-name state (if (assoc :id msg)
                                                           (cdr (assoc :method msg))
                                                           "response")))))
@@ -492,15 +513,16 @@
         (typecase result
             (symbol (send-msg state (resp:do-inspect id
                                                      :insp-id insp-id
-                                                     :result (inspector:to-result (symbol-value result)))))
+                                                     :result (inspector:to-result (if (fboundp result)
+                                                                                      result
+                                                                                      (symbol-value result))))))
             (otherwise (send-msg state (resp:do-inspect id
                                                         :insp-id insp-id
                                                         :result (inspector:to-result result)))))))
 
 
 (defun stop (state)
-    (when (logger:has-level logger:*info*)
-          (logger:msg logger:*info* "Stopping state ~A" state))
+    (logger:msg logger:*info* "Stopping state ~A" state)
 
     (setf (running state) NIL)
 
@@ -539,6 +561,8 @@
                                         (params (cdr (assoc :params msg)))
                                         (path (cdr (assoc :path params)))
                                         (msgs (file:do-load path
+                                                            :stdin-fn (lambda ()
+                                                                          (wait-for-input state))
                                                             :stdout-fn (lambda (data)
                                                                            (when (assoc :show-stdout params)
                                                                                  (send-msg state (notification:stdout data))))
@@ -546,7 +570,7 @@
                                                                            (when (assoc :show-stderr params)
                                                                                  (send-msg state (notification:stderr data)))))))
 
-                                     (resp:load-file id msgs)))))
+                                     (send-msg state (resp:load-file id msgs))))))
 
 
 (defun do-expand (state msg fn)
@@ -871,6 +895,8 @@
                                         (path (cdr (assoc :path params))))
 
                                      (file:do-compile path
+                                                      :stdin-fn (lambda ()
+                                                                    (wait-for-input state))
                                                       :stdout-fn (lambda (data)
                                                                      (send-msg state (notification:stdout data)))
                                                       :stderr-fn (lambda (data)
@@ -896,6 +922,8 @@
 
         (run-in-thread state msg (lambda ()
                                      (asdf:load-system :name name
+                                                       :stdin-fn (lambda ()
+                                                                     (wait-for-input state))
                                                        :stdout-fn (lambda (data)
                                                                       (send-msg state (notification:stdout data)))
                                                        :stderr-fn (lambda (data)
@@ -1022,8 +1050,7 @@
                         (progn (when id
                                      (save-thread-msg state id))
 
-                               (when (logger:has-level logger:*trace*)
-                                     (logger:msg logger:*trace* "--> ~A~%" (json:encode-json-to-string msg)))
+                               (logger:msg logger:*trace* "--> ~A~%" (json:encode-json-to-string msg))
 
                                (handle-msg state msg))
 
@@ -1086,5 +1113,4 @@
 
     (start-read-thread state)
 
-    (when (logger:has-level logger:*info*)
-          (logger:msg logger:*info* "Started state ~A" state)))
+    (logger:msg logger:*info* "Started state ~A" state))
