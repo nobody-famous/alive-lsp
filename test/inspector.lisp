@@ -122,6 +122,23 @@
                               :actual (hash-table-count insp-result)))))
 
 
+(defun cons-test ()
+    (clue:test "Cons Test"
+        (let ((insp-result (inspector:to-result (cons 5 10))))
+            (clue:check-equal :expected T
+                              :actual (hash-table-p insp-result))
+            (clue:check-equal :expected 2
+                              :actual (hash-table-count insp-result)))))
+
+
+(defun create-test ()
+    (clue:test "Create Test"
+        (let ((insp (inspector:create :text "nil" :pkg "cl-user" :result "result")))
+            (clue:check-equal :expected "nil" :actual (inspector:get-text insp))
+            (clue:check-equal :expected "cl-user" :actual (inspector:get-pkg insp))
+            (clue:check-equal :expected "result" :actual (inspector:get-result insp)))))
+
+
 (defun run-all ()
     (clue:suite "Inspector Tests"
         (fn-test)
@@ -132,4 +149,6 @@
         (vector-test)
         (array-test)
         (function-test)
-        (symbol-test)))
+        (symbol-test)
+        (cons-test)
+        (create-test)))
