@@ -1,7 +1,6 @@
 (defpackage :alive/lsp/completions
     (:use :cl)
-    (:export :create-item
-             :simple
+    (:export :simple
 
              :*kind-text*
              :*kind-method*
@@ -150,10 +149,6 @@
                      :insert-format insert-format)))
 
 
-(defun strict-match (pref str)
-    (string= pref (subseq str 0 (length pref))))
-
-
 (defun symbols-to-items (&key name symbols pkg)
     (let ((pref (string-downcase name)))
         (mapcar (lambda (name)
@@ -202,14 +197,6 @@
               (T '()))))
 
 
-(defun prefix-symbols (pref items)
-    (loop :for item :in items :do
-              (setf (gethash "label" item) (format nil "~A~A" pref (gethash "label" item)))
-              (setf (gethash "insertText" item) (format nil "~A~A" pref (gethash "insertText" item)))
-
-          :finally (return items)))
-
-
 (defun simple (&key text pos)
     (let* ((tokens (tokenizer:from-stream (make-string-input-stream text)))
            (pkg (packages:lookup (packages:for-pos text pos)))
@@ -238,13 +225,13 @@
 
                       ((and (eq (token:get-type-value token1) types:*symbol*)
                             (eq (token:get-type-value token2) types:*quote*))
-                          (prefix-symbols "'" (symbol-no-pkg :name (token:get-text token1)
-                                                             :pkg-name (package-name *package*))))
+                          (symbol-no-pkg :name (token:get-text token1)
+                                         :pkg-name (package-name *package*)))
 
                       ((and (eq (token:get-type-value token1) types:*symbol*)
                             (eq (token:get-type-value token2) types:*back-quote*))
-                          (prefix-symbols "`" (symbol-no-pkg :name (token:get-text token1)
-                                                             :pkg-name (package-name *package*))))
+                          (symbol-no-pkg :name (token:get-text token1)
+                                         :pkg-name (package-name *package*)))
 
                       ((eq (token:get-type-value token1) types:*symbol*)
                           (symbol-no-pkg :name (token:get-text token1)

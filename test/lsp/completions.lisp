@@ -40,9 +40,33 @@
                               :actual (length actual)))))
 
 
+(defun test-quote ()
+    (clue:test "Quote"
+        (let ((actual (comps:simple :text "'*debug-io"
+                                    :pos (pos:create 0 10))))
+            (clue:check-equal :expected 2
+                              :actual (length actual))))
+
+    (clue:test "Quote 2"
+        (let ((actual (comps:simple :text "'\"\""
+                                    :pos (pos:create 0 3))))
+            (clue:check-equal :expected 0
+                              :actual (length actual)))))
+
+
+(defun test-backquote ()
+    (clue:test "Backquote"
+        (let ((actual (comps:simple :text "`*debug-io"
+                                    :pos (pos:create 0 10))))
+            (clue:check-equal :expected 2
+                              :actual (length actual)))))
+
+
 (defun run-all ()
     (clue:suite "Completion Tests"
         (test-symbols-m)
         (test-defmacro)
         (test-symbols)
-        (test-debug-io)))
+        (test-debug-io)
+        (test-quote)
+        (test-backquote)))
