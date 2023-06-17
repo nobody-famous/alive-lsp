@@ -62,6 +62,14 @@
                               :actual (length actual)))))
 
 
+(defun test-colons ()
+    (clue:test "Colons"
+        (let ((actual (comps:simple :text ":foo"
+                                    :pos (pos:create 0 4))))
+            (clue:check-equal :expected 2
+                              :actual (length actual)))))
+
+
 (defun run-all ()
     (clue:suite "Completion Tests"
         (test-symbols-m)
@@ -69,4 +77,5 @@
         (test-symbols)
         (test-debug-io)
         (test-quote)
-        (test-backquote)))
+        (test-backquote)
+        (test-colons)))

@@ -218,10 +218,16 @@
                                            :num-colons (length (token:get-text token1))
                                            :pkg-name (token:get-text token2)))
 
+                      ((and (eq (token:get-type-value token1) types:*symbol*)
+                            (eq (token:get-type-value token2) types:*colons*))
+                          (symbol-with-pkg :name (token:get-text token1)
+                                           :num-colons (length (token:get-text token2))
+                                           :pkg-name (package-name *package*)))
+
                       ((eq (token:get-type-value token1) types:*colons*)
                           (symbol-with-pkg :name ""
                                            :num-colons (length (token:get-text token1))
-                                           :pkg-name (package-name *package*)))
+                                           :pkg-name "keyword"))
 
                       ((and (eq (token:get-type-value token1) types:*symbol*)
                             (eq (token:get-type-value token2) types:*quote*))

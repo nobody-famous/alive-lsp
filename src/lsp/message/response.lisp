@@ -70,7 +70,12 @@
 
 
 (defun completion (id &key items)
-    (result id "items" items))
+    (let ((data (make-hash-table :test #'equalp)))
+
+        (setf (gethash "isIncomplete" data) T)
+        (setf (gethash "items" data) items)
+
+        (message:create-response id :result-value data)))
 
 
 (defun hover (id &key value)
