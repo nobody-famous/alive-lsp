@@ -173,13 +173,15 @@
 (defun get-pkg-matches (&key name pkg-name)
     (let* ((pref (string-downcase name))
            (req-pkg (find-package (string-upcase pkg-name)))
-           (pkg (if req-pkg req-pkg *package*)))
+           (current-pkg (if req-pkg req-pkg *package*)))
 
-        (symbols-to-items :name pref
-                          :pkg pkg
-                          :symbols (mapcar #'string-downcase
-                                           (mapcar #'package-name
-                                                   (list-all-packages))))))
+        (loop :with pkgs := ()
+              :for pkg :in (list-all-packages)
+              :do (push (package-name pkg) pkgs)
+                  (setf pkgs (append pkgs (package-nicknames pkg)))
+              :finally (return (symbols-to-items :name pref
+                                                 :pkg current-pkg
+                                                 :symbols (mapcar #'string-downcase pkgs))))))
 
 
 (defun symbol-no-pkg (&key name pkg-name)
@@ -220,14 +222,12 @@
 
                       ((and (eq (token:get-type-value token1) types:*symbol*)
                             (eq (token:get-type-value token2) types:*colons*))
-                          (symbol-with-pkg :name (token:get-text token1)
-                                           :num-colons (length (token:get-text token2))
-                                           :pkg-name (package-name *package*)))
+                          (symbol-no-pkg :name (token:get-text token1)
+                                         :pkg-name (package-name *package*)))
 
                       ((eq (token:get-type-value token1) types:*colons*)
-                          (symbol-with-pkg :name ""
-                                           :num-colons (length (token:get-text token1))
-                                           :pkg-name "keyword"))
+                          (symbol-no-pkg :name ""
+                                         :pkg-name (package-name *package*)))
 
                       ((and (eq (token:get-type-value token1) types:*symbol*)
                             (eq (token:get-type-value token2) types:*quote*))
