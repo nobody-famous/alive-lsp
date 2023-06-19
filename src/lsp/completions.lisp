@@ -184,6 +184,22 @@
                                                  :symbols (mapcar #'string-downcase pkgs))))))
 
 
+(defun has-item (symbols item)
+    (reduce (lambda (acc value)
+                (or acc
+                    (string= (gethash "label" value) (gethash "label" item))))
+            symbols
+        :initial-value NIL))
+
+
+(defun create-set (pkgs symbols)
+    (loop :with items := (copy-list pkgs)
+          :for sym :in symbols
+          :do (unless (has-item items sym)
+                  (push sym items))
+          :finally (return items)))
+
+
 (defun symbol-no-pkg (&key name pkg-name)
     (let ((pkgs (get-pkg-matches
                     :name name
@@ -195,7 +211,7 @@
 
         (cond ((and pkgs (not symbols)) pkgs)
               ((and (not pkgs) symbols) symbols)
-              ((and pkgs symbols) (concatenate 'cons pkgs symbols))
+              ((and pkgs symbols) (create-set pkgs symbols))
               (T '()))))
 
 

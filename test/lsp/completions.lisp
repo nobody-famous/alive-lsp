@@ -63,10 +63,23 @@
 
 
 (defun test-colons ()
-    (clue:test "Colons"
-        (let ((actual (comps:simple :text ":foo"
-                                    :pos (pos:create 0 4))))
+    (clue:test "Colon symbol"
+        (let ((actual (comps:simple :text ":cl-user"
+                                    :pos (pos:create 0 8))))
             (clue:check-equal :expected 2
+                              :actual (length actual))))
+
+    (clue:test "Colon no symbol"
+        (let ((actual (comps:simple :text ":"
+                                    :pos (pos:create 0 8))))
+            (clue:check-equal :expected T
+                              :actual (< 100 (length actual))))))
+
+
+(defun test-symbol-no-pkg ()
+    (clue:test "Packages without symbols"
+        (let ((actual (comps::symbol-no-pkg :name "alive/test/eval" :pkg-name "cl-user")))
+            (clue:check-equal :expected 1
                               :actual (length actual)))))
 
 
@@ -78,4 +91,5 @@
         (test-debug-io)
         (test-quote)
         (test-backquote)
-        (test-colons)))
+        (test-colons)
+        (test-symbol-no-pkg)))
