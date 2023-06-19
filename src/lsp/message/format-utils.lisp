@@ -7,15 +7,6 @@
 (in-package :alive/lsp/message/format-utils)
 
 
-(defun to-lsp-pos (pos)
-    (let ((lsp-pos (make-hash-table :test #'equalp)))
-
-        (setf (gethash "line" lsp-pos) (cdr (assoc :line pos)))
-        (setf (gethash "character" lsp-pos) (cdr (assoc :character pos)))
-
-        lsp-pos))
-
-
 (defun to-lsp-range (range)
     (let ((lsp-range (make-hash-table :test #'equalp)))
 
