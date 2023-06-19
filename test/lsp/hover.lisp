@@ -14,6 +14,14 @@
                                                            :pos (pos:create 0 3))))))
 
 
+(defun test-symbol-doc ()
+    (clue:test "Get symbol doc"
+        (let ((actual (hover::get-symbol-doc "*debug-io*" "cl-user")))
+            (clue:check-equal :expected T
+                              :actual (stringp actual)))))
+
+
 (defun run-all ()
     (clue:suite "Hover Tests"
-        (test-defun)))
+        (test-defun)
+        (test-symbol-doc)))
