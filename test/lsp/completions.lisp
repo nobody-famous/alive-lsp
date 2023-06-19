@@ -80,7 +80,18 @@
     (clue:test "Packages without symbols"
         (let ((actual (comps::symbol-no-pkg :name "alive/test/eval" :pkg-name "cl-user")))
             (clue:check-equal :expected 1
+                              :actual (length actual))))
+
+    (clue:test "Packages and symbols"
+        (let ((actual (comps::symbol-no-pkg :name "zzz" :pkg-name "yyy")))
+            (clue:check-equal :expected 0
                               :actual (length actual)))))
+
+
+(defun test-to-snippet ()
+    (clue:test "To snippet"
+        (let ((actual (comps::to-snippet "foo" 5)))
+            (clue:check-equal :expected nil :actual actual))))
 
 
 (defun run-all ()
@@ -92,4 +103,5 @@
         (test-quote)
         (test-backquote)
         (test-colons)
-        (test-symbol-no-pkg)))
+        (test-symbol-no-pkg)
+        (test-to-snippet)))
