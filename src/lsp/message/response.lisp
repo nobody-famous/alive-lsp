@@ -99,11 +99,12 @@
     (result id "text" text))
 
 
-(defun do-inspect (id &key insp-id result (result-type "expr"))
-    (let ((data (make-hash-table :test #'equalp)))
+(defun do-inspect (id &key insp-id result result-type)
+    (let ((data (make-hash-table :test #'equalp))
+          (expr-type (if result-type result-type "expr")))
 
         (setf (gethash "id" data) insp-id)
-        (setf (gethash "resultType" data) result-type)
+        (setf (gethash "resultType" data) expr-type)
         (setf (gethash "result" data) result)
 
         (message:create-response id :result-value data)))
