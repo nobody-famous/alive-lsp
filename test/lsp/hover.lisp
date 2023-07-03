@@ -14,9 +14,18 @@
                                                            :pos (pos:create 0 3))))))
 
 
+(defparameter not-really-there 5)
+
+
 (defun test-symbol-doc ()
-    (clue:test "Get symbol doc"
+    (clue:test "Get debug-io"
         (let ((actual (hover::get-symbol-doc "*debug-io*" "cl-user")))
+            (clue:check-equal :expected T
+                              :actual (stringp actual))))
+
+    (makunbound 'not-really-there)
+    (clue:test "Get nonexistant symbol"
+        (let ((actual (hover::get-symbol-doc "not-really-there" "alive/test/lsp/hover")))
             (clue:check-equal :expected T
                               :actual (stringp actual)))))
 
