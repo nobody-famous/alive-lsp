@@ -86,6 +86,7 @@
                                        (:file "parse/forms")
 
                                        (:file "lsp/completions")
+                                       (:file "lsp/sem-analysis")
                                        (:file "lsp/sem-tokens")
                                        (:file "lsp/hover")
                                        (:file "lsp/message")

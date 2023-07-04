@@ -32,14 +32,14 @@
                         :initarg :comment-out-p)))
 
 
-(defmethod print-object ((obj open-form) out)
-    (declare (type stream out))
-    (format out "{type: ~A; expr-type: ~A; lambda-list: ~A; expr-ndx: ~A; comment-out: ~A}"
-        (form-type obj)
-        (expr-type obj)
-        (lambda-list obj)
-        (expr-ndx obj)
-        (comment-out-p obj)))
+#+n (defmethod print-object ((obj open-form) out)
+        (declare (type stream out))
+        (format out "{type: ~A; expr-type: ~A; lambda-list: ~A; expr-ndx: ~A; comment-out: ~A}"
+            (form-type obj)
+            (expr-type obj)
+            (lambda-list obj)
+            (expr-ndx obj)
+            (comment-out-p obj)))
 
 
 (defclass analysis-state ()
@@ -63,13 +63,13 @@
                 :initarg :opens)))
 
 
-(defmethod print-object ((obj analysis-state) out)
-    (declare (type stream out))
-    (format out "{lex ~A; sem ~A; comment-next ~A; opens ~A}"
-        (lex-tokens obj)
-        (reverse (sem-tokens obj))
-        (comment-next-p obj)
-        (opens obj)))
+#+n (defmethod print-object ((obj analysis-state) out)
+        (declare (type stream out))
+        (format out "{lex ~A; sem ~A; comment-next ~A; opens ~A}"
+            (lex-tokens obj)
+            (reverse (sem-tokens obj))
+            (comment-next-p obj)
+            (opens obj)))
 
 
 (defun peek-token (state)
@@ -85,19 +85,6 @@
 
         (eat-token state)
         token))
-
-
-(defun skip-ws (state)
-    (when (and (peek-token state)
-               (eq types:*ws* (token:get-type-value (peek-token state))))
-
-          (eat-token state)))
-
-
-(defun is-next-type (state target)
-    (let ((peeked (peek-token state)))
-        (and peeked
-             (eq (token:get-type-value peeked) target))))
 
 
 (defun add-sem-token (state token sem-type)
