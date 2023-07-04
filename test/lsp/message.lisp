@@ -10,11 +10,8 @@
 
 (defun test-create-resp ()
     (clue:test "Invalid response"
-        (handler-case
-                (progn
-                 (message:create-response 5 :result-value 10 :error-value 20)
-                 (clue:fail "Expected error"))
-            (error () nil)))
+        (clue:expect-fail (lambda ()
+                              (message:create-response 5 :result-value 10 :error-value 20))))
 
     (clue:test "Macro"
         (let* ((actual (response:macro 5 "foo"))

@@ -89,6 +89,7 @@
                                        (:file "lsp/sem-tokens")
                                        (:file "lsp/hover")
                                        (:file "lsp/message")
+                                       (:file "lsp/packet")
 
                                        (:file "session/messages")
 

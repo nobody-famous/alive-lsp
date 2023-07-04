@@ -11,6 +11,7 @@
         (alive/test/lsp/sem-tokens:run-all)
         (alive/test/lsp/hover:run-all)
         (alive/test/lsp/message:run-all)
+        (alive/test/lsp/packet:run-all)
         (alive/test/parse/tokens:run-all)
         (alive/test/parse/forms:run-all)
         (alive/test/session/messages:run-all)
