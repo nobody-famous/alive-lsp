@@ -207,23 +207,12 @@
 
 (defun update-symbol-lambda-list (open-form)
     (when (lambda-list open-form)
-          (let ((list-item (car (lambda-list open-form))))
-              (declare (ignore list-item))
-              (pop (lambda-list open-form)))))
+          (pop (lambda-list open-form))))
 
 
 (defun update-symbol-expr-state (open-form)
-    (let* ((e-type (expr-type open-form)))
-
-        (cond ((eq :fn-call e-type) (update-symbol-lambda-list open-form))
-
-              ((or (eq :lambda-list e-type)
-                   (eq :plain-list e-type)
-                   (eq :arg-init e-type)
-                   (eq :in-package e-type))
-                  nil)
-
-              (T (format T "SYMBOL EXPR HAS TYPE ~A~%" e-type)))))
+    (when (eq :fn-call (expr-type open-form))
+          (update-symbol-lambda-list open-form)))
 
 
 (defun update-symbol-fn-state (state lambda-list)

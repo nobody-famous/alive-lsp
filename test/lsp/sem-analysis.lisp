@@ -93,9 +93,10 @@
                               :actual (analysis::update-symbol-types state)))))
 
 
-(defun test-update-state ()
-    (clue:test "Update expr"
-        nil))
+(defun test-symbol-lookup ()
+    (clue:test "Symbol lookup"
+        (clue:check-equal :expected 10
+                          :actual (analysis::lookup-symbol-type "*debug-io*"))))
 
 
 (defun run-all ()
@@ -104,4 +105,4 @@
         (test-add-token)
         (test-get-type)
         (test-update-type)
-        (test-update-state)))
+        (test-symbol-lookup)))
