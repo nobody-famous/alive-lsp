@@ -93,9 +93,15 @@
                               :actual (analysis::update-symbol-types state)))))
 
 
+(defun test-update-state ()
+    (clue:test "Update expr"
+        nil))
+
+
 (defun run-all ()
     (clue:suite "Semantic Analysis Tests"
         (test-is-number)
         (test-add-token)
         (test-get-type)
-        (test-update-type)))
+        (test-update-type)
+        (test-update-state)))

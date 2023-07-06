@@ -240,11 +240,9 @@
     (let ((open-form (car (opens state))))
         (when (eq :expr (form-type open-form))
 
-              (if (expr-type open-form)
-                  (update-symbol-expr-state open-form)
-                  (if lambda-list
-                      (update-symbol-fn-state state lambda-list)
-                      (setf (expr-type (car (opens state))) :plain-list))))))
+              (cond ((expr-type open-form) (update-symbol-expr-state open-form))
+                    (lambda-list (update-symbol-fn-state state lambda-list))
+                    (T (setf (expr-type open-form) :plain-list))))))
 
 
 (defun process-symbol (state)
