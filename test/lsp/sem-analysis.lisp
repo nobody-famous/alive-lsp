@@ -99,10 +99,22 @@
                           :actual (analysis::lookup-symbol-type "*debug-io*"))))
 
 
+(defun test-open-parens-fn-call ()
+    (clue:test "Open parens fn call"
+        (let ((state (make-instance 'analysis::analysis-state))
+              (form (make-instance 'analysis::open-form)))
+            (setf (analysis::lambda-list form) (list (list 'a)))
+
+            (analysis::process-open-parens-fn-call state form)
+            (clue:check-equal :expected :arg-init
+                              :actual (analysis::expr-type (car (analysis::opens state)))))))
+
+
 (defun run-all ()
     (clue:suite "Semantic Analysis Tests"
         (test-is-number)
         (test-add-token)
         (test-get-type)
         (test-update-type)
-        (test-symbol-lookup)))
+        (test-symbol-lookup)
+        (test-open-parens-fn-call)))
