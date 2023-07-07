@@ -54,10 +54,9 @@
 (defun add-to-header (header pair)
     (destructuring-bind (key value)
             pair
-        (cond ((string= key "Content-Length") (setf (packet:content-length header)
-                                                  (parse-integer value)))
-
-              (T (error (format nil "Unhandled header key: ~A" key))))))
+        (when (string= key "Content-Length")
+              (setf (packet:content-length header)
+                  (parse-integer value)))))
 
 
 (defun parse-header (input)

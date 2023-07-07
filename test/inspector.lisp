@@ -15,7 +15,7 @@
 
             (clue:check-equal :expected T
                               :actual (hash-table-p insp-result))
-            (clue:check-equal :expected 3
+            (clue:check-equal :expected 4
                               :actual (hash-table-count insp-result)))))
 
 
@@ -27,7 +27,7 @@
 
             (clue:check-equal :expected T
                               :actual (hash-table-p insp-result))
-            (clue:check-equal :expected 1
+            (clue:check-equal :expected 2
                               :actual (hash-table-count insp-result)))))
 
 
@@ -41,7 +41,7 @@
             (let* ((insp-result (inspector:to-result data)))
                 (clue:check-equal :expected T
                                   :actual (hash-table-p insp-result))
-                (clue:check-equal :expected 5
+                (clue:check-equal :expected 6
                                   :actual (hash-table-count insp-result))))))
 
 
@@ -54,7 +54,7 @@
             (let* ((insp-result (inspector:to-result data)))
                 (clue:check-equal :expected T
                                   :actual (hash-table-p insp-result))
-                (clue:check-equal :expected 2
+                (clue:check-equal :expected 3
                                   :actual (hash-table-count insp-result))))))
 
 
@@ -67,7 +67,7 @@
             (let* ((insp-result (inspector:to-result data)))
                 (clue:check-equal :expected T
                                   :actual (hash-table-p insp-result))
-                (clue:check-equal :expected 2
+                (clue:check-equal :expected 3
                                   :actual (hash-table-count insp-result))))))
 
 
@@ -82,7 +82,7 @@
             (let* ((insp-result (inspector:to-result data)))
                 (clue:check-equal :expected T
                                   :actual (hash-table-p insp-result))
-                (clue:check-equal :expected 2
+                (clue:check-equal :expected 3
                                   :actual (hash-table-count insp-result))))))
 
 
@@ -100,8 +100,43 @@
             (let* ((insp-result (inspector:to-result data)))
                 (clue:check-equal :expected T
                                   :actual (hash-table-p insp-result))
-                (clue:check-equal :expected 2
+                (clue:check-equal :expected 3
                                   :actual (hash-table-count insp-result))))))
+
+
+(defun function-test ()
+    (clue:test "Function Test"
+        (let ((insp-result (inspector:to-result (alive/symbols:lookup "mapc" "cl-user"))))
+            (clue:check-equal :expected T
+                              :actual (hash-table-p insp-result))
+            (clue:check-equal :expected 4
+                              :actual (hash-table-count insp-result)))))
+
+
+(defun symbol-test ()
+    (clue:test "Symbol Test"
+        (let ((insp-result (inspector:to-result (alive/symbols:lookup "foo" "cl-user"))))
+            (clue:check-equal :expected T
+                              :actual (hash-table-p insp-result))
+            (clue:check-equal :expected 2
+                              :actual (hash-table-count insp-result)))))
+
+
+(defun cons-test ()
+    (clue:test "Cons Test"
+        (let ((insp-result (inspector:to-result (cons 5 10))))
+            (clue:check-equal :expected T
+                              :actual (hash-table-p insp-result))
+            (clue:check-equal :expected 2
+                              :actual (hash-table-count insp-result)))))
+
+
+(defun create-test ()
+    (clue:test "Create Test"
+        (let ((insp (inspector:create :text "nil" :pkg "cl-user" :result "result")))
+            (clue:check-equal :expected "nil" :actual (inspector:get-text insp))
+            (clue:check-equal :expected "cl-user" :actual (inspector:get-pkg insp))
+            (clue:check-equal :expected "result" :actual (inspector:get-result insp)))))
 
 
 (defun run-all ()
@@ -112,4 +147,8 @@
         (alist-test)
         (string-list-test)
         (vector-test)
-        (array-test)))
+        (array-test)
+        (function-test)
+        (symbol-test)
+        (cons-test)
+        (create-test)))

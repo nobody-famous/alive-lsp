@@ -1,7 +1,6 @@
 (defpackage :alive/lsp/completions
     (:use :cl)
-    (:export :create-item
-             :simple
+    (:export :simple
 
              :*kind-text*
              :*kind-method*
@@ -150,10 +149,6 @@
                      :insert-format insert-format)))
 
 
-(defun strict-match (pref str)
-    (string= pref (subseq str 0 (length pref))))
-
-
 (defun symbols-to-items (&key name symbols pkg)
     (let ((pref (string-downcase name)))
         (mapcar (lambda (name)
@@ -178,13 +173,31 @@
 (defun get-pkg-matches (&key name pkg-name)
     (let* ((pref (string-downcase name))
            (req-pkg (find-package (string-upcase pkg-name)))
-           (pkg (if req-pkg req-pkg *package*)))
+           (current-pkg (if req-pkg req-pkg *package*)))
 
-        (symbols-to-items :name pref
-                          :pkg pkg
-                          :symbols (mapcar #'string-downcase
-                                           (mapcar #'package-name
-                                                   (list-all-packages))))))
+        (loop :with pkgs := ()
+              :for pkg :in (list-all-packages)
+              :do (push (package-name pkg) pkgs)
+                  (setf pkgs (append pkgs (package-nicknames pkg)))
+              :finally (return (symbols-to-items :name pref
+                                                 :pkg current-pkg
+                                                 :symbols (mapcar #'string-downcase pkgs))))))
+
+
+(defun has-item (symbols item)
+    (reduce (lambda (acc value)
+                (or acc
+                    (string= (gethash "label" value) (gethash "label" item))))
+            symbols
+        :initial-value NIL))
+
+
+(defun create-set (pkgs symbols)
+    (loop :with items := (copy-list pkgs)
+          :for sym :in symbols
+          :do (unless (has-item items sym)
+                  (push sym items))
+          :finally (return items)))
 
 
 (defun symbol-no-pkg (&key name pkg-name)
@@ -198,16 +211,8 @@
 
         (cond ((and pkgs (not symbols)) pkgs)
               ((and (not pkgs) symbols) symbols)
-              ((and pkgs symbols) (concatenate 'cons pkgs symbols))
+              ((and pkgs symbols) (create-set pkgs symbols))
               (T '()))))
-
-
-(defun prefix-symbols (pref items)
-    (loop :for item :in items :do
-              (setf (gethash "label" item) (format nil "~A~A" pref (gethash "label" item)))
-              (setf (gethash "insertText" item) (format nil "~A~A" pref (gethash "insertText" item)))
-
-          :finally (return items)))
 
 
 (defun simple (&key text pos)
@@ -231,20 +236,24 @@
                                            :num-colons (length (token:get-text token1))
                                            :pkg-name (token:get-text token2)))
 
+                      ((and (eq (token:get-type-value token1) types:*symbol*)
+                            (eq (token:get-type-value token2) types:*colons*))
+                          (symbol-no-pkg :name (token:get-text token1)
+                                         :pkg-name (package-name *package*)))
+
                       ((eq (token:get-type-value token1) types:*colons*)
-                          (symbol-with-pkg :name ""
-                                           :num-colons (length (token:get-text token1))
-                                           :pkg-name (package-name *package*)))
+                          (symbol-no-pkg :name ""
+                                         :pkg-name (package-name *package*)))
 
                       ((and (eq (token:get-type-value token1) types:*symbol*)
                             (eq (token:get-type-value token2) types:*quote*))
-                          (prefix-symbols "'" (symbol-no-pkg :name (token:get-text token1)
-                                                             :pkg-name (package-name *package*))))
+                          (symbol-no-pkg :name (token:get-text token1)
+                                         :pkg-name (package-name *package*)))
 
                       ((and (eq (token:get-type-value token1) types:*symbol*)
                             (eq (token:get-type-value token2) types:*back-quote*))
-                          (prefix-symbols "`" (symbol-no-pkg :name (token:get-text token1)
-                                                             :pkg-name (package-name *package*))))
+                          (symbol-no-pkg :name (token:get-text token1)
+                                         :pkg-name (package-name *package*)))
 
                       ((eq (token:get-type-value token1) types:*symbol*)
                           (symbol-no-pkg :name (token:get-text token1)

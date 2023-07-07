@@ -40,9 +40,68 @@
                               :actual (length actual)))))
 
 
+(defun test-quote ()
+    (clue:test "Quote"
+        (let ((actual (comps:simple :text "'*debug-io"
+                                    :pos (pos:create 0 10))))
+            (clue:check-equal :expected 2
+                              :actual (length actual))))
+
+    (clue:test "Quote 2"
+        (let ((actual (comps:simple :text "'\"\""
+                                    :pos (pos:create 0 3))))
+            (clue:check-equal :expected 0
+                              :actual (length actual)))))
+
+
+(defun test-backquote ()
+    (clue:test "Backquote"
+        (let ((actual (comps:simple :text "`*debug-io"
+                                    :pos (pos:create 0 10))))
+            (clue:check-equal :expected 2
+                              :actual (length actual)))))
+
+
+(defun test-colons ()
+    (clue:test "Colon symbol"
+        (let ((actual (comps:simple :text ":cl-user"
+                                    :pos (pos:create 0 8))))
+            (clue:check-equal :expected 2
+                              :actual (length actual))))
+
+    (clue:test "Colon no symbol"
+        (let ((actual (comps:simple :text ":"
+                                    :pos (pos:create 0 8))))
+            (clue:check-equal :expected T
+                              :actual (< 100 (length actual))))))
+
+
+(defun test-symbol-no-pkg ()
+    (clue:test "Packages without symbols"
+        (let ((actual (comps::symbol-no-pkg :name "alive/test/eval" :pkg-name "cl-user")))
+            (clue:check-equal :expected 1
+                              :actual (length actual))))
+
+    (clue:test "Packages and symbols"
+        (let ((actual (comps::symbol-no-pkg :name "zzz" :pkg-name "yyy")))
+            (clue:check-equal :expected 0
+                              :actual (length actual)))))
+
+
+(defun test-to-snippet ()
+    (clue:test "To snippet"
+        (let ((actual (comps::to-snippet "foo" 5)))
+            (clue:check-equal :expected nil :actual actual))))
+
+
 (defun run-all ()
     (clue:suite "Completion Tests"
         (test-symbols-m)
         (test-defmacro)
         (test-symbols)
-        (test-debug-io)))
+        (test-debug-io)
+        (test-quote)
+        (test-backquote)
+        (test-colons)
+        (test-symbol-no-pkg)
+        (test-to-snippet)))

@@ -79,9 +79,3 @@
 
 (defun create-header ()
     (make-instance 'header))
-
-
-(defun create-result (req-id result-data)
-    (make-instance 'result-payload
-        :id req-id
-        :result result-data))

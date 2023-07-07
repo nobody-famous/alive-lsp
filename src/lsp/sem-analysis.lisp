@@ -32,14 +32,14 @@
                         :initarg :comment-out-p)))
 
 
-(defmethod print-object ((obj open-form) out)
-    (declare (type stream out))
-    (format out "{type: ~A; expr-type: ~A; lambda-list: ~A; expr-ndx: ~A; comment-out: ~A}"
-        (form-type obj)
-        (expr-type obj)
-        (lambda-list obj)
-        (expr-ndx obj)
-        (comment-out-p obj)))
+#+n (defmethod print-object ((obj open-form) out)
+        (declare (type stream out))
+        (format out "{type: ~A; expr-type: ~A; lambda-list: ~A; expr-ndx: ~A; comment-out: ~A}"
+            (form-type obj)
+            (expr-type obj)
+            (lambda-list obj)
+            (expr-ndx obj)
+            (comment-out-p obj)))
 
 
 (defclass analysis-state ()
@@ -63,13 +63,13 @@
                 :initarg :opens)))
 
 
-(defmethod print-object ((obj analysis-state) out)
-    (declare (type stream out))
-    (format out "{lex ~A; sem ~A; comment-next ~A; opens ~A}"
-        (lex-tokens obj)
-        (reverse (sem-tokens obj))
-        (comment-next-p obj)
-        (opens obj)))
+#+n (defmethod print-object ((obj analysis-state) out)
+        (declare (type stream out))
+        (format out "{lex ~A; sem ~A; comment-next ~A; opens ~A}"
+            (lex-tokens obj)
+            (reverse (sem-tokens obj))
+            (comment-next-p obj)
+            (opens obj)))
 
 
 (defun peek-token (state)
@@ -85,19 +85,6 @@
 
         (eat-token state)
         token))
-
-
-(defun skip-ws (state)
-    (when (and (peek-token state)
-               (eq types:*ws* (token:get-type-value (peek-token state))))
-
-          (eat-token state)))
-
-
-(defun is-next-type (state target)
-    (let ((peeked (peek-token state)))
-        (and peeked
-             (eq (token:get-type-value peeked) target))))
 
 
 (defun add-sem-token (state token sem-type)
@@ -220,23 +207,12 @@
 
 (defun update-symbol-lambda-list (open-form)
     (when (lambda-list open-form)
-          (let ((list-item (car (lambda-list open-form))))
-              (declare (ignore list-item))
-              (pop (lambda-list open-form)))))
+          (pop (lambda-list open-form))))
 
 
 (defun update-symbol-expr-state (open-form)
-    (let* ((e-type (expr-type open-form)))
-
-        (cond ((eq :fn-call e-type) (update-symbol-lambda-list open-form))
-
-              ((or (eq :lambda-list e-type)
-                   (eq :plain-list e-type)
-                   (eq :arg-init e-type)
-                   (eq :in-package e-type))
-                  nil)
-
-              (T (format T "SYMBOL EXPR HAS TYPE ~A~%" e-type)))))
+    (when (eq :fn-call (expr-type open-form))
+          (update-symbol-lambda-list open-form)))
 
 
 (defun update-symbol-fn-state (state lambda-list)
@@ -253,11 +229,9 @@
     (let ((open-form (car (opens state))))
         (when (eq :expr (form-type open-form))
 
-              (if (expr-type open-form)
-                  (update-symbol-expr-state open-form)
-                  (if lambda-list
-                      (update-symbol-fn-state state lambda-list)
-                      (setf (expr-type (car (opens state))) :plain-list))))))
+              (cond ((expr-type open-form) (update-symbol-expr-state open-form))
+                    (lambda-list (update-symbol-fn-state state lambda-list))
+                    (T (setf (expr-type open-form) :plain-list))))))
 
 
 (defun process-symbol (state)

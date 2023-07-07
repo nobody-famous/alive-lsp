@@ -52,3 +52,11 @@
 (defun fail (reason)
     (error 'test-failed
         :reason reason))
+
+
+(defun expect-fail (fn)
+    (let ((has-error nil))
+        (handler-case (progn (funcall fn)
+                             (setf has-error nil))
+            (error () (setf has-error T)))
+        (unless has-error (error "Expected failure"))))

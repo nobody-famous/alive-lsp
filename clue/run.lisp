@@ -13,6 +13,8 @@
 
                        (error (c) (format nil "~A" c)))))
 
-         (format T "~A [~A]~%" ,label (if result
-                                          (format nil "FAILED: ~A" result)
-                                          "OK"))))
+         (format T "[~A] ~A~%"
+             (if result
+                 (format nil "FAILED: ~A" result)
+                 "OK")
+             ,label)))
