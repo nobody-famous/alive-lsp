@@ -24,19 +24,35 @@
                  ,@body))))
 
 
-(defun get-err-location (forms)
+(defun get-int-value (needle hay start delim)
+    (let* ((pos (search needle hay :start2 start))
+           (begin (when pos (+ pos (length needle))))
+           (end (when begin (search delim hay :start2 begin))))
+
+        (when (and begin end)
+              (parse-integer (subseq hay begin end)))))
+
+
+(defun parse-err-loc (err-msg)
+    (let ((line (get-int-value "line: " err-msg 0 ","))
+          (col (get-int-value "column: " err-msg 0 ",")))
+
+        (when (and line col)
+              (range:create (pos:create (- line 1) col)
+                            (pos:create (- line 1) #xFFFF)))))
+
+
+(defun get-err-location (err forms)
     (let* ((context (sb-c::find-error-context nil))
            (source-path (when context (reverse (sb-c::compiler-error-context-original-source-path context)))))
 
         (if (not source-path)
-            (range:create (form:get-start (car forms))
-                          (form:get-end (car (reverse forms))))
-
+            (parse-err-loc (string-downcase (princ-to-string err)))
             (forms:get-range-for-path forms source-path))))
 
 
 (defun send-message (out-fn forms sev err)
-    (let* ((loc (get-err-location forms))
+    (let* ((loc (get-err-location err forms))
            (msg (comp-msg:create :severity sev
                                  :location loc
                                  :message (format nil "~A" err))))
