@@ -86,33 +86,40 @@
                          (push prev (parse-state-forms state)))))
 
 
+(defun matched-close-paren (state token open-form)
+    (form:set-end open-form (token:get-end token))
+    (form:set-end-offset open-form (token:get-end-offset token))
+    (let ((next-open (car (parse-state-opens state))))
+        (cond ((or (is-comma next-open)
+                   (is-quote next-open))
+                  (form:add-kid next-open open-form)
+                  (form:set-end next-open (form:get-end open-form))
+                  (form:set-end-offset next-open (form:get-end-offset open-form))
+                  (collapse-opens state types:*open-paren*))
+
+              ((is-open-paren next-open)
+                  (form:add-kid (car (parse-state-opens state)) open-form))
+
+              ((is-symbol next-open) nil)
+
+              (T (push open-form (parse-state-forms state))))))
+
+
+(defun unmatched-close-paren (state token)
+    (push (form:create :start (token:get-start token)
+                       :start-offset (token:get-start-offset token)
+                       :end nil
+                       :form-type types:*unmatched-close-paren*)
+          (parse-state-forms state)))
+
+
 (defun close-paren (state token)
     (collapse-opens state types:*open-paren*)
 
     (let ((open-form (pop (parse-state-opens state))))
-        (unless (is-open-paren open-form)
-            (error (make-instance 'errors:input-error
-                       :start (token:get-start token)
-                       :end (token:get-end token)
-                       :message "Unmatched close parenthesis")))
-
-        (form:set-end open-form (token:get-end token))
-        (form:set-end-offset open-form (token:get-end-offset token))
-
-        (let ((next-open (car (parse-state-opens state))))
-            (cond ((or (is-comma next-open)
-                       (is-quote next-open))
-                      (form:add-kid next-open open-form)
-                      (form:set-end next-open (form:get-end open-form))
-                      (form:set-end-offset next-open (form:get-end-offset open-form))
-                      (collapse-opens state types:*open-paren*))
-
-                  ((is-open-paren next-open)
-                      (form:add-kid (car (parse-state-opens state)) open-form))
-
-                  ((is-symbol next-open) nil)
-
-                  (T (push open-form (parse-state-forms state)))))))
+        (if (is-open-paren open-form)
+            (matched-close-paren state token open-form)
+            (unmatched-close-paren state token))))
 
 
 (defun start-quote (state token)
