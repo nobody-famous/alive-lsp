@@ -3,8 +3,7 @@
     (:export :do-compile
              :do-load
              :try-compile)
-    (:local-nicknames (:parse :alive/parse/stream)
-                      (:form :alive/parse/form)
+    (:local-nicknames (:form :alive/parse/form)
                       (:forms :alive/parse/forms)
                       (:logger :alive/logger)
                       (:token :alive/parse/token)

@@ -2,9 +2,7 @@
     (:use :cl)
     (:export :callable-p
              :get-lambda-list
-             :function-p)
-    (:local-nicknames (:parse :alive/parse/stream)
-                      (:types :alive/types)))
+             :function-p))
 
 (in-package :alive/sbcl/symbols)
 
