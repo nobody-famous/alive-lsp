@@ -201,7 +201,10 @@
                                 (setf done t)
                                 (progn (decf depth)
                                        (setf have-bar nil)))
-                            (setf have-pound t))))
+                            (setf have-pound t)))
+
+                    (T (setf have-pound nil)
+                       (setf have-bar nil)))
 
               (next-char state)
 
