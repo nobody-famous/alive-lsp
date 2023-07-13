@@ -109,14 +109,14 @@
             (clue:check-exists (gethash "result" actual))))
 
     (clue:test "Selection range"
-        (let ((actual (response:selection-range 5 (list (list (list (list :start (list :line 0) (list :character 0))
-                                                                    (list :end (list :line 198) (list :character 56)))
-                                                              (list (list :start (list :line 188) (list :character 0))
-                                                                    (list :end (list :line 192) (list :character 58)))
-                                                              (list (list :start (list :line 189) (list :character 4))
-                                                                    (list :end (list :line 189) (list :character 41)))
-                                                              (list (list :start (list :line 189) (list :character 4))
-                                                                    (list :end (list :line 189) (list :character 41))))))))
+        (let ((actual (response:selection-range 5 (list (list (list (list :start (cons :line 0) (cons :character 0))
+                                                                    (list :end (cons :line 198) (cons :character 56)))
+                                                              (list (list :start (cons :line 188) (cons :character 0))
+                                                                    (list :end (cons :line 192) (cons :character 58)))
+                                                              (list (list :start (cons :line 189) (cons :character 4))
+                                                                    (list :end (cons :line 189) (cons :character 41)))
+                                                              (list (list :start (cons :line 189) (cons :character 4))
+                                                                    (list :end (cons :line 189) (cons :character 41))))))))
             (clue:check-exists (gethash "result" actual)))))
 
 
