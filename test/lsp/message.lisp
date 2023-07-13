@@ -3,7 +3,8 @@
     (:export :run-all)
     (:local-nicknames (:message :alive/lsp/message/abstract)
                       (:request :alive/lsp/message/request)
-                      (:response :alive/lsp/message/response)))
+                      (:response :alive/lsp/message/response)
+                      (:sem-tokens :alive/lsp/types/sem-tokens)))
 
 (in-package :alive/test/lsp/message)
 
@@ -86,6 +87,22 @@
                               :actual (gethash "messages" result)))))
 
 
+(defun test-sem-tokens-resp ()
+    (clue:test "Create sem tokens response"
+        (let* ((tokens (list (sem-tokens:create :token-type sem-tokens:*symbol*
+                                                :line 0
+                                                :start 0
+                                                :end 5)
+                             (sem-tokens:create :token-type sem-tokens:*number*
+                                                :line 1
+                                                :start 6
+                                                :end 10)))
+               (actual (response:sem-tokens 5 tokens))
+               (result (gethash "result" actual)))
+            (clue:check-equal :expected (gethash "data" result)
+                              :actual (list 0 0 5 10 0 1 6 4 3 0)))))
+
+
 (defun test-create-req ()
     (clue:test "Create request"
         (let* ((actual (request:debugger 5 :message 10 :restarts 15 :stack-trace 20))
@@ -104,4 +121,5 @@
 (defun run-all ()
     (clue:suite "Message tests"
         (test-create-resp)
+        (test-sem-tokens-resp)
         (test-create-req)))
