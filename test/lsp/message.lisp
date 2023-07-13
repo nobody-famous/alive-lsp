@@ -2,6 +2,7 @@
     (:use :cl)
     (:export :run-all)
     (:local-nicknames (:message :alive/lsp/message/abstract)
+                      (:event :alive/lsp/message/notification)
                       (:request :alive/lsp/message/request)
                       (:response :alive/lsp/message/response)
                       (:sem-tokens :alive/lsp/types/sem-tokens)))
@@ -141,10 +142,32 @@
             (clue:check-equal :expected 20
                               :actual (gethash "stackTrace" params)))))
 
+
+(defun stream-test (fn label method)
+    (clue:test label
+        (let* ((actual (funcall fn "foo"))
+               (params (gethash "params" actual)))
+            (clue:check-equal :expected method
+                              :actual (gethash "method" actual))
+            (clue:check-equal :expected "foo"
+                              :actual (gethash "data" params)))))
+
+
+(defun test-notifications ()
+    (clue:test "Refresh"
+        (let ((actual (event:refresh)))
+            (clue:check-equal :expected "$/alive/refresh"
+                              :actual (gethash "method" actual))))
+
+    (stream-test 'event:stdout "Stdout" "$/alive/stdout")
+    (stream-test 'event:stderr "Stderr" "$/alive/stderr"))
+
+
 (defun run-all ()
     (clue:suite "Message tests"
         (test-create-resp)
         (test-sem-tokens-resp)
         (test-create-req)
         (test-selection-range)
-        (test-doc-symbols)))
+        (test-doc-symbols)
+        (test-notifications)))

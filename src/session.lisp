@@ -910,7 +910,9 @@
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
            (path (cdr (assoc :path params)))
-           (msgs (file:try-compile path)))
+           (msgs (handler-case
+                         (file:try-compile path)
+                     (T () nil))))
 
         (resp:try-compile id msgs)))
 
@@ -1055,7 +1057,7 @@
                                (handle-msg state msg))
 
                     (error (c)
-                        (logger:msg logger:*error* "Message Handler: ~A" c)
+                        (logger:msg logger:*error* "Message Handler: ~A ~A" msg c)
                         (message:create-error id
                                               :code errors:*internal-error*
                                               :message (princ-to-string c))))
