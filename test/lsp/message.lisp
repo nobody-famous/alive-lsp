@@ -59,6 +59,30 @@
             (clue:check-equal :expected 5
                               :actual (gethash "id" actual))
             (clue:check-equal :expected 10
+                              :actual (gethash "messages" result))))
+
+    (clue:test "Do eval"
+        (let* ((actual (response:do-eval 5 "10"))
+               (result (gethash "result" actual)))
+            (clue:check-equal :expected 5
+                              :actual (gethash "id" actual))
+            (clue:check-equal :expected "10"
+                              :actual (gethash "text" result))))
+
+    (clue:test "Get symbol"
+        (let* ((actual (response:get-symbol 5 :value "10"))
+               (result (gethash "result" actual)))
+            (clue:check-equal :expected 5
+                              :actual (gethash "id" actual))
+            (clue:check-equal :expected "10"
+                              :actual (gethash "value" result))))
+
+    (clue:test "Try compile"
+        (let* ((actual (response:try-compile 5 "10"))
+               (result (gethash "result" actual)))
+            (clue:check-equal :expected 5
+                              :actual (gethash "id" actual))
+            (clue:check-equal :expected "10"
                               :actual (gethash "messages" result)))))
 
 

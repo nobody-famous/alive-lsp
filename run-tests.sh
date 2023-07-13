@@ -5,4 +5,4 @@ sbcl \
     --non-interactive \
     --load alive-lsp.asd \
     --eval "(asdf:load-system \"alive-lsp/test\")" \
-    --eval "(defparameter *server* (alive/test/eval::errors))"
+    --eval "(alive/test/coverage:run)"
