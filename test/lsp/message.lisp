@@ -120,6 +120,12 @@
             (clue:check-exists (gethash "result" actual)))))
 
 
+(defun test-doc-symbols ()
+    (clue:test "Doc symbols empty"
+        (let ((actual (response:doc-symbols 5 nil)))
+            (clue:check-exists (gethash "result" actual)))))
+
+
 (defun test-create-req ()
     (clue:test "Create request"
         (let* ((actual (request:debugger 5 :message 10 :restarts 15 :stack-trace 20))
@@ -140,4 +146,5 @@
         (test-create-resp)
         (test-sem-tokens-resp)
         (test-create-req)
-        (test-selection-range)))
+        (test-selection-range)
+        (test-doc-symbols)))
