@@ -33,11 +33,9 @@
 
 
 (defun parse-err-loc (err-msg)
-    (let ((line (get-int-value "line: " err-msg 0 ","))
-          (col (get-int-value "column: " err-msg 0 ",")))
-
-        (when (and line col)
-              (range:create (pos:create (- line 1) col)
+    (let ((line (get-int-value "line: " err-msg 0 ",")))
+        (when line
+              (range:create (pos:create (- line 1) 0)
                             (pos:create (- line 1) #xFFFF)))))
 
 

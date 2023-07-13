@@ -103,6 +103,23 @@
                               :actual (list 0 0 5 10 0 1 6 4 3 0)))))
 
 
+(defun test-selection-range ()
+    (clue:test "Selection range empty"
+        (let ((actual (response:selection-range 5 nil)))
+            (clue:check-exists (gethash "result" actual))))
+
+    (clue:test "Selection range"
+        (let ((actual (response:selection-range 5 (list (list (list (list :start (list :line 0) (list :character 0))
+                                                                    (list :end (list :line 198) (list :character 56)))
+                                                              (list (list :start (list :line 188) (list :character 0))
+                                                                    (list :end (list :line 192) (list :character 58)))
+                                                              (list (list :start (list :line 189) (list :character 4))
+                                                                    (list :end (list :line 189) (list :character 41)))
+                                                              (list (list :start (list :line 189) (list :character 4))
+                                                                    (list :end (list :line 189) (list :character 41))))))))
+            (clue:check-exists (gethash "result" actual)))))
+
+
 (defun test-create-req ()
     (clue:test "Create request"
         (let* ((actual (request:debugger 5 :message 10 :restarts 15 :stack-trace 20))
@@ -122,4 +139,5 @@
     (clue:suite "Message tests"
         (test-create-resp)
         (test-sem-tokens-resp)
-        (test-create-req)))
+        (test-create-req)
+        (test-selection-range)))

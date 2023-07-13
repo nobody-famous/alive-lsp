@@ -187,7 +187,8 @@
 
 
 (defun selection-range (id ranges)
-    (let ((value (mapcar #'to-nested-ranges ranges)))
+    (let ((value (or (mapcar #'to-nested-ranges ranges)
+                     (make-hash-table :test #'equalp))))
         (message:create-response id :result-value value)))
 
 
