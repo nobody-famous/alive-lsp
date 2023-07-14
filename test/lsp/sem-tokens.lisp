@@ -403,6 +403,20 @@
                                                       :end 20)))))
 
 
+(defun test-if-true ()
+    (clue:test "If true"
+        (check-combo "#+common-lisp 10" (list (sem-types:create
+                                                  :token-type sem-types:*macro*
+                                                  :line 0
+                                                  :start 0
+                                                  :end 13)
+                                              (sem-types:create
+                                                  :token-type sem-types:*number*
+                                                  :line 0
+                                                  :start 14
+                                                  :end 16)))))
+
+
 (defun test-if-false ()
     (clue:test "If false"
         (check-combo "#+n (* () () ())" (list (sem-types:create
@@ -1087,6 +1101,7 @@
         (test-after-if-false)
         (test-defun-keys)
         (test-if-false)
+        (test-if-true)
         (test-octets)
         (test-long-ifdef)
         (test-do)
