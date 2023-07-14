@@ -183,7 +183,7 @@
     (bt:with-recursive-lock-held ((lock obj))
         (when (and (hash-table-p msg)
                    (gethash "jsonrpc" msg))
-              (write-sequence (flexi-streams:string-to-octets (packet:to-wire msg)) (usocket:socket-stream (conn obj)))
+              (write-sequence (packet:to-wire msg) (usocket:socket-stream (conn obj)))
               (force-output (usocket:socket-stream (conn obj))))))
 
 
@@ -602,7 +602,8 @@
            (uri (cdr (assoc :uri doc)))
            (file-text (get-file-text state uri))
            (text (if file-text file-text ""))
-           (items (comps:simple :text text :pos pos)))
+           (items (or (comps:simple :text text :pos pos)
+                      (make-array 0))))
 
         (resp:completion id
                          :items items)))
@@ -910,7 +911,9 @@
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
            (path (cdr (assoc :path params)))
-           (msgs (file:try-compile path)))
+           (msgs (handler-case
+                         (file:try-compile path)
+                     (T () nil))))
 
         (resp:try-compile id msgs)))
 
@@ -1055,7 +1058,7 @@
                                (handle-msg state msg))
 
                     (error (c)
-                        (logger:msg logger:*error* "Message Handler: ~A" c)
+                        (logger:msg logger:*error* "Message Handler: ~A ~A" msg c)
                         (message:create-error id
                                               :code errors:*internal-error*
                                               :message (princ-to-string c))))

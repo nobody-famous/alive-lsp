@@ -6,7 +6,12 @@
         {
             "label": "Run Tests",
             "type": "shell",
-            "command": "./run-tests.sh",
+            "linux": {
+                "command": "./run-tests.sh",
+            },
+            "windows": {
+                "command": "./run-tests.ps1",
+            },
             "problemMatcher": []
         },
         {

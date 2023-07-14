@@ -20,7 +20,6 @@
                                        (:file "text-edit")
                                        (:file "utils")
 
-                                       (:file "parse/stream")
                                        (:file "parse/token")
                                        (:file "parse/tokenizer")
                                        (:file "parse/form")

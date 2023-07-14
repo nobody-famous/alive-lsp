@@ -37,7 +37,7 @@
            (comp-opts (make-hash-table :test #'equalp))
            (on-type-opts (make-hash-table :test #'equalp)))
 
-        (setf (gethash "triggerCharacters" comp-opts) (list #\:))
+        (setf (gethash "triggerCharacters" comp-opts) (list #\: #\+ #\- #\*))
 
         (setf (gethash "tokenTypes" legend-opts) sem-tokens:*types*)
         (setf (gethash "tokenModifiers" legend-opts) sem-tokens:*mods*)
@@ -187,7 +187,8 @@
 
 
 (defun selection-range (id ranges)
-    (let ((value (mapcar #'to-nested-ranges ranges)))
+    (let ((value (or (mapcar #'to-nested-ranges ranges)
+                     (make-hash-table :test #'equalp))))
         (message:create-response id :result-value value)))
 
 

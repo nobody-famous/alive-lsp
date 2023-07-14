@@ -2,8 +2,10 @@
     (:use :cl)
     (:export :run-all)
     (:local-nicknames (:message :alive/lsp/message/abstract)
+                      (:event :alive/lsp/message/notification)
                       (:request :alive/lsp/message/request)
-                      (:response :alive/lsp/message/response)))
+                      (:response :alive/lsp/message/response)
+                      (:sem-tokens :alive/lsp/types/sem-tokens)))
 
 (in-package :alive/test/lsp/message)
 
@@ -59,7 +61,70 @@
             (clue:check-equal :expected 5
                               :actual (gethash "id" actual))
             (clue:check-equal :expected 10
+                              :actual (gethash "messages" result))))
+
+    (clue:test "Do eval"
+        (let* ((actual (response:do-eval 5 "10"))
+               (result (gethash "result" actual)))
+            (clue:check-equal :expected 5
+                              :actual (gethash "id" actual))
+            (clue:check-equal :expected "10"
+                              :actual (gethash "text" result))))
+
+    (clue:test "Get symbol"
+        (let* ((actual (response:get-symbol 5 :value "10"))
+               (result (gethash "result" actual)))
+            (clue:check-equal :expected 5
+                              :actual (gethash "id" actual))
+            (clue:check-equal :expected "10"
+                              :actual (gethash "value" result))))
+
+    (clue:test "Try compile"
+        (let* ((actual (response:try-compile 5 "10"))
+               (result (gethash "result" actual)))
+            (clue:check-equal :expected 5
+                              :actual (gethash "id" actual))
+            (clue:check-equal :expected "10"
                               :actual (gethash "messages" result)))))
+
+
+(defun test-sem-tokens-resp ()
+    (clue:test "Create sem tokens response"
+        (let* ((tokens (list (sem-tokens:create :token-type sem-tokens:*symbol*
+                                                :line 0
+                                                :start 0
+                                                :end 5)
+                             (sem-tokens:create :token-type sem-tokens:*number*
+                                                :line 1
+                                                :start 6
+                                                :end 10)))
+               (actual (response:sem-tokens 5 tokens))
+               (result (gethash "result" actual)))
+            (clue:check-equal :expected (gethash "data" result)
+                              :actual (list 0 0 5 10 0 1 6 4 3 0)))))
+
+
+(defun test-selection-range ()
+    (clue:test "Selection range empty"
+        (let ((actual (response:selection-range 5 nil)))
+            (clue:check-exists (gethash "result" actual))))
+
+    (clue:test "Selection range"
+        (let ((actual (response:selection-range 5 (list (list (list (list :start (cons :line 0) (cons :character 0))
+                                                                    (list :end (cons :line 198) (cons :character 56)))
+                                                              (list (list :start (cons :line 188) (cons :character 0))
+                                                                    (list :end (cons :line 192) (cons :character 58)))
+                                                              (list (list :start (cons :line 189) (cons :character 4))
+                                                                    (list :end (cons :line 189) (cons :character 41)))
+                                                              (list (list :start (cons :line 189) (cons :character 4))
+                                                                    (list :end (cons :line 189) (cons :character 41))))))))
+            (clue:check-exists (gethash "result" actual)))))
+
+
+(defun test-doc-symbols ()
+    (clue:test "Doc symbols empty"
+        (let ((actual (response:doc-symbols 5 nil)))
+            (clue:check-exists (gethash "result" actual)))))
 
 
 (defun test-create-req ()
@@ -77,7 +142,32 @@
             (clue:check-equal :expected 20
                               :actual (gethash "stackTrace" params)))))
 
+
+(defun stream-test (fn label method)
+    (clue:test label
+        (let* ((actual (funcall fn "foo"))
+               (params (gethash "params" actual)))
+            (clue:check-equal :expected method
+                              :actual (gethash "method" actual))
+            (clue:check-equal :expected "foo"
+                              :actual (gethash "data" params)))))
+
+
+(defun test-notifications ()
+    (clue:test "Refresh"
+        (let ((actual (event:refresh)))
+            (clue:check-equal :expected "$/alive/refresh"
+                              :actual (gethash "method" actual))))
+
+    (stream-test 'event:stdout "Stdout" "$/alive/stdout")
+    (stream-test 'event:stderr "Stderr" "$/alive/stderr"))
+
+
 (defun run-all ()
     (clue:suite "Message tests"
         (test-create-resp)
-        (test-create-req)))
+        (test-sem-tokens-resp)
+        (test-create-req)
+        (test-selection-range)
+        (test-doc-symbols)
+        (test-notifications)))

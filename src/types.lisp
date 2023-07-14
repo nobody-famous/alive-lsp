@@ -16,6 +16,7 @@
              :*parameter*
              :*open-paren*
              :*close-paren*
+             :*unmatched-close-paren*
              :*symbol*
              :*ws*
              :*colons*
@@ -55,3 +56,4 @@
 (defparameter *back-quote* 18)
 (defparameter *comma* 19)
 (defparameter *comma-at* 20)
+(defparameter *unmatched-close-paren* 20)

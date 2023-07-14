@@ -215,6 +215,39 @@
               (T '()))))
 
 
+(defun feature (text)
+    (when (or (string= (subseq text 0 2) "#+")
+              (string= (subseq text 0 2) "#-"))
+          (mapcar (lambda (name)
+                      (create-item :label (format NIL "~A~A" (subseq text 0 2) (string-downcase name))
+                                   :insert-text (format NIL "~A~A" (subseq text 0 2) (string-downcase name))
+                                   :kind *kind-text*
+                                   :doc-string nil
+                                   :insert-format *insert-plain*))
+                  *features*)))
+
+
+(defun pound ()
+    (mapcar (lambda (item)
+                (create-item :label item
+                             :insert-text item
+                             :kind *kind-text*
+                             :doc-string nil
+                             :insert-format *insert-plain*))
+            '("#+"
+              "#-"
+              "#/"
+              "#\\"
+              "#\\backspace"
+              "#\\linefeed"
+              "#\\newline"
+              "#\\page"
+              "#\\return"
+              "#\\rubout"
+              "#\\space"
+              "#\\tab")))
+
+
 (defun simple (&key text pos)
     (let* ((tokens (tokenizer:from-stream (make-string-input-stream text)))
            (pkg (packages:lookup (packages:for-pos text pos)))
@@ -222,7 +255,8 @@
 
         (if (zerop (length tokens))
             '()
-            (destructuring-bind (token1 token2 token3) (alive/lsp/utils:find-tokens tokens pos)
+            (destructuring-bind (token1 token2 token3)
+                    (alive/lsp/utils:find-tokens tokens pos)
                 (cond ((and (eq (token:get-type-value token1) types:*symbol*)
                             (eq (token:get-type-value token2) types:*colons*)
                             (eq (token:get-type-value token3) types:*symbol*))
@@ -258,5 +292,12 @@
                       ((eq (token:get-type-value token1) types:*symbol*)
                           (symbol-no-pkg :name (token:get-text token1)
                                          :pkg-name (package-name *package*)))
+
+                      ((or (eq (token:get-type-value token1) types:*ifdef-false*)
+                           (eq (token:get-type-value token1) types:*ifdef-true*))
+                          (feature (token:get-text token1)))
+
+                      ((eq (token:get-type-value token1) types:*macro*)
+                          (pound))
 
                       (T '()))))))

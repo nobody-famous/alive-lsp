@@ -170,18 +170,32 @@
                                     :end 2)))))
 
 
+(defun test-comment-pound ()
+    (clue:test "Comment with pound"
+        (check-combo "#| # |# 123" (list (sem-types:create
+                                             :token-type sem-types:*comment*
+                                             :line 0
+                                             :start 0
+                                             :end 7)
+                                         (sem-types:create
+                                             :token-type sem-types:*number*
+                                             :line 0
+                                             :start 8
+                                             :end 11)))))
+
+
 (defun test-string-utf8 ()
     (clue:test "String UTF8"
         (check-combo "\"る\" 472" (list (sem-types:create
-                                          :token-type sem-types:*string*
-                                          :line 0
-                                          :start 0
-                                          :end 3)
-                                      (sem-types:create
-                                          :token-type sem-types:*number*
-                                          :line 0
-                                          :start 4
-                                          :end 7)))))
+                                           :token-type sem-types:*string*
+                                           :line 0
+                                           :start 0
+                                           :end 3)
+                                       (sem-types:create
+                                           :token-type sem-types:*number*
+                                           :line 0
+                                           :start 4
+                                           :end 7)))))
 
 
 (defun test-in-pkg-macro ()
@@ -387,6 +401,20 @@
                                                       :line 0
                                                       :start 19
                                                       :end 20)))))
+
+
+(defun test-if-true ()
+    (clue:test "If true"
+        (check-combo "#+common-lisp 10" (list (sem-types:create
+                                                  :token-type sem-types:*macro*
+                                                  :line 0
+                                                  :start 0
+                                                  :end 13)
+                                              (sem-types:create
+                                                  :token-type sem-types:*number*
+                                                  :line 0
+                                                  :start 14
+                                                  :end 16)))))
 
 
 (defun test-if-false ()
@@ -1066,12 +1094,14 @@
         (test-foo)
         (test-defun)
         (test-open-comment)
+        (test-comment-pound)
         (test-in-pkg-macro)
         (test-in-pkg-symbol)
         (test-in-pkg-string)
         (test-after-if-false)
         (test-defun-keys)
         (test-if-false)
+        (test-if-true)
         (test-octets)
         (test-long-ifdef)
         (test-do)

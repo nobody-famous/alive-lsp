@@ -20,6 +20,14 @@
                               :actual (packet:content-length header)))))
 
 
+(defun test-to-wire ()
+    (clue:test "To wire"
+        (let ((actual (packet:to-wire 10)))
+            (clue:check-equal :expected #(67 111 110 116 101 110 116 45 76 101 110 103 116 104 58 32 50 13 10 13 10 49 48)
+                              :actual actual))))
+
+
 (defun run-all ()
     (clue:suite "Packet tests"
-        (test-parse)))
+        (test-parse)
+        (test-to-wire)))
