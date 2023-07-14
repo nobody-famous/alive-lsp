@@ -17,6 +17,19 @@
                    :finally (return same)))))
 
 
+(defmethod are-equal ((a vector) b)
+    (and (typep a 'vector)
+         (typep b 'vector)
+         (equal (length a) (length b))
+         (loop :with same := t
+
+               :for item1 :across a
+               :for item2 :across b :do
+                   (setf same (and same (are-equal item1 item2)))
+
+               :finally (return same))))
+
+
 (defmethod are-equal ((a hash-table) b)
     (equalp a b))
 

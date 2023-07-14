@@ -183,7 +183,7 @@
     (bt:with-recursive-lock-held ((lock obj))
         (when (and (hash-table-p msg)
                    (gethash "jsonrpc" msg))
-              (write-sequence (flexi-streams:string-to-octets (packet:to-wire msg)) (usocket:socket-stream (conn obj)))
+              (write-sequence (packet:to-wire msg) (usocket:socket-stream (conn obj)))
               (force-output (usocket:socket-stream (conn obj))))))
 
 

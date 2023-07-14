@@ -23,7 +23,7 @@
 (defun test-to-wire ()
     (clue:test "To wire"
         (let ((actual (packet:to-wire 10)))
-            (clue:check-equal :expected (format nil "Content-Length: 2~C~C~C~C10" #\return #\newline #\return #\newline)
+            (clue:check-equal :expected #(67 111 110 116 101 110 116 45 76 101 110 103 116 104 58 32 50 13 10 13 10 49 48)
                               :actual actual))))
 
 
