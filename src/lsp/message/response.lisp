@@ -37,7 +37,7 @@
            (comp-opts (make-hash-table :test #'equalp))
            (on-type-opts (make-hash-table :test #'equalp)))
 
-        (setf (gethash "triggerCharacters" comp-opts) (list #\:))
+        (setf (gethash "triggerCharacters" comp-opts) (list #\: #\+ #\- #\*))
 
         (setf (gethash "tokenTypes" legend-opts) sem-tokens:*types*)
         (setf (gethash "tokenModifiers" legend-opts) sem-tokens:*mods*)

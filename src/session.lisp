@@ -604,6 +604,9 @@
            (text (if file-text file-text ""))
            (items (comps:simple :text text :pos pos)))
 
+        #+n (when (< 0 (length items))
+              (format T "***** length ~A~%" (length items))
+              (alive/test/utils:print-hash-table "****" (car items)))
         (resp:completion id
                          :items items)))
 
