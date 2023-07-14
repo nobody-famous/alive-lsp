@@ -219,12 +219,33 @@
     (when (or (string= (subseq text 0 2) "#+")
               (string= (subseq text 0 2) "#-"))
           (mapcar (lambda (name)
-                      (create-item :label (string-downcase name)
-                                   :insert-text (string-downcase name)
+                      (create-item :label (format NIL "~A~A" (subseq text 0 2) (string-downcase name))
+                                   :insert-text (format NIL "~A~A" (subseq text 0 2) (string-downcase name))
                                    :kind *kind-text*
                                    :doc-string nil
                                    :insert-format *insert-plain*))
                   *features*)))
+
+
+(defun pound ()
+    (mapcar (lambda (item)
+                (create-item :label item
+                             :insert-text item
+                             :kind *kind-text*
+                             :doc-string nil
+                             :insert-format *insert-plain*))
+            '("#+"
+              "#-"
+              "#/"
+              "#\\"
+              "#\\backspace"
+              "#\\linefeed"
+              "#\\newline"
+              "#\\page"
+              "#\\return"
+              "#\\rubout"
+              "#\\space"
+              "#\\tab")))
 
 
 (defun simple (&key text pos)
@@ -275,5 +296,8 @@
                       ((or (eq (token:get-type-value token1) types:*ifdef-false*)
                            (eq (token:get-type-value token1) types:*ifdef-true*))
                           (feature (token:get-text token1)))
+
+                      ((eq (token:get-type-value token1) types:*macro*)
+                          (pound))
 
                       (T '()))))))

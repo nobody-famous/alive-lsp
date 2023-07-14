@@ -602,11 +602,9 @@
            (uri (cdr (assoc :uri doc)))
            (file-text (get-file-text state uri))
            (text (if file-text file-text ""))
-           (items (comps:simple :text text :pos pos)))
+           (items (or (comps:simple :text text :pos pos)
+                      (make-array 0))))
 
-        #+n (when (< 0 (length items))
-              (format T "***** length ~A~%" (length items))
-              (alive/test/utils:print-hash-table "****" (car items)))
         (resp:completion id
                          :items items)))
 
