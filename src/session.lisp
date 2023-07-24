@@ -777,15 +777,14 @@
 
 
 (defun handle-unexport (state msg)
-    (declare (ignore state))
+    (run-in-thread state msg (lambda ()
+                                 (let* ((id (cdr (assoc :id msg)))
+                                        (params (cdr (assoc :params msg)))
+                                        (sym-name (cdr (assoc :symbol params)))
+                                        (pkg-name (cdr (assoc :package params))))
 
-    (let* ((id (cdr (assoc :id msg)))
-           (params (cdr (assoc :params msg)))
-           (sym-name (cdr (assoc :symbol params)))
-           (pkg-name (cdr (assoc :package params))))
-
-        (packages:unexport-symbol pkg-name sym-name)
-        (message:create-response id :result-value T)))
+                                     (packages:unexport-symbol pkg-name sym-name)
+                                     (message:create-response id :result-value T)))))
 
 
 (defun handle-did-change (state msg)
