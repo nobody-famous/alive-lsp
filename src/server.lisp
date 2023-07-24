@@ -17,6 +17,9 @@
         ((running :accessor running
                   :initform nil
                   :initarg :running)
+         (logger :accessor logger
+                 :initform nil
+                 :initarg :logger)
          (lock :accessor lock
                :initform (bt:make-recursive-lock)
                :initarg :lock)
@@ -29,6 +32,7 @@
 
 
 (defun accept-conn (server)
+    (format T "***** accept-conn~%")
     (let* ((conn (usocket:socket-accept (socket server) :element-type '(unsigned-byte 8)))
            (session (session:create :conn conn)))
 
@@ -38,14 +42,19 @@
                                                (usocket:socket-close conn)
                                                (setf (sessions server)
                                                    (remove session (sessions server))))))
+        (format T "***** before start session~%")
         (session:start session)
+        (format T "***** after start session~%")
 
         (push session (sessions server))))
 
 
 (defun wait-for-conn (server)
+    (format T "***** wait-for-conn ~A~%" server)
     (usocket:wait-for-input (socket server))
 
+    (format T "***** wait-for-conn running ~A~%" (running server))
+    (format T "***** wait-for-conn state ~A~%" (usocket::state (socket server)))
     (when (and (running server)
                (usocket::state (socket server)))
           (accept-conn server)))
@@ -74,7 +83,9 @@
 
 (defun listen-for-conns (server port)
     (let ((socket (usocket:socket-listen "127.0.0.1" port :reuse-address T)))
+        (format T "***** listen before log~%")
         (logger:msg logger:*info* "Started on port ~A~%" (usocket:get-local-port socket))
+        (format T "***** listen after log~%")
 
         (unwind-protect
                 (progn (setf (socket server) socket)
@@ -93,6 +104,7 @@
                         :name "Alive LSP Server")))
 
 (defun stop ()
+    (format T "***** stop server~%")
     (logger:msg logger:*info* "Stop server~%")
 
     (stop-server *server*)
@@ -100,10 +112,27 @@
     (setf *server* nil))
 
 
-(defun start (&key (port *default-port*))
-    (if *server*
-        (logger:msg logger:*error* "Server already running")
+(defun create-server (logger)
+    (let ((server (make-instance 'lsp-server)))
+        (setf (logger server) logger)
+        (setf *server* server)))
 
-        (progn (logger:init *standard-output* logger:*info*)
-               (setf *server* (make-instance 'lsp-server))
-               (start-server *server* port))))
+
+(defun start (&key (port *default-port*))
+    (let ((logger (logger:create *standard-output* logger:*info*)))
+        (if *server*
+            (logger:msg logger logger:*error* "Server already running")
+            (progn (create-server logger)
+                   (logger:init *standard-output* logger:*info*)
+                   (format T "***** before start server~%")
+                   (start-server *server* port)
+                   (format T "***** after start server~%"))))
+
+    #+n (if *server*
+            (logger:msg logger:*error* "Server already running")
+
+            (progn (logger:init *standard-output* logger:*info*)
+                   (setf *server* (make-instance 'lsp-server))
+                   (format T "***** before start~%")
+                   (start-server *server* port)
+                   (format T "***** after start~%"))))

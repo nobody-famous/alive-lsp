@@ -98,6 +98,7 @@
 
                                        (:file "asdf/load")
 
+                                       (:file "log")
                                        (:file "compile")
                                        (:file "debugger")
                                        (:file "eval")

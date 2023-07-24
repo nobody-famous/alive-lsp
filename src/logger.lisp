@@ -5,6 +5,7 @@
              *info*
              *error*
 
+             :create
              :init
              :has-level
              :set-level
@@ -59,14 +60,32 @@
                   (apply #'format params)))))
 
 
+(defun msg-internal-new (logger level fmt &rest args)
+    (when logger
+          (bt:with-recursive-lock-held ((lock logger))
+              (let* ((new-fmt (format nil "~&[~A][~A] ~A~&" (get-timestamp) (level-name level) fmt))
+                     (params (concatenate 'list (list (out logger) new-fmt) args)))
+                  (apply #'format params)))))
+
+
 (defmacro msg (level fmt &rest args)
     `(when (has-level ,level)
            (msg-internal ,level ,fmt ,@args)))
 
 
+(defmacro msg-new (logger level fmt &rest args)
+    `(when (has-level ,logger ,level)
+           (msg-internal-new ,logger ,level ,fmt ,@args)))
+
+
 (defun has-level (level)
     (when *logger*
           (<= (level *logger*) level)))
+
+
+(defun has-level-new (logger level)
+    (when logger
+          (<= (level logger) level)))
 
 
 (defun set-level (level)
@@ -80,3 +99,10 @@
 
     (when level
           (setf (level *logger*) level)))
+
+
+(defun create (out &optional lvl)
+    (let ((logger (make-instance 'logger :out out)))
+        (when lvl
+              (setf (level logger) lvl))
+        logger))
