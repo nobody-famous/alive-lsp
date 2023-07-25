@@ -114,13 +114,4 @@
         (if *server*
             (logger:msg logger logger:*error* "Server already running")
             (progn (create-server logger)
-                   (start-server *server* port))))
-
-    #+n (if *server*
-            (logger:msg logger:*error* "Server already running")
-
-            (progn (logger:init *standard-output* logger:*info*)
-                   (setf *server* (make-instance 'lsp-server))
-                   (format T "***** before start~%")
-                   (start-server *server* port)
-                   (format T "***** after start~%"))))
+                   (start-server *server* port)))))

@@ -9,6 +9,10 @@
              :init
              :has-level
              :set-level
+             :error-msg
+             :info-msg
+             :debug-msg
+             :trace-msg
              :msg))
 
 (in-package :alive/logger)
@@ -57,7 +61,7 @@
 (defun msg-internal-new (logger level fmt &rest args)
     (when logger
           (bt:with-recursive-lock-held ((lock logger))
-              (let* ((new-fmt (format nil "~&[~A][~A] ~A~&" (get-timestamp) (level-name level) fmt))
+              (let* ((new-fmt (format nil "~&[~A][~A] ~A~&" (alive/utils:get-timestamp) (level-name level) fmt))
                      (params (concatenate 'list (list (out logger) new-fmt) args)))
                   (apply #'format params)))))
 
@@ -65,11 +69,6 @@
 (defmacro msg (level fmt &rest args)
     `(when (has-level ,level)
            (msg-internal ,level ,fmt ,@args)))
-
-
-(defmacro msg-new (logger level fmt &rest args)
-    `(when (has-level ,logger ,level)
-           (msg-internal-new ,logger ,level ,fmt ,@args)))
 
 
 (defun has-level (level)
@@ -80,6 +79,26 @@
 (defun has-level-new (logger level)
     (when logger
           (<= (level logger) level)))
+
+
+(defun error-msg (logger fmt &rest args)
+    (when (has-level-new logger *error*)
+          (apply #'msg-internal-new (concatenate 'list (list logger *error* fmt) args))))
+
+
+(defun info-msg (logger fmt &rest args)
+    (when (has-level-new logger *info*)
+          (apply #'msg-internal-new (concatenate 'list (list logger *info* fmt) args))))
+
+
+(defun debug-msg (logger fmt &rest args)
+    (when (has-level-new logger *debug*)
+          (apply #'msg-internal-new (concatenate 'list (list logger *debug* fmt) args))))
+
+
+(defun trace-msg (logger fmt &rest args)
+    (when (has-level-new logger *trace*)
+          (apply #'msg-internal-new (concatenate 'list (list logger *trace* fmt) args))))
 
 
 (defun set-level (level)
