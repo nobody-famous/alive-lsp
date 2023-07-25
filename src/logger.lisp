@@ -8,11 +8,11 @@
              :create
              :init
              :has-level
-             :set-level
              :error-msg
              :info-msg
              :debug-msg
              :trace-msg
+             :with-logging
              :msg))
 
 (in-package :alive/logger)
@@ -50,6 +50,46 @@
     (gethash level *level-names* "??"))
 
 
+(define-condition log-error ()
+        ((fmt :accessor fmt
+              :initform nil
+              :initarg :fmt)
+         (args :accessor args
+               :initform nil
+               :initarg :args))
+    (:report (lambda (condition stream) (format stream "LOG ERROR: ~A ~A" (fmt condition) (args condition)))))
+
+
+(define-condition log-info ()
+        ((fmt :accessor fmt
+              :initform nil
+              :initarg :fmt)
+         (args :accessor args
+               :initform nil
+               :initarg :args))
+    (:report (lambda (condition stream) (format stream "LOG INFO: ~A ~A" (fmt condition) (args condition)))))
+
+
+(define-condition log-debug ()
+        ((fmt :accessor fmt
+              :initform nil
+              :initarg :fmt)
+         (args :accessor args
+               :initform nil
+               :initarg :args))
+    (:report (lambda (condition stream) (format stream "LOG DEBUG: ~A ~A" (fmt condition) (args condition)))))
+
+
+(define-condition log-trace ()
+        ((fmt :accessor fmt
+              :initform nil
+              :initarg :fmt)
+         (args :accessor args
+               :initform nil
+               :initarg :args))
+    (:report (lambda (condition stream) (format stream "LOG TRACE: ~A ~A" (fmt condition) (args condition)))))
+
+
 (defun msg-internal (level fmt &rest args)
     (when *logger*
           (bt:with-recursive-lock-held ((lock *logger*))
@@ -81,29 +121,33 @@
           (<= (level logger) level)))
 
 
-(defun error-msg (logger fmt &rest args)
-    (when (has-level-new logger *error*)
-          (apply #'msg-internal-new (concatenate 'list (list logger *error* fmt) args))))
+(defun error-msg (fmt &rest args)
+    (signal 'log-error :fmt fmt :args args))
 
 
-(defun info-msg (logger fmt &rest args)
-    (when (has-level-new logger *info*)
-          (apply #'msg-internal-new (concatenate 'list (list logger *info* fmt) args))))
+(defun info-msg (fmt &rest args)
+    (signal 'log-info :fmt fmt :args args))
 
 
-(defun debug-msg (logger fmt &rest args)
-    (when (has-level-new logger *debug*)
-          (apply #'msg-internal-new (concatenate 'list (list logger *debug* fmt) args))))
+(defun debug-msg (fmt &rest args)
+    (signal 'log-debug :fmt fmt :args args))
 
 
-(defun trace-msg (logger fmt &rest args)
-    (when (has-level-new logger *trace*)
-          (apply #'msg-internal-new (concatenate 'list (list logger *trace* fmt) args))))
+(defun trace-msg (fmt &rest args)
+    (signal 'log-trace :fmt fmt :args args))
 
 
-(defun set-level (level)
-    (when *logger*
-          (setf (level *logger*) level)))
+(defun log-msg (logger level fmt args)
+    (when (has-level-new logger level)
+          (msg-internal-new logger level (apply #'format (concatenate 'list (list nil fmt) args)))))
+
+
+(defmacro with-logging ((logger) &body body)
+    `(handler-bind ((log-error (lambda (c) (log-msg ,logger *error* (fmt c) (args c))))
+                    (log-info (lambda (c) (log-msg ,logger *info* (fmt c) (args c))))
+                    (log-debug (lambda (c) (log-msg ,logger *debug* (fmt c) (args c))))
+                    (log-trace (lambda (c) (log-msg ,logger *trace* (fmt c) (args c)))))
+         ,@body))
 
 
 (defun init (out &optional level)
