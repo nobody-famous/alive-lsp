@@ -49,46 +49,6 @@
     (gethash level *level-names* "??"))
 
 
-(define-condition log-error ()
-        ((fmt :accessor fmt
-              :initform nil
-              :initarg :fmt)
-         (args :accessor args
-               :initform nil
-               :initarg :args))
-    (:report (lambda (condition stream) (format stream "LOG ERROR: ~A ~A" (fmt condition) (args condition)))))
-
-
-(define-condition log-info ()
-        ((fmt :accessor fmt
-              :initform nil
-              :initarg :fmt)
-         (args :accessor args
-               :initform nil
-               :initarg :args))
-    (:report (lambda (condition stream) (format stream "LOG INFO: ~A ~A" (fmt condition) (args condition)))))
-
-
-(define-condition log-debug ()
-        ((fmt :accessor fmt
-              :initform nil
-              :initarg :fmt)
-         (args :accessor args
-               :initform nil
-               :initarg :args))
-    (:report (lambda (condition stream) (format stream "LOG DEBUG: ~A ~A" (fmt condition) (args condition)))))
-
-
-(define-condition log-trace ()
-        ((fmt :accessor fmt
-              :initform nil
-              :initarg :fmt)
-         (args :accessor args
-               :initform nil
-               :initarg :args))
-    (:report (lambda (condition stream) (format stream "LOG TRACE: ~A ~A" (fmt condition) (args condition)))))
-
-
 (defun msg-internal (level fmt &rest args)
     (when *logger*
           (bt:with-recursive-lock-held ((lock *logger*))
@@ -126,14 +86,6 @@
 (defmacro with-logging (logger &body body)
     `(let ((*logger* ,logger))
          ,@body))
-
-
-(defun init (out &optional level)
-    (setf *logger* (make-instance 'logger
-                       :out out))
-
-    (when level
-          (setf (level *logger*) level)))
 
 
 (defun create (out &optional lvl)
