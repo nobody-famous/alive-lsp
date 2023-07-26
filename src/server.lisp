@@ -31,88 +31,83 @@
                  :initarg :socket)))
 
 
-(defun accept-conn (server)
-    (let* ((conn (usocket:socket-accept (socket server) :element-type '(unsigned-byte 8)))
+(defun accept-conn ()
+    (let* ((conn (usocket:socket-accept (socket *server*) :element-type '(unsigned-byte 8)))
            (session (session:create :conn conn
-                                    :logger (logger server))))
+                                    :logger (logger *server*))))
 
         (session:add-listener session
                               (make-instance 'session:listener
                                   :on-done (lambda ()
                                                (usocket:socket-close conn)
-                                               (setf (sessions server)
-                                                   (remove session (sessions server))))))
+                                               (setf (sessions *server*)
+                                                   (remove session (sessions *server*))))))
         (session:start session)
 
-        (push session (sessions server))))
+        (push session (sessions *server*))))
 
 
-(defun wait-for-conn (server)
-    (usocket:wait-for-input (socket server))
+(defun wait-for-conn ()
+    (usocket:wait-for-input (socket *server*))
 
-    (when (and (running server)
-               (usocket::state (socket server)))
-          (accept-conn server)))
+    (when (and (running *server*)
+               (usocket::state (socket *server*)))
+          (accept-conn)))
 
 
-(defun wake-up-accept (server)
+(defun wake-up-accept ()
     (ignore-errors
-        (let ((conn (usocket:socket-connect "127.0.0.1" (usocket:get-local-port (socket server)))))
+        (let ((conn (usocket:socket-connect "127.0.0.1" (usocket:get-local-port (socket *server*)))))
             (usocket:socket-close conn))))
 
 
-(defun stop-server (server)
-    (bt:with-recursive-lock-held ((lock server))
-        (setf (running server) nil)
+(defun stop-server ()
+    (bt:with-recursive-lock-held ((lock *server*))
+        (setf (running *server*) nil)
 
-        (loop :for session :in (sessions server) :do
+        (loop :for session :in (sessions *server*) :do
                   (session:stop session))
 
-        (setf (sessions server) nil)
+        (setf (sessions *server*) nil)
 
-        (when (socket server)
-              (wake-up-accept server)
-              (usocket:socket-close (socket server))
-              (setf (socket server) nil))))
+        (when (socket *server*)
+              (wake-up-accept)
+              (usocket:socket-close (socket *server*))
+              (setf (socket *server*) nil))))
 
 
-(defun listen-for-conns (server port)
+(defun listen-for-conns (port)
     (let ((socket (usocket:socket-listen "127.0.0.1" port :reuse-address T)))
         (format T "[~A][STARTING] Started on port ~A~%" (alive/utils:get-timestamp) (usocket:get-local-port socket))
 
         (unwind-protect
-                (progn (setf (socket server) socket)
-                       (setf (running server) T)
+                (progn (setf (socket *server*) socket)
+                       (setf (running *server*) T)
 
-                       (loop :while (running server)
-                             :do (wait-for-conn server)))
-            (stop-server server))))
+                       (loop :while (running *server*)
+                             :do (wait-for-conn)))
+            (stop-server))))
 
 
-(defun start-server (server port)
-    (let ((stdout *standard-output*))
+(defun start-server (port)
+    (let ((stdout *standard-output*)
+          (server *server*))
         (bt:make-thread (lambda ()
-                            (logger:with-logging (logger server)
-                                (let ((*standard-output* stdout))
-                                    (listen-for-conns server port))))
+                            (let ((*server* server))
+                                (logger:with-logging (logger *server*)
+                                    (let ((*standard-output* stdout))
+                                        (listen-for-conns port)))))
                         :name "Alive LSP Server")))
 
 (defun stop ()
     (logger:info-msg "Stop server~%")
 
-    (stop-server *server*)
+    (stop-server)
 
     (setf *server* nil))
 
 
-(defun create-server (logger)
-    (let ((server (make-instance 'lsp-server)))
-        (setf (logger server) logger)
-        (setf *server* server)))
-
-
 (defun start (&key (port *default-port*))
     (let* ((logger (logger:create *standard-output* logger:*info*))
-           (server (make-instance 'lsp-server :logger logger)))
-        (start-server server port)
-        server))
+           (*server* (make-instance 'lsp-server :logger logger)))
+        (start-server port)))
