@@ -250,6 +250,24 @@
         obj))
 
 
+(defun send-refresh (state)
+    (send-msg state (notification:refresh))
+
+    (bt:make-thread (lambda ()
+                        (let ((send-id (next-send-id state))
+                              (cond-var (bt:make-condition-variable)))
+
+                            (setf (gethash send-id (sent-msg-callbacks state))
+                                (lambda (resp)
+                                    (declare (ignore resp))))
+
+                            (send-msg state (message:create-request send-id "workspace/semanticTokens/refresh"))
+
+                            (bt:with-recursive-lock-held ((lock state))
+                                (bt:condition-wait cond-var (lock state)))))
+                    :name "Refresh Thread"))
+
+
 (defun wait-for-debug (state err restarts frames)
     (let ((send-id (next-send-id state))
           (cond-var (bt:make-condition-variable))
@@ -314,11 +332,11 @@
         (bt:make-thread (lambda ()
                             (unwind-protect
                                     (logger:with-logging (logger state)
-                                        (send-msg state (notification:refresh))
+                                        (send-refresh state)
                                         (run-fn state msg fn stdout))
 
                                 (rem-thread-msg state)
-                                (send-msg state (notification:refresh))))
+                                (send-refresh state)))
                         :name (next-thread-name state (if (assoc :id msg)
                                                           (cdr (assoc :method msg))
                                                           "response")))))
@@ -764,7 +782,7 @@
                                       thread-id
                                       (gethash thread-id
                                                (thread-msgs state)))
-                       (send-msg state (notification:refresh))
+                       (send-refresh state)
                        (message:create-response id :result-value T))
 
             (threads:thread-not-found (c)
