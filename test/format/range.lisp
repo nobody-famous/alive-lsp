@@ -183,12 +183,12 @@
 
 (defun test-indent-rest ()
     (clue:test "Indent rest"
-        (check-format (format nil "(in-package :alive/logger)~A(msg log~A\"\"~A\"\")"
+        (check-format (format nil "(in-package :alive/logger)~A(info-msg~A\"\"~A\"\")"
                           alive/format:eol
                           alive/format:eol
                           alive/format:eol)
                       (range:create (pos:create 0 0) (pos:create 4 0))
-                      (list (edit:create :range (range:create (pos:create 1 8) (pos:create 2 0))
+                      (list (edit:create :range (range:create (pos:create 1 9) (pos:create 2 0))
                                          :text (format nil "~A    " alive/format:eol))
                             (edit:create :range (range:create (pos:create 2 2) (pos:create 3 0))
                                          :text (format nil "~A  " alive/format:eol))))))

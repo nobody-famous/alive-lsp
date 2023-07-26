@@ -33,7 +33,8 @@
 
 (defun accept-conn (server)
     (let* ((conn (usocket:socket-accept (socket server) :element-type '(unsigned-byte 8)))
-           (session (session:create :conn conn)))
+           (session (session:create :conn conn
+                                    :logger (logger server))))
 
         (session:add-listener session
                               (make-instance 'session:listener
@@ -91,12 +92,13 @@
 (defun start-server (server port)
     (let ((stdout *standard-output*))
         (bt:make-thread (lambda ()
-                            (let ((*standard-output* stdout))
-                                (listen-for-conns server port)))
+                            (logger:with-logging (logger server)
+                                (let ((*standard-output* stdout))
+                                    (listen-for-conns server port))))
                         :name "Alive LSP Server")))
 
 (defun stop ()
-    (logger:msg logger:*info* "Stop server~%")
+    (logger:info-msg "Stop server~%")
 
     (stop-server *server*)
 
@@ -110,8 +112,7 @@
 
 
 (defun start (&key (port *default-port*))
-    (let ((logger (logger:create *standard-output* logger:*info*)))
-        (if *server*
-            (logger:msg logger logger:*error* "Server already running")
-            (progn (create-server logger)
-                   (start-server *server* port)))))
+    (let* ((logger (logger:create *standard-output* logger:*info*))
+           (server (make-instance 'lsp-server :logger logger)))
+        (start-server server port)
+        server))
