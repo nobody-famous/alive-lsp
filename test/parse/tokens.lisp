@@ -53,7 +53,15 @@
                                               :start (pos:create 0 0)
                                               :end (pos:create 0 8)
                                               :text "\"String\""))
-                          :actual (tokens-for-string "\"String\""))))
+                          :actual (tokens-for-string "\"String\"")))
+
+    (clue:test "Open String"
+        (clue:check-equal :expected (list (token:create
+                                              :type-value alive/types:*string*
+                                              :start (pos:create 0 0)
+                                              :end (pos:create 0 7)
+                                              :text "\"\\\"~A\\\")"))
+                          :actual (tokens-for-string "\"String"))))
 
 
 (defun test-basic-macro ()
