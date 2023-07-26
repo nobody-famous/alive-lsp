@@ -95,6 +95,7 @@
 
                                        (:file "format/range")
                                        (:file "format/on-type")
+                                       (:file "format/format-utils")
 
                                        (:file "asdf/load")
 
