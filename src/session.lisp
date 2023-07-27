@@ -49,10 +49,7 @@
 
 
 (defclass state ()
-        ((logger :accessor logger
-                 :initform nil
-                 :initarg :logger)
-         (running :accessor running
+        ((running :accessor running
                   :initform T
                   :initarg :running)
          (initialized :accessor initialized
@@ -111,10 +108,9 @@
                :initarg :conn)))
 
 
-(defun create (&key conn logger)
+(defun create (&key conn)
     (make-instance 'network-state
         :conn conn
-        :logger logger
         :running nil
         :listeners nil
         :read-thread nil))
@@ -328,13 +324,13 @@
 
 
 (defun run-in-thread (state msg fn)
-    (let ((stdout *standard-output*))
+    (let ((stdout *standard-output*)
+          (logger logger:*logger*))
         (bt:make-thread (lambda ()
                             (unwind-protect
-                                    (logger:with-logging (logger state)
+                                    (let ((logger:*logger* logger))
                                         (send-refresh state)
                                         (run-fn state msg fn stdout))
-
                                 (rem-thread-msg state)
                                 (send-refresh state)))
                         :name (next-thread-name state (if (assoc :id msg)
@@ -1125,12 +1121,13 @@
 
 
 (defun start-read-thread (state)
-    (let ((stdout *standard-output*))
+    (let ((stdout *standard-output*)
+          (logger logger:*logger*))
         (setf (read-thread state)
             (bt:make-thread (lambda ()
-                                (logger:with-logging (logger state)
-                                    (let ((*standard-output* stdout))
-                                        (read-messages state))))
+                                (let ((*standard-output* stdout)
+                                      (logger:*logger* logger))
+                                    (read-messages state)))
                             :name "Session Message Reader"))))
 
 

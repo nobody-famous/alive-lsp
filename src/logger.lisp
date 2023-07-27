@@ -4,9 +4,9 @@
              *debug*
              *info*
              *error*
+             *logger*
 
              :create
-             :init
              :has-level
              :error-msg
              :info-msg

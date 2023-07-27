@@ -17,9 +17,6 @@
         ((running :accessor running
                   :initform nil
                   :initarg :running)
-         (logger :accessor logger
-                 :initform nil
-                 :initarg :logger)
          (lock :accessor lock
                :initform (bt:make-recursive-lock)
                :initarg :lock)
@@ -33,8 +30,7 @@
 
 (defun accept-conn ()
     (let* ((conn (usocket:socket-accept (socket *server*) :element-type '(unsigned-byte 8)))
-           (session (session:create :conn conn
-                                    :logger (logger *server*))))
+           (session (session:create :conn conn)))
 
         (session:add-listener session
                               (make-instance 'session:listener
@@ -91,17 +87,18 @@
 
 (defun start-server (port)
     (let ((stdout *standard-output*)
-          (server *server*))
+          (server *server*)
+          (logger logger:*logger*))
         (bt:make-thread (lambda ()
-                            (let ((*server* server))
-                                (logger:with-logging (logger *server*)
-                                    (let ((*standard-output* stdout))
-                                        (listen-for-conns port)))))
+                            (let ((*server* server)
+                                  (logger:*logger* logger))
+                                (let ((*standard-output* stdout))
+                                    (listen-for-conns port))))
                         :name "Alive LSP Server")))
 
 
 (defun stop ()
-    (logger:info-msg "Stop server~%")
+    (logger:info-msg "Stop server")
 
     (stop-server)
 
@@ -109,6 +106,6 @@
 
 
 (defun start (&key (port *default-port*))
-    (let* ((logger (logger:create *standard-output* logger:*info*))
-           (*server* (make-instance 'lsp-server :logger logger)))
-        (start-server port)))
+    (logger:with-logging (logger:create *standard-output* logger:*info*)
+        (let ((*server* (make-instance 'lsp-server)))
+            (start-server port))))
