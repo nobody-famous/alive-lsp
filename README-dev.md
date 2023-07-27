@@ -115,13 +115,10 @@ and is a good indication that things are running properly.
 Edit the file `src/server.lisp` to add an extra log message when the server starts:
 ```
 (defun start (&key (port *default-port*))
-    (if *server*
-        (logger:msg logger:*error* "Server already running")
-
-        (progn (logger:init *standard-output* logger:*info*)
-               (logger:msg logger:*info* "Happy!")
-               (setf *server* (make-instance 'lsp-server))
-               (start-server *server* port))))
+    (logger:with-logging (logger:create *standard-output* logger:*info*)
+        (let ((*server* (make-instance 'lsp-server)))
+            (logger:info-msg "Happy!")
+            (start-server port))))
 ```
 The added line logs "Happy!" at startup.
 

@@ -114,27 +114,29 @@
     (new-token state token-type))
 
 
+(defun try-read (state)
+    (handler-case
+            (read-preserving-whitespace (input state))
+        (error (c)
+            (declare (ignore c))
+            nil)))
+
+
 (defun read-string-token (state)
-    (labels ((try-read (state)
-                       (handler-case
-                               (read-preserving-whitespace (input state))
-                           (error (c)
-                               (declare (ignore c))
-                               nil))))
+    (let ((start (file-position (input state))))
 
-        (let ((start (file-position (input state)))
-              (str (try-read state))
-              (end (file-position (input state))))
+        (try-read state)
 
-            ; In case the string spans multiple lines, reset to the start
-            ; and read character by character to the end so the state gets
-            ; updated.
+        ; In case the string spans multiple lines, reset to the start
+        ; and read character by character to the end so the state gets
+        ; updated.
+
+        (let ((end (file-position (input state))))
             (file-position (input state) start)
             (loop :until (eq end (file-position (input state)))
                   :do (next-char state))
 
-            (when str
-                  (new-token state types:*string*)))))
+            (new-token state types:*string*))))
 
 
 (defun read-comment-token (state)

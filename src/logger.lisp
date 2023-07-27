@@ -4,11 +4,15 @@
              *debug*
              *info*
              *error*
+             *logger*
 
-             :init
+             :create
              :has-level
-             :set-level
-             :msg))
+             :error-msg
+             :info-msg
+             :debug-msg
+             :trace-msg
+             :with-logging))
 
 (in-package :alive/logger)
 
@@ -45,23 +49,17 @@
     (gethash level *level-names* "??"))
 
 
-(defun get-timestamp ()
-    (multiple-value-bind (sec minute hour day month year)
-            (decode-universal-time (get-universal-time))
-        (format nil "~d/~d/~d ~2,'0d:~2,'0d:~2,'0d" month day year hour minute sec)))
-
-
 (defun msg-internal (level fmt &rest args)
     (when *logger*
           (bt:with-recursive-lock-held ((lock *logger*))
-              (let* ((new-fmt (format nil "~&[~A][~A] ~A~&" (get-timestamp) (level-name level) fmt))
+              (let* ((new-fmt (format nil "~&[~A][~A] ~A~&" (alive/utils:get-timestamp) (level-name level) fmt))
                      (params (concatenate 'list (list (out *logger*) new-fmt) args)))
                   (apply #'format params)))))
 
 
-(defmacro msg (level fmt &rest args)
+(defmacro log-msg (level fmt args)
     `(when (has-level ,level)
-           (msg-internal ,level ,fmt ,@args)))
+           (msg-internal ,level (apply #'format (list nil ,fmt ,@args)))))
 
 
 (defun has-level (level)
@@ -69,14 +67,29 @@
           (<= (level *logger*) level)))
 
 
-(defun set-level (level)
-    (when *logger*
-          (setf (level *logger*) level)))
+(defmacro error-msg (fmt &rest args)
+    `(log-msg *error* ,fmt ,args))
 
 
-(defun init (out &optional level)
-    (setf *logger* (make-instance 'logger
-                       :out out))
+(defmacro info-msg (fmt &rest args)
+    `(log-msg *info* ,fmt ,args))
 
-    (when level
-          (setf (level *logger*) level)))
+
+(defmacro debug-msg (fmt &rest args)
+    `(log-msg *debug* ,fmt ,args))
+
+
+(defmacro trace-msg (fmt &rest args)
+    `(log-msg *trace* ,fmt ,args))
+
+
+(defmacro with-logging (logger &body body)
+    `(let ((*logger* ,logger))
+         ,@body))
+
+
+(defun create (out &optional lvl)
+    (let ((logger (make-instance 'logger :out out)))
+        (when lvl
+              (setf (level logger) lvl))
+        logger))

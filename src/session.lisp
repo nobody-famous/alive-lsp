@@ -178,11 +178,10 @@
 
 
 (defmethod send-msg ((obj network-state) msg)
-    (logger:msg logger:*trace* "<-- ~A~%" (json:encode-json-to-string msg))
-
     (bt:with-recursive-lock-held ((lock obj))
         (when (and (hash-table-p msg)
                    (gethash "jsonrpc" msg))
+              (logger:trace-msg "<-- ~A~%" (json:encode-json-to-string msg))
               (write-sequence (packet:to-wire msg) (usocket:socket-stream (conn obj)))
               (force-output (usocket:socket-stream (conn obj))))))
 
@@ -247,6 +246,24 @@
         obj))
 
 
+(defun send-refresh (state)
+    (send-msg state (notification:refresh))
+
+    (bt:make-thread (lambda ()
+                        (let ((send-id (next-send-id state))
+                              (cond-var (bt:make-condition-variable)))
+
+                            (setf (gethash send-id (sent-msg-callbacks state))
+                                (lambda (resp)
+                                    (declare (ignore resp))))
+
+                            (send-msg state (message:create-request send-id "workspace/semanticTokens/refresh"))
+
+                            (bt:with-recursive-lock-held ((lock state))
+                                (bt:condition-wait cond-var (lock state)))))
+                    :name "Refresh Thread"))
+
+
 (defun wait-for-debug (state err restarts frames)
     (let ((send-id (next-send-id state))
           (cond-var (bt:make-condition-variable))
@@ -256,7 +273,7 @@
             (lambda (debug-resp)
                 (unwind-protect
                         (cond ((assoc :error debug-resp)
-                                  (logger:msg logger:*error* "Debugger Error ~A" debug-resp))
+                                  (logger:error-msg "Debugger Error ~A" debug-resp))
 
                               ((assoc :result debug-resp)
                                   (let* ((result (cdr (assoc :result debug-resp))))
@@ -307,13 +324,15 @@
 
 
 (defun run-in-thread (state msg fn)
-    (let ((stdout *standard-output*))
+    (let ((stdout *standard-output*)
+          (logger logger:*logger*))
         (bt:make-thread (lambda ()
                             (unwind-protect
-                                    (progn (send-msg state (notification:refresh))
-                                           (run-fn state msg fn stdout))
+                                    (let ((logger:*logger* logger))
+                                        (send-refresh state)
+                                        (run-fn state msg fn stdout))
                                 (rem-thread-msg state)
-                                (send-msg state (notification:refresh))))
+                                (send-refresh state)))
                         :name (next-thread-name state (if (assoc :id msg)
                                                           (cdr (assoc :method msg))
                                                           "response")))))
@@ -339,7 +358,7 @@
             (lambda (input-resp)
                 (unwind-protect
                         (cond ((assoc :error input-resp)
-                                  (logger:msg logger:*error* "Input Error ~A" input-resp))
+                                  (logger:error-msg "Input Error ~A" input-resp))
 
                               ((assoc :result input-resp)
                                   (let* ((result (cdr (assoc :result input-resp)))
@@ -522,7 +541,7 @@
 
 
 (defun stop (state)
-    (logger:msg logger:*info* "Stopping state ~A" state)
+    (logger:info-msg "Stopping state ~A" state)
 
     (setf (running state) NIL)
 
@@ -759,7 +778,7 @@
                                       thread-id
                                       (gethash thread-id
                                                (thread-msgs state)))
-                       (send-msg state (notification:refresh))
+                       (send-refresh state)
                        (message:create-response id :result-value T))
 
             (threads:thread-not-found (c)
@@ -777,15 +796,14 @@
 
 
 (defun handle-unexport (state msg)
-    (declare (ignore state))
+    (run-in-thread state msg (lambda ()
+                                 (let* ((id (cdr (assoc :id msg)))
+                                        (params (cdr (assoc :params msg)))
+                                        (sym-name (cdr (assoc :symbol params)))
+                                        (pkg-name (cdr (assoc :package params))))
 
-    (let* ((id (cdr (assoc :id msg)))
-           (params (cdr (assoc :params msg)))
-           (sym-name (cdr (assoc :symbol params)))
-           (pkg-name (cdr (assoc :package params))))
-
-        (packages:unexport-symbol pkg-name sym-name)
-        (message:create-response id :result-value T)))
+                                     (packages:unexport-symbol pkg-name sym-name)
+                                     (message:create-response id :result-value T)))))
 
 
 (defun handle-did-change (state msg)
@@ -1017,7 +1035,7 @@
         (if handler
             (funcall handler state msg)
             (let ((error-msg (format nil "No handler for ~A" method-name)))
-                (logger:msg logger:*error* error-msg)
+                (logger:error-msg error-msg)
                 (when id (message:create-error id
                                                :code errors:*request-failed*
                                                :message error-msg))))))
@@ -1053,12 +1071,12 @@
                         (progn (when id
                                      (save-thread-msg state id))
 
-                               (logger:msg logger:*trace* "--> ~A~%" (json:encode-json-to-string msg))
+                               (logger:trace-msg "--> ~A~%" (json:encode-json-to-string msg))
 
                                (handle-msg state msg))
 
                     (error (c)
-                        (logger:msg logger:*error* "Message Handler: ~A ~A" msg c)
+                        (logger:error-msg "Message Handler: ~A ~A" msg c)
                         (message:create-error id
                                               :code errors:*internal-error*
                                               :message (princ-to-string c))))
@@ -1073,14 +1091,14 @@
                       (process-msg state msg)))
 
         (errors:unhandled-request (c)
-                                  (logger:msg logger:*error* "read-message: ~A" c)
+                                  (logger:error-msg "read-message: ~A" c)
                                   (when (errors:id c)
                                         (message:create-error (errors:id c)
                                                               :code errors:*method-not-found*
                                                               :message (format nil "Unhandled request: ~A" (errors:method-name c)))))
 
         (errors:server-error (c)
-                             (logger:msg logger:*error* "read-message: ~A" c)
+                             (logger:error-msg "read-message: ~A" c)
                              (when (errors:id c)
                                    (message:create-error (errors:id c)
                                                          :code errors:*internal-error*
@@ -1091,7 +1109,7 @@
                      (stop state))
 
         (T (c)
-           (logger:msg logger:*error* "read-message: ~A" c)
+           (logger:error-msg "read-message: ~A" c)
            (stop state))))
 
 
@@ -1103,10 +1121,12 @@
 
 
 (defun start-read-thread (state)
-    (let ((stdout *standard-output*))
+    (let ((stdout *standard-output*)
+          (logger logger:*logger*))
         (setf (read-thread state)
             (bt:make-thread (lambda ()
-                                (let ((*standard-output* stdout))
+                                (let ((*standard-output* stdout)
+                                      (logger:*logger* logger))
                                     (read-messages state)))
                             :name "Session Message Reader"))))
 
@@ -1116,4 +1136,4 @@
 
     (start-read-thread state)
 
-    (logger:msg logger:*info* "Started state ~A" state))
+    (logger:info-msg "Started state ~A" state))

@@ -11,14 +11,14 @@
                  #:sb-introspect)
 
     :components ((:module "src"
-                          :components ((:file "logger")
+                          :components ((:file "utils")
+                                       (:file "logger")
                                        (:file "types")
                                        (:file "errors")
                                        (:file "compile-message")
                                        (:file "position")
                                        (:file "range")
                                        (:file "text-edit")
-                                       (:file "utils")
 
                                        (:file "parse/token")
                                        (:file "parse/tokenizer")
@@ -95,9 +95,11 @@
 
                                        (:file "format/range")
                                        (:file "format/on-type")
+                                       (:file "format/format-utils")
 
                                        (:file "asdf/load")
 
+                                       (:file "log")
                                        (:file "compile")
                                        (:file "debugger")
                                        (:file "eval")
