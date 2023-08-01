@@ -33,11 +33,6 @@
           (setf (gethash "endOffset" form) pos)))
 
 
-(defun set-form-type (form value)
-    (when form
-          (setf (gethash "formType" form) value)))
-
-
 (defun set-is-in-pkg (form value)
     (when form
           (setf (gethash "inPkg" form) value)))
@@ -90,11 +85,3 @@
         (setf (gethash "kids" form) kids)
 
         form))
-
-
-(defun to-string (form)
-    (format NIL "[~A:~A ~A ~A]"
-        (gethash "start" form)
-        (gethash "end" form)
-        (gethash "formType" form)
-        (length (gethash "kids" form))))

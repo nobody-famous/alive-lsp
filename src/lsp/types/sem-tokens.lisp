@@ -84,20 +84,3 @@
         (setf (gethash "endCol" token) end)
 
         token))
-
-
-(defun from-type (value)
-    (cond ((eq value types:*line-comment*) *comment*)
-          ((eq value types:*block-comment*) *comment*)
-          ((eq value types:*string*) *string*)
-          ((eq value types:*keyword*) *keyword*)
-          ((eq value types:*number*) *number*)
-          ((eq value types:*namespace*) *namespace*)
-          ((eq value types:*function*) *function*)
-          ((eq value types:*macro*) *macro*)
-          ((eq value types:*variable*) *variable*)
-          ((eq value types:*parameter*) *parameter*)
-          ((eq value types:*open-paren*) *parenthesis*)
-          ((eq value types:*close-paren*) *parenthesis*)
-          ((eq value types:*symbol*) *symbol*)
-          (t (error (format nil "Unhandled token type ~A~%" value)))))
