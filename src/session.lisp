@@ -247,20 +247,22 @@
 
 
 (defun send-refresh (state)
-    (send-msg state (notification:refresh))
-
     (bt:make-thread (lambda ()
                         (let ((send-id (next-send-id state))
                               (cond-var (bt:make-condition-variable)))
 
                             (setf (gethash send-id (sent-msg-callbacks state))
                                 (lambda (resp)
-                                    (declare (ignore resp))))
+                                    (declare (ignore resp))
+                                    (bt:condition-notify cond-var)))
 
                             (send-msg state (message:create-request send-id "workspace/semanticTokens/refresh"))
 
                             (bt:with-recursive-lock-held ((lock state))
-                                (bt:condition-wait cond-var (lock state)))))
+                                (bt:condition-wait cond-var (lock state)))
+
+                            (send-msg state (notification:refresh))))
+
                     :name "Refresh Thread"))
 
 
