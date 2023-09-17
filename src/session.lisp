@@ -847,6 +847,8 @@
                                                    (wait-for-input state))
                                      :stdout-fn (lambda (data)
                                                     (send-msg state (notification:stdout data)))
+                                     :trace-fn (lambda (data)
+                                                   (send-msg state (notification:stdout data)))
                                      :stderr-fn (lambda (data)
                                                     (send-msg state (notification:stderr data))))))
 

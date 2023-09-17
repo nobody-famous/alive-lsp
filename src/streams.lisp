@@ -25,20 +25,25 @@
     #+sbcl (alive/sbcl/streams:set-out-listener obj listener))
 
 
-(defmacro with-redirect-streams ((&key stdin-fn stdout-fn stderr-fn) &body body)
+(defmacro with-redirect-streams ((&key stdin-fn stdout-fn stderr-fn trace-fn) &body body)
     (let ((orig-stdin (gensym))
           (orig-stdout (gensym))
+          (orig-trace (gensym))
           (orig-stderr (gensym))
           (io-stream (gensym))
+          (trace-stream (gensym))
           (err-stream (gensym)))
         `(let* ((,orig-stdin *standard-input*)
                 (,orig-stdout *standard-output*)
+                (,orig-trace *trace-output*)
                 (,orig-stderr *error-output*)
                 (,io-stream (make-io-stream))
+                (,trace-stream (make-io-stream))
                 (,err-stream (make-io-stream))
                 (*query-io* ,io-stream)
                 (*standard-input* ,io-stream)
                 (*standard-output* ,io-stream)
+                (*trace-output* ,trace-stream)
                 (*error-output* ,err-stream))
 
              (when ,stdin-fn
@@ -55,6 +60,14 @@
                                          (let ((*standard-output* ,orig-stdout)
                                                (*error-output* ,orig-stderr))
                                              (funcall ,stdout-fn data)))))
+
+             (when ,trace-fn
+                   (set-out-listener ,trace-stream
+                                     (lambda (data)
+                                         (let ((*standard-output* ,orig-stdout)
+                                               (*trace-output* ,orig-trace)
+                                               (*error-output* ,orig-stderr))
+                                             (funcall ,trace-fn data)))))
 
              (when ,stderr-fn
                    (set-out-listener ,err-stream
