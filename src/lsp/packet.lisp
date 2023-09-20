@@ -22,13 +22,23 @@
 (defvar end-line (format nil "~C~C" #\return #\newline))
 
 
+(defun string-to-bytes (str)
+    (flexi-streams:string-to-octets str :external-format :utf-8))
+
+
+(defun number-to-bytes (num)
+    (string-to-bytes (princ-to-string num)))
+
+
 (defun to-wire (msg)
-    (let ((out (with-output-to-string (str)
-                   (let* ((payload (json:encode-json-to-string msg)))
-                       (format str "Content-Length: ~A~A" (length payload) end-line)
-                       (format str "~A" end-line)
-                       (format str "~A" payload)))))
-        (flexi-streams:string-to-octets out)))
+    (let* ((payload (json:encode-json-to-string msg))
+           (bytes (flexi-streams:string-to-octets payload :external-format :utf-8)))
+        (concatenate 'vector
+            (string-to-bytes "Content-Length: ")
+            (number-to-bytes (length bytes))
+            #(13 10)
+            #(13 10)
+            bytes)))
 
 
 (defun create-header ()

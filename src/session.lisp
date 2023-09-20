@@ -181,7 +181,6 @@
     (bt:with-recursive-lock-held ((lock obj))
         (when (and (hash-table-p msg)
                    (gethash "jsonrpc" msg))
-              (logger:trace-msg "<-- ~A~%" (json:encode-json-to-string msg))
               (write-sequence (packet:to-wire msg) (usocket:socket-stream (conn obj)))
               (force-output (usocket:socket-stream (conn obj))))))
 

@@ -66,7 +66,7 @@
                 (setf (gethash "firstTriggerCharacter" on-type-opts) #\newline)
                 (setf (gethash "moreTriggerCharacters" on-type-opts) (list))
 
-                (setf (gethash "triggerCharacters" comp-opts) (list #\:))
+                (setf (gethash "triggerCharacters" comp-opts) (list #\: #\+ #\- #\*))
 
                 (setf (gethash "textDocumentSync" caps) 1)
                 (setf (gethash "hoverProvider" caps) nil)

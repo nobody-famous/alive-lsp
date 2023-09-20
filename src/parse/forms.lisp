@@ -232,7 +232,7 @@
     (loop :with counted := 0
           :with cur-form := nil
 
-          :while (<= counted n)
+          :while (<= (the fixnum counted) n)
 
           :do (setf cur-form (pop forms))
 
