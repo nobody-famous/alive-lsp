@@ -3,6 +3,8 @@
 
 (in-package :alive/test/files)
 
+(declaim (optimize (speed 3)))
+
 
 (defun foo (b)
     (let* ((x 5)
@@ -16,7 +18,13 @@
 (defmacro bar ()
     nil)
 
-(let ((x))
-    (if (typep x 'null) "a" "b"))
+(let ((x 0))
+    (declare (type fixnum x))
+
+    (loop :with y := 0
+          :while (<= y x)
+          :do (incf y))
+    (if (and (<= x 5)
+             (typep x 'null)) "a" "b"))
 
 (

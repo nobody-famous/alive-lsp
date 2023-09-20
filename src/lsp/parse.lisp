@@ -84,7 +84,6 @@
     (with-input-from-string (str content)
         (json:decode-json str)))
 
-
 (defun from-stream (input)
     (let* ((header (parse-header input))
            (raw-content (read-content input (packet:content-length header)))
