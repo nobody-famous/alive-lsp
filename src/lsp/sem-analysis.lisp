@@ -94,7 +94,7 @@
                 :with start := (token:get-start token)
                 :with end := (token:get-end token)
 
-                :for line :from (the fixnum (pos:line start)) :to (the fixnum (pos:line end))
+                :for line fixnum :from (pos:line start) :to (pos:line end)
                 :for start-col := (if (eq line (pos:line start))
                                       (pos:col start)
                                       0)
