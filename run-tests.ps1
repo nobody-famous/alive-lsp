@@ -1,3 +1,5 @@
+get-childitem -filter *.fasl -recurse | rm -force
+
 sbcl `
     --noinform `
     --non-interactive `

@@ -191,7 +191,7 @@
 
 (defun test-in-package ()
     (clue:test "In-package form"
-        (check-forms (format nil (format nil "(IN-PACKAGE :foo)~%bar"))
+        (check-forms (format nil "(IN-PACKAGE :foo)~%bar")
                      (list (form:create :start (pos:create 0 0)
                                         :start-offset 0
                                         :end (pos:create 0 17)
@@ -219,7 +219,7 @@
 
 (defun test-sym-with-pkg-nl ()
     (clue:test "Symbol with package with newline"
-        (check-forms (format nil (format nil "'foo:bar~%fff"))
+        (check-forms (format nil "'foo:bar~%fff")
                      (list (form:create :start (pos:create 0 0)
                                         :start-offset 0
                                         :end (pos:create 0 8)
@@ -235,6 +235,32 @@
                                         :end (pos:create 1 3)
                                         :end-offset 12
                                         :form-type types:*symbol*)))))
+
+
+(defun test-close-parens ()
+    (clue:test "Close parens"
+        (check-forms (format nil "(foo())")
+                     (list (form:create :start (pos:create 0 0)
+                                        :start-offset 0
+                                        :end (pos:create 0 7)
+                                        :end-offset 7
+                                        :form-type types:*open-paren*
+                                        :in-pkg nil
+                                        :kids (list (form:create :start (pos:create 0 1)
+                                                                 :start-offset 1
+                                                                 :end (pos:create 0 4)
+                                                                 :end-offset 4
+                                                                 :form-type types:*symbol*))))))
+
+    (clue:test "Unmatched close paren"
+        (check-forms (format nil ")")
+                     (list (form:create :start (pos:create 0 0)
+                                        :start-offset 0
+                                        :end nil
+                                        :end-offset nil
+                                        :form-type types:*unmatched-close-paren*
+                                        :in-pkg nil
+                                        :kids nil)))))
 
 
 (defun test-getters ()
@@ -265,4 +291,5 @@
         (test-symbols-list)
         (test-in-package)
         (test-sym-with-pkg-nl)
+        (test-close-parens)
         (test-getters)))
