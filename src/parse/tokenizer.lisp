@@ -167,9 +167,10 @@
               :with depth := 0
               :for ch := (look-ahead state)
 
-              :until (and (eq 0 depth)
-                          (or (not ch)
+              :until (or (not ch)
+                         (and (eq 0 depth)
                               (is-ws ch)))
+
               :do (cond ((char= ch #\() (incf depth))
                         ((char= ch #\)) (when (< 0 depth)
                                               (decf depth))))

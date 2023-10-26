@@ -928,15 +928,19 @@
 
 
 (defun handle-try-compile (state msg)
-    (declare (ignore state))
-    (let* ((id (cdr (assoc :id msg)))
+    (let* ((logger logger:*logger*)
+           (id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
-           (path (cdr (assoc :path params)))
-           (msgs (handler-case
-                         (file:try-compile path)
-                     (T () nil))))
+           (path (cdr (assoc :path params))))
 
-        (resp:try-compile id msgs)))
+        (bt:make-thread (lambda ()
+                            (let* ((logger:*logger* logger)
+                                   (msgs (handler-case
+                                                 (file:try-compile path)
+                                             (T () nil))))
+
+                                (send-msg state (resp:try-compile id msgs))))
+                        :name "Try Compile")))
 
 
 (defun handle-load-asdf (state msg)

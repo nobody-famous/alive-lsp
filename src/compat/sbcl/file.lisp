@@ -83,6 +83,12 @@
         (let* ((msgs nil)
                (capture-msg (lambda (msg)
                                 (setf msgs (add-message msgs msg))))
+               (do-abort (lambda (err)
+                             (send-message capture-msg forms types:*sev-error* err)
+                             (let ((to-call (find-restart 'abort err)))
+                                 (if to-call
+                                     (invoke-restart to-call)
+                                     (return-from do-cmd msgs)))))
                (handle-error (lambda (err)
                                  (send-message capture-msg forms types:*sev-error* err)
                                  (when (and (not (should-filter-p (format NIL "~A" err)))
@@ -111,7 +117,8 @@
                                (warning (handle-skippable types:*sev-warn*))
                                (sb-c:fatal-compiler-error handle-error)
                                (sb-c:compiler-error handle-error)
-                               (error handle-error))
+                               (error handle-error)
+                               (sb-kernel::control-stack-exhausted do-abort))
                     (funcall cmd path)
                     msgs)))))
 

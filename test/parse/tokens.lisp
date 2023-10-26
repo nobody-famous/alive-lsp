@@ -81,7 +81,23 @@
                                               :start (pos:create 0 0)
                                               :end (pos:create 0 3)
                                               :text "#+n"))
-                          :actual (tokens-for-string "#+n"))))
+                          :actual (tokens-for-string "#+n")))
+
+    (clue:test "Invalid ifdef macro"
+        (clue:check-equal :expected (list (token:create
+                                              :type-value alive/types:*ifdef-false*
+                                              :start (pos:create 0 0)
+                                              :end (pos:create 0 3)
+                                              :text "#+("))
+                          :actual (tokens-for-string "#+(")))
+    
+    (clue:test "Valid ifdef macro"
+        (clue:check-equal :expected (list (token:create
+                                              :type-value alive/types:*ifdef-false*
+                                              :start (pos:create 0 0)
+                                              :end (pos:create 0 3)
+                                              :text "#+(or a b)"))
+                          :actual (tokens-for-string "#+(or a b)"))))
 
 
 (defun test-parens ()
