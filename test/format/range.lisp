@@ -15,6 +15,7 @@
         (let ((actual (if opts
                           (formatting:range s range opts)
                           (formatting:range s range))))
+
             (clue:check-equal :expected expected
                               :actual actual))))
 
@@ -50,7 +51,7 @@
         (check-format (format nil "'(1 2 3 4~%   5 6 7 8)")
                       (range:create (pos:create 0 0) (pos:create 1 3))
                       (list (edit:create :range (range:create (pos:create 0 9) (pos:create 1 3))
-                                         :text (format nil "~%    "))))))
+                                         :text (format nil "~A    " formatting:EOL))))))
 
 
 (defun test-comment-out-of-range ()
@@ -112,7 +113,7 @@
         (check-format (format nil "dd~%( a~%    b~%      c)")
                       (range:create (pos:create 2 0) (pos:create 3 0))
                       (list (edit:create :range (range:create (pos:create 1 3) (pos:create 2 4))
-                                         :text (format nil "~%  "))))))
+                                         :text (format nil "~A  " formatting:EOL))))))
 
 
 (defun test-stack-close-parens ()
@@ -142,9 +143,9 @@
         (check-format (format nil "(loop :for i :from 1 :to 10~%:do~%nil)")
                       (range:create (pos:create 0 0) (pos:create 3 0))
                       (list (edit:create :range (range:create (pos:create 0 27) (pos:create 1 0))
-                                         :text (format nil "~A      " alive/format:eol))
+                                         :text (format nil "~A      " formatting:EOL))
                             (edit:create :range (range:create (pos:create 1 3) (pos:create 2 0))
-                                         :text (format nil "~A        " alive/format:eol))))))
+                                         :text (format nil "~A        " formatting:EOL))))))
 
 
 (defun test-indent-loop-ml ()
@@ -159,8 +160,8 @@
     (clue:test "Indent loop multiline token"
         (check-format (format nil "(#|~ASome stuff~A|# loop :for i :from 1 :to 10 :do~%nil)" alive/format:eol alive/format:eol)
                       (range:create (pos:create 0 0) (pos:create 5 0))
-                      (list (edit:create :range (range:create (pos:create 0 31) (pos:create 1 0))
-                                         :text (format nil "~A        " alive/format:eol))))))
+                      (list (edit:create :range (range:create (pos:create 2 33) (pos:create 3 0))
+                                         :text (format nil "~A          " alive/format:eol))))))
 
 
 (defun test-indent-cond ()
