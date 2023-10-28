@@ -127,6 +127,31 @@
                                                                                           :form-type types:*symbol*)))))))))
 
 
+(defun test-double-comma ()
+    (clue:test "Double commas"
+        (check-forms (format nil "`(,,foo)")
+                     (list (form:create :start (pos:create 0 0)
+                                        :start-offset 0
+                                        :end (pos:create 0 8)
+                                        :end-offset 8
+                                        :form-type types:*back-quote*
+                                        :kids (list (form:create :start (pos:create 0 1)
+                                                                 :start-offset 1
+                                                                 :end (pos:create 0 8)
+                                                                 :end-offset 8
+                                                                 :form-type types:*open-paren*
+                                                                 :kids (list (form:create :start (pos:create 0 2)
+                                                                                          :start-offset 2
+                                                                                          :end (pos:create 0 7)
+                                                                                          :end-offset 7
+                                                                                          :form-type types:*comma*
+                                                                                          :kids (list (form:create :start (pos:create 0 4)
+                                                                                                                   :start-offset 4
+                                                                                                                   :end (pos:create 0 7)
+                                                                                                                   :end-offset 7
+                                                                                                                   :form-type types:*symbol*)))))))))))
+
+
 (defun test-back-quote-with-comma ()
     (clue:test "Back quote with comma"
         (check-forms (format nil "`(foo ,bar)")
@@ -346,6 +371,7 @@
         (test-empty-list)
         (test-empty-list-with-nl)
         (test-quoted-list-with-foo)
+        (test-double-comma)
         (test-back-quote-with-comma)
         (test-double-quote-with-comma)
         (test-quoted-symbol)
