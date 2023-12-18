@@ -56,4 +56,4 @@
 (defparameter *back-quote* 18)
 (defparameter *comma* 19)
 (defparameter *comma-at* 20)
-(defparameter *unmatched-close-paren* 20)
+(defparameter *unmatched-close-paren* 21)

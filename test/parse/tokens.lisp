@@ -31,7 +31,9 @@
         (clue:check-equal :expected (list (token:create
                                               :type-value alive/types:*symbol*
                                               :start (pos:create 0 0)
+                                              :start-offset 0
                                               :end (pos:create 0 5)
+                                              :end-offset 5
                                               :text "defun"))
                           :actual (tokens-for-string "defun"))))
 
@@ -41,7 +43,9 @@
         (clue:check-equal :expected (list (token:create
                                               :type-value alive/types:*line-comment*
                                               :start (pos:create 0 0)
+                                              :start-offset 0
                                               :end (pos:create 0 9)
+                                              :end-offset 9
                                               :text "; Comment"))
                           :actual (tokens-for-string "; Comment"))))
 
@@ -51,7 +55,9 @@
         (clue:check-equal :expected (list (token:create
                                               :type-value alive/types:*string*
                                               :start (pos:create 0 0)
+                                              :start-offset 0
                                               :end (pos:create 0 8)
+                                              :end-offset 8
                                               :text "\"String\""))
                           :actual (tokens-for-string "\"String\"")))
 
@@ -59,8 +65,10 @@
         (clue:check-equal :expected (list (token:create
                                               :type-value alive/types:*string*
                                               :start (pos:create 0 0)
+                                              :start-offset 0
                                               :end (pos:create 0 7)
-                                              :text "\"\\\"~A\\\")"))
+                                              :end-offset 7
+                                              :text "\"String"))
                           :actual (tokens-for-string "\"String"))))
 
 
@@ -69,7 +77,9 @@
         (clue:check-equal :expected (list (token:create
                                               :type-value alive/types:*macro*
                                               :start (pos:create 0 0)
+                                              :start-offset 0
                                               :end (pos:create 0 6)
+                                              :end-offset 6
                                               :text "#'abcd"))
                           :actual (tokens-for-string "#'abcd"))))
 
@@ -79,7 +89,9 @@
         (clue:check-equal :expected (list (token:create
                                               :type-value alive/types:*ifdef-false*
                                               :start (pos:create 0 0)
+                                              :start-offset 0
                                               :end (pos:create 0 3)
+                                              :end-offset 3
                                               :text "#+n"))
                           :actual (tokens-for-string "#+n")))
 
@@ -87,15 +99,19 @@
         (clue:check-equal :expected (list (token:create
                                               :type-value alive/types:*ifdef-false*
                                               :start (pos:create 0 0)
+                                              :start-offset 0
                                               :end (pos:create 0 3)
+                                              :end-offset 3
                                               :text "#+("))
                           :actual (tokens-for-string "#+(")))
-    
+
     (clue:test "Valid ifdef macro"
         (clue:check-equal :expected (list (token:create
                                               :type-value alive/types:*ifdef-false*
                                               :start (pos:create 0 0)
-                                              :end (pos:create 0 3)
+                                              :start-offset 0
+                                              :end (pos:create 0 10)
+                                              :end-offset 10
                                               :text "#+(or a b)"))
                           :actual (tokens-for-string "#+(or a b)"))))
 
