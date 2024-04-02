@@ -1008,6 +1008,7 @@
                                (cons "textDocument/semanticTokens/full" 'handle-sem-tokens)
 
                                (cons "$/setTrace" 'ignore-msg)
+                               (cons "$/cancelRequest" 'ignore-msg)
 
                                (cons "$/alive/eval" 'handle-eval)
                                (cons "$/alive/getPackageForPosition" 'handle-get-pkg)
