@@ -21,7 +21,3 @@
 (defun create (start end)
     (list (cons :start start)
           (cons :end end)))
-
-
-(defun from-wire (fields)
-    fields)

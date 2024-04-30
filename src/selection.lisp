@@ -36,6 +36,31 @@
                           (return out))))
 
 
+(defstruct pos
+    line
+    col)
+
+
+(declaim (ftype (function (cons))))
+(defun position-p (data)
+    (let ((line (first data))
+          (char (second data)))
+        (and (eq :line (car line))
+             (numberp (cdr line))
+             (eq :character (car char))
+             (numberp (cdr char)))))
+
+
+(defun list-of-position-p (data)
+    (and (consp data)
+         (every #'position-p data)))
+
+
+(deftype list-of-position ()
+    `(satisfies list-of-position-p))
+
+
+(declaim (ftype (function (cons list-of-position)) ranges))
 (defun ranges (forms pos-list)
     (mapcar (lambda (pos)
                 (ranges-for-pos forms pos))
