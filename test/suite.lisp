@@ -27,4 +27,5 @@
         (alive/test/compile:run-all)
         (alive/test/inspector:run-all)
         (alive/test/debugger:run-all)
-        (alive/test/position:run-all)))
+        (alive/test/position:run-all)
+        (alive/test/range:run-all)))
