@@ -5,6 +5,7 @@
              :col
              :less-than
              :less-or-equal
+             :position-p
              :text-position)
     (:local-nicknames (:types :alive/types)))
 
