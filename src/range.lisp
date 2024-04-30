@@ -2,8 +2,7 @@
     (:use :cl)
     (:export :create
              :start
-             :end
-             :from-wire)
+             :end)
     (:local-nicknames (:pos :alive/position)
                       (:types :alive/types)))
 

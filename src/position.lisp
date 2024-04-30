@@ -5,7 +5,7 @@
              :col
              :less-than
              :less-or-equal
-             :from-wire)
+             :text-position)
     (:local-nicknames (:types :alive/types)))
 
 (in-package :alive/position)
@@ -17,21 +17,21 @@
          (assoc :character obj)))
 
 
-(deftype pos ()
+(deftype text-position ()
     `(satisfies position-p))
 
 
-(declaim (ftype (function (pos) fixnum) line))
+(declaim (ftype (function (text-position) fixnum) line))
 (defun line (obj)
     (cdr (assoc :line obj)))
 
 
-(declaim (ftype (function (pos) fixnum) col))
+(declaim (ftype (function (text-position) fixnum) col))
 (defun col (obj)
     (cdr (assoc :character obj)))
 
 
-(declaim (ftype (function (pos pos) boolean) less-than))
+(declaim (ftype (function (text-position text-position) boolean) less-than))
 (defun less-than (pos1 pos2)
     (let ((line1 (cdr (assoc :line pos1)))
           (col1 (cdr (assoc :character pos1)))
@@ -43,7 +43,7 @@
               (T (< col1 col2)))))
 
 
-(declaim (ftype (function (pos pos) boolean) less-or-equal))
+(declaim (ftype (function (text-position text-position) boolean) less-or-equal))
 (defun less-or-equal (pos1 pos2)
     (let ((line1 (cdr (assoc :line pos1)))
           (col1 (cdr (assoc :character pos1)))
