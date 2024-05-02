@@ -16,7 +16,6 @@
                                          (incf (test-results-passed ,out) (test-results-passed expr-result))
                                          (incf (test-results-failed ,out) (test-results-failed expr-result)))) :into exprs
                      :finally (return exprs))
-             ;  (format T "Passed: ~A Failed: ~A~%" (test-results-passed ,out) (test-results-failed ,out))
              (print-footer ,label ,out)
              ,out)))
 
