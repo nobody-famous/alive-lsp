@@ -167,25 +167,6 @@
     (result id "data" (to-sem-array sem-tokens)))
 
 
-(defun create-selection-range (range parent)
-    (let ((sel-range (make-hash-table :test #'equalp)))
-
-        (setf (gethash "range" sel-range) range)
-        (setf (gethash "parent" sel-range) parent)
-
-        sel-range))
-
-
-(defun to-nested-ranges (ranges)
-    (loop :with cur-item := (create-selection-range (car ranges) nil)
-
-          :for range :in (cdr ranges)
-          :do (setf cur-item (create-selection-range range cur-item))
-
-          :finally (progn (setf (gethash "range" cur-item) range)
-                          (return cur-item))))
-
-
 (defun selection-range (id ranges)
     (message:create-response id :result-value (or ranges
                                                   (make-hash-table :test #'equalp))))
