@@ -8,9 +8,9 @@
     :components ((:module "clue"
                           :components
                           ((:file "package")
+                           (:file "run")
                            (:file "formatting")
                            (:file "errors")
-                           (:file "check")
-                           (:file "run"))))
+                           (:file "check"))))
     :description ""
     :in-order-to ((test-op (test-op "clue/tests"))))
