@@ -68,6 +68,8 @@
                                        (:file "lsp/message/notification")
 
                                        (:file "session")
+                                       (:file "session/state")
+                                       (:file "session/network-state")
                                        (:file "server")))))
 
 
@@ -109,6 +111,7 @@
                                        (:file "position")
                                        (:file "range")
                                        (:file "selection")
+                                       (:file "session")
                                        (:file "streams")
 
                                        (:file "suite")

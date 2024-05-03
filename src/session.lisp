@@ -541,18 +541,6 @@
                                                         :result (inspector:to-result result)))))))
 
 
-(defun stop (state)
-    (logger:info-msg "Stopping state ~A" state)
-
-    (setf (running state) NIL)
-
-    (destroy state)
-
-    (loop :for listener :in (listeners state)
-          :do (when (on-done listener)
-                    (funcall (on-done listener)))))
-
-
 (defun read-message (state)
     (parse:from-stream (get-input-stream state)))
 
@@ -1092,6 +1080,18 @@
                   (rem-thread-msg state)))))
 
 
+(defun stop (state)
+    (logger:info-msg "Stopping state ~A" state)
+
+    (setf (running state) NIL)
+
+    (destroy state)
+
+    (loop :for listener :in (listeners state)
+          :do (when (on-done listener)
+                    (funcall (on-done listener)))))
+
+
 (defun get-next-response (state)
     (handler-case
             (let ((msg (read-message state)))
@@ -1128,6 +1128,7 @@
                         (send-msg state resp)))))
 
 
+(declaim (ftype (function (state)) start-read-thread))
 (defun start-read-thread (state)
     (let ((stdout *standard-output*)
           (logger logger:*logger*))
@@ -1139,6 +1140,7 @@
                             :name "Session Message Reader"))))
 
 
+(declaim (ftype (function (state)) start))
 (defun start (state)
     (setf (running state) T)
 
