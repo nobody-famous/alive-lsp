@@ -187,9 +187,8 @@
 
 
 (defun selection-range (id ranges)
-    (let ((value (or (mapcar #'to-nested-ranges ranges)
-                     (make-hash-table :test #'equalp))))
-        (message:create-response id :result-value value)))
+    (message:create-response id :result-value (or ranges
+                                                  (make-hash-table :test #'equalp))))
 
 
 (defun doc-symbols (id symbols)

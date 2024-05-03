@@ -13,36 +13,10 @@
          (pos:less-than pos end)))
 
 
-(declaim (ftype (function (cons pos:text-position) cons) ranges-for-pos))
-(defun ranges-for-pos (forms pos)
-    (loop :with start := nil
-          :with end := nil
-          :with out := nil
-
-          :for form :in forms
-          :do (let ((form-start (gethash "start" form))
-                    (form-end (gethash "end" form)))
-
-                  (unless start
-                      (setf start form-start))
-                  (setf end form-end)
-
-                  (when (in-range pos form-start form-end)
-                        (push (range:create form-start form-end) out)
-                        (loop :for kid :in (gethash "kids" form)
-                              :do (when (in-range pos (gethash "start" kid) (gethash "end" kid))
-                                        (setf out (append out
-                                                      (ranges-for-pos (list kid) pos)))))))
-
-          :finally (progn (push (range:create start end) out)
-                          (return out))))
-
-
 (declaim (ftype (function (cons pos:text-position) (or T cons)) find-form-for-pos))
 (defun find-form-for-pos (forms pos)
-    (first (remove-if-not (lambda (form)
-                              (in-range pos (gethash "start" form) (gethash "end" form)))
-                   forms)))
+    (find-if (lambda (form)
+                 (in-range pos (gethash "start" form) (gethash "end" form))) forms))
 
 
 (declaim (ftype (function ((or T cons) hash-table)) create-node))
@@ -78,5 +52,5 @@
 (declaim (ftype (function (cons list-of-position)) ranges))
 (defun ranges (forms pos-list)
     (mapcar (lambda (pos)
-                (ranges-for-pos forms pos))
+                (get-range-tree forms pos))
             pos-list))
