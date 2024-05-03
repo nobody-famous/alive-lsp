@@ -106,6 +106,8 @@
                                        (:file "forms")
                                        (:file "macros")
                                        (:file "inspector")
+                                       (:file "position")
+                                       (:file "range")
                                        (:file "selection")
                                        (:file "streams")
 

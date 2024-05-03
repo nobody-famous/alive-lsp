@@ -7,11 +7,13 @@
 (in-package :alive/selection)
 
 
+(declaim (ftype (function (pos:text-position pos:text-position pos:text-position) boolean) in-range))
 (defun in-range (pos start end)
     (and (pos:less-or-equal start pos)
          (pos:less-than pos end)))
 
 
+(declaim (ftype (function (cons pos:text-position) cons) ranges-for-pos))
 (defun ranges-for-pos (forms pos)
     (loop :with start := nil
           :with end := nil
@@ -36,6 +38,16 @@
                           (return out))))
 
 
+(defun list-of-position-p (data)
+    (and (consp data)
+         (every #'pos:position-p data)))
+
+
+(deftype list-of-position ()
+    `(satisfies list-of-position-p))
+
+
+(declaim (ftype (function (cons list-of-position)) ranges))
 (defun ranges (forms pos-list)
     (mapcar (lambda (pos)
                 (ranges-for-pos forms pos))
