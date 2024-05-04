@@ -20,6 +20,8 @@
                                        (:file "range")
                                        (:file "text-edit")
 
+                                       (:file "context")
+
                                        (:file "parse/token")
                                        (:file "parse/tokenizer")
                                        (:file "parse/form")
@@ -104,6 +106,7 @@
 
                                        (:file "log")
                                        (:file "compile")
+                                       (:file "context")
                                        (:file "debugger")
                                        (:file "eval")
                                        (:file "forms")
