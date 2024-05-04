@@ -4,6 +4,7 @@
              :get-text
              :get-pkg
              :get-result
+             :inspector
              :to-result)
     (:local-nicknames (:eval :alive/eval)
                       (:astreams :alive/streams)))

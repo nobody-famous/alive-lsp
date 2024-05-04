@@ -13,13 +13,13 @@
          (pos:less-than pos end)))
 
 
-(declaim (ftype (function (cons pos:text-position) (or T cons)) find-form-for-pos))
+(declaim (ftype (function (cons pos:text-position) (or boolean hash-table)) find-form-for-pos))
 (defun find-form-for-pos (forms pos)
     (find-if (lambda (form)
                  (in-range pos (gethash "start" form) (gethash "end" form))) forms))
 
 
-(declaim (ftype (function ((or T cons) hash-table)) create-node))
+(declaim (ftype (function ((or boolean cons) (or boolean hash-table)) cons) create-node))
 (defun create-node (parent form)
     (list (cons :range (range:create (gethash "start" form) (gethash "end" form)))
           (cons :parent parent)))

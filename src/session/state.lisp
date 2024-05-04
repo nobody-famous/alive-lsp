@@ -1,8 +1,20 @@
 (defpackage :alive/session/state
     (:use :cl)
     (:export :add-history
+             :add-inspector
+             :add-listener
+             :get-file-text
              :get-history-item
+             :get-inspector
+             :initialized
+             :listener
+             :listeners
              :lock
+             :next-inspector-id
+             :next-send-id
+             :rem-inspector
+             :set-file-text
+             :set-initialized
              :state))
 
 (in-package :alive/session/state)
@@ -69,6 +81,7 @@
 
 
 (defmethod get-history-item ((obj state) index)
+    (declare (integer index))
     (when (and (<= 0 index)
                (< index (length (history obj))))
           (elt (history obj) index)))
@@ -79,14 +92,17 @@
 
 
 (defmethod set-initialized ((obj state) value)
+    (declare (boolean value))
     (setf (initialized obj) value))
 
 
 (defmethod set-file-text ((obj state) uri text)
+    (declare (string uri text))
     (setf (gethash uri (files obj)) text))
 
 
 (defmethod get-file-text ((obj state) uri)
+    (declare (string uri))
     (gethash uri (files obj)))
 
 
@@ -105,16 +121,19 @@
 
 
 (defmethod add-inspector ((obj state) &key id inspector)
+    (declare (integer id) (alive/inspector:inspector inspector))
     (bt:with-recursive-lock-held ((lock obj))
         (setf (gethash id (inspectors obj))
             inspector)))
 
 
 (defmethod rem-inspector ((obj state) &key id)
+    (declare (integer id))
     (bt:with-recursive-lock-held ((lock obj))
         (remhash id (inspectors obj))))
 
 
 (defmethod get-inspector ((obj state) &key id)
+    (declare (integer id))
     (bt:with-recursive-lock-held ((lock obj))
         (gethash id (inspectors obj))))
