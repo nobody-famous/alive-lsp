@@ -1,6 +1,8 @@
 (defpackage :alive/session/state
     (:use :cl)
-    (:export :lock
+    (:export :add-history
+             :get-history-item
+             :lock
              :state))
 
 (in-package :alive/session/state)
@@ -64,6 +66,12 @@
         (elt (history obj) 0))
     (setf (elt (history obj) 0)
         item))
+
+
+(defmethod get-history-item ((obj state) index)
+    (when (and (<= 0 index)
+               (< index (length (history obj))))
+          (elt (history obj) index)))
 
 
 (defmethod add-listener ((obj state) (to-add listener))
