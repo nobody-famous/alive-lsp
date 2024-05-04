@@ -26,13 +26,3 @@
         (format nil "~d/~d/~d ~2,'0d:~2,'0d:~2,'0d" month day year hour minute sec)))
 
 
-(defmacro spawn-thread (name &body body)
-    (let ((stdout (gensym))
-          (logger (gensym)))
-        `(let ((,stdout *standard-output*)
-               (,logger alive/logger:*logger*))
-             (bt:make-thread (lambda ()
-                                 (let ((*standard-output* ,stdout)
-                                       (alive/logger:*logger* ,logger))
-                                     ,@body))
-                             :name ,name))))

@@ -1,6 +1,7 @@
 (defpackage :alive/context
     (:use :cl)
     (:export :create
+             :destroy
              :get-input-stream
              :get-output-stream
              :with-context))
@@ -36,6 +37,12 @@
         (error (make-condition 'context-nil-error)))
 
     (context-output-stream *context*))
+
+
+(defun destroy ()
+    (unless *context*
+        (error (make-condition 'context-nil-error)))
+    (context-destroy *context*))
 
 
 (defmacro with-context ((&key input-stream output-stream destroy-fn) &body body)

@@ -13,9 +13,12 @@
              :next-inspector-id
              :next-send-id
              :rem-inspector
+             :running
              :set-file-text
              :set-initialized
-             :state))
+             :state
+             :with-thread-msg)
+    (:local-nicknames (:threads :alive/threads)))
 
 (in-package :alive/session/state)
 
@@ -137,3 +140,28 @@
     (declare (integer id))
     (bt:with-recursive-lock-held ((lock obj))
         (gethash id (inspectors obj))))
+
+
+(defun save-thread-msg (state id)
+    (let* ((table (thread-msgs state))
+           (cur-thread (bt:current-thread))
+           (thread-id (threads:get-thread-id cur-thread)))
+
+        (bt:with-recursive-lock-held ((lock state))
+            (setf (gethash thread-id table) id))))
+
+
+(defun rem-thread-msg (state)
+    (let* ((table (thread-msgs state))
+           (cur-thread (bt:current-thread))
+           (thread-id (threads:get-thread-id cur-thread)))
+
+        (bt:with-recursive-lock-held ((lock state))
+            (remhash thread-id table))))
+
+
+(defmacro with-thread-msg ((state id) &body body)
+    `(progn (when ,id (save-thread-msg ,state ,id))
+            (unwind-protect
+                    (progn ,@body)
+                (when ,id (rem-thread-msg ,state)))))

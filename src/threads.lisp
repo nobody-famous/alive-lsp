@@ -44,3 +44,16 @@
             (error (make-condition 'thread-not-found :id thread-id)))
 
         (bt:destroy-thread thread)))
+
+
+
+(defmacro spawn-thread (name &body body)
+    (let ((stdout (gensym))
+          (logger (gensym)))
+        `(let ((,stdout *standard-output*)
+               (,logger alive/logger:*logger*))
+             (bt:make-thread (lambda ()
+                                 (let ((*standard-output* ,stdout)
+                                       (alive/logger:*logger* ,logger))
+                                     ,@body))
+                             :name ,name))))

@@ -71,7 +71,8 @@
 
                                        (:file "session")
                                        (:file "session/state")
-                                       (:file "session/network-state")
+                                       (:file "session/io")
+                                       (:file "session/message-loop")
                                        (:file "server")))))
 
 

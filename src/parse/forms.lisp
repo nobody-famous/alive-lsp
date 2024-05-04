@@ -175,6 +175,7 @@
     (collapse-opens state types:*open-paren*))
 
 
+(declaim (ftype (function (T) cons) from-stream))
 (defun from-stream (input)
     (loop :with state := (make-parse-state)
 
