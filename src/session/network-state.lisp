@@ -13,7 +13,8 @@
                :initarg :conn)))
 
 
-(defun create (&key conn)
+(declaim (ftype (function (usocket:stream-usocket) create)))
+(defun create (conn)
     (make-instance 'network-state
         :conn conn
         :running nil
