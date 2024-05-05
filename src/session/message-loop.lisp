@@ -13,23 +13,24 @@
 (in-package :alive/session/message-loop)
 
 
-(declaim (ftype (function (state:state T)) process-msg))
+(declaim (ftype (function (state:state T) (or null hash-table)) process-msg))
 (defun process-msg (state msg)
     (let ((id (cdr (assoc :id msg))))
         (state:with-thread-msg (state id)
             nil)))
 
 
-(declaim (ftype (function (state:state)) stop))
+(declaim (ftype (function (state:state) null) stop))
 (defun stop (state)
     (logger:info-msg "Stopping state ~A" state)
 
     (state:set-running state NIL)
+    (context:destroy)
 
-    (context:destroy))
+    nil)
 
 
-(declaim (ftype (function (state:state)) get-next-response))
+(declaim (ftype (function (state:state) (values (or null hash-table) &optional)) get-next-response))
 (defun get-next-response (state)
     (handler-case
             (let ((msg (io:read-message)))
