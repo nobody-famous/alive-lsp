@@ -10,7 +10,7 @@
 (in-package :alive/session/io)
 
 
-(declaim (ftype (function () cons) read-message))
+(declaim (ftype (function () (or null cons)) read-message))
 (defun read-message ()
     (parse:from-stream (context:get-input-stream)))
 
