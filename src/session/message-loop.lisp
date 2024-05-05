@@ -23,7 +23,7 @@
 (defun stop (state)
     (logger:info-msg "Stopping state ~A" state)
 
-    (setf (state:running state) NIL)
+    (state:set-running state NIL)
 
     (context:destroy))
 

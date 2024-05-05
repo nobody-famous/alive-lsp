@@ -16,6 +16,7 @@
              :running
              :set-file-text
              :set-initialized
+             :set-running
              :state
              :with-thread-msg)
     (:local-nicknames (:threads :alive/threads)))
@@ -23,140 +24,146 @@
 (in-package :alive/session/state)
 
 
-(defclass listener ()
-        ((on-done :accessor on-done
-                  :initform nil
-                  :initarg :on-done)))
+(defstruct listener
+    (on-done nil :type (or null function)))
 
 
-(defclass state ()
-        ((running :accessor running
-                  :initform T
-                  :initarg :running)
-         (initialized :accessor initialized
-                      :initform nil
-                      :initarg :initialized)
-         (files :accessor files
-                :initform (make-hash-table :test 'equalp)
-                :initarg :files)
-         (thread-msgs :accessor thread-msgs
-                      :initform (make-hash-table :test 'equalp)
-                      :initarg :thread-msgs)
-         (listeners :accessor listeners
-                    :initform nil
-                    :initarg :listeners)
-         (thread-name-id :accessor thread-name-id
-                         :initform 1
-                         :initarg :thread-name-id)
-         (lock :accessor lock
-               :initform (bt:make-recursive-lock)
-               :initarg :lock)
-         (send-msg-id :accessor send-msg-id
-                      :initform 1
-                      :initarg :send-msg-id)
-         (sent-msg-callbacks :accessor sent-msg-callbacks
-                             :initform (make-hash-table :test 'equalp)
-                             :initarg :sent-msg-callbacks)
-         (inspector-id :accessor inspector-id
-                       :initform 1
-                       :initarg :inspector-id)
-         (inspectors :accessor inspectors
-                     :initform (make-hash-table :test 'equalp)
-                     :initarg :inspectors)
-         (input-cond-vars :accessor input-cond-vars
-                          :initform (make-hash-table :test 'equalp)
-                          :initarg :input-cond-vars)
-         (history :accessor history
-                  :initform (make-array 3)
-                  :initarg :history)
-         (read-thread :accessor read-thread
-                      :initform nil
-                      :initarg :read-thread)))
+(defstruct state
+    (running nil :type boolean)
+    (initialized nil :type boolean)
+
+    (files (make-hash-table :test 'equalp) :type hash-table)
+    (thread-msgs (make-hash-table :test 'equalp) :type hash-table)
+    (send-msg-callbacks (make-hash-table :test 'equalp) :type hash-table)
+    (inspectors (make-hash-table :test 'equalp) :type hash-table)
+    (input-cond-vars (make-hash-table :test 'equalp) :type hash-table)
+
+    (thread-name-id 1 :type integer)
+    (send-msg-id 1 :type integer)
+    (inspector-id 1 :type integer)
+
+    (listeners nil :type (or null cons))
+
+    (history (make-array 3) :type array)
+
+    (lock (bt:make-recursive-lock) :type sb-thread:mutex)
+    (read-thread nil :type (or null sb-thread:thread)))
 
 
-(defmethod add-history ((obj state) item)
-    (setf (elt (history obj) 2)
-        (elt (history obj) 1))
-    (setf (elt (history obj) 1)
-        (elt (history obj) 0))
-    (setf (elt (history obj) 0)
+(declaim (ftype (function (state) (or null cons)) listeners))
+(defun listeners (state)
+    (state-listeners state))
+
+
+(declaim (ftype (function (state) boolean) initialized))
+(defun initialized (state)
+    (state-initialized state))
+
+
+(declaim (ftype (function (state) boolean) running))
+(defun running (state)
+    (state-running state))
+
+
+(declaim (ftype (function (state boolean)) set-running))
+(defun set-running (state value)
+    (setf (state-running state) value))
+
+
+(declaim (ftype (function (state) sb-thread:mutex) lock))
+(defun lock (state)
+    (state-lock state))
+
+
+(declaim (ftype (function (state T)) add-history))
+(defun add-history (obj item)
+    (setf (elt (state-history obj) 2)
+        (elt (state-history obj) 1))
+    (setf (elt (state-history obj) 1)
+        (elt (state-history obj) 0))
+    (setf (elt (state-history obj) 0)
         item))
 
 
-(defmethod get-history-item ((obj state) index)
-    (declare (integer index))
+(declaim (ftype (function (state integer) T) get-history-item))
+(defun get-history-item (obj index)
     (when (and (<= 0 index)
-               (< index (length (history obj))))
-          (elt (history obj) index)))
+               (< index (length (state-history obj))))
+          (elt (state-history obj) index)))
 
 
-(defmethod add-listener ((obj state) (to-add listener))
-    (push to-add (listeners obj)))
+(declaim (ftype (function (state listener)) add-listener))
+(defun add-listener (obj to-add)
+    (push to-add (state-listeners obj)))
 
 
-(defmethod set-initialized ((obj state) value)
-    (declare (boolean value))
-    (setf (initialized obj) value))
+(declaim (ftype (function (state boolean)) set-initialized))
+(defun set-initialized (obj value)
+    (setf (state-initialized obj) value))
 
 
-(defmethod set-file-text ((obj state) uri text)
-    (declare (string uri text))
-    (setf (gethash uri (files obj)) text))
+(declaim (ftype (function (state string string)) set-file-text))
+(defun set-file-text (obj uri text)
+    (setf (gethash uri (state-files obj)) text))
 
 
-(defmethod get-file-text ((obj state) uri)
-    (declare (string uri))
-    (gethash uri (files obj)))
+(declaim (ftype (function (state string) (or null string)) get-file-text))
+(defun get-file-text (obj uri)
+    (gethash uri (state-files obj)))
 
 
-(defmethod next-send-id ((obj state))
-    (bt:with-recursive-lock-held ((lock obj))
-        (let ((id (send-msg-id obj)))
-            (incf (send-msg-id obj))
+(declaim (ftype (function (state) integer) next-send-id))
+(defun next-send-id (obj)
+    (bt:with-recursive-lock-held ((state-lock obj))
+        (let ((id (state-send-msg-id obj)))
+            (incf (state-send-msg-id obj))
             id)))
 
 
-(defmethod next-inspector-id ((obj state))
-    (bt:with-recursive-lock-held ((lock obj))
-        (let ((id (inspector-id obj)))
-            (incf (inspector-id obj))
+(declaim (ftype (function (state) integer) next-inspector-id))
+(defun next-inspector-id (obj)
+    (bt:with-recursive-lock-held ((state-lock obj))
+        (let ((id (state-inspector-id obj)))
+            (incf (state-inspector-id obj))
             id)))
 
 
-(defmethod add-inspector ((obj state) &key id inspector)
-    (declare (integer id) (alive/inspector:inspector inspector))
-    (bt:with-recursive-lock-held ((lock obj))
-        (setf (gethash id (inspectors obj))
+(declaim (ftype (function (state integer alive/inspector:inspector)) add-inspector))
+(defun add-inspector (obj id inspector)
+    (bt:with-recursive-lock-held ((state-lock obj))
+        (setf (gethash id (state-inspectors obj))
             inspector)))
 
 
-(defmethod rem-inspector ((obj state) &key id)
-    (declare (integer id))
-    (bt:with-recursive-lock-held ((lock obj))
-        (remhash id (inspectors obj))))
+(declaim (ftype (function (state integer)) rem-inspector))
+(defun rem-inspector (obj id)
+    (bt:with-recursive-lock-held ((state-lock obj))
+        (remhash id (state-inspectors obj))))
 
 
-(defmethod get-inspector ((obj state) &key id)
-    (declare (integer id))
-    (bt:with-recursive-lock-held ((lock obj))
-        (gethash id (inspectors obj))))
+(declaim (ftype (function (state integer) (or null alive/inspector:inspector)) get-inspector))
+(defun get-inspector (obj id)
+    (bt:with-recursive-lock-held ((state-lock obj))
+        (gethash id (state-inspectors obj))))
 
 
+(declaim (ftype (function (state integer)) save-thread-msg))
 (defun save-thread-msg (state id)
-    (let* ((table (thread-msgs state))
+    (let* ((table (state-thread-msgs state))
            (cur-thread (bt:current-thread))
            (thread-id (threads:get-thread-id cur-thread)))
 
-        (bt:with-recursive-lock-held ((lock state))
+        (bt:with-recursive-lock-held ((state-lock state))
             (setf (gethash thread-id table) id))))
 
 
+(declaim (ftype (function (state)) rem-thread-msg))
 (defun rem-thread-msg (state)
-    (let* ((table (thread-msgs state))
+    (let* ((table (state-thread-msgs state))
            (cur-thread (bt:current-thread))
            (thread-id (threads:get-thread-id cur-thread)))
 
-        (bt:with-recursive-lock-held ((lock state))
+        (bt:with-recursive-lock-held ((state-lock state))
             (remhash thread-id table))))
 
 
