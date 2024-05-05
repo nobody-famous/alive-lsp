@@ -76,17 +76,17 @@
 (defun test-valid-message ()
     (clue:suite "Valid message"
         (clue:test "With handler"
-            (state:with-state (make-state)
-                (let ((in-stream (utils:stream-from-string (utils:create-msg "{\"id\":5}"))))
+            (let ((in-stream (utils:stream-from-string (utils:create-msg "{\"id\":5}"))))
+                (state:with-state (make-state)
                     (context:with-context (:input-stream in-stream
                                                          :destroy-fn (lambda ()))
                         (msg-loop:run)))))
 
         (clue:test "No handler"
-            (state:with-state (state:create (lambda (msg)
-                                                (declare (ignore msg))
-                                                (error "Failed, as requested")))
-                (let ((in-stream (utils:stream-from-string (utils:create-msg "{\"id\":5}"))))
+            (let ((in-stream (utils:stream-from-string (utils:create-msg "{\"id\":5}"))))
+                (state:with-state (state:create (lambda (msg)
+                                                    (declare (ignore msg))
+                                                    (error "Failed, as requested")))
                     (context:with-context (:input-stream in-stream
                                                          :destroy-fn (lambda ()))
                         (msg-loop:run)))))))
@@ -95,8 +95,8 @@
 (defun test-errors ()
     (clue:suite "Errors"
         (clue:test "EOF"
-            (state:with-state (make-state)
-                (let ((out-stream (make-instance 'output-stream)))
+            (let ((out-stream (make-instance 'output-stream)))
+                (state:with-state (make-state)
                     (context:with-context (:input-stream (make-instance 'eof-stream)
                                                          :output-stream out-stream
                                                          :destroy-fn (lambda ()))
@@ -105,8 +105,8 @@
                                           :actual (seq out-stream))))))
 
         (clue:test "Server error no id"
-            (state:with-state (make-state)
-                (let ((out-stream (make-instance 'output-stream)))
+            (let ((out-stream (make-instance 'output-stream)))
+                (state:with-state (make-state)
                     (context:with-context (:input-stream (make-instance 'server-error-stream :to-throw 'errors:server-error)
                                                          :output-stream out-stream
                                                          :destroy-fn (lambda ()))
@@ -115,8 +115,8 @@
                                           :actual (seq out-stream))))))
 
         (clue:test "Server error with id"
-            (state:with-state (make-state)
-                (let ((out-stream (make-instance 'output-stream)))
+            (let ((out-stream (make-instance 'output-stream)))
+                (state:with-state (make-state)
                     (context:with-context (:input-stream (make-instance 'server-error-stream :id 10 :to-throw 'errors:server-error)
                                                          :output-stream out-stream
                                                          :destroy-fn (lambda ()))
@@ -124,8 +124,8 @@
                         (clue:check-exists (seq out-stream))))))
 
         (clue:test "Unhandled request no id"
-            (state:with-state (make-state)
-                (let ((out-stream (make-instance 'output-stream)))
+            (let ((out-stream (make-instance 'output-stream)))
+                (state:with-state (make-state)
                     (context:with-context (:input-stream (make-instance 'server-error-stream :to-throw 'errors:unhandled-request)
                                                          :output-stream out-stream
                                                          :destroy-fn (lambda ()))
@@ -134,8 +134,8 @@
                                           :actual (seq out-stream))))))
 
         (clue:test "Unhandled request with id"
-            (state:with-state (make-state)
-                (let ((out-stream (make-instance 'output-stream)))
+            (let ((out-stream (make-instance 'output-stream)))
+                (state:with-state (make-state)
                     (context:with-context (:input-stream (make-instance 'server-error-stream :id 10 :to-throw 'errors:unhandled-request)
                                                          :output-stream out-stream
                                                          :destroy-fn (lambda ()))
