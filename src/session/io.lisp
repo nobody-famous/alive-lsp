@@ -15,9 +15,9 @@
     (parse:from-stream (context:get-input-stream)))
 
 
-(declaim (ftype (function (state:state T)) send-msg))
-(defun send-msg (state msg)
-    (bt:with-recursive-lock-held ((state:lock state))
+(declaim (ftype (function (T)) send-msg))
+(defun send-msg (msg)
+    (bt:with-recursive-lock-held ((state:lock))
         (when (and (hash-table-p msg)
                    (gethash "jsonrpc" msg))
               (write-sequence (packet:to-wire msg) (context:get-output-stream))

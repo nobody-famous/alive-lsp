@@ -9,79 +9,72 @@
 (defun test-add-history ()
     (clue:suite "History"
         (clue:test "Add"
-            (let ((state (make-instance 'state:state)))
-                (state:add-history state 5)
+            (state:with-state (make-instance 'state:state)
+                (state:add-history 5)
                 (clue:check-equal :expected 5
-                                  :actual (state:get-history-item state 0))))
+                                  :actual (state:get-history-item 0))))
 
         (clue:test "Get out of range"
-            (let ((state (make-instance 'state:state)))
+            (state:with-state (make-instance 'state:state)
                 (clue:check-equal :expected nil
-                                  :actual (state:get-history-item state 10))
+                                  :actual (state:get-history-item 10))
                 (clue:check-equal :expected nil
-                                  :actual (state:get-history-item state -10))))
-
-        #+n (clue:test "Invalid index"
-            (let ((state (make-instance 'state:state)))
-                (clue:expect-fail (lambda () (state:get-history-item state "foo")))))))
+                                  :actual (state:get-history-item -10))))))
 
 
 (defun test-add-listener ()
     (clue:test "Add"
-        (let ((state (make-instance 'state:state))
-              (listener (make-instance 'state:listener)))
-            (state:add-listener state listener)
-            (clue:check-equal :expected 1
-                              :actual (length (state:listeners state))))))
+        (state:with-state (make-instance 'state:state)
+            (let ((listener (make-instance 'state:listener)))
+                (state:add-listener listener)
+                (clue:check-equal :expected 1
+                                  :actual (length (state:listeners)))))))
 
 
 (defun test-set-initialized ()
     (clue:suite "Set initialized"
         (clue:test "True"
-            (let ((state (make-instance 'state:state)))
-                (state:set-initialized state T)
+            (state:with-state (make-instance 'state:state)
+                (state:set-initialized T)
                 (clue:check-equal :expected T
-                                  :actual (state:initialized state))))
-        #+n (clue:test "Invalid"
-            (let ((state (make-instance 'state:state)))
-                (clue:expect-fail (lambda () (state:set-initialized state 5)))))))
+                                  :actual (state:initialized))))))
 
 
 (defun test-set-file-text ()
     (clue:test "Set file text"
-        (let ((state (make-instance 'state:state)))
-            (state:set-file-text state "uri" "Some text")
+        (state:with-state (make-instance 'state:state)
+            (state:set-file-text "uri" "Some text")
             (clue:check-equal :expected "Some text"
-                              :actual (state:get-file-text state "uri")))))
+                              :actual (state:get-file-text "uri")))))
 
 
 (defun test-next-send-id ()
     (clue:test "Next send id"
-        (let ((state (make-instance 'state:state)))
+        (state:with-state (make-instance 'state:state)
             (clue:check-equal :expected 1
-                              :actual (state:next-send-id state))
+                              :actual (state:next-send-id))
             (clue:check-equal :expected 2
-                              :actual (state:next-send-id state)))))
+                              :actual (state:next-send-id)))))
 
 
 (defun test-next-inspector-id ()
     (clue:test "Next inspector id"
-        (let ((state (make-instance 'state:state)))
+        (state:with-state (make-instance 'state:state)
             (clue:check-equal :expected 1
-                              :actual (state:next-inspector-id state))
+                              :actual (state:next-inspector-id))
             (clue:check-equal :expected 2
-                              :actual (state:next-inspector-id state)))))
+                              :actual (state:next-inspector-id)))))
 
 
 (defun test-inspector ()
     (clue:test "Inspector"
-        (let ((state (make-instance 'state:state))
-              (inspector (alive/inspector:create :text "text" :pkg "pkg")))
-            (state:add-inspector state 5 inspector)
-            (clue:check-equal :expected inspector :actual (state:get-inspector state 5))
+        (state:with-state (make-instance 'state:state)
+            (let ((inspector (alive/inspector:create :text "text" :pkg "pkg")))
+                (state:add-inspector 5 inspector)
+                (clue:check-equal :expected inspector :actual (state:get-inspector 5))
 
-            (state:rem-inspector state 5)
-            (clue:check-equal :expected nil :actual (state:get-inspector state 5)))))
+                (state:rem-inspector 5)
+                (clue:check-equal :expected nil :actual (state:get-inspector 5))))))
 
 
 (defun run-all ()
