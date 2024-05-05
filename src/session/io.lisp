@@ -4,7 +4,7 @@
              :send-msg)
     (:local-nicknames (:context :alive/context)
                       (:packet :alive/lsp/packet)
-                      (:parse :alive/parse/forms)
+                      (:parse :alive/lsp/parse)
                       (:state :alive/session/state)))
 
 (in-package :alive/session/io)

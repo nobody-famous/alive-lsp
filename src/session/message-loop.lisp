@@ -60,6 +60,7 @@
 
 (declaim (ftype (function (state:state) null) run))
 (defun run (state)
+    (state:set-running state T)
     (loop :while (state:running state)
           :do (let ((resp (get-next-response state)))
                   (when resp

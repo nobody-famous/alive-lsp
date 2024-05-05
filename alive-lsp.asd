@@ -97,6 +97,7 @@
                                        (:file "lsp/packet")
 
                                        (:file "session/messages")
+                                       (:file "session/message-loop")
                                        (:file "session/state")
 
                                        (:file "format/range")

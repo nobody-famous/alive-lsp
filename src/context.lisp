@@ -42,7 +42,8 @@
 (defun destroy ()
     (unless *context*
         (error (make-condition 'context-nil-error)))
-    (context-destroy *context*))
+    (when (context-destroy *context*)
+          (funcall (context-destroy *context*))))
 
 
 (defmacro with-context ((&key input-stream output-stream destroy-fn) &body body)

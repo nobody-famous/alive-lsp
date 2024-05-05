@@ -3,6 +3,7 @@
     (:export :add-history
              :add-inspector
              :add-listener
+             :create
              :get-file-text
              :get-history-item
              :get-inspector
@@ -48,6 +49,11 @@
 
     (lock (bt:make-recursive-lock) :type sb-thread:mutex)
     (read-thread nil :type (or null sb-thread:thread)))
+
+
+(declaim (ftype (function () state) create))
+(defun create ()
+    (make-state))
 
 
 (declaim (ftype (function (state) (or null cons)) listeners))

@@ -30,6 +30,7 @@
         (alive/test/range:run-all)
         (alive/test/session:run-all)
         (alive/test/session/messages:run-all)
+        (alive/test/session/message-loop:run-all)
         (alive/test/session/state:run-all)
         (alive/test/selection:run-all)
         (alive/test/streams:run-all)))
