@@ -72,6 +72,15 @@
             (loop-test))))
 
 
+(defun test-valid-message ()
+    (clue:test "Valid message"
+        (let ((state (state:create))
+              (in-stream (utils:stream-from-string (utils:create-msg "{\"id\":5}"))))
+            (context:with-context (:input-stream in-stream
+                                                 :destroy-fn (lambda ()))
+                (msg-loop:run state)))))
+
+
 (defun test-errors ()
     (clue:suite "Errors"
         (clue:test "EOF"
@@ -126,4 +135,5 @@
 (defun run-all ()
     (clue:suite "Message Loop Tests"
         (test-run)
+        (test-valid-message)
         (test-errors)))
