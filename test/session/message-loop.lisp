@@ -45,7 +45,8 @@
 
 
 (defun make-state ()
-    (state:create #'alive/session/message:handle))
+    (state:create (lambda (msg)
+                      (declare (ignore msg)))))
 
 
 (defun loop-test ()

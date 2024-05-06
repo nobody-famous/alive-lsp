@@ -71,6 +71,7 @@
 
                                        (:file "session")
                                        (:file "session/state")
+                                       (:file "session/handlers")
                                        (:file "session/message")
                                        (:file "session/io")
                                        (:file "session/message-loop")
@@ -98,6 +99,7 @@
                                        (:file "lsp/packet")
 
                                        (:file "session/messages")
+                                       (:file "session/message")
                                        (:file "session/message-loop")
                                        (:file "session/state")
 
