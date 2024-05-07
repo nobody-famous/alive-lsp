@@ -22,7 +22,7 @@
 (defstruct context
     (input-stream nil)
     (output-stream nil)
-    (destroy nil :type (function ())))
+    (destroy nil :type (or null (function ()))))
 
 
 (defun get-input-stream ()

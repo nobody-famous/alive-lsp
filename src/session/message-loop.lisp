@@ -2,8 +2,7 @@
     (:use :cl)
     (:export :run
              :stop)
-    (:local-nicknames (:context :alive/context)
-                      (:errors :alive/lsp/errors)
+    (:local-nicknames (:errors :alive/lsp/errors)
                       (:io :alive/session/io)
                       (:logger :alive/logger)
                       (:lsp-msg :alive/lsp/message/abstract)
@@ -30,10 +29,7 @@
 (declaim (ftype (function () null) stop))
 (defun stop ()
     (logger:info-msg "Stopping message loop")
-
     (state:set-running NIL)
-    (context:destroy)
-
     nil)
 
 
