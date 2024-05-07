@@ -40,7 +40,7 @@
 (declaim (ftype (function () (values (or null hash-table) &optional)) get-next-response))
 (defun get-next-response ()
     (handler-case
-            (let ((msg (io:read-message)))
+            (let ((msg (io:read-msg)))
                 (when msg
                       (process-msg msg)))
 
@@ -73,4 +73,4 @@
     (loop :while (state:running)
           :do (let ((resp (get-next-response)))
                   (when resp
-                        (io:send-msg resp)))))
+                        (state:send-msg resp)))))

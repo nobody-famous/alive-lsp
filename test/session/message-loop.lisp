@@ -44,13 +44,8 @@
     (error (make-instance (to-throw s) :id (id s))))
 
 
-(defun make-state ()
-    (state:create (lambda (msg)
-                      (declare (ignore msg)))))
-
-
 (defun loop-test ()
-    (state:with-state (make-state)
+    (state:with-state (state:create)
         (let ((destroy-called nil)
               (in-stream (utils:stream-from-string (utils:create-msg "foo"))))
             (context:with-context (:input-stream in-stream
@@ -78,16 +73,16 @@
     (clue:suite "Valid message"
         (clue:test "With handler"
             (let ((in-stream (utils:stream-from-string (utils:create-msg "{\"id\":5}"))))
-                (state:with-state (make-state)
+                (state:with-state (state:create)
                     (context:with-context (:input-stream in-stream
                                                          :destroy-fn (lambda ()))
                         (msg-loop:run)))))
 
         (clue:test "No handler"
             (let ((in-stream (utils:stream-from-string (utils:create-msg "{\"id\":5}"))))
-                (state:with-state (state:create (lambda (msg)
-                                                    (declare (ignore msg))
-                                                    (error "Failed, as requested")))
+                (state:with-state (state:create :msg-handler (lambda (msg)
+                                                                 (declare (ignore msg))
+                                                                 (error "Failed, as requested")))
                     (context:with-context (:input-stream in-stream
                                                          :destroy-fn (lambda ()))
                         (msg-loop:run)))))))
@@ -96,52 +91,68 @@
 (defun test-errors ()
     (clue:suite "Errors"
         (clue:test "EOF"
-            (let ((out-stream (make-instance 'output-stream)))
-                (state:with-state (make-state)
-                    (context:with-context (:input-stream (make-instance 'eof-stream)
-                                                         :output-stream out-stream
-                                                         :destroy-fn (lambda ()))
+            (let ((send-called nil))
+                (state:with-state (state:create :send-msg (lambda (msg)
+                                                              (declare (ignore msg))
+                                                              (setf send-called T)
+                                                              nil))
+                    (context:with-context (:destroy-fn (lambda ()))
                         (msg-loop:run)
                         (clue:check-equal :expected nil
-                                          :actual (seq out-stream))))))
+                                          :actual send-called)))))
 
         (clue:test "Server error no id"
-            (let ((out-stream (make-instance 'output-stream)))
-                (state:with-state (make-state)
+            (let ((out-stream (make-instance 'output-stream))
+                  (send-called nil))
+                (state:with-state (state:create :send-msg (lambda (msg)
+                                                              (declare (ignore msg))
+                                                              (setf send-called T)
+                                                              nil))
                     (context:with-context (:input-stream (make-instance 'server-error-stream :to-throw 'errors:server-error)
                                                          :output-stream out-stream
                                                          :destroy-fn (lambda ()))
                         (msg-loop:run)
                         (clue:check-equal :expected nil
-                                          :actual (seq out-stream))))))
+                                          :actual send-called)))))
 
         (clue:test "Server error with id"
-            (let ((out-stream (make-instance 'output-stream)))
-                (state:with-state (make-state)
+            (let ((out-stream (make-instance 'output-stream))
+                  (send-called nil))
+                (state:with-state (state:create :send-msg (lambda (msg)
+                                                              (declare (ignore msg))
+                                                              (setf send-called T)
+                                                              nil))
                     (context:with-context (:input-stream (make-instance 'server-error-stream :id 10 :to-throw 'errors:server-error)
                                                          :output-stream out-stream
                                                          :destroy-fn (lambda ()))
                         (msg-loop:run)
-                        (clue:check-exists (seq out-stream))))))
+                        (clue:check-equal :expected T
+                                          :actual send-called)))))
 
         (clue:test "Unhandled request no id"
-            (let ((out-stream (make-instance 'output-stream)))
-                (state:with-state (make-state)
-                    (context:with-context (:input-stream (make-instance 'server-error-stream :to-throw 'errors:unhandled-request)
-                                                         :output-stream out-stream
-                                                         :destroy-fn (lambda ()))
+            (let ((send-called nil))
+                (state:with-state (state:create :send-msg (lambda (msg)
+                                                              (declare (ignore msg))
+                                                              (setf send-called T)
+                                                              nil))
+                    (context:with-context (:destroy-fn (lambda ()))
                         (msg-loop:run)
                         (clue:check-equal :expected nil
-                                          :actual (seq out-stream))))))
+                                          :actual send-called)))))
 
         (clue:test "Unhandled request with id"
-            (let ((out-stream (make-instance 'output-stream)))
-                (state:with-state (make-state)
+            (let ((out-stream (make-instance 'output-stream))
+                  (send-called nil))
+                (state:with-state (state:create :send-msg (lambda (msg)
+                                                              (declare (ignore msg))
+                                                              (setf send-called T)
+                                                              nil))
                     (context:with-context (:input-stream (make-instance 'server-error-stream :id 10 :to-throw 'errors:unhandled-request)
                                                          :output-stream out-stream
                                                          :destroy-fn (lambda ()))
                         (msg-loop:run)
-                        (clue:check-exists (seq out-stream))))))))
+                        (clue:check-equal :expected t
+                                          :actual send-called)))))))
 
 
 (defun run-all ()

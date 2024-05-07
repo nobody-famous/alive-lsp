@@ -14,8 +14,10 @@
              :msg-handler
              :next-inspector-id
              :next-send-id
+             :read-msg
              :rem-inspector
              :running
+             :send-msg
              :set-file-text
              :set-initialized
              :set-running
@@ -55,12 +57,17 @@
     (lock (bt:make-recursive-lock) :type sb-thread:mutex)
     (read-thread nil :type (or null sb-thread:thread))
 
-    (msg-handler nil))
+    (msg-handler nil)
+    (read-msg nil)
+    (send-msg nil))
 
 
-(declaim (ftype (function ((function (cons) (values (or null hash-table) &optional))) state) create))
-(defun create (handler)
-    (make-state :msg-handler handler))
+(declaim (ftype (function (&key (:msg-handler (function (cons) (values (or null hash-table) &optional)))
+                                (:send-msg (function (cons) null)))
+                          state) create))
+(defun create (&key msg-handler send-msg)
+    (make-state :msg-handler msg-handler
+                :send-msg send-msg))
 
 
 (declaim (ftype (function () (or null cons)) listeners))
@@ -97,6 +104,18 @@
 (defun msg-handler ()
     (unless *state* (error "State not set"))
     (state-msg-handler *state*))
+
+
+(declaim (ftype (function () T) read-msg))
+(defun read-msg ()
+    (unless *state* (error "State not set"))
+    (state-read-msg *state*))
+
+
+(declaim (ftype (function (T) T) send-msg))
+(defun send-msg (msg)
+    (unless *state* (error "State not set"))
+    (funcall (state-send-msg *state*) msg))
 
 
 (declaim (ftype (function (T)) add-history))

@@ -1,6 +1,6 @@
 (defpackage :alive/session/io
     (:use :cl)
-    (:export :read-message
+    (:export :read-msg
              :send-msg)
     (:local-nicknames (:context :alive/context)
                       (:packet :alive/lsp/packet)
@@ -10,8 +10,8 @@
 (in-package :alive/session/io)
 
 
-(declaim (ftype (function () (or null cons)) read-message))
-(defun read-message ()
+(declaim (ftype (function () (or null cons)) read-msg))
+(defun read-msg ()
     (parse:from-stream (context:get-input-stream)))
 
 
