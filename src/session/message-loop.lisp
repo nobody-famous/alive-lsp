@@ -3,11 +3,8 @@
     (:export :run
              :stop)
     (:local-nicknames (:errors :alive/lsp/errors)
-                      (:io :alive/session/io)
                       (:logger :alive/logger)
                       (:lsp-msg :alive/lsp/message/abstract)
-                      (:msg :alive/session/message)
-                      (:parse :alive/parse/forms)
                       (:state :alive/session/state)))
 
 (in-package :alive/session/message-loop)
@@ -36,7 +33,7 @@
 (declaim (ftype (function () (values (or null hash-table) &optional)) get-next-response))
 (defun get-next-response ()
     (handler-case
-            (let ((msg (io:read-msg)))
+            (let ((msg (state:read-msg)))
                 (when msg
                       (process-msg msg)))
 

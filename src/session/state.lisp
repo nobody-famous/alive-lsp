@@ -63,11 +63,13 @@
 
 
 (declaim (ftype (function (&key (:msg-handler (function (cons) (values (or null hash-table) &optional)))
-                                (:send-msg (function (cons) null)))
+                                (:send-msg (function (cons) null))
+                                (:read-msg (function () (values (or null cons) &optional))))
                           state) create))
-(defun create (&key msg-handler send-msg)
+(defun create (&key msg-handler send-msg read-msg)
     (make-state :msg-handler msg-handler
-                :send-msg send-msg))
+                :send-msg send-msg
+                :read-msg read-msg))
 
 
 (declaim (ftype (function () (or null cons)) listeners))
@@ -109,7 +111,7 @@
 (declaim (ftype (function () T) read-msg))
 (defun read-msg ()
     (unless *state* (error "State not set"))
-    (state-read-msg *state*))
+    (funcall (state-read-msg *state*)))
 
 
 (declaim (ftype (function (T) T) send-msg))
