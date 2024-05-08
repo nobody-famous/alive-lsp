@@ -111,13 +111,16 @@
 (declaim (ftype (function () T) read-msg))
 (defun read-msg ()
     (unless *state* (error "State not set"))
-    (funcall (state-read-msg *state*)))
+    (when (state-read-msg *state*)
+          (funcall (state-read-msg *state*))))
 
 
-(declaim (ftype (function (T) T) send-msg))
+(declaim (ftype (function (T) null) send-msg))
 (defun send-msg (msg)
     (unless *state* (error "State not set"))
-    (funcall (state-send-msg *state*) msg))
+    (when (state-send-msg *state*)
+          (funcall (state-send-msg *state*) msg)
+          nil))
 
 
 (declaim (ftype (function (T)) add-history))
@@ -202,7 +205,6 @@
 
 (declaim (ftype (function (integer)) save-thread-msg))
 (defun save-thread-msg (id)
-    (unless *state* (error "State not set"))
     (let* ((table (state-thread-msgs *state*))
            (cur-thread (bt:current-thread))
            (thread-id (threads:get-thread-id cur-thread)))
@@ -211,9 +213,8 @@
             (setf (gethash thread-id table) id))))
 
 
-(declaim (ftype (function () null) rem-thread-msg))
+(declaim (ftype (function () boolean) rem-thread-msg))
 (defun rem-thread-msg ()
-    (unless *state* (error "State not set"))
     (let* ((table (state-thread-msgs *state*))
            (cur-thread (bt:current-thread))
            (thread-id (threads:get-thread-id cur-thread)))

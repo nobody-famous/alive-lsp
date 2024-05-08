@@ -24,11 +24,15 @@
 (defun test-valid-message ()
     (clue:suite "Valid message"
         (clue:test "With handler"
-            (state:with-state (state:create :read-msg (lambda () (list (cons :id 5))))
+            (state:with-state (state:create :read-msg (lambda ()
+                                                          (msg-loop:stop)
+                                                          (list (cons :id 5))))
                 (msg-loop:run)))
 
         (clue:test "No handler"
-            (state:with-state (state:create :read-msg (lambda () (list (cons :id 5))))
+            (state:with-state (state:create :read-msg (lambda ()
+                                                          (msg-loop:stop)
+                                                          (list (cons :id 5))))
                 (msg-loop:run)))))
 
 
