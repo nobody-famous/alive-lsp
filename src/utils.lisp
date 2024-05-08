@@ -24,5 +24,3 @@
     (multiple-value-bind (sec minute hour day month year)
             (decode-universal-time (get-universal-time))
         (format nil "~d/~d/~d ~2,'0d:~2,'0d:~2,'0d" month day year hour minute sec)))
-
-

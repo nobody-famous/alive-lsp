@@ -100,6 +100,7 @@
 
                                        (:file "session/messages")
                                        (:file "session/handlers")
+                                       (:file "session/io")
                                        (:file "session/message")
                                        (:file "session/message-loop")
                                        (:file "session/state")

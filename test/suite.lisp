@@ -31,6 +31,7 @@
         (alive/test/session:run-all)
         (alive/test/session/messages:run-all)
         (alive/test/session/handlers:run-all)
+        (alive/test/session/io:run-all)
         (alive/test/session/message:run-all)
         (alive/test/session/message-loop:run-all)
         (alive/test/session/state:run-all)
