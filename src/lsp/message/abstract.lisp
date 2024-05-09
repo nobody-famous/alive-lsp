@@ -29,6 +29,7 @@
         req))
 
 
+(declaim (ftype (function (fixnum &key (:result-value T) (:error-value T)) hash-table) create-response))
 (defun create-response (id &key result-value error-value)
     (let ((resp (make-hash-table :test #'equalp)))
 
