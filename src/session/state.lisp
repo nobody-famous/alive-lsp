@@ -7,6 +7,7 @@
              :get-file-text
              :get-history-item
              :get-inspector
+             :get-sent-msg-callback
              :initialized
              :listener
              :listeners
@@ -21,6 +22,7 @@
              :set-file-text
              :set-initialized
              :set-running
+             :set-sent-msg-callback
              :state
              :with-state
              :with-thread-msg)
@@ -42,7 +44,7 @@
 
     (files (make-hash-table :test 'equalp) :type hash-table)
     (thread-msgs (make-hash-table :test 'equalp) :type hash-table)
-    (send-msg-callbacks (make-hash-table :test 'equalp) :type hash-table)
+    (sent-msg-callbacks (make-hash-table :test 'equalp) :type hash-table)
     (inspectors (make-hash-table :test 'equalp) :type hash-table)
     (input-cond-vars (make-hash-table :test 'equalp) :type hash-table)
 
@@ -106,6 +108,19 @@
 (defun msg-handler ()
     (unless *state* (error "State not set"))
     (state-msg-handler *state*))
+
+
+(declaim (ftype (function (fixnum) (or null function)) get-sent-msg-callback))
+(defun get-sent-msg-callback (id)
+    (unless *state* (error "State not set"))
+    (gethash id (state-sent-msg-callbacks *state*)))
+
+
+(declaim (ftype (function (fixnum (function (cons) null)) null) set-sent-msg-callback))
+(defun set-sent-msg-callback (id cb)
+    (unless *state* (error "State not set"))
+    (setf (gethash id (state-sent-msg-callbacks *state*)) cb)
+    nil)
 
 
 (declaim (ftype (function () T) read-msg))

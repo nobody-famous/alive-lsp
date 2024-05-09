@@ -25,11 +25,23 @@
                                                :message error-msg))))))
 
 
+(declaim (ftype (function (cons) (values (or null hash-table) &optional)) handle-response))
+(defun handle-response (msg)
+    (let* ((msg-id (cdr (assoc :id msg)))
+           (cb (state:get-sent-msg-callback msg-id)))
+
+        (if cb
+            (funcall cb msg)
+            (lsp-msg:create-error msg-id
+                                  :code errors:*request-failed*
+                                  :message (format nil "No callback for request: ~A" msg-id)))))
+
+
 (declaim (ftype (function (cons) (values (or null hash-table) &optional)) handle))
 (defun handle (msg)
     (cond ((assoc :method msg) (handle-request msg))
           ((or (assoc :result msg)
-               (assoc :error msg)) nil)
+               (assoc :error msg)) (handle-response msg))
           (T (lsp-msg:create-error (assoc :id msg)
                                    :code errors:*request-failed*
                                    :message (format nil "No handler for message")))))
