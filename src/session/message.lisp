@@ -42,6 +42,6 @@
     (cond ((assoc :method msg) (handle-request msg))
           ((or (assoc :result msg)
                (assoc :error msg)) (handle-response msg))
-          (T (lsp-msg:create-error (assoc :id msg)
+          (T (lsp-msg:create-error (cdr (assoc :id msg))
                                    :code errors:*request-failed*
                                    :message (format nil "No handler for message")))))

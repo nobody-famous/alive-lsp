@@ -16,14 +16,14 @@
 
 (declaim (ftype (function (cons) hash-table) request))
 (defun request (msg)
-    (let* ((id (assoc :id msg))
+    (let* ((id (cdr (assoc :id msg)))
            (data (make-hash-table :test #'equalp))
            (caps (make-hash-table :test #'equalp))
            (sem-opts (make-hash-table :test #'equalp))
            (legend-opts (make-hash-table :test #'equalp))
            (comp-opts (make-hash-table :test #'equalp))
            (on-type-opts (make-hash-table :test #'equalp)))
-        (check-type id fixnum)
+        (declare (type fixnum id))
 
         (setf (gethash "triggerCharacters" comp-opts) (list #\: #\+ #\- #\*))
 
