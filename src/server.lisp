@@ -3,7 +3,9 @@
     (:export :stop
              :start)
 
-    (:local-nicknames (:logger :alive/logger)
+    (:local-nicknames (:context :alive/context)
+                      (:logger :alive/logger)
+                      (:packet :alive/lsp/packet)
                       (:parse :alive/lsp/parse)
                       (:session :alive/session)
                       (:state :alive/session/state)))
@@ -74,11 +76,25 @@
                                            (cons "$/alive/unexportSymbol" 'handle-unexport)))
 
 
+(declaim (ftype (function () (or null cons)) read-msg))
+(defun read-msg ()
+    (parse:from-stream (context:get-input-stream)))
+
+
+(declaim (ftype (function (T)) send-msg))
+(defun send-msg (msg)
+    (bt:with-recursive-lock-held ((state:lock))
+        (when (and (hash-table-p msg)
+                   (gethash "jsonrpc" msg))
+              (write-sequence (packet:to-wire msg) (context:get-output-stream))
+              (force-output (context:get-output-stream)))))
+
+
 (declaim (ftype (function () state:state) create-session-state))
 (defun create-session-state ()
     (state:create :msg-handler #'alive/session/message:handle
-                  :send-msg #'alive/session/io:send-msg
-                  :read-msg #'alive/session/io:read-msg))
+                  :send-msg #'send-msg
+                  :read-msg #'read-msg))
 
 
 (defun accept-conn ()

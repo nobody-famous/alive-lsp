@@ -64,6 +64,12 @@
             (with-check-send (T :read-fn (lambda ()
                                              (msg-loop:stop)
                                              (error (make-instance 'errors:unhandled-request :id 10))))
+                (msg-loop:run)))
+
+        (clue:test "Generic error"
+            (with-check-send (nil :read-fn (lambda ()
+                                               (msg-loop:stop)
+                                               (error "Failed, as requested")))
                 (msg-loop:run)))))
 
 

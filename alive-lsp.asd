@@ -73,7 +73,6 @@
                                        (:file "session/state")
                                        (:file "session/handlers")
                                        (:file "session/message")
-                                       (:file "session/io")
                                        (:file "session/message-loop")
                                        (:file "server")))))
 
@@ -100,7 +99,6 @@
 
                                        (:file "session/messages")
                                        (:file "session/handlers")
-                                       (:file "session/io")
                                        (:file "session/message")
                                        (:file "session/message-loop")
                                        (:file "session/state")
