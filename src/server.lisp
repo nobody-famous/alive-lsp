@@ -32,6 +32,12 @@
                  :initarg :socket)))
 
 
+(declaim (ftype (function (cons) null) ignore-msg))
+(defun ignore-msg (msg)
+    (declare (ignore msg))
+    nil)
+
+
 (declaim (type (or null alive/session/handlers:list-of-handlers) *default-handlers*))
 (defparameter *default-handlers* (list (cons "initialize" #'alive/session/handler/init:request)
                                        (cons "initialized" #'alive/session/handler/init:initialized)
@@ -49,8 +55,8 @@
                                        #+n (cons "textDocument/selectionRange" 'handle-selection)
                                        #+n (cons "textDocument/semanticTokens/full" 'handle-sem-tokens)
 
-                                       #+n (cons "$/setTrace" 'ignore-msg)
-                                       #+n (cons "$/cancelRequest" 'ignore-msg)
+                                       (cons "$/setTrace" 'ignore-msg)
+                                       (cons "$/cancelRequest" 'ignore-msg)
 
                                        #+n (cons "$/alive/eval" 'handle-eval)
                                        #+n (cons "$/alive/getPackageForPosition" 'handle-get-pkg)
