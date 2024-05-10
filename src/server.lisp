@@ -37,7 +37,7 @@
                                        (cons "initialized" #'alive/session/handler/init:initialized)
 
                                        (cons "textDocument/completion" #'alive/session/handler/document:completion)
-                                       #+n (cons "textDocument/definition" 'handle-definition)
+                                       (cons "textDocument/definition" #'alive/session/handler/document:definition)
                                        #+n (cons "textDocument/didChange" 'handle-did-change)
                                        #+n (cons "textDocument/didClose" 'handle-did-change)
                                        #+n (cons "textDocument/didOpen" 'handle-did-open)
