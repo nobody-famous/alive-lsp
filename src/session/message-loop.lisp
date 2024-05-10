@@ -2,7 +2,8 @@
     (:use :cl)
     (:export :run
              :stop)
-    (:local-nicknames (:errors :alive/lsp/errors)
+    (:local-nicknames (:deps :alive/session/deps)
+                      (:errors :alive/lsp/errors)
                       (:logger :alive/logger)
                       (:lsp-msg :alive/lsp/message/abstract)
                       (:state :alive/session/state)))
@@ -15,7 +16,7 @@
     (let ((id (cdr (assoc :id msg))))
         (state:with-thread-msg (id)
             (handler-case
-                    (funcall (state:msg-handler) msg)
+                    (funcall (deps:msg-handler) msg)
                 (error (c)
                     (logger:error-msg "Message Handler: ~A ~A" msg c)
                     (lsp-msg:create-error id
@@ -33,7 +34,7 @@
 (declaim (ftype (function () (values (or null hash-table) &optional)) get-next-response))
 (defun get-next-response ()
     (handler-case
-            (let ((msg (state:read-msg)))
+            (let ((msg (deps:read-msg)))
                 (when msg
                       (process-msg msg)))
 
@@ -66,4 +67,4 @@
     (loop :while (state:running)
           :do (let ((resp (get-next-response)))
                   (when resp
-                        (state:send-msg resp)))))
+                        (deps:send-msg resp)))))

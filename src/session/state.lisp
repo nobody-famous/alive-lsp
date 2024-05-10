@@ -12,13 +12,10 @@
              :listener
              :listeners
              :lock
-             :msg-handler
              :next-inspector-id
              :next-send-id
-             :read-msg
              :rem-inspector
              :running
-             :send-msg
              :set-file-text
              :set-initialized
              :set-running
@@ -57,21 +54,12 @@
     (history (make-array 3) :type array)
 
     (lock (bt:make-recursive-lock) :type sb-thread:mutex)
-    (read-thread nil :type (or null sb-thread:thread))
-
-    (msg-handler nil)
-    (read-msg nil)
-    (send-msg nil))
+    (read-thread nil :type (or null sb-thread:thread)))
 
 
-(declaim (ftype (function (&key (:msg-handler (function (cons) (values (or null hash-table) &optional)))
-                                (:send-msg (function (cons) null))
-                                (:read-msg (function () (values (or null cons) &optional))))
-                          state) create))
-(defun create (&key msg-handler send-msg read-msg)
-    (make-state :msg-handler msg-handler
-                :send-msg send-msg
-                :read-msg read-msg))
+(declaim (ftype (function () state) create))
+(defun create ()
+    (make-state))
 
 
 (declaim (ftype (function () (or null cons)) listeners))
@@ -104,12 +92,6 @@
     (state-lock *state*))
 
 
-(declaim (ftype (function () T) msg-handler))
-(defun msg-handler ()
-    (unless *state* (error "State not set"))
-    (state-msg-handler *state*))
-
-
 (declaim (ftype (function (fixnum) (or null function)) get-sent-msg-callback))
 (defun get-sent-msg-callback (id)
     (unless *state* (error "State not set"))
@@ -121,21 +103,6 @@
     (unless *state* (error "State not set"))
     (setf (gethash id (state-sent-msg-callbacks *state*)) cb)
     nil)
-
-
-(declaim (ftype (function () T) read-msg))
-(defun read-msg ()
-    (unless *state* (error "State not set"))
-    (when (state-read-msg *state*)
-          (funcall (state-read-msg *state*))))
-
-
-(declaim (ftype (function (T) null) send-msg))
-(defun send-msg (msg)
-    (unless *state* (error "State not set"))
-    (when (state-send-msg *state*)
-          (funcall (state-send-msg *state*) msg)
-          nil))
 
 
 (declaim (ftype (function (T)) add-history))

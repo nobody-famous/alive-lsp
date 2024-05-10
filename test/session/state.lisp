@@ -109,53 +109,6 @@
             (clue:check-exists (state:lock)))))
 
 
-(defun test-msg-handler ()
-    (clue:test "Message Handler"
-        (clue:expect-fail (lambda () (state:msg-handler)))
-        (state:with-state (state:create)
-            (clue:check-equal :expected nil
-                              :actual (state:msg-handler)))
-        (state:with-state (state:create :msg-handler (lambda (msg) (declare (ignore msg))))
-            (clue:check-exists (state:msg-handler)))))
-
-
-(defun test-read-msg ()
-    (clue:suite "Read Message"
-        (clue:test "No function"
-            (clue:expect-fail (lambda () (state:read-msg)))
-            (state:with-state (state:create)
-                (clue:check-equal :expected nil
-                                  :actual (state:read-msg))))
-
-        (clue:test "With function"
-            (let ((fn-called nil))
-                (state:with-state (state:create :read-msg (lambda ()
-                                                              (setf fn-called T)
-                                                              nil))
-                    (state:read-msg)
-                    (clue:check-equal :expected T
-                                      :actual fn-called))))))
-
-
-(defun test-send-msg ()
-    (clue:suite "Send Message"
-        (clue:test "No function"
-            (clue:expect-fail (lambda () (state:send-msg T)))
-            (state:with-state (state:create)
-                (clue:check-equal :expected nil
-                                  :actual (state:send-msg T))))
-
-        (clue:test "With function"
-            (let ((fn-called nil))
-                (state:with-state (state:create :send-msg (lambda (msg)
-                                                              (declare (ignore msg))
-                                                              (setf fn-called T)
-                                                              nil))
-                    (state:send-msg T)
-                    (clue:check-equal :expected T
-                                      :actual fn-called))))))
-
-
 (defun test-thread-msg ()
     (clue:test "Thread Message"
         (clue:expect-fail (lambda () (state:with-thread-msg (5))))
@@ -175,7 +128,4 @@
         (test-inspector)
         (test-running)
         (test-lock)
-        (test-msg-handler)
-        (test-read-msg)
-        (test-send-msg)
         (test-thread-msg)))

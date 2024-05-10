@@ -4,6 +4,7 @@
              :start)
 
     (:local-nicknames (:context :alive/context)
+                      (:deps :alive/session/deps)
                       (:logger :alive/logger)
                       (:packet :alive/lsp/packet)
                       (:parse :alive/lsp/parse)
@@ -92,9 +93,14 @@
 
 (declaim (ftype (function () state:state) create-session-state))
 (defun create-session-state ()
-    (state:create :msg-handler #'alive/session/message:handle
-                  :send-msg #'send-msg
-                  :read-msg #'read-msg))
+    (state:create))
+
+
+(declaim (ftype (function () deps:deps) create-deps))
+(defun create-deps ()
+    (deps:create :msg-handler #'alive/session/message:handle
+                 :send-msg #'send-msg
+                 :read-msg #'read-msg))
 
 
 (defun accept-conn ()

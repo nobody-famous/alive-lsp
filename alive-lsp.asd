@@ -70,6 +70,7 @@
                                        (:file "lsp/message/notification")
 
                                        (:file "session")
+                                       (:file "session/deps")
                                        (:file "session/state")
                                        (:file "session/handlers")
                                        (:file "session/handler/init")

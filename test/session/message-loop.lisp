@@ -1,7 +1,8 @@
 (defpackage :alive/test/session/message-loop
     (:use :cl)
     (:export :run-all)
-    (:local-nicknames (:errors :alive/lsp/errors)
+    (:local-nicknames (:deps :alive/session/deps)
+                      (:errors :alive/lsp/errors)
                       (:msg-loop :alive/session/message-loop)
                       (:state :alive/session/state)))
 
@@ -11,29 +12,32 @@
 (defmacro with-check-send ((expected &key read-fn) &body body)
     (let ((send-called (gensym)))
         `(let ((,send-called nil))
-             (state:with-state (state:create :send-msg (lambda (msg)
-                                                           (declare (ignore msg))
-                                                           (setf ,send-called T)
-                                                           nil)
-                                             :read-msg ,read-fn)
-                 (progn ,@body)
-                 (clue:check-equal :expected ,expected
-                                   :actual ,send-called)))))
+             (deps:with-deps (deps:create :send-msg (lambda (msg)
+                                                        (declare (ignore msg))
+                                                        (setf ,send-called T)
+                                                        nil)
+                                          :read-msg ,read-fn)
+                 (state:with-state (state:create)
+                     (progn ,@body)
+                     (clue:check-equal :expected ,expected
+                                       :actual ,send-called))))))
 
 
 (defun test-valid-message ()
     (clue:suite "Valid message"
         (clue:test "With handler"
-            (state:with-state (state:create :read-msg (lambda ()
-                                                          (msg-loop:stop)
-                                                          (list (cons :id 5))))
-                (msg-loop:run)))
+            (deps:with-deps (deps:create :read-msg (lambda ()
+                                                       (msg-loop:stop)
+                                                       (list (cons :id 5))))
+                (state:with-state (state:create)
+                    (msg-loop:run))))
 
         (clue:test "No handler"
-            (state:with-state (state:create :read-msg (lambda ()
-                                                          (msg-loop:stop)
-                                                          (list (cons :id 5))))
-                (msg-loop:run)))))
+            (deps:with-deps (deps:create :read-msg (lambda ()
+                                                       (msg-loop:stop)
+                                                       (list (cons :id 5))))
+                (state:with-state (state:create)
+                    (msg-loop:run))))))
 
 
 (defun test-errors ()
