@@ -36,7 +36,7 @@
 (defparameter *default-handlers* (list (cons "initialize" #'alive/session/handler/init:request)
                                        (cons "initialized" #'alive/session/handler/init:initialized)
 
-                                       #+n (cons "textDocument/completion" 'handle-completion)
+                                       (cons "textDocument/completion" #'alive/session/handler/document:completion)
                                        #+n (cons "textDocument/definition" 'handle-definition)
                                        #+n (cons "textDocument/didChange" 'handle-did-change)
                                        #+n (cons "textDocument/didClose" 'handle-did-change)
