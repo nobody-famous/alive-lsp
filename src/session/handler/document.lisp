@@ -2,7 +2,8 @@
     (:use :cl)
     (:export :completion
              :definition
-             :did-change)
+             :did-change
+             :did-open)
     (:local-nicknames (:comps :alive/lsp/completions)
                       (:lsp-msg :alive/lsp/message/abstract)
                       (:state :alive/session/state)))
@@ -58,6 +59,19 @@
            (uri (cdr (assoc :uri doc)))
            (changes (cdr (assoc :content-changes params)))
            (text (cdr (assoc :text (first changes)))))
+
+        (when text
+              (bt:with-recursive-lock-held ((state:lock))
+                  (state:set-file-text uri text)
+                  nil))))
+
+
+(declaim (ftype (function (cons) null) did-open))
+(defun did-open (msg)
+    (let* ((params (cdr (assoc :params msg)))
+           (doc (cdr (assoc :text-document params)))
+           (uri (cdr (assoc :uri doc)))
+           (text (cdr (assoc :text doc))))
 
         (when text
               (bt:with-recursive-lock-held ((state:lock))

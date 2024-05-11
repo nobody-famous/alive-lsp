@@ -51,8 +51,25 @@
                                   :actual (state:get-file-text "some/uri"))))))
 
 
+(defun test-did-open ()
+    (clue:suite "Did Open"
+        (clue:test "No text"
+            (state:with-state (state:create)
+                (doc:did-open (list (cons :params (list (cons :text-document (list (cons :uri "some/uri")))))))
+                (clue:check-equal :expected nil
+                                  :actual (state:get-file-text "some/uri"))))
+
+        (clue:test "Has text"
+            (state:with-state (state:create)
+                (doc:did-open (list (cons :params (list (cons :text-document (list (cons :uri "some/uri")
+                                                                                   (cons :text "Some text")))))))
+                (clue:check-equal :expected "Some text"
+                                  :actual (state:get-file-text "some/uri"))))))
+
+
 (defun run-all ()
     (clue:suite "Document Handler Tests"
         (test-completion)
         (test-definition)
-        (test-did-change)))
+        (test-did-change)
+        (test-did-open)))
