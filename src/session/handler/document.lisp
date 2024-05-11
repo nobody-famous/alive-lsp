@@ -1,7 +1,8 @@
 (defpackage :alive/session/handler/document
     (:use :cl)
     (:export :completion
-             :definition)
+             :definition
+             :did-change)
     (:local-nicknames (:comps :alive/lsp/completions)
                       (:lsp-msg :alive/lsp/message/abstract)
                       (:state :alive/session/state)))
@@ -48,3 +49,17 @@
             (setf (gethash "range" data) range)
 
             (lsp-msg:create-response id :result-value data))))
+
+
+(declaim (ftype (function (cons) null) did-change))
+(defun did-change (msg)
+    (let* ((params (cdr (assoc :params msg)))
+           (doc (cdr (assoc :text-document params)))
+           (uri (cdr (assoc :uri doc)))
+           (changes (cdr (assoc :content-changes params)))
+           (text (cdr (assoc :text (first changes)))))
+
+        (when text
+              (bt:with-recursive-lock-held ((state:lock))
+                  (state:set-file-text uri text)
+                  nil))))

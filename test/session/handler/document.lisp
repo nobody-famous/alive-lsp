@@ -35,7 +35,24 @@
             (clue:expect-fail (lambda () (doc:definition (list (cons :id 5))))))))
 
 
+(defun test-did-change ()
+    (clue:suite "Did Change"
+        (clue:test "No text"
+            (state:with-state (state:create)
+                (doc:did-change (list (cons :params (list (cons :text-document (list (cons :uri "some/uri")))))))
+                (clue:check-equal :expected nil
+                                  :actual (state:get-file-text "some/uri"))))
+
+        (clue:test "Has text"
+            (state:with-state (state:create)
+                (doc:did-change (list (cons :params (list (cons :text-document (list (cons :uri "some/uri")))
+                                                          (cons :content-changes (list (list (cons :text "Some text"))))))))
+                (clue:check-equal :expected "Some text"
+                                  :actual (state:get-file-text "some/uri"))))))
+
+
 (defun run-all ()
     (clue:suite "Document Handler Tests"
         (test-completion)
-        (test-definition)))
+        (test-definition)
+        (test-did-change)))

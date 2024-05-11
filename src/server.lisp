@@ -44,7 +44,7 @@
 
                                        (cons "textDocument/completion" #'alive/session/handler/document:completion)
                                        (cons "textDocument/definition" #'alive/session/handler/document:definition)
-                                       #+n (cons "textDocument/didChange" 'handle-did-change)
+                                       (cons "textDocument/didChange" #'alive/session/handler/document:did-change)
                                        #+n (cons "textDocument/didClose" 'handle-did-change)
                                        #+n (cons "textDocument/didOpen" 'handle-did-open)
                                        #+n (cons "textDocument/didSave" 'ignore-msg)
@@ -55,8 +55,8 @@
                                        #+n (cons "textDocument/selectionRange" 'handle-selection)
                                        #+n (cons "textDocument/semanticTokens/full" 'handle-sem-tokens)
 
-                                       (cons "$/setTrace" 'ignore-msg)
-                                       (cons "$/cancelRequest" 'ignore-msg)
+                                       (cons "$/setTrace" #'ignore-msg)
+                                       (cons "$/cancelRequest" #'ignore-msg)
 
                                        #+n (cons "$/alive/eval" 'handle-eval)
                                        #+n (cons "$/alive/getPackageForPosition" 'handle-get-pkg)
