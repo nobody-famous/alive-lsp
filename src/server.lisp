@@ -38,8 +38,8 @@
     nil)
 
 
-(declaim (type (or null alive/session/handlers:list-of-handlers) *default-handlers*))
-(defparameter *default-handlers* (list (cons "initialize" #'alive/session/handler/init:request)
+(declaim (type (or null alive/session/handlers:list-of-handlers) *message-handlers*))
+(defparameter *message-handlers* (list (cons "initialize" #'alive/session/handler/init:request)
                                        (cons "initialized" #'alive/session/handler/init:initialized)
 
                                        (cons "textDocument/completion" #'alive/session/handler/document:completion)
