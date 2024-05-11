@@ -50,7 +50,7 @@
                                        #+n (cons "textDocument/didSave" 'ignore-msg)
                                        (cons "textDocument/documentSymbol" #'alive/session/handler/document:doc-symbols)
                                        (cons "textDocument/hover" #'alive/session/handler/document:hover)
-                                       #+n (cons "textDocument/onTypeFormatting" 'handle-on-type)
+                                       (cons "textDocument/onTypeFormatting" #'alive/session/handler/document:on-type)
                                        #+n (cons "textDocument/rangeFormatting" 'handle-formatting)
                                        #+n (cons "textDocument/selectionRange" 'handle-selection)
                                        #+n (cons "textDocument/semanticTokens/full" 'handle-sem-tokens)

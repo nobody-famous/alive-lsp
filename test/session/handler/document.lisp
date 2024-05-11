@@ -7,14 +7,17 @@
 (in-package :alive/test/session/handler/document)
 
 
+(defparameter *msg-with-position* (list (cons :id 1)
+                                        (cons :params (list (cons :text-document (list (cons :uri "some/uri")))
+                                                            (cons :position (list (cons :line 5)
+                                                                                  (cons :character 10)))))))
+
+
 (defun test-completion ()
     (clue:suite "Completion Tests"
         (clue:test "Request"
             (state:with-state (state:create)
-                (let ((resp (doc:completion (list (cons :id 1)
-                                                  (cons :params (list (cons :text-document (list (cons :uri "some/uri")))
-                                                                      (cons :position (list (cons :line 5)
-                                                                                            (cons :character 10)))))))))
+                (let ((resp (doc:completion *msg-with-position*)))
                     (clue:check-exists (gethash "result" resp)))))
 
         (clue:test "Failure"
@@ -25,10 +28,7 @@
     (clue:suite "Definition Tests"
         (clue:test "Request"
             (state:with-state (state:create)
-                (let ((resp (doc:definition (list (cons :id 1)
-                                                  (cons :params (list (cons :text-document (list (cons :uri "some/uri")))
-                                                                      (cons :position (list (cons :line 5)
-                                                                                            (cons :character 10)))))))))
+                (let ((resp (doc:definition *msg-with-position*)))
                     (clue:check-exists (gethash "result" resp)))))
 
         (clue:test "Failure"
@@ -79,10 +79,21 @@
     (clue:test "Hover"
         (state:with-state (state:create)
             (clue:check-equal :expected T
-                              :actual (hash-table-p (doc:hover (list (cons :id 1)
-                                                                     (cons :params (list (cons :text-document (list (cons :uri "some/uri")))
-                                                                                         (cons :position (list (cons :line 5)
-                                                                                                               (cons :character 10))))))))))))
+                              :actual (hash-table-p (doc:hover *msg-with-position*))))))
+
+
+(defun test-on-type ()
+    (clue:suite "Format On Type"
+        (clue:test "No text"
+            (state:with-state (state:create)
+                (clue:check-equal :expected T
+                                  :actual (hash-table-p (doc:on-type *msg-with-position*)))))
+
+        (clue:test "With text"
+            (state:with-state (state:create)
+                (state:set-file-text "some/uri" "foo")
+                (clue:check-equal :expected T
+                                  :actual (hash-table-p (doc:on-type *msg-with-position*)))))))
 
 
 (defun run-all ()
@@ -92,4 +103,5 @@
         (test-did-change)
         (test-did-open)
         (test-doc-symbols)
-        (test-hover)))
+        (test-hover)
+        (test-on-type)))

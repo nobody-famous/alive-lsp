@@ -5,8 +5,12 @@
              :did-change
              :did-open
              :doc-symbols
-             :hover)
+             :hover
+             :on-type)
     (:local-nicknames (:comps :alive/lsp/completions)
+                      (:fmt-opts :alive/lsp/types/format-options)
+                      (:fmt-utils :alive/lsp/message/format-utils)
+                      (:formatter :alive/format)
                       (:forms :alive/parse/forms)
                       (:lsp-msg :alive/lsp/message/abstract)
                       (:state :alive/session/state)
@@ -112,3 +116,23 @@
            (result (if hov-text hov-text "")))
 
         (utils:result id "value" result)))
+
+
+(declaim (ftype (function (cons) hash-table) on-type))
+(defun on-type (msg)
+    (let* ((id (cdr (assoc :id msg)))
+           (params (cdr (assoc :params msg)))
+           (doc (cdr (assoc :text-document params)))
+           (opts (cdr (assoc :options params)))
+           (pos (cdr (assoc :position params)))
+           (uri (cdr (assoc :uri doc)))
+           (file-text (state:get-file-text uri))
+           (text (if file-text file-text ""))
+           (edits (formatter:on-type (make-string-input-stream text)
+                                     :options (fmt-opts:convert opts)
+                                     :pos pos))
+           (value (if edits
+                      (fmt-utils:to-text-edits edits)
+                      (make-array 0))))
+
+        (lsp-msg:create-response id :result-value value)))
