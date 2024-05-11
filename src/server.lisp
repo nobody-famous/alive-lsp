@@ -47,11 +47,11 @@
                                        (cons "textDocument/didChange" #'alive/session/handler/document:did-change)
                                        (cons "textDocument/didClose" #'ignore-msg)
                                        (cons "textDocument/didOpen" #'alive/session/handler/document:did-open)
-                                       #+n (cons "textDocument/didSave" 'ignore-msg)
+                                       (cons "textDocument/didSave" #'ignore-msg)
                                        (cons "textDocument/documentSymbol" #'alive/session/handler/document:doc-symbols)
                                        (cons "textDocument/hover" #'alive/session/handler/document:hover)
                                        (cons "textDocument/onTypeFormatting" #'alive/session/handler/document:on-type)
-                                       #+n (cons "textDocument/rangeFormatting" 'handle-formatting)
+                                       (cons "textDocument/rangeFormatting" #'alive/session/handler/document:formatting)
                                        #+n (cons "textDocument/selectionRange" 'handle-selection)
                                        #+n (cons "textDocument/semanticTokens/full" 'handle-sem-tokens)
 

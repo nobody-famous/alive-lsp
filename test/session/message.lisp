@@ -35,8 +35,10 @@
         (clue:test "Response has handler, has callback"
             (handlers:with-handlers (list (cons "foo" (lambda (msg) (declare (ignore msg)))))
                 (state:with-state (state:create)
-                    (state:set-sent-msg-callback 1 (lambda (msg) (declare (ignore msg))))
-                    (clue:check-equal :expected nil
+                    (state:set-sent-msg-callback 1 (lambda (msg)
+                                                       (declare (ignore msg))
+                                                       (make-hash-table)))
+                    (clue:check-equal :expected T
                                       :actual (hash-table-p (msg:handle (list (cons :id 1)
                                                                               (cons :error "foo"))))))))))
 

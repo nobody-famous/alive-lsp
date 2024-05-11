@@ -5,9 +5,11 @@
              :did-change
              :did-open
              :doc-symbols
+             :formatting
              :hover
              :on-type)
     (:local-nicknames (:comps :alive/lsp/completions)
+                      (:config-item :alive/lsp/types/config-item)
                       (:fmt-opts :alive/lsp/types/format-options)
                       (:fmt-utils :alive/lsp/message/format-utils)
                       (:formatter :alive/format)
@@ -136,3 +138,35 @@
                       (make-array 0))))
 
         (lsp-msg:create-response id :result-value value)))
+
+
+(declaim (ftype (function (cons cons) hash-table) format-msg))
+(defun format-msg (options msg)
+    (let* ((id (cdr (assoc :id msg)))
+           (params (cdr (assoc :params msg)))
+           (range (cdr (assoc :range params)))
+           (doc (cdr (assoc :text-document params)))
+           (uri (cdr (assoc :uri doc)))
+           (file-text (state:get-file-text uri))
+           (text (if file-text file-text ""))
+           (edits (formatter:range (make-string-input-stream text)
+                                   range
+                                   options)))
+
+        (lsp-msg:create-response id
+                                 :result-value (fmt-utils:to-text-edits edits))))
+
+
+(declaim (ftype (function (cons) hash-table) formatting))
+(defun formatting (msg)
+    (let ((id (state:next-send-id)))
+
+        (state:set-sent-msg-callback id
+                                     (lambda (config-resp)
+                                         (declare (type cons config-resp))
+                                         (let ((opts (cdr (assoc :result config-resp))))
+                                             (format-msg (first opts) msg))))
+
+        (let ((params (make-hash-table :test #'equalp)))
+            (setf (gethash "items" params) (list (config-item:create-item :section "alive.format")))
+            (lsp-msg:create-request id "workspace/configuration" :params params))))

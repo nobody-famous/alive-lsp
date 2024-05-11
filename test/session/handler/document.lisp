@@ -96,6 +96,20 @@
                                   :actual (hash-table-p (doc:on-type *msg-with-position*)))))))
 
 
+(defun test-range-formatting ()
+    (clue:test "Range Formatting"
+        (state:with-state (state:create)
+            (state:set-file-text "uri" "Some test")
+            (let* ((request (doc:formatting (list (cons :id 5)
+                                                  (cons :params (list (cons :text-document (list (cons :uri "some/uri"))))))))
+                   (id (gethash "id" request))
+                   (cb (state:get-sent-msg-callback id)))
+
+                (clue:check-equal :expected T
+                                  :actual (hash-table-p (funcall cb (list (cons :id id)
+                                                                          (cons :result (list (list (list))))))))))))
+
+
 (defun run-all ()
     (clue:suite "Document Handler Tests"
         (test-completion)
@@ -104,4 +118,5 @@
         (test-did-open)
         (test-doc-symbols)
         (test-hover)
-        (test-on-type)))
+        (test-on-type)
+        (test-range-formatting)))
