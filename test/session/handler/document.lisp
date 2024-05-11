@@ -75,10 +75,21 @@
                                                                            (cons :params (list (cons :text-document (list (cons :uri "some/uri"))))))))))))
 
 
+(defun test-hover ()
+    (clue:test "Hover"
+        (state:with-state (state:create)
+            (clue:check-equal :expected T
+                              :actual (hash-table-p (doc:hover (list (cons :id 1)
+                                                                     (cons :params (list (cons :text-document (list (cons :uri "some/uri")))
+                                                                                         (cons :position (list (cons :line 5)
+                                                                                                               (cons :character 10))))))))))))
+
+
 (defun run-all ()
     (clue:suite "Document Handler Tests"
         (test-completion)
         (test-definition)
         (test-did-change)
         (test-did-open)
-        (test-doc-symbols)))
+        (test-doc-symbols)
+        (test-hover)))

@@ -49,7 +49,7 @@
                                        (cons "textDocument/didOpen" #'alive/session/handler/document:did-open)
                                        #+n (cons "textDocument/didSave" 'ignore-msg)
                                        (cons "textDocument/documentSymbol" #'alive/session/handler/document:doc-symbols)
-                                       #+n (cons "textDocument/hover" 'handle-hover)
+                                       (cons "textDocument/hover" #'alive/session/handler/document:hover)
                                        #+n (cons "textDocument/onTypeFormatting" 'handle-on-type)
                                        #+n (cons "textDocument/rangeFormatting" 'handle-formatting)
                                        #+n (cons "textDocument/selectionRange" 'handle-selection)

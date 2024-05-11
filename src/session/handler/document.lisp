@@ -4,11 +4,13 @@
              :definition
              :did-change
              :did-open
-             :doc-symbols)
+             :doc-symbols
+             :hover)
     (:local-nicknames (:comps :alive/lsp/completions)
                       (:forms :alive/parse/forms)
                       (:lsp-msg :alive/lsp/message/abstract)
-                      (:state :alive/session/state)))
+                      (:state :alive/session/state)
+                      (:utils :alive/session/handler/utils)))
 
 (in-package :alive/session/handler/document)
 
@@ -95,3 +97,18 @@
         (let ((result (if symbols symbols (make-hash-table))))
             (lsp-msg:create-response id
                                      :result-value result))))
+
+
+(declaim (ftype (function (cons) hash-table) hover))
+(defun hover (msg)
+    (let* ((id (cdr (assoc :id msg)))
+           (params (cdr (assoc :params msg)))
+           (doc (cdr (assoc :text-document params)))
+           (pos (cdr (assoc :position params)))
+           (uri (cdr (assoc :uri doc)))
+           (file-text (state:get-file-text uri))
+           (text (if file-text file-text ""))
+           (hov-text (alive/lsp/hover:get-text :text text :pos pos))
+           (result (if hov-text hov-text "")))
+
+        (utils:result id "value" result)))
