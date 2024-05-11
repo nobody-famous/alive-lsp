@@ -67,9 +67,18 @@
                                   :actual (state:get-file-text "some/uri"))))))
 
 
+(defun test-doc-symbols ()
+    (clue:test "Document Symbols"
+        (state:with-state (state:create)
+            (clue:check-equal :expected T
+                              :actual (hash-table-p (doc:doc-symbols (list (cons :id 5)
+                                                                           (cons :params (list (cons :text-document (list (cons :uri "some/uri"))))))))))))
+
+
 (defun run-all ()
     (clue:suite "Document Handler Tests"
         (test-completion)
         (test-definition)
         (test-did-change)
-        (test-did-open)))
+        (test-did-open)
+        (test-doc-symbols)))

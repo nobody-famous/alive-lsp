@@ -86,10 +86,10 @@
     (setf (state-running *state*) value))
 
 
-(declaim (ftype (function () sb-thread:mutex) lock))
-(defun lock ()
-    (unless *state* (error "State not set"))
-    (state-lock *state*))
+(defmacro lock (&body body)
+    `(progn (unless *state* (error "State not set"))
+            (bt:with-recursive-lock-held ((state-lock *state*))
+                (progn ,@body))))
 
 
 (declaim (ftype (function (fixnum) (or null function)) get-sent-msg-callback))

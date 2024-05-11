@@ -3,8 +3,10 @@
     (:export :completion
              :definition
              :did-change
-             :did-open)
+             :did-open
+             :doc-symbols)
     (:local-nicknames (:comps :alive/lsp/completions)
+                      (:forms :alive/parse/forms)
                       (:lsp-msg :alive/lsp/message/abstract)
                       (:state :alive/session/state)))
 
@@ -61,7 +63,7 @@
            (text (cdr (assoc :text (first changes)))))
 
         (when text
-              (bt:with-recursive-lock-held ((state:lock))
+              (state:lock
                   (state:set-file-text uri text)
                   nil))))
 
@@ -74,6 +76,22 @@
            (text (cdr (assoc :text doc))))
 
         (when text
-              (bt:with-recursive-lock-held ((state:lock))
+              (state:lock
                   (state:set-file-text uri text)
                   nil))))
+
+
+(declaim (ftype (function (cons) hash-table) doc-symbols))
+(defun doc-symbols (msg)
+    (let* ((id (cdr (assoc :id msg)))
+           (params (cdr (assoc :params msg)))
+           (doc (cdr (assoc :text-document params)))
+           (uri (cdr (assoc :uri doc)))
+           (file-text (state:get-file-text uri))
+           (text (if file-text file-text ""))
+           (forms (forms:from-stream-or-nil (make-string-input-stream text)))
+           (symbols (alive/lsp/symbol:for-document text forms)))
+
+        (let ((result (if symbols symbols (make-hash-table))))
+            (lsp-msg:create-response id
+                                     :result-value result))))

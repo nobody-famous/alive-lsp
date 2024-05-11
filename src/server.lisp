@@ -48,7 +48,7 @@
                                        (cons "textDocument/didClose" #'ignore-msg)
                                        (cons "textDocument/didOpen" #'alive/session/handler/document:did-open)
                                        #+n (cons "textDocument/didSave" 'ignore-msg)
-                                       #+n (cons "textDocument/documentSymbol" 'handle-doc-symbols)
+                                       (cons "textDocument/documentSymbol" #'alive/session/handler/document:doc-symbols)
                                        #+n (cons "textDocument/hover" 'handle-hover)
                                        #+n (cons "textDocument/onTypeFormatting" 'handle-on-type)
                                        #+n (cons "textDocument/rangeFormatting" 'handle-formatting)

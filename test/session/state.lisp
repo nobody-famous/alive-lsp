@@ -102,13 +102,6 @@
                               :actual (state:running)))))
 
 
-(defun test-lock ()
-    (clue:test "Lock"
-        (clue:expect-fail (lambda () (state:lock)))
-        (state:with-state (state:create)
-            (clue:check-exists (state:lock)))))
-
-
 (defun test-thread-msg ()
     (clue:test "Thread Message"
         (clue:expect-fail (lambda () (state:with-thread-msg (5))))
@@ -127,5 +120,4 @@
         (test-next-inspector-id)
         (test-inspector)
         (test-running)
-        (test-lock)
         (test-thread-msg)))
