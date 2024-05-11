@@ -49,7 +49,7 @@
     `(satisfies list-of-position-p))
 
 
-(declaim (ftype (function (cons list-of-position)) ranges))
+(declaim (ftype (function (cons list-of-position) cons) ranges))
 (defun ranges (forms pos-list)
     (mapcar (lambda (pos)
                 (get-range-tree forms pos))

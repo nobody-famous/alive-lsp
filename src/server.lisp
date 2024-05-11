@@ -52,7 +52,7 @@
                                        (cons "textDocument/hover" #'alive/session/handler/document:hover)
                                        (cons "textDocument/onTypeFormatting" #'alive/session/handler/document:on-type)
                                        (cons "textDocument/rangeFormatting" #'alive/session/handler/document:formatting)
-                                       #+n (cons "textDocument/selectionRange" 'handle-selection)
+                                       (cons "textDocument/selectionRange" #'alive/session/handler/document:selection)
                                        #+n (cons "textDocument/semanticTokens/full" 'handle-sem-tokens)
 
                                        (cons "$/setTrace" #'ignore-msg)

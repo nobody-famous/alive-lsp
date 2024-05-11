@@ -7,7 +7,8 @@
              :doc-symbols
              :formatting
              :hover
-             :on-type)
+             :on-type
+             :selection)
     (:local-nicknames (:comps :alive/lsp/completions)
                       (:config-item :alive/lsp/types/config-item)
                       (:fmt-opts :alive/lsp/types/format-options)
@@ -15,6 +16,7 @@
                       (:formatter :alive/format)
                       (:forms :alive/parse/forms)
                       (:lsp-msg :alive/lsp/message/abstract)
+                      (:selection :alive/selection)
                       (:state :alive/session/state)
                       (:utils :alive/session/handler/utils)))
 
@@ -170,3 +172,20 @@
         (let ((params (make-hash-table :test #'equalp)))
             (setf (gethash "items" params) (list (config-item:create-item :section "alive.format")))
             (lsp-msg:create-request id "workspace/configuration" :params params))))
+
+
+(declaim (ftype (function (cons) hash-table) selection))
+(defun selection (msg)
+    (let* ((id (cdr (assoc :id msg)))
+           (params (cdr (assoc :params msg)))
+           (doc (cdr (assoc :text-document params)))
+           (uri (cdr (assoc :uri doc)))
+           (file-text (state:get-file-text uri))
+           (text (if file-text file-text ""))
+           (forms (forms:from-stream-or-nil (make-string-input-stream text)))
+           (pos-list (cdr (assoc :positions params)))
+           (ranges (when (and forms pos-list)
+                         (selection:ranges forms pos-list))))
+
+        (lsp-msg:create-response id :result-value (or ranges
+                                                      (make-hash-table :test #'equalp)))))

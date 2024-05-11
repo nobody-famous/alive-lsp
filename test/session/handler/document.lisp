@@ -110,6 +110,26 @@
                                                                           (cons :result (list (list (list))))))))))))
 
 
+(defun test-selection ()
+    (clue:suite "Selection"
+        (clue:test "No forms"
+            (state:with-state (state:create)
+                (clue:check-equal :expected T
+                                  :actual (hash-table-p (doc:selection (list (cons :id 1)
+                                                                             (cons :params (list (cons :text-document (list (cons :uri "some/uri")))
+                                                                                                 (cons :positions (list (list (cons :line 5)
+                                                                                                                              (cons :character 10))))))))))))
+
+        (clue:test "Have forms"
+            (state:with-state (state:create)
+                (state:set-file-text "some/uri" "Some text")
+                (clue:check-equal :expected T
+                                  :actual (hash-table-p (doc:selection (list (cons :id 1)
+                                                                             (cons :params (list (cons :text-document (list (cons :uri "some/uri")))
+                                                                                                 (cons :positions (list (list (cons :line 5)
+                                                                                                                              (cons :character 10))))))))))))))
+
+
 (defun run-all ()
     (clue:suite "Document Handler Tests"
         (test-completion)
@@ -119,4 +139,5 @@
         (test-doc-symbols)
         (test-hover)
         (test-on-type)
-        (test-range-formatting)))
+        (test-range-formatting)
+        (test-selection)))
