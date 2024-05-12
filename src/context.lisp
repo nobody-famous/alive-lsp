@@ -42,7 +42,7 @@
 (defun destroy ()
     (unless *context*
         (error (make-condition 'context-nil-error)))
-    (when (context-destroy *context*)
+    (when (functionp (context-destroy *context*))
           (funcall (context-destroy *context*))))
 
 
@@ -51,6 +51,4 @@
                                     :output-stream ,output-stream
                                     :destroy ,destroy-fn)))
          (unwind-protect
-                 ,@body
-             (when (functionp (context-destroy *context*))
-                   (funcall (context-destroy *context*))))))
+                 ,@body)))

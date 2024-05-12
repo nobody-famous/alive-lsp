@@ -1,0 +1,33 @@
+(defpackage :alive/session/utils
+    (:use :cl)
+    (:export :spawn-thread))
+
+(in-package :alive/session/utils)
+
+
+(defmacro spawn-thread (name &body body)
+    (let ((stdin (gensym))
+          (stdout (gensym))
+          (logger (gensym))
+          (state (gensym))
+          (context (gensym))
+          (handlers (gensym))
+          (deps (gensym)))
+
+        `(let ((,stdout *standard-output*)
+               (,stdin *standard-input*)
+               (,logger alive/logger:*logger*)
+               (,state alive/session/state::*state*)
+               (,context alive/context::*context*)
+               (,handlers alive/session/handlers::*handlers*)
+               (,deps alive/session/deps::*deps*))
+             (bt:make-thread (lambda ()
+                                 (let ((*standard-output* ,stdout)
+                                       (*standard-input* ,stdin)
+                                       (alive/logger:*logger* ,logger)
+                                       (alive/session/state::*state* ,state)
+                                       (alive/context::*context* ,context)
+                                       (alive/session/handlers::*handlers* ,handlers)
+                                       (alive/session/deps::*deps* ,deps))
+                                     (progn ,@body)))
+                             :name ,name))))

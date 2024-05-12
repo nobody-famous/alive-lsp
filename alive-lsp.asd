@@ -69,7 +69,6 @@
                                        (:file "lsp/message/response")
                                        (:file "lsp/message/notification")
 
-                                       (:file "session")
                                        (:file "session/deps")
                                        (:file "session/state")
                                        (:file "session/handlers")
@@ -78,6 +77,9 @@
                                        (:file "session/handler/init")
                                        (:file "session/message")
                                        (:file "session/message-loop")
+                                       (:file "session/utils")
+                                       (:file "session")
+
                                        (:file "server")))))
 
 

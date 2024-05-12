@@ -4,6 +4,7 @@
              :add-inspector
              :add-listener
              :create
+             :create-listener
              :get-file-text
              :get-history-item
              :get-inspector
@@ -33,6 +34,11 @@
 
 (defstruct listener
     (on-done nil :type (or null function)))
+
+
+(declaim (ftype (function (function) listener) create-listener))
+(defun create-listener (done-fn)
+    (make-listener :on-done done-fn))
 
 
 (defstruct state

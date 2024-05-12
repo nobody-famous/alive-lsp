@@ -37,7 +37,10 @@
                       (:req :alive/lsp/message/request)
                       (:notification :alive/lsp/message/notification)
                       (:message :alive/lsp/message/abstract)
-                      (:fmt-utils :alive/lsp/message/format-utils)))
+                      (:fmt-utils :alive/lsp/message/format-utils)
+
+                      (:state :alive/session/state)
+                      (:utils :alive/session/utils)))
 
 (in-package :alive/session)
 
@@ -1147,3 +1150,16 @@
     (start-read-thread state)
 
     (logger:info-msg "Started state ~A" state))
+
+
+(declaim (ftype (function () null) new-start))
+(defun new-start ()
+    (state:with-state (state:create)
+        (state:add-listener (state:create-listener (lambda () (alive/context:destroy))))
+        (state:set-running T)
+
+        (utils:spawn-thread "Session Message Reader"
+            (alive/session/message-loop:run))
+
+        (logger:info-msg "Session started")
+        nil))

@@ -17,7 +17,7 @@
                                   :actual (context:get-input-stream))
                 (clue:check-equal :expected 10
                                   :actual (context:get-output-stream)))
-            (clue:check-equal :expected t
+            (clue:check-equal :expected nil
                               :actual destroy-called))))
 
 

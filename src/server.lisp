@@ -5,6 +5,7 @@
 
     (:local-nicknames (:context :alive/context)
                       (:deps :alive/session/deps)
+                      (:handlers :alive/session/handlers)
                       (:logger :alive/logger)
                       (:packet :alive/lsp/packet)
                       (:parse :alive/lsp/parse)
@@ -90,7 +91,7 @@
 
 (declaim (ftype (function (T)) send-msg))
 (defun send-msg (msg)
-    (bt:with-recursive-lock-held ((state:lock))
+    (state:lock
         (when (and (hash-table-p msg)
                    (gethash "jsonrpc" msg))
               (write-sequence (packet:to-wire msg) (context:get-output-stream))
@@ -107,6 +108,17 @@
     (deps:create :msg-handler #'alive/session/message:handle
                  :send-msg #'send-msg
                  :read-msg #'read-msg))
+
+
+(defun new-accept-conn ()
+    (let* ((conn (usocket:socket-accept (socket *server*) :element-type '(unsigned-byte 8))))
+        (context:with-context (:input-stream (flexi-streams:make-flexi-stream (usocket:socket-stream conn))
+                                             :output-stream (usocket:socket-stream conn)
+                                             :destroy-fn (lambda ()
+                                                             (usocket:socket-close conn)))
+            (alive/session/deps:with-deps (create-deps)
+                (handlers:with-handlers *message-handlers*
+                    (session::new-start))))))
 
 
 (defun accept-conn ()
@@ -129,6 +141,7 @@
 
     (when (and (running *server*)
                (usocket::state (socket *server*)))
+          #+n (new-accept-conn)
           (accept-conn)))
 
 
