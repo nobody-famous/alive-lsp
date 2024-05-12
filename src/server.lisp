@@ -54,7 +54,7 @@
                                        (cons "textDocument/onTypeFormatting" #'alive/session/handler/document:on-type)
                                        (cons "textDocument/rangeFormatting" #'alive/session/handler/document:formatting)
                                        (cons "textDocument/selectionRange" #'alive/session/handler/document:selection)
-                                       #+n (cons "textDocument/semanticTokens/full" 'handle-sem-tokens)
+                                       (cons "textDocument/semanticTokens/full" #'alive/session/handler/document:sem-tokens)
 
                                        (cons "$/setTrace" #'ignore-msg)
                                        (cons "$/cancelRequest" #'ignore-msg)

@@ -8,8 +8,10 @@
              :formatting
              :hover
              :on-type
-             :selection)
-    (:local-nicknames (:comps :alive/lsp/completions)
+             :selection
+             :sem-tokens)
+    (:local-nicknames (:analysis :alive/lsp/sem-analysis)
+                      (:comps :alive/lsp/completions)
                       (:config-item :alive/lsp/types/config-item)
                       (:fmt-opts :alive/lsp/types/format-options)
                       (:fmt-utils :alive/lsp/message/format-utils)
@@ -17,7 +19,9 @@
                       (:forms :alive/parse/forms)
                       (:lsp-msg :alive/lsp/message/abstract)
                       (:selection :alive/selection)
+                      (:sem-types :alive/lsp/types/sem-tokens)
                       (:state :alive/session/state)
+                      (:tokenizer :alive/parse/tokenizer)
                       (:utils :alive/session/handler/utils)))
 
 (in-package :alive/session/handler/document)
@@ -189,3 +193,42 @@
 
         (lsp-msg:create-response id :result-value (or ranges
                                                       (make-hash-table :test #'equalp)))))
+
+
+(declaim (ftype (function (cons) cons) to-sem-array))
+(defun to-sem-array (sem-tokens)
+    (loop :with line := 0
+          :with col := 0
+          :with out-list := nil
+
+          :for token :in sem-tokens
+          :for len := (- (sem-types:end-col token) (sem-types:start-col token))
+          :for line-diff := (- (sem-types:line token) line)
+          :for col-diff := (if (zerop line-diff)
+                               (- (sem-types:start-col token) col)
+                               (sem-types:start-col token)) :do
+
+              (push line-diff out-list)
+              (push col-diff out-list)
+              (push len out-list)
+              (push (sem-types:token-type token) out-list)
+              (push 0 out-list)
+
+              (setf line (sem-types:line token))
+              (setf col (sem-types:start-col token))
+          :finally (return (reverse out-list))))
+
+
+(declaim (ftype (function (cons) hash-table) sem-tokens))
+(defun sem-tokens (msg)
+    (let* ((id (cdr (assoc :id msg)))
+           (params (cdr (assoc :params msg)))
+           (doc (cdr (assoc :text-document params)))
+           (uri (cdr (assoc :uri doc)))
+           (file-text (state:get-file-text uri))
+           (text (if file-text file-text ""))
+           (sem-tokens (analysis:to-sem-tokens
+                           (tokenizer:from-stream
+                               (make-string-input-stream text)))))
+
+        (utils:result id "data" (to-sem-array sem-tokens))))
