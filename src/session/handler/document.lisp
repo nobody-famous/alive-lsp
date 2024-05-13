@@ -231,4 +231,6 @@
                            (tokenizer:from-stream
                                (make-string-input-stream text)))))
 
-        (utils:result id "data" (to-sem-array sem-tokens))))
+        (utils:result id "data" (if sem-tokens
+                                    (to-sem-array sem-tokens)
+                                    nil))))

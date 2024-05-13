@@ -130,6 +130,35 @@
                                                                                                                               (cons :character 10))))))))))))))
 
 
+(defun test-sem-tokens ()
+    (clue:suite "Semantic Tokens"
+        (clue:test "Emtpy text"
+            (state:with-state (state:create)
+                (let* ((response (doc:sem-tokens (list (cons :id 5)
+                                                       (cons :params (list (cons :text-document (list (cons :uri "some/uri"))))))))
+                       (result (gethash "result" response)))
+                    (clue:check-equal :expected nil
+                                      :actual (gethash "data" result)))))
+
+        (clue:test "Simple tokens"
+            (state:with-state (state:create)
+                (state:set-file-text "some/uri" "#+n")
+                (let* ((response (doc:sem-tokens (list (cons :id 5)
+                                                       (cons :params (list (cons :text-document (list (cons :uri "some/uri"))))))))
+                       (result (gethash "result" response)))
+                    (clue:check-equal :expected (list 0 0 3 0 0)
+                                      :actual (gethash "data" result)))))
+
+        (clue:test "Multi-line token"
+            (state:with-state (state:create)
+                (state:set-file-text "some/uri" (format nil "#| a bb~%~%ccc dddd~%|#"))
+                (let* ((response (doc:sem-tokens (list (cons :id 5)
+                                                       (cons :params (list (cons :text-document (list (cons :uri "some/uri"))))))))
+                       (result (gethash "result" response)))
+                    (clue:check-equal :expected (list 0 0 #xFFFF 0 0 1 0 #xFFFF 0 0 1 0 #xFFFF 0 0 1 0 2 0 0)
+                                      :actual (gethash "data" result)))))))
+
+
 (defun run-all ()
     (clue:suite "Document Handler Tests"
         (test-completion)
@@ -140,4 +169,5 @@
         (test-hover)
         (test-on-type)
         (test-range-formatting)
-        (test-selection)))
+        (test-selection)
+        (test-sem-tokens)))
