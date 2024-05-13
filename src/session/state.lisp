@@ -15,6 +15,7 @@
              :lock
              :next-inspector-id
              :next-send-id
+             :next-thread-id
              :rem-inspector
              :running
              :set-file-text
@@ -151,22 +152,27 @@
     (gethash uri (state-files *state*)))
 
 
+(defmacro next-id (fn)
+    `(progn (unless *state* (error "State not set"))
+            (bt:with-recursive-lock-held ((state-lock *state*))
+                (let ((id (,fn *state*)))
+                    (incf (,fn *state*))
+                    id))))
+
+
 (declaim (ftype (function () integer) next-send-id))
 (defun next-send-id ()
-    (unless *state* (error "State not set"))
-    (bt:with-recursive-lock-held ((state-lock *state*))
-        (let ((id (state-send-msg-id *state*)))
-            (incf (state-send-msg-id *state*))
-            id)))
+    (next-id state-send-msg-id))
 
 
 (declaim (ftype (function () integer) next-inspector-id))
 (defun next-inspector-id ()
-    (unless *state* (error "State not set"))
-    (bt:with-recursive-lock-held ((state-lock *state*))
-        (let ((id (state-inspector-id *state*)))
-            (incf (state-inspector-id *state*))
-            id)))
+    (next-id state-inspector-id))
+
+
+(declaim (ftype (function () integer) next-thread-id))
+(defun next-thread-id ()
+    (next-id state-thread-name-id))
 
 
 (declaim (ftype (function (integer alive/inspector:inspector)) add-inspector))

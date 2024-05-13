@@ -56,24 +56,39 @@
                               :actual (state:get-file-text "uri")))))
 
 
-(defun test-next-send-id ()
-    (clue:test "Next send id"
-        (clue:expect-fail (lambda () (state:next-send-id)))
+(defun test-set-send-msg-callback ()
+    (clue:test "Set file text"
+        (clue:expect-fail (lambda () (state:get-sent-msg-callback 5)))
+        (clue:expect-fail (lambda () (state:set-sent-msg-callback 5 (lambda (msg)
+                                                                        (declare (ignore msg))
+                                                                        (make-hash-table)))))
         (state:with-state (state:create)
-            (clue:check-equal :expected 1
-                              :actual (state:next-send-id))
-            (clue:check-equal :expected 2
-                              :actual (state:next-send-id)))))
+            (state:set-sent-msg-callback 5 (lambda (msg)
+                                               (declare (ignore msg))
+                                               (make-hash-table)))
+            (clue:check-exists (state:get-sent-msg-callback 5)))))
+
+
+(defmacro test-id (label fn)
+    `(clue:test ,label
+         (clue:expect-fail (lambda () (,fn)))
+         (state:with-state (state:create)
+             (clue:check-equal :expected 1
+                               :actual (,fn))
+             (clue:check-equal :expected 2
+                               :actual (,fn)))))
+
+
+(defun test-next-send-id ()
+    (test-id "Next send id" state:next-send-id))
 
 
 (defun test-next-inspector-id ()
-    (clue:test "Next inspector id"
-        (clue:expect-fail (lambda () (state:next-inspector-id)))
-        (state:with-state (state:create)
-            (clue:check-equal :expected 1
-                              :actual (state:next-inspector-id))
-            (clue:check-equal :expected 2
-                              :actual (state:next-inspector-id)))))
+    (test-id "Next inspector id" state:next-inspector-id))
+
+
+(defun test-next-thread-id ()
+    (test-id "Next thread id" state:next-thread-id))
 
 
 (defun test-inspector ()
@@ -110,14 +125,23 @@
                 nil))))
 
 
+(defun test-create-listener ()
+    (clue:test "Create listener"
+        (clue:check-equal :expected T
+                          :actual (typep (state:create-listener (lambda ())) 'state:listener))))
+
+
 (defun run-all ()
     (clue:suite "Session State Tests"
         (test-add-history)
         (test-add-listener)
         (test-set-initialized)
         (test-set-file-text)
-        (test-next-send-id)
+        (test-set-send-msg-callback)
         (test-next-inspector-id)
+        (test-next-send-id)
+        (test-next-thread-id)
         (test-inspector)
         (test-running)
-        (test-thread-msg)))
+        (test-thread-msg)
+        (test-create-listener)))
