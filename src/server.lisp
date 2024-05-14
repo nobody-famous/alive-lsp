@@ -59,7 +59,7 @@
                                        (cons "$/setTrace" #'ignore-msg)
                                        (cons "$/cancelRequest" #'ignore-msg)
 
-                                       #+n (cons "$/alive/eval" 'handle-eval)
+                                       (cons "$/alive/eval" #'alive/session/handler/eval:handle)
                                        #+n (cons "$/alive/getPackageForPosition" 'handle-get-pkg)
                                        #+n (cons "$/alive/inspect" 'handle-inspect)
                                        #+n (cons "$/alive/inspectClose" 'handle-inspect-close)
@@ -91,7 +91,7 @@
 
 (declaim (ftype (function (T)) send-msg))
 (defun send-msg (msg)
-    (state:lock
+    (state:lock (mutex)
         (when (and (hash-table-p msg)
                    (gethash "jsonrpc" msg))
               (write-sequence (packet:to-wire msg) (context:get-output-stream))
@@ -141,8 +141,8 @@
 
     (when (and (running *server*)
                (usocket::state (socket *server*)))
-          #+n (new-accept-conn)
-          (accept-conn)))
+           (new-accept-conn)
+         #+n (accept-conn)))
 
 
 (defun wake-up-accept ()

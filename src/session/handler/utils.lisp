@@ -1,6 +1,7 @@
 (defpackage :alive/session/handler/utils
     (:use :cl)
-    (:export :result)
+    (:export :result
+             :run-in-thread)
     (:local-nicknames (:lsp-msg :alive/lsp/message/abstract)
                       (:state :alive/session/state)))
 
@@ -12,8 +13,3 @@
     (let ((data (make-hash-table :test #'equalp)))
         (setf (gethash key data) value)
         (lsp-msg:create-response id :result-value data)))
-
-
-(declaim (ftype (function (string) string) next-thread-name))
-(defun next-thread-name (method-name)
-    (format nil "~A - ~A" (state:next-thread-id) method-name))

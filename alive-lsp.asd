@@ -75,9 +75,10 @@
                                        (:file "session/handler/utils")
                                        (:file "session/handler/document")
                                        (:file "session/handler/init")
+                                       (:file "session/utils")
+                                       (:file "session/handler/eval")
                                        (:file "session/message")
                                        (:file "session/message-loop")
-                                       (:file "session/utils")
                                        (:file "session")
 
                                        (:file "server")))))

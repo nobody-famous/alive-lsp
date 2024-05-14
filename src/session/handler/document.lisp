@@ -77,7 +77,7 @@
            (text (cdr (assoc :text (first changes)))))
 
         (when text
-              (state:lock
+              (state:lock (mutex)
                   (state:set-file-text uri text)
                   nil))))
 
@@ -90,7 +90,7 @@
            (text (cdr (assoc :text doc))))
 
         (when text
-              (state:lock
+              (state:lock (mutex)
                   (state:set-file-text uri text)
                   nil))))
 

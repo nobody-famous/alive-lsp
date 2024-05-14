@@ -6,6 +6,7 @@
              :create
              :create-listener
              :get-file-text
+             :get-files
              :get-history-item
              :get-inspector
              :get-sent-msg-callback
@@ -17,6 +18,7 @@
              :next-send-id
              :next-thread-id
              :rem-inspector
+             :rem-thread-msg
              :running
              :set-file-text
              :set-initialized
@@ -93,10 +95,11 @@
     (setf (state-running *state*) value))
 
 
-(defmacro lock (&body body)
+(defmacro lock ((mutex) &body body)
     `(progn (unless *state* (error "State not set"))
-            (bt:with-recursive-lock-held ((state-lock *state*))
-                (progn ,@body))))
+            (let ((,mutex (state-lock *state*)))
+                (bt:with-recursive-lock-held (,mutex)
+                    (progn ,@body)))))
 
 
 (declaim (ftype (function (fixnum) (or null function)) get-sent-msg-callback))
@@ -150,6 +153,12 @@
 (defun get-file-text (uri)
     (unless *state* (error "State not set"))
     (gethash uri (state-files *state*)))
+
+
+(declaim (ftype (function () hash-table) get-files))
+(defun get-files ()
+    (unless *state* (error "State not set"))
+    (state-files *state*))
 
 
 (defmacro next-id (fn)
