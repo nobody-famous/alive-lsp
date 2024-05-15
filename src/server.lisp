@@ -141,8 +141,8 @@
 
     (when (and (running *server*)
                (usocket::state (socket *server*)))
-           (new-accept-conn)
-         #+n (accept-conn)))
+          #+n (new-accept-conn)
+          (accept-conn)))
 
 
 (defun wake-up-accept ()
