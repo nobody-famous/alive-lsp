@@ -40,4 +40,4 @@
 (defun handle (msg)
     (utils:run-in-thread (princ-to-string (cdr (assoc :id msg)))
                          msg
-                         (process-eval msg)))
+                         (lambda () (process-eval msg))))

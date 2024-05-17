@@ -56,6 +56,10 @@
                               :actual (state:get-file-text "uri")))))
 
 
+(defun test-get-files ()
+    nil)
+
+
 (defun test-set-send-msg-callback ()
     (clue:test "Set file text"
         (clue:expect-fail (lambda () (state:get-sent-msg-callback 5)))

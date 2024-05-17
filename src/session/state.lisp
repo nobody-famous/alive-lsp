@@ -6,7 +6,6 @@
              :create
              :create-listener
              :get-file-text
-             :get-files
              :get-history-item
              :get-inspector
              :get-sent-msg-callback
@@ -52,7 +51,6 @@
     (thread-msgs (make-hash-table :test 'equalp) :type hash-table)
     (sent-msg-callbacks (make-hash-table :test 'equalp) :type hash-table)
     (inspectors (make-hash-table :test 'equalp) :type hash-table)
-    (input-cond-vars (make-hash-table :test 'equalp) :type hash-table)
 
     (thread-name-id 1 :type integer)
     (send-msg-id 1 :type integer)
@@ -62,8 +60,7 @@
 
     (history (make-array 3) :type array)
 
-    (lock (bt:make-recursive-lock) :type sb-thread:mutex)
-    (read-thread nil :type (or null sb-thread:thread)))
+    (lock (bt:make-recursive-lock) :type sb-thread:mutex))
 
 
 (declaim (ftype (function () state) create))
@@ -153,12 +150,6 @@
 (defun get-file-text (uri)
     (unless *state* (error "State not set"))
     (gethash uri (state-files *state*)))
-
-
-(declaim (ftype (function () hash-table) get-files))
-(defun get-files ()
-    (unless *state* (error "State not set"))
-    (state-files *state*))
 
 
 (defmacro next-id (fn)

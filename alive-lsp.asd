@@ -45,6 +45,7 @@
                                        (:file "debugger")
                                        (:file "macros")
                                        (:file "selection")
+                                       (:file "file-utils")
 
                                        (:file "lsp/types/config-item")
                                        (:file "lsp/types/sem-tokens")
@@ -72,6 +73,8 @@
                                        (:file "session/deps")
                                        (:file "session/state")
                                        (:file "session/handlers")
+                                       (:file "thread-utils")
+
                                        (:file "session/handler/utils")
                                        (:file "session/handler/document")
                                        (:file "session/handler/init")
@@ -111,6 +114,7 @@
                                        (:file "session/message")
                                        (:file "session/message-loop")
                                        (:file "session/state")
+                                       (:file "session/utils")
 
                                        (:file "format/range")
                                        (:file "format/on-type")

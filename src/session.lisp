@@ -40,7 +40,7 @@
                       (:fmt-utils :alive/lsp/message/format-utils)
 
                       (:state :alive/session/state)
-                      (:utils :alive/session/utils)))
+                      (:utils :alive/thread-utils)))
 
 (in-package :alive/session)
 
