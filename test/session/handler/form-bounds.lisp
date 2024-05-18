@@ -27,6 +27,21 @@
                 (clue:check-exists (gethash "result" (form-bounds:top-form *default-msg*)))))))
 
 
+(defun test-surrounding-form ()
+    (clue:suite "Surrounding Form"
+        (clue:test "No text"
+            (clue:expect-fail (lambda () (form-bounds:surrounding-form *default-msg*)))
+            (state:with-state (state:create)
+                (clue:check-exists (gethash "result" (form-bounds:surrounding-form *default-msg*)))))
+
+        (clue:test "With text"
+            (clue:expect-fail (lambda () (form-bounds:surrounding-form *default-msg*)))
+            (state:with-state (state:create)
+                (state:set-file-text "some/uri" "(foo)")
+                (clue:check-exists (gethash "result" (form-bounds:surrounding-form *default-msg*)))))))
+
+
 (defun run-all ()
     (clue:suite "Form Bounds Tests"
-        (test-top-form)))
+        (test-top-form)
+        (test-surrounding-form)))
