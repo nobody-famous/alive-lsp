@@ -32,16 +32,7 @@
                                                     (lambda () (setf started T)))))
                     (bt:join-thread thread)
                     (clue:check-equal :expected T
-                                      :actual started))))
-
-        #+n (clue:test "Start debugger"
-                (state:with-state (state:create)
-                    (deps:with-deps (deps:create :send-msg (lambda (msg)
-                                                               (format T "***** SEND CALLED ~A~%" msg)))
-                        (let* ((thread (utils:run-in-thread "Test Method"
-                                                            (list (cons :foo "bar"))
-                                                            (lambda () (div 3 0)))))
-                            (bt:join-thread thread)))))))
+                                      :actual started))))))
 
 
 (defun run-all ()

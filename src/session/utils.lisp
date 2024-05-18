@@ -16,35 +16,6 @@
 (in-package :alive/session/utils)
 
 
-(declaim (ftype (function (string) string) next-thread-name))
-(defun next-thread-name (method-name)
-    (format nil "~A - ~A" (state:next-thread-id) method-name))
-
-
-(declaim (ftype (function ((or null string)) (or null stream)) get-frame-text-stream))
-(defun get-frame-text-stream (file)
-    (let* ((file-url (format NIL "file://~A" (file-utils:escape-file file)))
-           (text (state:get-file-text file-url)))
-
-        (when text
-              (make-string-input-stream text))))
-
-
-(declaim (ftype (function (hash-table) hash-table) frame-to-wire))
-(defun frame-to-wire (frame)
-    (let* ((obj (make-hash-table :test #'equalp))
-           (file (gethash "file" frame))
-           (fn-name (gethash "function" frame))
-           (pos (debugger:get-frame-loc (get-frame-text-stream file)
-                                        frame)))
-
-        (setf (gethash "function" obj) fn-name)
-        (setf (gethash "file" obj) file)
-        (setf (gethash "position" obj) pos)
-
-        obj))
-
-
 (declaim (ftype (function () string) wait-for-input))
 (defun wait-for-input ()
     (let ((send-id (state:next-send-id))
@@ -72,6 +43,30 @@
             (bt:condition-wait cond-var mutex))
 
         text))
+
+
+(declaim (ftype (function ((or null string)) (or null stream)) get-frame-text-stream))
+(defun get-frame-text-stream (file)
+    (let* ((file-url (format NIL "file://~A" (file-utils:escape-file file)))
+           (text (state:get-file-text file-url)))
+
+        (when text
+              (make-string-input-stream text))))
+
+
+(declaim (ftype (function (hash-table) hash-table) frame-to-wire))
+(defun frame-to-wire (frame)
+    (let* ((obj (make-hash-table :test #'equalp))
+           (file (gethash "file" frame))
+           (fn-name (gethash "function" frame))
+           (pos (debugger:get-frame-loc (get-frame-text-stream file)
+                                        frame)))
+
+        (setf (gethash "function" obj) fn-name)
+        (setf (gethash "file" obj) file)
+        (setf (gethash "position" obj) pos)
+
+        obj))
 
 
 (declaim (ftype (function (condition cons cons)) wait-for-debug))
@@ -131,6 +126,11 @@
                                (start-debugger c (alive/frames:list-debug-frames))
                                (return-from run-with-debugger))))
         (funcall fn)))
+
+
+(declaim (ftype (function (string) string) next-thread-name))
+(defun next-thread-name (method-name)
+    (format nil "~A - ~A" (state:next-thread-id) method-name))
 
 
 (declaim (ftype (function (string cons function) bt:thread) run-in-thread))
