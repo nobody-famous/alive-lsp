@@ -113,6 +113,7 @@
                                        (:file "session/handlers")
                                        (:file "session/handler/document")
                                        (:file "session/handler/init")
+                                       (:file "session/handler/utils")
                                        (:file "session/message")
                                        (:file "session/message-loop")
                                        (:file "session/state")
