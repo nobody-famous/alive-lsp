@@ -60,6 +60,8 @@
                                        (cons "$/cancelRequest" #'ignore-msg)
 
                                        (cons "$/alive/eval" #'alive/session/handler/eval:handle)
+                                       (cons "$/alive/topFormBounds" #'alive/session/handler/form-bounds:top-form)
+                                       #+n (cons "$/alive/surroundingFormBounds" 'handle-surrounding-form)
                                        #+n (cons "$/alive/getPackageForPosition" 'handle-get-pkg)
                                        #+n (cons "$/alive/inspect" 'handle-inspect)
                                        #+n (cons "$/alive/inspectClose" 'handle-inspect-close)
@@ -77,8 +79,6 @@
                                        #+n (cons "$/alive/macroexpand1" 'handle-macroexpand-1)
                                        #+n (cons "$/alive/removePackage" 'handle-remove-pkg)
                                        #+n (cons "$/alive/symbol" 'handle-symbol)
-                                       #+n (cons "$/alive/surroundingFormBounds" 'handle-surrounding-form)
-                                       #+n (cons "$/alive/topFormBounds" 'handle-top-form)
                                        #+n (cons "$/alive/compile" 'handle-compile)
                                        #+n (cons "$/alive/tryCompile" 'handle-try-compile)
                                        #+n (cons "$/alive/unexportSymbol" 'handle-unexport)))

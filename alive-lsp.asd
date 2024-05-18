@@ -78,6 +78,7 @@
                                        (:file "session/handler/utils")
                                        (:file "session/handler/document")
                                        (:file "session/handler/init")
+                                       (:file "session/handler/form-bounds")
                                        (:file "session/utils")
                                        (:file "session/handler/eval")
                                        (:file "session/message")
