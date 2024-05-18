@@ -108,6 +108,7 @@
                                        (:file "lsp/packet")
 
                                        (:file "session/messages")
+                                       (:file "session/deps")
                                        (:file "session/handlers")
                                        (:file "session/handler/document")
                                        (:file "session/handler/init")

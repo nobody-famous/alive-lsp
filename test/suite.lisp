@@ -30,6 +30,7 @@
         (alive/test/range:run-all)
         (alive/test/session:run-all)
         (alive/test/session/messages:run-all)
+        (alive/test/session/deps:run-all)
         (alive/test/session/handlers:run-all)
         (alive/test/session/handler/document:run-all)
         (alive/test/session/handler/init:run-all)
