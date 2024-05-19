@@ -1,9 +1,9 @@
-(defpackage :alive/test/session/deps
+(defpackage :alive/test/deps
     (:use :cl)
     (:export :run-all)
-    (:local-nicknames (:deps :alive/session/deps)))
+    (:local-nicknames (:deps :alive/deps)))
 
-(in-package :alive/test/session/deps)
+(in-package :alive/test/deps)
 
 
 (defun test-msg-handler ()

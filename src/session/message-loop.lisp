@@ -2,7 +2,7 @@
     (:use :cl)
     (:export :run
              :stop)
-    (:local-nicknames (:deps :alive/session/deps)
+    (:local-nicknames (:deps :alive/deps)
                       (:errors :alive/lsp/errors)
                       (:logger :alive/logger)
                       (:lsp-msg :alive/lsp/message/abstract)

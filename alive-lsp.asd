@@ -32,6 +32,7 @@
                                        (:file "compat/sbcl/symbols")
                                        (:file "compat/sbcl/threads")
 
+                                       (:file "deps")
                                        (:file "streams")
                                        (:file "file")
                                        (:file "symbols")
@@ -70,7 +71,6 @@
                                        (:file "lsp/message/response")
                                        (:file "lsp/message/notification")
 
-                                       (:file "session/deps")
                                        (:file "session/state")
                                        (:file "session/handlers")
                                        (:file "thread-utils")
@@ -79,7 +79,7 @@
                                        (:file "session/handler/document")
                                        (:file "session/handler/init")
                                        (:file "session/handler/form-bounds")
-                                       (:file "session/utils")
+                                       (:file "session/threads")
                                        (:file "session/handler/eval")
                                        (:file "session/message")
                                        (:file "session/message-loop")
@@ -109,7 +109,7 @@
                                        (:file "lsp/packet")
 
                                        (:file "session/messages")
-                                       (:file "session/deps")
+                                       (:file "deps")
                                        (:file "session/handlers")
                                        (:file "session/handler/document")
                                        (:file "session/handler/form-bounds")
@@ -118,7 +118,7 @@
                                        (:file "session/message")
                                        (:file "session/message-loop")
                                        (:file "session/state")
-                                       (:file "session/utils")
+                                       (:file "session/threads")
 
                                        (:file "format/range")
                                        (:file "format/on-type")

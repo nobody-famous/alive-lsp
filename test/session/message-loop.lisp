@@ -1,7 +1,7 @@
 (defpackage :alive/test/session/message-loop
     (:use :cl)
     (:export :run-all)
-    (:local-nicknames (:deps :alive/session/deps)
+    (:local-nicknames (:deps :alive/deps)
                       (:errors :alive/lsp/errors)
                       (:msg-loop :alive/session/message-loop)
                       (:state :alive/session/state)))

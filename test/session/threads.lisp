@@ -1,15 +1,11 @@
-(defpackage :alive/test/session/utils
+(defpackage :alive/test/session/threads
     (:use :cl)
     (:export :run-all)
-    (:local-nicknames (:deps :alive/session/deps)
+    (:local-nicknames (:deps :alive/deps)
                       (:state :alive/session/state)
-                      (:utils :alive/session/utils)))
+                      (:threads :alive/session/threads)))
 
-(in-package :alive/test/session/utils)
-
-
-(defun div (x y)
-    (/ x y))
+(in-package :alive/test/session/threads)
 
 
 (defun test-run-in-thread ()
@@ -17,9 +13,9 @@
         (clue:test "Simple thread"
             (state:with-state (state:create)
                 (let* ((started nil)
-                       (thread (utils:run-in-thread "Test Method"
-                                                    (list (cons :id 5))
-                                                    (lambda () (setf started T)))))
+                       (thread (threads:run-in-thread "Test Method"
+                                                      (list (cons :id 5))
+                                                      (lambda () (setf started T)))))
                     (bt:join-thread thread)
                     (clue:check-equal :expected T
                                       :actual started))))
@@ -27,14 +23,14 @@
         (clue:test "Simple thread, no message id"
             (state:with-state (state:create)
                 (let* ((started nil)
-                       (thread (utils:run-in-thread "Test Method"
-                                                    (list (cons :foo "bar"))
-                                                    (lambda () (setf started T)))))
+                       (thread (threads:run-in-thread "Test Method"
+                                                      (list (cons :foo "bar"))
+                                                      (lambda () (setf started T)))))
                     (bt:join-thread thread)
                     (clue:check-equal :expected T
                                       :actual started))))))
 
 
 (defun run-all ()
-    (clue:suite "Session Utils Tests"
+    (clue:suite "Session Threads Tests"
         (test-run-in-thread)))

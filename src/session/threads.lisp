@@ -1,10 +1,9 @@
-(defpackage :alive/session/utils
+(defpackage :alive/session/threads
     (:use :cl)
     (:export :run-in-thread
-             :spawn-thread
              :wait-for-input)
     (:local-nicknames (:debugger :alive/debugger)
-                      (:deps :alive/session/deps)
+                      (:deps :alive/deps)
                       (:file-utils :alive/file-utils)
                       (:logger :alive/logger)
                       (:lsp-msg :alive/lsp/message/abstract)
@@ -13,7 +12,7 @@
                       (:state :alive/session/state)
                       (:thread-utils :alive/thread-utils)))
 
-(in-package :alive/session/utils)
+(in-package :alive/session/threads)
 
 
 (declaim (ftype (function () string) wait-for-input))

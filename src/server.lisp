@@ -4,7 +4,7 @@
              :start)
 
     (:local-nicknames (:context :alive/context)
-                      (:deps :alive/session/deps)
+                      (:deps :alive/deps)
                       (:handlers :alive/session/handlers)
                       (:logger :alive/logger)
                       (:packet :alive/lsp/packet)
@@ -61,7 +61,7 @@
 
                                        (cons "$/alive/eval" #'alive/session/handler/eval:handle)
                                        (cons "$/alive/topFormBounds" #'alive/session/handler/form-bounds:top-form)
-                                       #+n (cons "$/alive/surroundingFormBounds" 'handle-surrounding-form)
+                                       (cons "$/alive/surroundingFormBounds" #'alive/session/handler/form-bounds:surrounding-form)
                                        #+n (cons "$/alive/getPackageForPosition" 'handle-get-pkg)
                                        #+n (cons "$/alive/inspect" 'handle-inspect)
                                        #+n (cons "$/alive/inspectClose" 'handle-inspect-close)
@@ -116,7 +116,7 @@
                                              :output-stream (usocket:socket-stream conn)
                                              :destroy-fn (lambda ()
                                                              (usocket:socket-close conn)))
-            (alive/session/deps:with-deps (create-deps)
+            (alive/deps:with-deps (create-deps)
                 (handlers:with-handlers *message-handlers*
                     (session::new-start))))))
 
