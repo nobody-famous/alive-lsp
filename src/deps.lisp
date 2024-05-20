@@ -24,7 +24,7 @@
 (declaim (ftype (function (&key (:msg-handler (function (cons) (values (or null hash-table) &optional)))
                                 (:send-msg (function (cons) null))
                                 (:read-msg (function () (values (or null cons) &optional)))
-                                (:eval-fn (function (T) *)))
+                                (:eval-fn (function (stream) *)))
                           deps) create))
 (defun create (&key msg-handler send-msg read-msg eval-fn)
     (make-deps :msg-handler msg-handler
@@ -56,7 +56,8 @@
 
 (declaim (ftype (function (T) *) do-eval))
 (defun do-eval (data)
-    (eval data))
+    (unless *deps* (error "Dependencies not set"))
+    (funcall (deps-eval-fn data)))
 
 
 (defmacro with-deps (deps &body body)

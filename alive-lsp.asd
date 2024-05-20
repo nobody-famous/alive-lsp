@@ -112,6 +112,7 @@
                                        (:file "deps")
                                        (:file "session/handlers")
                                        (:file "session/handler/document")
+                                       (:file "session/handler/eval")
                                        (:file "session/handler/form-bounds")
                                        (:file "session/handler/init")
                                        (:file "session/handler/utils")

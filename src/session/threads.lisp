@@ -72,7 +72,8 @@
 (defun wait-for-debug (err restarts frames)
     (let ((send-id (state:next-send-id))
           (cond-var (bt:make-condition-variable))
-          (restart-ndx nil))
+          (restart-ndx nil)
+          (received nil))
 
         (state:set-sent-msg-callback
             send-id
@@ -85,7 +86,9 @@
                                   (let* ((result (cdr (assoc :result debug-resp))))
                                       (when result
                                             (setf restart-ndx (cdr (assoc :index result)))))))
-                    (bt:condition-notify cond-var))))
+                    (state:lock (mutex)
+                        (setf received T)
+                        (bt:condition-notify cond-var)))))
 
         (deps:send-msg (req:debugger send-id
                                      :message (princ-to-string err)
@@ -93,7 +96,8 @@
                                      :stack-trace (mapcar #'frame-to-wire frames)))
 
         (state:lock (mutex)
-            (bt:condition-wait cond-var mutex))
+            (unless received
+                (bt:condition-wait cond-var mutex)))
 
         restart-ndx))
 

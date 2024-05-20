@@ -98,6 +98,11 @@
               (force-output (context:get-output-stream)))))
 
 
+(declaim (ftype (function (stream) *) eval-fn))
+(defun eval-fn (input)
+    (eval (read input)))
+
+
 (declaim (ftype (function () state:state) create-session-state))
 (defun create-session-state ()
     (state:create))
@@ -107,7 +112,8 @@
 (defun create-deps ()
     (deps:create :msg-handler #'alive/session/message:handle
                  :send-msg #'send-msg
-                 :read-msg #'read-msg))
+                 :read-msg #'read-msg
+                 :eval-fn #'eval-fn))
 
 
 (defun new-accept-conn ()
