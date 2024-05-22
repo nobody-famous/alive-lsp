@@ -57,7 +57,8 @@
 (declaim (ftype (function (T) *) do-eval))
 (defun do-eval (data)
     (unless *deps* (error "Dependencies not set"))
-    (funcall (deps-eval-fn data)))
+    (when (deps-eval-fn *deps*)
+          (funcall (deps-eval-fn *deps*) data)))
 
 
 (defmacro with-deps (deps &body body)

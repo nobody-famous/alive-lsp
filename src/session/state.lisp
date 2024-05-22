@@ -227,4 +227,4 @@
 
 (defmacro with-state (state &body body)
     `(let ((*state* ,state))
-         ,@body))
+         (progn ,@body)))
