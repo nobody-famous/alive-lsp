@@ -62,9 +62,14 @@
                                        (cons "$/alive/eval" #'alive/session/handler/eval:handle)
                                        (cons "$/alive/topFormBounds" #'alive/session/handler/form-bounds:top-form)
                                        (cons "$/alive/surroundingFormBounds" #'alive/session/handler/form-bounds:surrounding-form)
+
                                        (cons "$/alive/getPackageForPosition" #'alive/session/handler/packages:for-position)
                                        (cons "$/alive/listPackages" #'alive/session/handler/packages:list-all)
                                        (cons "$/alive/removePackage" #'alive/session/handler/packages:remove-pkg)
+
+                                       #+n (cons "$/alive/compile" 'handle-compile)
+                                       #+n (cons "$/alive/tryCompile" 'handle-try-compile)
+
                                        #+n (cons "$/alive/inspect" 'handle-inspect)
                                        #+n (cons "$/alive/inspectClose" 'handle-inspect-close)
                                        #+n (cons "$/alive/inspectEval" 'handle-inspect-eval)
@@ -79,8 +84,6 @@
                                        #+n (cons "$/alive/macroexpand" 'handle-macroexpand)
                                        #+n (cons "$/alive/macroexpand1" 'handle-macroexpand-1)
                                        #+n (cons "$/alive/symbol" 'handle-symbol)
-                                       #+n (cons "$/alive/compile" 'handle-compile)
-                                       #+n (cons "$/alive/tryCompile" 'handle-try-compile)
                                        #+n (cons "$/alive/unexportSymbol" 'handle-unexport)))
 
 

@@ -19,7 +19,8 @@
 (defun wait-for-input ()
     (let ((send-id (state:next-send-id))
           (cond-var (bt:make-condition-variable))
-          (text nil))
+          (text nil)
+          (received nil))
 
         (state:set-sent-msg-callback
             send-id
@@ -34,12 +35,15 @@
                                                           (cdr (assoc :text result))
                                                           "")))
                                       (setf text text-result))))
-                    (bt:condition-notify cond-var))))
+                    (state:lock (mutex)
+                        (setf received T)
+                        (bt:condition-notify cond-var)))))
 
         (deps:send-msg (lsp-msg:create-request send-id "$/alive/userInput"))
 
         (state:lock (mutex)
-            (bt:condition-wait cond-var mutex))
+            (unless received
+                (bt:condition-wait cond-var mutex)))
 
         text))
 
