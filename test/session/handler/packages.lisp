@@ -30,6 +30,13 @@
             (run-test "alive/test/session/handler/packages" "(in-package :alive/test/session/handler/packages)"))))
 
 
+(defun test-list-all ()
+    (clue:test "List All"
+        (let ((result (gethash "result" (handler:list-all (list (cons :id 5))))))
+            (clue:check-exists (gethash "packages" result)))))
+
+
 (defun run-all ()
     (clue:suite "Packages Handler Tests"
-        (test-for-pos)))
+        (test-for-pos)
+        (test-list-all)))

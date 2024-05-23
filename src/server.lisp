@@ -63,7 +63,7 @@
                                        (cons "$/alive/topFormBounds" #'alive/session/handler/form-bounds:top-form)
                                        (cons "$/alive/surroundingFormBounds" #'alive/session/handler/form-bounds:surrounding-form)
                                        (cons "$/alive/getPackageForPosition" #'alive/session/handler/packages:for-position)
-                                       #+n (cons "$/alive/listPackages" 'handle-list-pkgs)
+                                       (cons "$/alive/listPackages" #'alive/session/handler/packages:list-all)
                                        #+n (cons "$/alive/inspect" 'handle-inspect)
                                        #+n (cons "$/alive/inspectClose" 'handle-inspect-close)
                                        #+n (cons "$/alive/inspectEval" 'handle-inspect-eval)
