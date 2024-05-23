@@ -39,25 +39,27 @@
                       (process-msg msg)))
 
         (errors:unhandled-request (c)
-                                  (logger:error-msg "read-lsp-msg: ~A" c)
+                                  (logger:error-msg "Unhandled Request: ~A" c)
                                   (when (errors:id c)
                                         (lsp-msg:create-error (errors:id c)
                                                               :code errors:*method-not-found*
                                                               :message (format nil "Unhandled request: ~A" (errors:method-name c)))))
 
         (errors:server-error (c)
-                             (logger:error-msg "read-lsp-msg: ~A" c)
+                             (logger:error-msg "Server Error: ~A" c)
                              (when (errors:id c)
                                    (lsp-msg:create-error (errors:id c)
                                                          :code errors:*internal-error*
                                                          :message (format nil "Server error: ~A" (errors:message c)))))
+
+        (alive/session/handler/eval:eval-thread-event (c) (declare (ignore c)))
 
         (end-of-file (c)
                      (declare (ignore c))
                      (stop))
 
         (T (c)
-           (logger:error-msg "read-lsp-msg: ~A" c)
+           (logger:error-msg "Unknown Error: ~A" (type-of c))
            (stop))))
 
 

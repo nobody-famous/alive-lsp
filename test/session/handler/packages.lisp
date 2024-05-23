@@ -36,7 +36,13 @@
             (clue:check-exists (gethash "packages" result)))))
 
 
+(defun test-remove ()
+    (clue:test "Remove"
+        (clue:check-exists (gethash "result" (handler:remove-pkg (list (cons :id 5)))))))
+
+
 (defun run-all ()
     (clue:suite "Packages Handler Tests"
         (test-for-pos)
-        (test-list-all)))
+        (test-list-all)
+        (test-remove)))

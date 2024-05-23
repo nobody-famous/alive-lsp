@@ -1,8 +1,10 @@
 (defpackage :alive/session/handler/packages
     (:use :cl)
     (:export :for-position
-             :list-all)
-    (:local-nicknames (:packages :alive/packages)
+             :list-all
+             :remove-pkg)
+    (:local-nicknames (:lsp-msg :alive/lsp/message/abstract)
+                      (:packages :alive/packages)
                       (:state :alive/session/state)
                       (:utils :alive/session/handler/utils)))
 
@@ -27,3 +29,13 @@
     (let ((id (cdr (assoc :id msg)))
           (pkgs (packages:list-all)))
         (utils:result id "packages" pkgs)))
+
+
+(declaim (ftype (function (cons) hash-table) remove-pkg))
+(defun remove-pkg (msg)
+    (let* ((id (cdr (assoc :id msg)))
+           (params (cdr (assoc :params msg)))
+           (pkg-name (cdr (assoc :name params))))
+
+        (packages:do-remove pkg-name)
+        (lsp-msg:create-response id :result-value T)))
