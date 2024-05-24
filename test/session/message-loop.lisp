@@ -28,14 +28,18 @@
         (clue:test "With handler"
             (deps:with-deps (deps:create :read-msg (lambda ()
                                                        (msg-loop:stop)
-                                                       (list (cons :id 5))))
+                                                       (list (cons :id 5)))
+                                         :send-msg (lambda (msg)
+                                                       (declare (ignore msg))))
                 (state:with-state (state:create)
                     (msg-loop:run))))
 
         (clue:test "No handler"
             (deps:with-deps (deps:create :read-msg (lambda ()
                                                        (msg-loop:stop)
-                                                       (list (cons :id 5))))
+                                                       (list (cons :id 5)))
+                                         :send-msg (lambda (msg)
+                                                       (declare (ignore msg))))
                 (state:with-state (state:create)
                     (msg-loop:run))))))
 

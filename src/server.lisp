@@ -101,6 +101,24 @@
               (force-output (context:get-output-stream)))))
 
 
+(declaim (ftype (function (cons) hash-table) send-request))
+(defun send-request (msg)
+    (let ((send-id (state:next-send-id))
+          (cond-var (bt:make-condition-variable))
+          (response nil))
+        (state:set-sent-msg-callback send-id
+                                     (lambda (resp)
+                                         (setf response resp)
+                                         (bt:condition-notify cond-var)))
+        (send-msg msg)
+
+        (state:lock (mutex)
+            (unless response
+                (bt:condition-wait cond-var mutex)))
+
+        response))
+
+
 (declaim (ftype (function (stream) *) eval-fn))
 (defun eval-fn (input)
     (eval (read input)))
@@ -115,6 +133,7 @@
 (defun create-deps ()
     (deps:create :msg-handler #'alive/session/message:handle
                  :send-msg #'send-msg
+                 :send-request #'send-request
                  :read-msg #'read-msg
                  :eval-fn #'eval-fn))
 

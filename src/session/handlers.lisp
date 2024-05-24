@@ -39,4 +39,4 @@
 
 (defmacro with-handlers (handlers &body body)
     `(let ((*handlers* ,handlers))
-         ,@body))
+         (progn ,@body)))

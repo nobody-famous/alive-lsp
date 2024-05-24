@@ -1,7 +1,8 @@
 (defpackage :alive/test/deps
     (:use :cl)
     (:export :run-all)
-    (:local-nicknames (:deps :alive/deps)))
+    (:local-nicknames (:deps :alive/deps)
+                      (:lsp-msg :alive/lsp/message/abstract)))
 
 (in-package :alive/test/deps)
 
@@ -21,8 +22,7 @@
             (clue:check-equal :expected (list 1 2)
                               :actual (deps:read-msg)))
         (deps:with-deps (deps:create)
-            (clue:check-equal :expected nil
-                              :actual (deps:read-msg)))))
+            (clue:expect-fail (lambda () (deps:read-msg))))))
 
 
 (defun test-send-msg ()
@@ -36,14 +36,22 @@
                 (deps:send-msg 5)
                 (clue:check-equal :expected t :actual sent)))
 
-        (let ((sent nil))
-            (deps:with-deps (deps:create)
-                (deps:send-msg 5)
-                (clue:check-equal :expected nil :actual sent)))))
+        (deps:with-deps (deps:create)
+            (clue:expect-fail (lambda () (deps:send-msg 5))))))
+
+
+(defun test-send-request ()
+    (clue:test "Send request"
+        (clue:expect-fail (lambda () (deps:send-request (list (cons :id 5)))))
+        (deps:with-deps (deps:create :send-request (lambda (msg)
+                                                       (lsp-msg:create-response (cdr (assoc :id msg)) :result-value "foo")))
+            (clue:check-equal :expected "foo"
+                              :actual (gethash "result" (deps:send-request (list (cons :id 5))))))))
 
 
 (defun run-all ()
     (clue:suite "Dependency Tests"
         (test-msg-handler)
         (test-read-msg)
-        (test-send-msg)))
+        (test-send-msg)
+        (test-send-request)))

@@ -55,5 +55,5 @@
              (bt:make-thread (lambda ()
                                  (let ((*standard-output* ,stdout)
                                        (alive/logger:*logger* ,logger))
-                                     ,@body))
+                                     (progn ,@body)))
                              :name ,name))))

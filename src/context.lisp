@@ -51,4 +51,4 @@
                                     :output-stream ,output-stream
                                     :destroy ,destroy-fn)))
          (unwind-protect
-                 ,@body)))
+                 (progn ,@body))))
