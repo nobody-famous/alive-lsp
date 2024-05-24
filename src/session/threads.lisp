@@ -7,6 +7,7 @@
                       (:file-utils :alive/file-utils)
                       (:logger :alive/logger)
                       (:lsp-msg :alive/lsp/message/abstract)
+                      (:refresh :alive/session/refresh)
                       (:req :alive/lsp/message/request)
                       (:restart-info :alive/lsp/types/restart-info)
                       (:state :alive/session/state)
@@ -84,12 +85,14 @@
             (lambda (debug-resp)
                 (unwind-protect
                         (cond ((assoc :error debug-resp)
-                                  (logger:error-msg "Debugger Error ~A" debug-resp))
+                                  (logger:error-msg "Debugger Error ~A" debug-resp)
+                                  nil)
 
                               ((assoc :result debug-resp)
                                   (let* ((result (cdr (assoc :result debug-resp))))
                                       (when result
-                                            (setf restart-ndx (cdr (assoc :index result)))))))
+                                            (setf restart-ndx (cdr (assoc :index result)))
+                                            nil))))
                     (state:lock (mutex)
                         (setf received T)
                         (bt:condition-notify cond-var)))))
@@ -145,5 +148,6 @@
     (thread-utils:spawn-thread (next-thread-name method-name)
         (state:with-thread-msg ((cdr (assoc :id msg)))
             (unwind-protect
-                    (run-with-debugger fn)
-                (state:rem-thread-msg)))))
+                    (progn (refresh:send)
+                           (run-with-debugger fn))
+                (refresh:send)))))

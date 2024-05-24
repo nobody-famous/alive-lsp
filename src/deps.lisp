@@ -25,7 +25,7 @@
 
 (declaim (ftype (function (&key (:msg-handler (function (cons) (values (or null hash-table) &optional)))
                                 (:send-msg (function (cons) null))
-                                (:send-request (function (cons) hash-table))
+                                (:send-request (function (hash-table) cons))
                                 (:read-msg (function () (values (or null cons) &optional)))
                                 (:eval-fn (function (stream) *)))
                           deps) create))
@@ -59,7 +59,7 @@
     (funcall (deps-send-msg *deps*) msg))
 
 
-(declaim (ftype (function (cons) (values hash-table &optional)) send-request))
+(declaim (ftype (function (hash-table) (values cons &optional)) send-request))
 (defun send-request (msg)
     (unless *deps* (error "Dependencies not set"))
     (unless (deps-send-request *deps*) (error "Dependencies send-request not set"))

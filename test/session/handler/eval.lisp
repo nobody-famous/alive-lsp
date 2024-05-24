@@ -10,7 +10,10 @@
 
 (defun run-test (msg)
     (let ((msg-sent nil))
-        (deps:with-deps (deps:create :send-msg (lambda (msg)
+        (deps:with-deps (deps:create :send-request (lambda (req)
+                                                       (declare (ignore req))
+                                                       (list (cons :id 5)))
+                                     :send-msg (lambda (msg)
                                                    (let* ((id (gethash "id" msg))
                                                           (fn (when id (state:get-sent-msg-callback id))))
                                                        (setf msg-sent T)

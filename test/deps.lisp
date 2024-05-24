@@ -42,13 +42,14 @@
 
 (defun test-send-request ()
     (clue:test "Send request"
-        (clue:expect-fail (lambda () (deps:send-request (list (cons :id 5)))))
+        (clue:expect-fail (lambda () (deps:send-request (make-hash-table))))
         (deps:with-deps (deps:create)
-            (clue:expect-fail (lambda () (deps:send-request (list (cons :id 5))))))
+            (clue:expect-fail (lambda () (deps:send-request (make-hash-table)))))
         (deps:with-deps (deps:create :send-request (lambda (msg)
-                                                       (lsp-msg:create-response (cdr (assoc :id msg)) :result-value "foo")))
+                                                       (declare (ignore msg))
+                                                       (list (cons :result "foo"))))
             (clue:check-equal :expected "foo"
-                              :actual (gethash "result" (deps:send-request (list (cons :id 5))))))))
+                              :actual (cdr (assoc :result (deps:send-request (make-hash-table))))))))
 
 
 (defun test-do-eval ()

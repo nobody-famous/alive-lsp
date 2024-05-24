@@ -80,6 +80,7 @@
                                        (:file "session/handler/init")
                                        (:file "session/handler/form-bounds")
                                        (:file "session/handler/packages")
+                                       (:file "session/refresh")
                                        (:file "session/threads")
                                        (:file "session/handler/eval")
                                        (:file "session/message")

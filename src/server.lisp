@@ -101,16 +101,15 @@
               (force-output (context:get-output-stream)))))
 
 
-(declaim (ftype (function (cons) hash-table) send-request))
-(defun send-request (msg)
-    (let ((send-id (state:next-send-id))
-          (cond-var (bt:make-condition-variable))
+(declaim (ftype (function (hash-table) cons) send-request))
+(defun send-request (req)
+    (let ((cond-var (bt:make-condition-variable))
           (response nil))
-        (state:set-sent-msg-callback send-id
+        (state:set-sent-msg-callback (gethash "id" req)
                                      (lambda (resp)
                                          (setf response resp)
                                          (bt:condition-notify cond-var)))
-        (send-msg msg)
+        (send-msg req)
 
         (state:lock (mutex)
             (unless response

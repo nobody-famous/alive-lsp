@@ -105,7 +105,7 @@
     (gethash id (state-sent-msg-callbacks *state*)))
 
 
-(declaim (ftype (function (fixnum (function (cons) hash-table)) null) set-sent-msg-callback))
+(declaim (ftype (function (fixnum (function (cons) (or null hash-table))) null) set-sent-msg-callback))
 (defun set-sent-msg-callback (id cb)
     (unless *state* (error "State not set"))
     (setf (gethash id (state-sent-msg-callbacks *state*)) cb)
