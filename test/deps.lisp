@@ -43,10 +43,22 @@
 (defun test-send-request ()
     (clue:test "Send request"
         (clue:expect-fail (lambda () (deps:send-request (list (cons :id 5)))))
+        (deps:with-deps (deps:create)
+            (clue:expect-fail (lambda () (deps:send-request (list (cons :id 5))))))
         (deps:with-deps (deps:create :send-request (lambda (msg)
                                                        (lsp-msg:create-response (cdr (assoc :id msg)) :result-value "foo")))
             (clue:check-equal :expected "foo"
                               :actual (gethash "result" (deps:send-request (list (cons :id 5))))))))
+
+
+(defun test-do-eval ()
+    (clue:test "Eval"
+        (clue:expect-fail (lambda () (deps:do-eval "")))
+        (deps:with-deps (deps:create)
+            (clue:expect-fail (lambda () (deps:do-eval ""))))
+        (deps:with-deps (deps:create :eval-fn (lambda (data) data))
+            (clue:check-equal :expected "foo"
+                              :actual (deps:do-eval "foo")))))
 
 
 (defun run-all ()
@@ -54,4 +66,5 @@
         (test-msg-handler)
         (test-read-msg)
         (test-send-msg)
-        (test-send-request)))
+        (test-send-request)
+        (test-do-eval)))
