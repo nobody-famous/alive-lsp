@@ -67,24 +67,28 @@
                                        (cons "$/alive/listPackages" #'alive/session/handler/packages:list-all)
                                        (cons "$/alive/removePackage" #'alive/session/handler/packages:remove-pkg)
 
+                                       #+n (cons "$/alive/listThreads" 'handle-list-threads)
+                                       #+n (cons "$/alive/killThread" 'handle-kill-thread)
+
+                                       #+n (cons "$/alive/listAsdfSystems" 'handle-list-asdf)
+                                       #+n (cons "$/alive/loadAsdfSystem" 'handle-load-asdf)
+
                                        #+n (cons "$/alive/compile" 'handle-compile)
+                                       #+n (cons "$/alive/loadFile" 'handle-load-file)
                                        #+n (cons "$/alive/tryCompile" 'handle-try-compile)
+
+                                       #+n (cons "$/alive/macroexpand" 'handle-macroexpand)
+                                       #+n (cons "$/alive/macroexpand1" 'handle-macroexpand-1)
+
+                                       #+n (cons "$/alive/symbol" 'handle-symbol)
+                                       #+n (cons "$/alive/unexportSymbol" 'handle-unexport)
 
                                        #+n (cons "$/alive/inspect" 'handle-inspect)
                                        #+n (cons "$/alive/inspectClose" 'handle-inspect-close)
                                        #+n (cons "$/alive/inspectEval" 'handle-inspect-eval)
                                        #+n (cons "$/alive/inspectMacro" 'handle-inspect-macro)
                                        #+n (cons "$/alive/inspectRefresh" 'handle-inspect-refresh)
-                                       #+n (cons "$/alive/inspectSymbol" 'handle-inspect-sym)
-                                       #+n (cons "$/alive/killThread" 'handle-kill-thread)
-                                       #+n (cons "$/alive/listAsdfSystems" 'handle-list-asdf)
-                                       #+n (cons "$/alive/listThreads" 'handle-list-threads)
-                                       #+n (cons "$/alive/loadFile" 'handle-load-file)
-                                       #+n (cons "$/alive/loadAsdfSystem" 'handle-load-asdf)
-                                       #+n (cons "$/alive/macroexpand" 'handle-macroexpand)
-                                       #+n (cons "$/alive/macroexpand1" 'handle-macroexpand-1)
-                                       #+n (cons "$/alive/symbol" 'handle-symbol)
-                                       #+n (cons "$/alive/unexportSymbol" 'handle-unexport)))
+                                       #+n (cons "$/alive/inspectSymbol" 'handle-inspect-sym)))
 
 
 (declaim (ftype (function () (or null cons)) read-msg))
