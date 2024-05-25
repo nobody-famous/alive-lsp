@@ -107,8 +107,9 @@
           (response nil))
         (state:set-sent-msg-callback (gethash "id" req)
                                      (lambda (resp)
-                                         (setf response resp)
-                                         (bt:condition-notify cond-var)))
+                                         (state:lock (mutex)
+                                             (setf response resp)
+                                             (bt:condition-notify cond-var))))
         (send-msg req)
 
         (state:lock (mutex)
