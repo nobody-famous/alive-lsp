@@ -121,6 +121,7 @@
                                        (:file "session/handler/utils")
                                        (:file "session/message")
                                        (:file "session/message-loop")
+                                       (:file "session/refresh")
                                        (:file "session/state")
                                        (:file "session/threads")
 

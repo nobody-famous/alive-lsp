@@ -40,6 +40,7 @@
         (alive/test/session/handler/utils:run-all)
         (alive/test/session/message:run-all)
         (alive/test/session/message-loop:run-all)
+        (alive/test/session/refresh:run-all)
         (alive/test/session/state:run-all)
         (alive/test/session/threads:run-all)
         (alive/test/selection:run-all)
