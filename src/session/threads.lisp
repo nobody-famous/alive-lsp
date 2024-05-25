@@ -16,37 +16,17 @@
 (in-package :alive/session/threads)
 
 
-(declaim (ftype (function () string) wait-for-input))
+(declaim (ftype (function () (values (or null string) &optional)) wait-for-input))
 (defun wait-for-input ()
-    (let ((send-id (state:next-send-id))
-          (cond-var (bt:make-condition-variable))
-          (text nil)
-          (received nil))
+    (let ((input-resp (deps:send-request (lsp-msg:create-request (state:next-send-id) "$/alive/userInput"))))
 
-        (state:set-sent-msg-callback
-            send-id
-            (lambda (input-resp)
-                (unwind-protect
-                        (cond ((assoc :error input-resp)
-                                  (logger:error-msg "Input Error ~A" input-resp))
+        (cond ((assoc :error input-resp)
+                  (logger:error-msg "Input Error ~A" input-resp))
 
-                              ((assoc :result input-resp)
-                                  (let* ((result (cdr (assoc :result input-resp)))
-                                         (text-result (if result
-                                                          (cdr (assoc :text result))
-                                                          "")))
-                                      (setf text text-result))))
-                    (state:lock (mutex)
-                        (setf received T)
-                        (bt:condition-notify cond-var)))))
-
-        (deps:send-msg (lsp-msg:create-request send-id "$/alive/userInput"))
-
-        (state:lock (mutex)
-            (unless received
-                (bt:condition-wait cond-var mutex)))
-
-        text))
+              ((assoc :result input-resp)
+                  (let* ((result (cdr (assoc :result input-resp))))
+                      (or (cdr (assoc :text result))
+                          ""))))))
 
 
 (declaim (ftype (function ((or null string)) (or null stream)) get-frame-text-stream))
@@ -75,38 +55,17 @@
 
 (declaim (ftype (function (condition cons cons)) wait-for-debug))
 (defun wait-for-debug (err restarts frames)
-    (let ((send-id (state:next-send-id))
-          (cond-var (bt:make-condition-variable))
-          (restart-ndx nil)
-          (received nil))
+    (let ((debug-resp (deps:send-request (req:debugger (state:next-send-id)
+                                                       :message (princ-to-string err)
+                                                       :restarts restarts
+                                                       :stack-trace (mapcar #'frame-to-wire frames)))))
 
-        (state:set-sent-msg-callback
-            send-id
-            (lambda (debug-resp)
-                (unwind-protect
-                        (cond ((assoc :error debug-resp)
-                                  (logger:error-msg "Debugger Error ~A" debug-resp)
-                                  nil)
+        (cond ((assoc :error debug-resp)
+                  (logger:error-msg "Debugger Error ~A" debug-resp))
 
-                              ((assoc :result debug-resp)
-                                  (let* ((result (cdr (assoc :result debug-resp))))
-                                      (when result
-                                            (setf restart-ndx (cdr (assoc :index result)))
-                                            nil))))
-                    (state:lock (mutex)
-                        (setf received T)
-                        (bt:condition-notify cond-var)))))
-
-        (deps:send-msg (req:debugger send-id
-                                     :message (princ-to-string err)
-                                     :restarts restarts
-                                     :stack-trace (mapcar #'frame-to-wire frames)))
-
-        (state:lock (mutex)
-            (unless received
-                (bt:condition-wait cond-var mutex)))
-
-        restart-ndx))
+              ((assoc :result debug-resp)
+                  (let* ((result (cdr (assoc :result debug-resp))))
+                      (cdr (assoc :index result)))))))
 
 
 (declaim (ftype (function (condition cons) null) start-debugger))
