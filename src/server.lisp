@@ -67,7 +67,7 @@
                                        (cons "$/alive/listPackages" #'alive/session/handler/packages:list-all)
                                        (cons "$/alive/removePackage" #'alive/session/handler/packages:remove-pkg)
 
-                                       #+n (cons "$/alive/listThreads" 'handle-list-threads)
+                                       (cons "$/alive/listThreads" #'alive/session/handler/threads:list-all)
                                        #+n (cons "$/alive/killThread" 'handle-kill-thread)
 
                                        #+n (cons "$/alive/listAsdfSystems" 'handle-list-asdf)
