@@ -123,6 +123,28 @@
         response))
 
 
+(defun get-thread-id (thread)
+    #+sbcl (alive/sbcl/threads:get-thread-id thread))
+
+
+(defun list-all-threads ()
+    (mapcar (lambda (thread)
+                (list (cons :id (get-thread-id thread))
+                      (cons :name (bt:thread-name thread))))
+            (bt:all-threads)))
+
+
+(defun find-by-id (thread-id)
+    (find-if (lambda (thread) (equalp thread-id (get-thread-id thread)))
+            (bt:all-threads)))
+
+
+(defun kill-thread (thread-id)
+    (let ((thread (find-by-id thread-id)))
+        (when thread
+              (bt:destroy-thread thread))))
+
+
 (declaim (ftype (function (stream) *) eval-fn))
 (defun eval-fn (input)
     (eval (read input)))
@@ -139,6 +161,9 @@
                  :send-msg #'send-msg
                  :send-request #'send-request
                  :read-msg #'read-msg
+                 :list-all-threads #'list-all-threads
+                 :kill-thread #'kill-thread
+                 :get-thread-id #'get-thread-id
                  :eval-fn #'eval-fn))
 
 

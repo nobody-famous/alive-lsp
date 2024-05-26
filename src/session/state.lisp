@@ -9,6 +9,7 @@
              :get-history-item
              :get-inspector
              :get-sent-msg-callback
+             :get-thread-msg
              :initialized
              :listener
              :listeners
@@ -205,6 +206,14 @@
 
         (bt:with-recursive-lock-held ((state-lock *state*))
             (setf (gethash thread-id table) id))))
+
+
+(declaim (ftype (function (integer) (or null integer)) get-thread-msg))
+(defun get-thread-msg (thread-id)
+    (let ((table (state-thread-msgs *state*)))
+
+        (bt:with-recursive-lock-held ((state-lock *state*))
+            (gethash thread-id table))))
 
 
 (declaim (ftype (function () boolean) rem-thread-msg))
