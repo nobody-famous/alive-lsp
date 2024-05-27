@@ -4,8 +4,9 @@
              :deps
              :do-eval
              :get-thread-id
-             :list-all-threads
              :kill-thread
+             :list-all-threads
+             :list-all-asdf
              :msg-handler
              :read-msg
              :send-msg
@@ -26,6 +27,7 @@
     (eval-fn nil :type (or null (function (T) *)))
     (list-all-threads nil :type (or null (function () cons)))
     (kill-thread nil :type (or null (function (T) *)))
+    (list-all-asdf nil :type (or null (function () cons)))
     (get-thread-id nil :type (or null (function (bt:thread) *))))
 
 
@@ -35,16 +37,18 @@
                                 (:read-msg (function () (values (or null cons) &optional)))
                                 (:list-all-threads (function () cons))
                                 (:kill-thread (function (T) *))
+                                (:list-all-asdf (function () cons))
                                 (:get-thread-id (function (bt:thread) *))
                                 (:eval-fn (function (stream) *)))
                           deps) create))
-(defun create (&key msg-handler send-msg send-request read-msg list-all-threads kill-thread get-thread-id eval-fn)
+(defun create (&key msg-handler send-msg send-request read-msg list-all-threads kill-thread list-all-asdf get-thread-id eval-fn)
     (make-deps :msg-handler msg-handler
                :send-msg send-msg
                :send-request send-request
                :read-msg read-msg
                :list-all-threads list-all-threads
                :kill-thread kill-thread
+               :list-all-asdf list-all-asdf
                :get-thread-id get-thread-id
                :eval-fn eval-fn))
 
@@ -101,6 +105,14 @@
     (unless (deps-get-thread-id *deps*) (error "Dependencies get-thread-id not set"))
 
     (funcall (deps-get-thread-id *deps*) thread))
+
+
+(declaim (ftype (function () (values cons &optional)) list-all-asdf))
+(defun list-all-asdf ()
+    (unless *deps* (error "Dependencies not set"))
+    (unless (deps-list-all-asdf *deps*) (error "Dependencies list-all-asdf not set"))
+
+    (funcall (deps-list-all-asdf *deps*)))
 
 
 (declaim (ftype (function (T) *) do-eval))

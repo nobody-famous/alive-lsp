@@ -70,7 +70,7 @@
                                        (cons "$/alive/listThreads" #'alive/session/handler/threads:list-all)
                                        (cons "$/alive/killThread" #'alive/session/handler/threads:kill)
 
-                                       #+n (cons "$/alive/listAsdfSystems" 'handle-list-asdf)
+                                       (cons "$/alive/listAsdfSystems" #'alive/session/handler/asdf:list-all)
                                        #+n (cons "$/alive/loadAsdfSystem" 'handle-load-asdf)
 
                                        #+n (cons "$/alive/compile" 'handle-compile)
@@ -145,6 +145,10 @@
               (bt:destroy-thread thread))))
 
 
+(defun list-all-asdf ()
+    (mapcar #'string-downcase (asdf:registered-systems)))
+
+
 (declaim (ftype (function (stream) *) eval-fn))
 (defun eval-fn (input)
     (eval (read input)))
@@ -163,6 +167,7 @@
                  :read-msg #'read-msg
                  :list-all-threads #'list-all-threads
                  :kill-thread #'kill-thread
+                 :list-all-asdf #'list-all-asdf
                  :get-thread-id #'get-thread-id
                  :eval-fn #'eval-fn))
 
@@ -198,8 +203,8 @@
 
     (when (and (running *server*)
                (usocket::state (socket *server*)))
-          (new-accept-conn)
-          #+n (accept-conn)))
+          #+n (new-accept-conn)
+          (accept-conn)))
 
 
 (defun wake-up-accept ()
