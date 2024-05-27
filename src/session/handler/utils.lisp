@@ -1,7 +1,6 @@
 (defpackage :alive/session/handler/utils
     (:use :cl)
-    (:export :result
-             :run-in-thread)
+    (:export :result)
     (:local-nicknames (:lsp-msg :alive/lsp/message/abstract)
                       (:state :alive/session/state)))
 

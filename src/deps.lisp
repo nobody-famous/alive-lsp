@@ -7,6 +7,7 @@
              :kill-thread
              :list-all-threads
              :list-all-asdf
+             :load-asdf-system
              :msg-handler
              :read-msg
              :send-msg
@@ -28,6 +29,7 @@
     (list-all-threads nil :type (or null (function () cons)))
     (kill-thread nil :type (or null (function (T) *)))
     (list-all-asdf nil :type (or null (function () cons)))
+    (load-asdf-system nil :type (or null (function (&key (:name string) (:stdin-fn function) (:stdout-fn function) (:stderr-fn function) (:force boolean)) boolean)))
     (get-thread-id nil :type (or null (function (bt:thread) *))))
 
 
@@ -38,10 +40,11 @@
                                 (:list-all-threads (function () cons))
                                 (:kill-thread (function (T) *))
                                 (:list-all-asdf (function () cons))
+                                (:load-asdf-system (function (&key (:name string) (:stdin-fn function) (:stdout-fn function) (:stderr-fn function) (:force boolean)) boolean))
                                 (:get-thread-id (function (bt:thread) *))
                                 (:eval-fn (function (stream) *)))
                           deps) create))
-(defun create (&key msg-handler send-msg send-request read-msg list-all-threads kill-thread list-all-asdf get-thread-id eval-fn)
+(defun create (&key msg-handler send-msg send-request read-msg list-all-threads kill-thread list-all-asdf load-asdf-system get-thread-id eval-fn)
     (make-deps :msg-handler msg-handler
                :send-msg send-msg
                :send-request send-request
@@ -49,6 +52,7 @@
                :list-all-threads list-all-threads
                :kill-thread kill-thread
                :list-all-asdf list-all-asdf
+               :load-asdf-system load-asdf-system
                :get-thread-id get-thread-id
                :eval-fn eval-fn))
 
@@ -113,6 +117,19 @@
     (unless (deps-list-all-asdf *deps*) (error "Dependencies list-all-asdf not set"))
 
     (funcall (deps-list-all-asdf *deps*)))
+
+
+(declaim (ftype (function (&key (:name string) (:stdin-fn function) (:stdout-fn function) (:stderr-fn function) (:force boolean)) (values boolean &optional)) load-asdf-system))
+(defun load-asdf-system (&key name stdin-fn stdout-fn stderr-fn force)
+    (unless *deps* (error "Dependencies not set"))
+    (unless (deps-load-asdf-system *deps*) (error "Dependencies load-asdf-system not set"))
+
+    (funcall (deps-load-asdf-system *deps*)
+        :name name
+        :stdin-fn stdin-fn
+        :stdout-fn stdout-fn
+        :stderr-fn stderr-fn
+        :force force))
 
 
 (declaim (ftype (function (T) *) do-eval))

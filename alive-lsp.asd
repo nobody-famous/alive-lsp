@@ -76,7 +76,6 @@
                                        (:file "thread-utils")
 
                                        (:file "session/handler/utils")
-                                       (:file "session/handler/asdf")
                                        (:file "session/handler/document")
                                        (:file "session/handler/init")
                                        (:file "session/handler/form-bounds")
@@ -84,6 +83,7 @@
                                        (:file "session/refresh")
                                        (:file "session/handler/threads")
                                        (:file "session/threads")
+                                       (:file "session/handler/asdf")
                                        (:file "session/handler/eval")
                                        (:file "session/message")
                                        (:file "session/message-loop")

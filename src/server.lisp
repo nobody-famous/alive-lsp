@@ -3,7 +3,8 @@
     (:export :stop
              :start)
 
-    (:local-nicknames (:context :alive/context)
+    (:local-nicknames (:astreams :alive/streams)
+                      (:context :alive/context)
                       (:deps :alive/deps)
                       (:handlers :alive/session/handlers)
                       (:logger :alive/logger)
@@ -71,7 +72,7 @@
                                        (cons "$/alive/killThread" #'alive/session/handler/threads:kill)
 
                                        (cons "$/alive/listAsdfSystems" #'alive/session/handler/asdf:list-all)
-                                       #+n (cons "$/alive/loadAsdfSystem" 'handle-load-asdf)
+                                       (cons "$/alive/loadAsdfSystem" #'alive/session/handler/asdf:load-system)
 
                                        #+n (cons "$/alive/compile" 'handle-compile)
                                        #+n (cons "$/alive/loadFile" 'handle-load-file)
@@ -149,6 +150,11 @@
     (mapcar #'string-downcase (asdf:registered-systems)))
 
 
+(defun load-asdf-system (&key name stdin-fn stdout-fn stderr-fn force)
+    (astreams:with-redirect-streams (:stdin-fn stdin-fn :stdout-fn stdout-fn :stderr-fn stderr-fn)
+        (asdf:load-system name :force force)))
+
+
 (declaim (ftype (function (stream) *) eval-fn))
 (defun eval-fn (input)
     (eval (read input)))
@@ -168,6 +174,7 @@
                  :list-all-threads #'list-all-threads
                  :kill-thread #'kill-thread
                  :list-all-asdf #'list-all-asdf
+                 :load-asdf-system #'load-asdf-system
                  :get-thread-id #'get-thread-id
                  :eval-fn #'eval-fn))
 
@@ -203,8 +210,8 @@
 
     (when (and (running *server*)
                (usocket::state (socket *server*)))
-          #+n (new-accept-conn)
-          (accept-conn)))
+          (new-accept-conn)
+          #+n (accept-conn)))
 
 
 (defun wake-up-accept ()
