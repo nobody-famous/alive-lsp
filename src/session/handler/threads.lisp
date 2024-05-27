@@ -23,7 +23,7 @@
             (utils:result (cdr (assoc :id msg)) "threads" threads))))
 
 
-(declaim (ftype (function (integer)) cancel-thread))
+(declaim (ftype (function (T)) cancel-thread))
 (defun cancel-thread (thread-id)
     (let ((msg-id (state:get-thread-msg thread-id)))
         (when msg-id

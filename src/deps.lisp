@@ -25,8 +25,8 @@
     (send-request nil :type (or null (function (cons) hash-table)))
     (eval-fn nil :type (or null (function (T) *)))
     (list-all-threads nil :type (or null (function () cons)))
-    (kill-thread nil :type (or null (function (integer) *)))
-    (get-thread-id nil :type (or null (function (bt:thread) integer))))
+    (kill-thread nil :type (or null (function (T) *)))
+    (get-thread-id nil :type (or null (function (bt:thread) *))))
 
 
 (declaim (ftype (function (&key (:msg-handler (function (cons) (values (or null hash-table) &optional)))
@@ -34,8 +34,8 @@
                                 (:send-request (function (hash-table) cons))
                                 (:read-msg (function () (values (or null cons) &optional)))
                                 (:list-all-threads (function () cons))
-                                (:kill-thread (function (integer) *))
-                                (:get-thread-id (function (bt:thread) integer))
+                                (:kill-thread (function (T) *))
+                                (:get-thread-id (function (bt:thread) *))
                                 (:eval-fn (function (stream) *)))
                           deps) create))
 (defun create (&key msg-handler send-msg send-request read-msg list-all-threads kill-thread get-thread-id eval-fn)
@@ -87,7 +87,7 @@
     (funcall (deps-list-all-threads *deps*)))
 
 
-(declaim (ftype (function (integer) *) kill-thread))
+(declaim (ftype (function (T) *) kill-thread))
 (defun kill-thread (thread-id)
     (unless *deps* (error "Dependencies not set"))
     (unless (deps-kill-thread *deps*) (error "Dependencies kill-thread not set"))
@@ -95,7 +95,7 @@
     (funcall (deps-kill-thread *deps*) thread-id))
 
 
-(declaim (ftype (function (bt:thread) (values integer &optional)) get-thread-id))
+(declaim (ftype (function (bt:thread) *) get-thread-id))
 (defun get-thread-id (thread)
     (unless *deps* (error "Dependencies not set"))
     (unless (deps-get-thread-id *deps*) (error "Dependencies get-thread-id not set"))

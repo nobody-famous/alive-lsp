@@ -68,7 +68,7 @@
                                        (cons "$/alive/removePackage" #'alive/session/handler/packages:remove-pkg)
 
                                        (cons "$/alive/listThreads" #'alive/session/handler/threads:list-all)
-                                       #+n (cons "$/alive/killThread" 'handle-kill-thread)
+                                       (cons "$/alive/killThread" #'alive/session/handler/threads:kill)
 
                                        #+n (cons "$/alive/listAsdfSystems" 'handle-list-asdf)
                                        #+n (cons "$/alive/loadAsdfSystem" 'handle-load-asdf)
@@ -198,8 +198,8 @@
 
     (when (and (running *server*)
                (usocket::state (socket *server*)))
-          #+n (new-accept-conn)
-          (accept-conn)))
+          (new-accept-conn)
+          #+n (accept-conn)))
 
 
 (defun wake-up-accept ()

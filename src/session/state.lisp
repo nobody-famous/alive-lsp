@@ -198,7 +198,7 @@
         (gethash id (state-inspectors *state*))))
 
 
-(declaim (ftype (function (integer)) save-thread-msg))
+(declaim (ftype (function (T)) save-thread-msg))
 (defun save-thread-msg (id)
     (let* ((table (state-thread-msgs *state*))
            (cur-thread (bt:current-thread))
@@ -208,7 +208,7 @@
             (setf (gethash thread-id table) id))))
 
 
-(declaim (ftype (function (integer) (or null integer)) get-thread-msg))
+(declaim (ftype (function (T) (or null integer)) get-thread-msg))
 (defun get-thread-msg (thread-id)
     (let ((table (state-thread-msgs *state*)))
 
