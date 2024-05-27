@@ -3,13 +3,17 @@
 
 (defun print-header (header)
     (let ((size (length header)))
-        (format T "~%~A~%~A~%~v@{~A~:*~}~%"
-            (format nil "~v@{~A~:*~}" size " ")
+        (format T "~A~A~%~A~v@{~A~:*~}~%"
+            (indent)
             header
+            (indent)
             size "-")))
 
 
 (defun print-footer (header results)
     (let ((size (length header)))
-        (format T "~v@{~A~:*~}~%" size "-")
-        (format T "Passed: ~A Failed: ~A~%" (test-results-passed results) (test-results-failed results))))
+        (format T "~A~v@{~A~:*~}~%" (indent) size "-")
+        (format T "~APassed: ~A Failed: ~A~%"
+            (indent)
+            (test-results-passed results)
+            (test-results-failed results))))
