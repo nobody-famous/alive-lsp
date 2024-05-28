@@ -32,7 +32,7 @@
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
            (name (cdr (assoc :name params)))
-           (thread (threads:run-in-thread (princ-to-string (state:next-thread-id))
+           (thread (threads:run-in-thread (cdr (assoc :method msg))
                                           msg
                                           (lambda ()
                                               (deps:load-asdf-system

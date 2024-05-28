@@ -20,7 +20,7 @@
     (:report (lambda (condition stream) (format stream "THREAD ~A" (thread condition)))))
 
 
-(declaim (ftype (function (cons) hash-table) process-eval))
+(declaim (ftype (function (cons) null) process-eval))
 (defun process-eval (msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
@@ -43,13 +43,13 @@
         (when (cdr (assoc :store-result params))
               (state:add-history result))
 
-        (handler-utils:result id "text" (format nil "~A" result))))
+        (deps:send-msg (handler-utils:result id "text" (format nil "~A" result)))))
 
 
 (declaim (ftype (function (cons) null) handle))
 (defun handle (msg)
-    (let ((thread (threads:run-in-thread (princ-to-string (cdr (assoc :id msg)))
+    (let ((thread (threads:run-in-thread (cdr (assoc :method msg))
                                          msg
                                          (lambda ()
-                                             (deps:send-msg (process-eval msg))))))
+                                             (process-eval msg)))))
         (signal (make-condition 'eval-thread-event :thread thread))))
