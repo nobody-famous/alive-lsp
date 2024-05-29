@@ -6,6 +6,10 @@
 (in-package :alive/test/session/handlers)
 
 
+(defun ignore-msg (msg)
+    (declare (ignore msg)))
+
+
 (defun test-types ()
     (clue:test "Types"
         (clue:check-equal :expected NIL
@@ -13,7 +17,7 @@
         (clue:check-equal :expected NIL
                           :actual (typep (list 5) 'handlers::list-of-handlers))
         (clue:check-equal :expected T
-                          :actual (typep (list (cons "foo" (lambda (msg) (declare (ignore msg))))) 'handlers::list-of-handlers))))
+                          :actual (typep (list (cons "foo" 'ignore-msg)) 'handlers::list-of-handlers))))
 
 
 (defun run-all ()

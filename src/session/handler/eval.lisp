@@ -48,7 +48,7 @@
 
 (declaim (ftype (function (cons) null) handle))
 (defun handle (msg)
-    (let ((thread (threads:run-in-thread (cdr (assoc :method msg))
+    (let ((thread (threads:run-in-thread (or (cdr (assoc :method msg)) "eval")
                                          msg
                                          (lambda ()
                                              (process-eval msg)))))

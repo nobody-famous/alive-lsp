@@ -11,7 +11,7 @@
 (defun handler-item-p (data)
     (and (consp data)
          (typep (car data) 'string)
-         (typep (cdr data) 'function)))
+         (typep (cdr data) 'symbol)))
 
 
 (declaim (ftype (function (T) boolean) list-of-handlers-p))
@@ -32,7 +32,7 @@
 (defparameter *handlers* nil)
 
 
-(declaim (ftype (function (string) (or null (function (cons) (or null hash-table)))) get-handler))
+(declaim (ftype (function (string) (or null symbol)) get-handler))
 (defun get-handler (name)
     (cdr (assoc name *handlers* :test #'string=)))
 
