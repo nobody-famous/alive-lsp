@@ -48,6 +48,10 @@
                                        (:file "selection")
                                        (:file "file-utils")
 
+                                       (:file "sys/asdf")
+                                       (:file "sys/eval")
+                                       (:file "sys/threads")
+
                                        (:file "lsp/types/config-item")
                                        (:file "lsp/types/sem-tokens")
                                        (:file "lsp/types/format-options")
@@ -73,23 +77,23 @@
 
                                        (:file "session/state")
                                        (:file "session/handlers")
-                                       (:file "thread-utils")
+                                       (:file "session/spawn")
+                                       (:file "session/refresh")
+                                       (:file "session/threads")
+                                       (:file "session/transport")
 
                                        (:file "session/handler/utils")
                                        (:file "session/handler/document")
                                        (:file "session/handler/init")
                                        (:file "session/handler/form-bounds")
                                        (:file "session/handler/packages")
-                                       (:file "session/refresh")
                                        (:file "session/handler/threads")
-                                       (:file "session/threads")
                                        (:file "session/handler/asdf")
                                        (:file "session/handler/eval")
                                        (:file "session/message")
                                        (:file "session/message-loop")
+                                       (:file "thread-utils")
                                        (:file "session")
-
-                                       (:file "sys/asdf")
 
                                        (:file "server")))))
 

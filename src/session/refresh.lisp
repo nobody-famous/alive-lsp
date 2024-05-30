@@ -6,13 +6,13 @@
                       (:lsp-msg :alive/lsp/message/abstract)
                       (:notification :alive/lsp/message/notification)
                       (:state :alive/session/state)
-                      (:thread-utils :alive/thread-utils)))
+                      (:spawn :alive/session/spawn)))
 
 (in-package :alive/session/refresh)
 
 
 (defun send ()
-    (thread-utils:spawn-thread "Refresh Thread"
+    (spawn:new-thread "Refresh Thread"
         (let* ((send-id (state:next-send-id))
                (response (deps:send-request (lsp-msg:create-request send-id "workspace/semanticTokens/refresh"))))
             (when (assoc :error response)

@@ -11,7 +11,7 @@
                       (:req :alive/lsp/message/request)
                       (:restart-info :alive/lsp/types/restart-info)
                       (:state :alive/session/state)
-                      (:thread-utils :alive/thread-utils)))
+                      (:spawn :alive/session/spawn)))
 
 (in-package :alive/session/threads)
 
@@ -104,7 +104,7 @@
 
 (declaim (ftype (function (string cons function) bt:thread) run-in-thread))
 (defun run-in-thread (method-name msg fn)
-    (thread-utils:spawn-thread (next-thread-name method-name)
+    (spawn:new-thread (next-thread-name method-name)
         (state:with-thread-msg ((cdr (assoc :id msg)))
             (unwind-protect
                     (progn (refresh:send)

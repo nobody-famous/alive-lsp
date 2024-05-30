@@ -3,13 +3,11 @@
     (:export :stop
              :start)
 
-    (:local-nicknames (:astreams :alive/streams)
-                      (:context :alive/context)
+    (:local-nicknames (:context :alive/context)
                       (:deps :alive/deps)
                       (:handlers :alive/session/handlers)
                       (:logger :alive/logger)
                       (:packet :alive/lsp/packet)
-                      (:parse :alive/lsp/parse)
                       (:session :alive/session)
                       (:state :alive/session/state)))
 
@@ -74,9 +72,9 @@
                                        (cons "$/alive/listAsdfSystems" (lambda (msg) (alive/session/handler/asdf:list-all msg)))
                                        (cons "$/alive/loadAsdfSystem" (lambda (msg) (alive/session/handler/asdf:load-system msg)))
 
+                                       #+n (cons "$/alive/tryCompile" (lambda (msg) (handle-try-compile msg)))
                                        #+n (cons "$/alive/compile" (lambda (msg) (handle-compile msg)))
                                        #+n (cons "$/alive/loadFile" (lambda (msg) (handle-load-file msg)))
-                                       #+n (cons "$/alive/tryCompile" (lambda (msg) (handle-try-compile msg)))
 
                                        #+n (cons "$/alive/macroexpand" (lambda (msg) (handle-macroexpand msg)))
                                        #+n (cons "$/alive/macroexpand1" (lambda (msg) (handle-macroexpand-1 msg)))
@@ -92,70 +90,6 @@
                                        #+n (cons "$/alive/inspectSymbol" (lambda (msg) (handle-inspect-sym msg)))))
 
 
-(declaim (ftype (function () (or null cons)) read-msg))
-(defun read-msg ()
-    (parse:from-stream (context:get-input-stream)))
-
-
-(declaim (ftype (function (T)) send-msg))
-(defun send-msg (msg)
-    (state:lock (mutex)
-        (when (and (hash-table-p msg)
-                   (gethash "jsonrpc" msg))
-              (write-sequence (packet:to-wire msg) (context:get-output-stream))
-              (force-output (context:get-output-stream)))))
-
-
-(declaim (ftype (function (hash-table) cons) send-request))
-(defun send-request (req)
-    (let ((cond-var (bt:make-condition-variable))
-          (response nil))
-        (state:set-sent-msg-callback (gethash "id" req)
-                                     (lambda (resp)
-                                         (state:lock (mutex)
-                                             (setf response resp)
-                                             (bt:condition-notify cond-var))))
-        (send-msg req)
-
-        (state:lock (mutex)
-            (unless response
-                (bt:condition-wait cond-var mutex)))
-
-        response))
-
-
-(defun get-thread-id (thread)
-    #+sbcl (alive/sbcl/threads:get-thread-id thread))
-
-
-(defun list-all-threads ()
-    (mapcar (lambda (thread)
-                (list (cons :id (get-thread-id thread))
-                      (cons :name (bt:thread-name thread))))
-            (bt:all-threads)))
-
-
-(defun find-by-id (thread-id)
-    (find-if (lambda (thread) (equalp thread-id (get-thread-id thread)))
-            (bt:all-threads)))
-
-
-(defun kill-thread (thread-id)
-    (let ((thread (find-by-id thread-id)))
-        (when thread
-              (bt:destroy-thread thread))))
-
-
-(defun load-asdf-system (&key name stdin-fn stdout-fn stderr-fn force)
-    (astreams:with-redirect-streams (:stdin-fn stdin-fn :stdout-fn stdout-fn :stderr-fn stderr-fn)
-        (asdf:load-system name :force force)))
-
-
-(declaim (ftype (function (stream) *) eval-fn))
-(defun eval-fn (input)
-    (eval (read input)))
-
-
 (declaim (ftype (function () state:state) create-session-state))
 (defun create-session-state ()
     (state:create))
@@ -164,15 +98,15 @@
 (declaim (ftype (function () deps:deps) create-deps))
 (defun create-deps ()
     (deps:create :msg-handler (lambda (msg) (alive/session/message:handle msg))
-                 :send-msg (lambda (msg) (send-msg msg))
-                 :send-request (lambda (req) (send-request req))
-                 :read-msg (lambda () (read-msg))
-                 :list-all-threads (lambda () (list-all-threads))
-                 :kill-thread (lambda (id) (kill-thread id))
+                 :send-msg (lambda (msg) (alive/session/transport:send-msg msg))
+                 :send-request (lambda (req) (alive/session/transport:send-request req))
+                 :read-msg (lambda () (alive/session/transport:read-msg))
+                 :list-all-threads (lambda () (alive/sys/threads:list-all))
+                 :kill-thread (lambda (id) (alive/sys/threads:kill id))
                  :list-all-asdf (lambda () (alive/sys/asdf:list-all))
-                 :load-asdf-system (lambda (&rest args) (apply 'load-asdf-system args))
-                 :get-thread-id (lambda (thread) (get-thread-id thread))
-                 :eval-fn (lambda (arg) (eval-fn arg))))
+                 :load-asdf-system (lambda (&rest args) (apply 'alive/sys/asdf:load-system args))
+                 :get-thread-id (lambda (thread) (alive/sys/threads:get-id thread))
+                 :eval-fn (lambda (arg) (alive/sys/eval:eval-fn arg))))
 
 
 (defun new-accept-conn ()
