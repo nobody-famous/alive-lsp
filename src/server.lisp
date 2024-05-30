@@ -41,55 +41,55 @@
 
 
 (declaim (type (or null alive/session/handlers:list-of-handlers) *message-handlers*))
-(defparameter *message-handlers* (list (cons "initialize" 'alive/session/handler/init:request)
-                                       (cons "initialized" 'alive/session/handler/init:initialized)
+(defparameter *message-handlers* (list (cons "initialize" (lambda (msg) (alive/session/handler/init:request msg)))
+                                       (cons "initialized" (lambda (msg) (alive/session/handler/init:initialized msg)))
 
-                                       (cons "textDocument/completion" 'alive/session/handler/document:completion)
-                                       (cons "textDocument/definition" 'alive/session/handler/document:definition)
-                                       (cons "textDocument/didChange" 'alive/session/handler/document:did-change)
-                                       (cons "textDocument/didClose" 'ignore-msg)
-                                       (cons "textDocument/didOpen" 'alive/session/handler/document:did-open)
-                                       (cons "textDocument/didSave" 'ignore-msg)
-                                       (cons "textDocument/documentSymbol" 'alive/session/handler/document:doc-symbols)
-                                       (cons "textDocument/hover" 'alive/session/handler/document:hover)
-                                       (cons "textDocument/onTypeFormatting" 'alive/session/handler/document:on-type)
-                                       (cons "textDocument/rangeFormatting" 'alive/session/handler/document:formatting)
-                                       (cons "textDocument/selectionRange" 'alive/session/handler/document:selection)
-                                       (cons "textDocument/semanticTokens/full" 'alive/session/handler/document:sem-tokens)
+                                       (cons "textDocument/completion" (lambda (msg) (alive/session/handler/document:completion msg)))
+                                       (cons "textDocument/definition" (lambda (msg) (alive/session/handler/document:definition msg)))
+                                       (cons "textDocument/didChange" (lambda (msg) (alive/session/handler/document:did-change msg)))
+                                       (cons "textDocument/didClose" (lambda (msg) (ignore-msg msg)))
+                                       (cons "textDocument/didOpen" (lambda (msg) (alive/session/handler/document:did-open msg)))
+                                       (cons "textDocument/didSave" (lambda (msg) (ignore-msg msg)))
+                                       (cons "textDocument/documentSymbol" (lambda (msg) (alive/session/handler/document:doc-symbols msg)))
+                                       (cons "textDocument/hover" (lambda (msg) (alive/session/handler/document:hover msg)))
+                                       (cons "textDocument/onTypeFormatting" (lambda (msg) (alive/session/handler/document:on-type msg)))
+                                       (cons "textDocument/rangeFormatting" (lambda (msg) (alive/session/handler/document:formatting msg)))
+                                       (cons "textDocument/selectionRange" (lambda (msg) (alive/session/handler/document:selection msg)))
+                                       (cons "textDocument/semanticTokens/full" (lambda (msg) (alive/session/handler/document:sem-tokens msg)))
 
-                                       (cons "$/setTrace" 'ignore-msg)
-                                       (cons "$/cancelRequest" 'ignore-msg)
+                                       (cons "$/setTrace" (lambda (msg) (ignore-msg msg)))
+                                       (cons "$/cancelRequest" (lambda (msg) (ignore-msg msg)))
 
-                                       (cons "$/alive/eval" 'alive/session/handler/eval:handle)
-                                       (cons "$/alive/topFormBounds" 'alive/session/handler/form-bounds:top-form)
-                                       (cons "$/alive/surroundingFormBounds" 'alive/session/handler/form-bounds:surrounding-form)
+                                       (cons "$/alive/eval" (lambda (msg) (alive/session/handler/eval:handle msg)))
+                                       (cons "$/alive/topFormBounds" (lambda (msg) (alive/session/handler/form-bounds:top-form msg)))
+                                       (cons "$/alive/surroundingFormBounds" (lambda (msg) (alive/session/handler/form-bounds:surrounding-form msg)))
 
-                                       (cons "$/alive/getPackageForPosition" 'alive/session/handler/packages:for-position)
-                                       (cons "$/alive/listPackages" 'alive/session/handler/packages:list-all)
-                                       (cons "$/alive/removePackage" 'alive/session/handler/packages:remove-pkg)
+                                       (cons "$/alive/getPackageForPosition" (lambda (msg) (alive/session/handler/packages:for-position msg)))
+                                       (cons "$/alive/listPackages" (lambda (msg) (alive/session/handler/packages:list-all msg)))
+                                       (cons "$/alive/removePackage" (lambda (msg) (alive/session/handler/packages:remove-pkg msg)))
 
-                                       (cons "$/alive/listThreads" 'alive/session/handler/threads:list-all)
-                                       (cons "$/alive/killThread" 'alive/session/handler/threads:kill)
+                                       (cons "$/alive/listThreads" (lambda (msg) (alive/session/handler/threads:list-all msg)))
+                                       (cons "$/alive/killThread" (lambda (msg) (alive/session/handler/threads:kill msg)))
 
-                                       (cons "$/alive/listAsdfSystems" 'alive/session/handler/asdf:list-all)
-                                       (cons "$/alive/loadAsdfSystem" 'alive/session/handler/asdf:load-system)
+                                       (cons "$/alive/listAsdfSystems" (lambda (msg) (alive/session/handler/asdf:list-all msg)))
+                                       (cons "$/alive/loadAsdfSystem" (lambda (msg) (alive/session/handler/asdf:load-system msg)))
 
-                                       #+n (cons "$/alive/compile" 'handle-compile)
-                                       #+n (cons "$/alive/loadFile" 'handle-load-file)
-                                       #+n (cons "$/alive/tryCompile" 'handle-try-compile)
+                                       #+n (cons "$/alive/compile" (lambda (msg) (handle-compile msg)))
+                                       #+n (cons "$/alive/loadFile" (lambda (msg) (handle-load-file msg)))
+                                       #+n (cons "$/alive/tryCompile" (lambda (msg) (handle-try-compile msg)))
 
-                                       #+n (cons "$/alive/macroexpand" 'handle-macroexpand)
-                                       #+n (cons "$/alive/macroexpand1" 'handle-macroexpand-1)
+                                       #+n (cons "$/alive/macroexpand" (lambda (msg) (handle-macroexpand msg)))
+                                       #+n (cons "$/alive/macroexpand1" (lambda (msg) (handle-macroexpand-1 msg)))
 
-                                       #+n (cons "$/alive/symbol" 'handle-symbol)
-                                       #+n (cons "$/alive/unexportSymbol" 'handle-unexport)
+                                       #+n (cons "$/alive/symbol" (lambda (msg) (handle-symbol msg)))
+                                       #+n (cons "$/alive/unexportSymbol" (lambda (msg) (handle-unexport msg)))
 
-                                       #+n (cons "$/alive/inspect" 'handle-inspect)
-                                       #+n (cons "$/alive/inspectClose" 'handle-inspect-close)
-                                       #+n (cons "$/alive/inspectEval" 'handle-inspect-eval)
-                                       #+n (cons "$/alive/inspectMacro" 'handle-inspect-macro)
-                                       #+n (cons "$/alive/inspectRefresh" 'handle-inspect-refresh)
-                                       #+n (cons "$/alive/inspectSymbol" 'handle-inspect-sym)))
+                                       #+n (cons "$/alive/inspect" (lambda (msg) (handle-inspect msg)))
+                                       #+n (cons "$/alive/inspectClose" (lambda (msg) (handle-inspect-close msg)))
+                                       #+n (cons "$/alive/inspectEval" (lambda (msg) (handle-inspect-eval msg)))
+                                       #+n (cons "$/alive/inspectMacro" (lambda (msg) (handle-inspect-macro msg)))
+                                       #+n (cons "$/alive/inspectRefresh" (lambda (msg) (handle-inspect-refresh msg)))
+                                       #+n (cons "$/alive/inspectSymbol" (lambda (msg) (handle-inspect-sym msg)))))
 
 
 (declaim (ftype (function () (or null cons)) read-msg))
@@ -146,10 +146,6 @@
               (bt:destroy-thread thread))))
 
 
-(defun list-all-asdf ()
-    (mapcar #'string-downcase (asdf:registered-systems)))
-
-
 (defun load-asdf-system (&key name stdin-fn stdout-fn stderr-fn force)
     (astreams:with-redirect-streams (:stdin-fn stdin-fn :stdout-fn stdout-fn :stderr-fn stderr-fn)
         (asdf:load-system name :force force)))
@@ -167,16 +163,16 @@
 
 (declaim (ftype (function () deps:deps) create-deps))
 (defun create-deps ()
-    (deps:create :msg-handler #'alive/session/message:handle
-                 :send-msg #'send-msg
-                 :send-request #'send-request
-                 :read-msg #'read-msg
-                 :list-all-threads #'list-all-threads
-                 :kill-thread #'kill-thread
-                 :list-all-asdf #'list-all-asdf
-                 :load-asdf-system #'load-asdf-system
-                 :get-thread-id #'get-thread-id
-                 :eval-fn #'eval-fn))
+    (deps:create :msg-handler (lambda (msg) (alive/session/message:handle msg))
+                 :send-msg (lambda (msg) (send-msg msg))
+                 :send-request (lambda (req) (send-request req))
+                 :read-msg (lambda () (read-msg))
+                 :list-all-threads (lambda () (list-all-threads))
+                 :kill-thread (lambda (id) (kill-thread id))
+                 :list-all-asdf (lambda () (alive/sys/asdf:list-all))
+                 :load-asdf-system (lambda (&rest args) (apply 'load-asdf-system args))
+                 :get-thread-id (lambda (thread) (get-thread-id thread))
+                 :eval-fn (lambda (arg) (eval-fn arg))))
 
 
 (defun new-accept-conn ()

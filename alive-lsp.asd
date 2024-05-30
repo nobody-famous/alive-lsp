@@ -89,6 +89,8 @@
                                        (:file "session/message-loop")
                                        (:file "session")
 
+                                       (:file "sys/asdf")
+
                                        (:file "server")))))
 
 
