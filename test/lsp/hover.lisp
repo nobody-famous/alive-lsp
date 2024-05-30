@@ -18,16 +18,17 @@
 
 
 (defun test-symbol-doc ()
-    (clue:test "Get debug-io"
-        (let ((actual (hover::get-symbol-doc "*debug-io*" "cl-user")))
-            (clue:check-equal :expected T
-                              :actual (stringp actual))))
+    (clue:suite "get-symbol-doc"
+        (clue:test "Get debug-io"
+            (let ((actual (hover::get-symbol-doc "*debug-io*" "cl-user")))
+                (clue:check-equal :expected T
+                                  :actual (stringp actual))))
 
-    (makunbound 'not-really-there)
-    (clue:test "Get nonexistant symbol"
-        (let ((actual (hover::get-symbol-doc "not-really-there" "alive/test/lsp/hover")))
-            (clue:check-equal :expected T
-                              :actual (stringp actual)))))
+        (makunbound 'not-really-there)
+        (clue:test "Get nonexistant symbol"
+            (let ((actual (hover::get-symbol-doc "not-really-there" "alive/test/lsp/hover")))
+                (clue:check-equal :expected T
+                                  :actual (stringp actual))))))
 
 
 (defun run-all ()

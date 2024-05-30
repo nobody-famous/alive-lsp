@@ -325,29 +325,30 @@
 
 
 (defun test-close-parens ()
-    (clue:test "Close parens"
-        (check-forms (format nil "(foo())")
-                     (list (form:create :start (pos:create 0 0)
-                                        :start-offset 0
-                                        :end (pos:create 0 7)
-                                        :end-offset 7
-                                        :form-type types:*open-paren*
-                                        :in-pkg nil
-                                        :kids (list (form:create :start (pos:create 0 1)
-                                                                 :start-offset 1
-                                                                 :end (pos:create 0 4)
-                                                                 :end-offset 4
-                                                                 :form-type types:*symbol*))))))
+    (clue:suite "Close parens"
+        (clue:test "Close parens"
+            (check-forms (format nil "(foo())")
+                         (list (form:create :start (pos:create 0 0)
+                                            :start-offset 0
+                                            :end (pos:create 0 7)
+                                            :end-offset 7
+                                            :form-type types:*open-paren*
+                                            :in-pkg nil
+                                            :kids (list (form:create :start (pos:create 0 1)
+                                                                     :start-offset 1
+                                                                     :end (pos:create 0 4)
+                                                                     :end-offset 4
+                                                                     :form-type types:*symbol*))))))
 
-    (clue:test "Unmatched close paren"
-        (check-forms (format nil ")")
-                     (list (form:create :start (pos:create 0 0)
-                                        :start-offset 0
-                                        :end nil
-                                        :end-offset nil
-                                        :form-type types:*unmatched-close-paren*
-                                        :in-pkg nil
-                                        :kids nil)))))
+        (clue:test "Unmatched close paren"
+            (check-forms (format nil ")")
+                         (list (form:create :start (pos:create 0 0)
+                                            :start-offset 0
+                                            :end nil
+                                            :end-offset nil
+                                            :form-type types:*unmatched-close-paren*
+                                            :in-pkg nil
+                                            :kids nil))))))
 
 
 (defun test-getters ()
