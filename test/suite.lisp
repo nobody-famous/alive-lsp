@@ -33,6 +33,7 @@
         (alive/test/deps:run-all)
         (alive/test/session/handlers:run-all)
         (alive/test/session/handler/asdf:run-all)
+        (alive/test/session/handler/compile:run-all)
         (alive/test/session/handler/document:run-all)
         (alive/test/session/handler/eval:run-all)
         (alive/test/session/handler/form-bounds:run-all)

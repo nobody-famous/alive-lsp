@@ -83,6 +83,7 @@
                                        (:file "session/transport")
 
                                        (:file "session/handler/utils")
+                                       (:file "session/handler/compile")
                                        (:file "session/handler/document")
                                        (:file "session/handler/init")
                                        (:file "session/handler/form-bounds")
@@ -122,6 +123,7 @@
                                        (:file "deps")
                                        (:file "session/handlers")
                                        (:file "session/handler/asdf")
+                                       (:file "session/handler/compile")
                                        (:file "session/handler/document")
                                        (:file "session/handler/eval")
                                        (:file "session/handler/form-bounds")

@@ -12,6 +12,7 @@
              :read-msg
              :send-msg
              :send-request
+             :try-compile
              :with-deps))
 
 (in-package :alive/deps)
@@ -30,7 +31,8 @@
     (kill-thread nil :type (or null (function (T) *)))
     (list-all-asdf nil :type (or null (function () cons)))
     (load-asdf-system nil :type (or null (function (&key (:name string) (:stdin-fn function) (:stdout-fn function) (:stderr-fn function) (:force boolean)) boolean)))
-    (get-thread-id nil :type (or null (function (bt:thread) *))))
+    (get-thread-id nil :type (or null (function (bt:thread) *)))
+    (try-compile nil :type (or null (function (string) *))))
 
 
 (declaim (ftype (function (&key (:msg-handler (function (cons) (values (or null hash-table) &optional)))
@@ -42,9 +44,10 @@
                                 (:list-all-asdf (function () cons))
                                 (:load-asdf-system (function (&key (:name string) (:stdin-fn function) (:stdout-fn function) (:stderr-fn function) (:force boolean)) boolean))
                                 (:get-thread-id (function (bt:thread) *))
-                                (:eval-fn (function (stream) *)))
+                                (:eval-fn (function (stream) *))
+                                (:try-compile (function (string) *)))
                           deps) create))
-(defun create (&key msg-handler send-msg send-request read-msg list-all-threads kill-thread list-all-asdf load-asdf-system get-thread-id eval-fn)
+(defun create (&key msg-handler send-msg send-request read-msg list-all-threads kill-thread list-all-asdf load-asdf-system get-thread-id eval-fn try-compile)
     (make-deps :msg-handler msg-handler
                :send-msg send-msg
                :send-request send-request
@@ -54,7 +57,8 @@
                :list-all-asdf list-all-asdf
                :load-asdf-system load-asdf-system
                :get-thread-id get-thread-id
-               :eval-fn eval-fn))
+               :eval-fn eval-fn
+               :try-compile try-compile))
 
 
 (declaim (ftype (function () T) msg-handler))
@@ -138,6 +142,14 @@
     (unless (deps-eval-fn *deps*) (error "Dependencies eval-fn not set"))
 
     (funcall (deps-eval-fn *deps*) data))
+
+
+(declaim (ftype (function (string) *) try-compile))
+(defun try-compile (path)
+    (unless *deps* (error "Dependencies not set"))
+    (unless (deps-try-compile *deps*) (error "Dependencies try-compile not set"))
+
+    (funcall (deps-try-compile *deps*) path))
 
 
 (defmacro with-deps (deps &body body)

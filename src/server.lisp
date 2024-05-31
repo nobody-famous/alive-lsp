@@ -72,7 +72,7 @@
                                        (cons "$/alive/listAsdfSystems" (lambda (msg) (alive/session/handler/asdf:list-all msg)))
                                        (cons "$/alive/loadAsdfSystem" (lambda (msg) (alive/session/handler/asdf:load-system msg)))
 
-                                       #+n (cons "$/alive/tryCompile" (lambda (msg) (handle-try-compile msg)))
+                                       (cons "$/alive/tryCompile" (lambda (msg) (alive/session/handler/compile:try msg)))
                                        #+n (cons "$/alive/compile" (lambda (msg) (handle-compile msg)))
                                        #+n (cons "$/alive/loadFile" (lambda (msg) (handle-load-file msg)))
 
@@ -106,7 +106,8 @@
                  :list-all-asdf (lambda () (alive/sys/asdf:list-all))
                  :load-asdf-system (lambda (&rest args) (apply 'alive/sys/asdf:load-system args))
                  :get-thread-id (lambda (thread) (alive/sys/threads:get-id thread))
-                 :eval-fn (lambda (arg) (alive/sys/eval:eval-fn arg))))
+                 :eval-fn (lambda (arg) (alive/sys/eval:eval-fn arg))
+                 :try-compile (lambda (path) (alive/file:try-compile path))))
 
 
 (defun new-accept-conn ()
@@ -140,8 +141,8 @@
 
     (when (and (running *server*)
                (usocket::state (socket *server*)))
-          #+n (new-accept-conn)
-          (accept-conn)))
+          (new-accept-conn)
+          #+n (accept-conn)))
 
 
 (defun wake-up-accept ()
