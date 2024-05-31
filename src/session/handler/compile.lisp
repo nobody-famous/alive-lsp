@@ -10,10 +10,9 @@
 
 (declaim (ftype (function (list) null) try))
 (defun try (msg)
-    (spawn:new-thread "Try Compile"
-        (let* ((params (cdr (assoc :params msg)))
-               (path (cdr (assoc :path params)))
-               (msgs (handler-case
-                             (deps:try-compile path)
-                         (T () nil))))
-            (deps:send-msg (utils:result (cdr (assoc :id msg)) "messages" msgs)))))
+    (let* ((params (cdr (assoc :params msg)))
+           (path (cdr (assoc :path params)))
+           (msgs (handler-case
+                         (deps:try-compile path)
+                     (T () nil))))
+        (deps:send-msg (utils:result (cdr (assoc :id msg)) "messages" msgs))))

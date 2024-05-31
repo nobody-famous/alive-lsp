@@ -21,18 +21,8 @@
 (defun test-load-system ()
     (clue:test "Load System"
         (state:with-state (state:create)
-            (deps:with-deps (deps:create :load-asdf-system (lambda (&key name stdin-fn stdout-fn stderr-fn force)
-                                                               (declare (ignore name stdin-fn stdout-fn stderr-fn force))
-                                                               T)
-                                         :send-request (lambda (req)
-                                                           (list (cons :id (gethash "id" req))))
-                                         :send-msg (lambda (msg)
-                                                       (declare (ignore msg))))
-                (let ((thread nil))
-                    (handler-bind ((spawn:spawned-thread (lambda (evt)
-                                                             (setf thread (spawn:thread evt)))))
-                        (asdf:load-system (list (cons :id 5)))
-                        (bt:join-thread thread)))))))
+            (deps:with-deps (deps:create)
+                (asdf:load-system (list (cons :id 5)))))))
 
 
 (defun run-all ()

@@ -25,7 +25,7 @@
     (msg-handler nil :type (or null (function (cons) (values (or null hash-table) &optional))))
     (read-msg nil :type (or null (function () (values (or null cons) &optional))))
     (send-msg nil :type (or null (function (cons) null)))
-    (send-request nil :type (or null (function (cons) hash-table)))
+    (send-request nil :type (or null (function (list) hash-table)))
     (eval-fn nil :type (or null (function (T) *)))
     (list-all-threads nil :type (or null (function () cons)))
     (kill-thread nil :type (or null (function (T) *)))
@@ -37,7 +37,7 @@
 
 (declaim (ftype (function (&key (:msg-handler (function (cons) (values (or null hash-table) &optional)))
                                 (:send-msg (function (cons) null))
-                                (:send-request (function (hash-table) cons))
+                                (:send-request (function (hash-table) list))
                                 (:read-msg (function () (values (or null cons) &optional)))
                                 (:list-all-threads (function () cons))
                                 (:kill-thread (function (T) *))
@@ -47,7 +47,19 @@
                                 (:eval-fn (function (stream) *))
                                 (:try-compile (function (string) *)))
                           deps) create))
-(defun create (&key msg-handler send-msg send-request read-msg list-all-threads kill-thread list-all-asdf load-asdf-system get-thread-id eval-fn try-compile)
+(defun create (&key msg-handler
+                    (send-msg (lambda (msg) (declare (ignore msg))))
+                    (send-request (lambda (req) (declare (ignore req) (list))))
+                    read-msg
+                    list-all-threads
+                    kill-thread
+                    list-all-asdf
+                    (load-asdf-system (lambda (&key name stdin-fn stdout-fn stderr-fn force)
+                                          (declare (ignore name stdin-fn stdout-fn stderr-fn force))
+                                          T))
+                    get-thread-id
+                    eval-fn
+                    (try-compile (lambda (path) (declare (ignore path)))))
     (make-deps :msg-handler msg-handler
                :send-msg send-msg
                :send-request send-request
@@ -83,7 +95,7 @@
     (funcall (deps-send-msg *deps*) msg))
 
 
-(declaim (ftype (function (hash-table) (values cons &optional)) send-request))
+(declaim (ftype (function (hash-table) (values list &optional)) send-request))
 (defun send-request (msg)
     (unless *deps* (error "Dependencies not set"))
     (unless (deps-send-request *deps*) (error "Dependencies send-request not set"))

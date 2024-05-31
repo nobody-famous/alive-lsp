@@ -27,24 +27,17 @@
 
 (defun test-send-msg ()
     (clue:test "Send message"
-        (clue:expect-fail (lambda () (deps:send-msg nil)))
         (let ((sent nil))
             (deps:with-deps (deps:create :send-msg (lambda (msg)
                                                        (declare (ignore msg))
                                                        (setf sent T)
                                                        nil))
                 (deps:send-msg 5)
-                (clue:check-equal :expected t :actual sent)))
-
-        (deps:with-deps (deps:create)
-            (clue:expect-fail (lambda () (deps:send-msg 5))))))
+                (clue:check-equal :expected t :actual sent)))))
 
 
 (defun test-send-request ()
     (clue:test "Send request"
-        (clue:expect-fail (lambda () (deps:send-request (make-hash-table))))
-        (deps:with-deps (deps:create)
-            (clue:expect-fail (lambda () (deps:send-request (make-hash-table)))))
         (deps:with-deps (deps:create :send-request (lambda (msg)
                                                        (declare (ignore msg))
                                                        (list (cons :result "foo"))))

@@ -9,7 +9,9 @@
                       (:logger :alive/logger)
                       (:packet :alive/lsp/packet)
                       (:session :alive/session)
-                      (:state :alive/session/state)))
+                      (:spawn :alive/session/spawn)
+                      (:state :alive/session/state)
+                      (:threads :alive/session/threads)))
 
 (in-package :alive/server)
 
@@ -58,7 +60,11 @@
                                        (cons "$/setTrace" (lambda (msg) (ignore-msg msg)))
                                        (cons "$/cancelRequest" (lambda (msg) (ignore-msg msg)))
 
-                                       (cons "$/alive/eval" (lambda (msg) (alive/session/handler/eval:handle msg)))
+                                       (cons "$/alive/eval" (lambda (msg)
+                                                                (threads:run-in-thread (or (cdr (assoc :method msg)) "eval")
+                                                                                       (cdr (assoc :id msg))
+                                                                                       (lambda ()
+                                                                                           (alive/session/handler/eval:handle msg)))))
                                        (cons "$/alive/topFormBounds" (lambda (msg) (alive/session/handler/form-bounds:top-form msg)))
                                        (cons "$/alive/surroundingFormBounds" (lambda (msg) (alive/session/handler/form-bounds:surrounding-form msg)))
 
@@ -70,9 +76,15 @@
                                        (cons "$/alive/killThread" (lambda (msg) (alive/session/handler/threads:kill msg)))
 
                                        (cons "$/alive/listAsdfSystems" (lambda (msg) (alive/session/handler/asdf:list-all msg)))
-                                       (cons "$/alive/loadAsdfSystem" (lambda (msg) (alive/session/handler/asdf:load-system msg)))
+                                       (cons "$/alive/loadAsdfSystem" (lambda (msg)
+                                                                          (threads:run-in-thread (or (cdr (assoc :method msg)) "ASDF")
+                                                                                                 (cdr (assoc :id msg))
+                                                                                                 (lambda ()
+                                                                                                     (alive/session/handler/asdf:load-system msg)))))
 
-                                       (cons "$/alive/tryCompile" (lambda (msg) (alive/session/handler/compile:try msg)))
+                                       (cons "$/alive/tryCompile" (lambda (msg)
+                                                                      (spawn:new-thread "Try Compile"
+                                                                          (alive/session/handler/compile:try msg))))
                                        #+n (cons "$/alive/compile" (lambda (msg) (handle-compile msg)))
                                        #+n (cons "$/alive/loadFile" (lambda (msg) (handle-load-file msg)))
 

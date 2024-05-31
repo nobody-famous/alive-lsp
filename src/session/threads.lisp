@@ -102,10 +102,10 @@
     (format nil "~A - ~A" (state:next-thread-id) method-name))
 
 
-(declaim (ftype (function (string cons function) null) run-in-thread))
-(defun run-in-thread (method-name msg fn)
+(declaim (ftype (function (string integer function) null) run-in-thread))
+(defun run-in-thread (method-name msg-id fn)
     (spawn:new-thread (next-thread-name method-name)
-        (state:with-thread-msg ((cdr (assoc :id msg)))
+        (state:with-thread-msg (msg-id)
             (unwind-protect
                     (progn (refresh:send)
                            (run-with-debugger fn))

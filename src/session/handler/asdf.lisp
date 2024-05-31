@@ -24,15 +24,12 @@
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
            (name (cdr (assoc :name params))))
-        (threads:run-in-thread (or (cdr (assoc :method msg)) "ASDF")
-                               msg
-                               (lambda ()
-                                   (deps:load-asdf-system
-                                       :name name
-                                       :stdin-fn (lambda ()
-                                                     (threads:wait-for-input))
-                                       :stdout-fn (lambda (data)
-                                                      (deps:send-msg (notification:stdout data)))
-                                       :stderr-fn (lambda (data)
-                                                      (deps:send-msg (notification:stderr data))))
-                                   (deps:send-msg (lsp-msg:create-response id :result-value T))))))
+        (deps:load-asdf-system
+            :name name
+            :stdin-fn (lambda ()
+                          (threads:wait-for-input))
+            :stdout-fn (lambda (data)
+                           (deps:send-msg (notification:stdout data)))
+            :stderr-fn (lambda (data)
+                           (deps:send-msg (notification:stderr data))))
+        (deps:send-msg (lsp-msg:create-response id :result-value T))))

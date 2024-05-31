@@ -11,22 +11,16 @@
 
 (defun run-test (msg)
     (let ((msg-sent nil))
-        (deps:with-deps (deps:create :send-request (lambda (req)
-                                                       (declare (ignore req))
-                                                       (list (cons :id 5)))
-                                     :send-msg (lambda (msg)
+        (deps:with-deps (deps:create :send-msg (lambda (msg)
                                                    (let* ((id (gethash "id" msg))
                                                           (fn (when id (state:get-sent-msg-callback id))))
                                                        (setf msg-sent T)
                                                        (when fn
-                                                             (funcall fn (list (cons :error "foo")))))))
+                                                             (funcall fn (list (cons :error "foo"))))))
+                                     :eval-fn (lambda (str) (declare (ignore str))))
             (state:with-state (state:create)
-                (let ((eval-thread nil))
-                    (handler-bind ((spawn:spawned-thread (lambda (evt)
-                                                             (setf eval-thread (spawn:thread evt)))))
-                        (eval:handle msg)
-                        (bt:join-thread eval-thread)
-                        msg-sent))))))
+                (eval:handle msg)
+                msg-sent))))
 
 
 (defun test-handle ()
@@ -34,7 +28,8 @@
         (clue:test "Error"
             (clue:expect-fail (lambda () (eval:handle (list (cons :id 5)))))
             (clue:check-equal :expected T
-                              :actual (run-test (list (cons :id 5)))))
+                              :actual (run-test (list (cons :id 5)
+                                                      (cons :params (list (cons :text "(+ 1 2)")))))))
 
         (clue:test "Add"
             (clue:check-equal :expected T

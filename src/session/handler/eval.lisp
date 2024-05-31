@@ -1,7 +1,6 @@
 (defpackage :alive/session/handler/eval
     (:use :cl)
-    (:export :thread
-             :handle)
+    (:export :handle)
     (:local-nicknames (:deps :alive/deps)
                       (:eval :alive/eval)
                       (:handler-utils :alive/session/handler/utils)
@@ -12,8 +11,8 @@
 (in-package :alive/session/handler/eval)
 
 
-(declaim (ftype (function (cons) null) process-eval))
-(defun process-eval (msg)
+(declaim (ftype (function (cons) null) handle))
+(defun handle (msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
            (pkg-name (cdr (assoc :package params)))
@@ -36,11 +35,3 @@
               (state:add-history result))
 
         (deps:send-msg (handler-utils:result id "text" (format nil "~A" result)))))
-
-
-(declaim (ftype (function (cons) null) handle))
-(defun handle (msg)
-    (threads:run-in-thread (or (cdr (assoc :method msg)) "eval")
-                           msg
-                           (lambda ()
-                               (process-eval msg))))
