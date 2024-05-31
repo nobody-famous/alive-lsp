@@ -17,9 +17,12 @@
                                          :send-msg (lambda (msg)
                                                        (setf sent-msg msg)
                                                        nil))
-                (let ((thread (refresh:send)))
-                    (bt:join-thread thread)
-                    (clue:check-exists sent-msg))))))
+                (let ((thread nil))
+                    (handler-bind ((alive/session/spawn:spawned-thread (lambda (evt)
+                                                                           (setf thread (alive/session/spawn:thread evt)))))
+                        (refresh:send)
+                        (bt:join-thread thread)
+                        (clue:check-exists sent-msg)))))))
 
 
 (defun test-send ()

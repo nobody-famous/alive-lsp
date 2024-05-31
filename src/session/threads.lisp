@@ -102,7 +102,7 @@
     (format nil "~A - ~A" (state:next-thread-id) method-name))
 
 
-(declaim (ftype (function (string cons function) bt:thread) run-in-thread))
+(declaim (ftype (function (string cons function) null) run-in-thread))
 (defun run-in-thread (method-name msg fn)
     (spawn:new-thread (next-thread-name method-name)
         (state:with-thread-msg ((cdr (assoc :id msg)))

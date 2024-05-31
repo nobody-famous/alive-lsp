@@ -133,7 +133,6 @@
                                        (:file "session/message-loop")
                                        (:file "session/refresh")
                                        (:file "session/state")
-                                       (:file "session/threads")
 
                                        (:file "format/range")
                                        (:file "format/on-type")

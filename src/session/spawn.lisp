@@ -1,8 +1,18 @@
 (defpackage :alive/session/spawn
     (:use :cl)
-    (:export :new-thread))
+    (:export :new-thread
+             :spawned-thread
+             :thread))
 
 (in-package :alive/session/spawn)
+
+
+(define-condition spawned-thread ()
+        ((thread :accessor thread
+                 :initform nil
+                 :type bt:thread
+                 :initarg :thread))
+    (:report (lambda (condition stream) (format stream "THREAD ~A" (thread condition)))))
 
 
 (defmacro new-thread (name &body body)
@@ -31,5 +41,5 @@
                                                   (alive/deps::*deps* ,deps))
                                                 (progn ,@body)))
                                         :name ,name)))
-             (declare (type bt:thread thread))
-             thread)))
+             (signal (make-condition 'spawned-thread :thread thread))
+             nil)))

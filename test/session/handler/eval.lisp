@@ -3,6 +3,7 @@
     (:export :run-all)
     (:local-nicknames (:deps :alive/deps)
                       (:eval :alive/session/handler/eval)
+                      (:spawn :alive/session/spawn)
                       (:state :alive/session/state)))
 
 (in-package :alive/test/session/handler/eval)
@@ -21,8 +22,8 @@
                                                              (funcall fn (list (cons :error "foo")))))))
             (state:with-state (state:create)
                 (let ((eval-thread nil))
-                    (handler-bind ((eval:eval-thread-event (lambda (evt)
-                                                               (setf eval-thread (eval:thread evt)))))
+                    (handler-bind ((spawn:spawned-thread (lambda (evt)
+                                                             (setf eval-thread (spawn:thread evt)))))
                         (eval:handle msg)
                         (bt:join-thread eval-thread)
                         msg-sent))))))

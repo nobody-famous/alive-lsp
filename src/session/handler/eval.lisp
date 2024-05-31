@@ -1,7 +1,6 @@
 (defpackage :alive/session/handler/eval
     (:use :cl)
-    (:export :eval-thread-event
-             :thread
+    (:export :thread
              :handle)
     (:local-nicknames (:deps :alive/deps)
                       (:eval :alive/eval)
@@ -11,13 +10,6 @@
                       (:threads :alive/session/threads)))
 
 (in-package :alive/session/handler/eval)
-
-
-(define-condition eval-thread-event ()
-        ((thread :accessor thread
-                 :initform nil
-                 :initarg :thread))
-    (:report (lambda (condition stream) (format stream "THREAD ~A" (thread condition)))))
 
 
 (declaim (ftype (function (cons) null) process-eval))
@@ -48,8 +40,7 @@
 
 (declaim (ftype (function (cons) null) handle))
 (defun handle (msg)
-    (let ((thread (threads:run-in-thread (or (cdr (assoc :method msg)) "eval")
-                                         msg
-                                         (lambda ()
-                                             (process-eval msg)))))
-        (signal (make-condition 'eval-thread-event :thread thread))))
+    (threads:run-in-thread (or (cdr (assoc :method msg)) "eval")
+                           msg
+                           (lambda ()
+                               (process-eval msg))))

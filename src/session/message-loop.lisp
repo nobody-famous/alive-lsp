@@ -52,8 +52,7 @@
                                                          :code errors:*internal-error*
                                                          :message (format nil "Server error: ~A" (errors:message c)))))
 
-        (alive/session/handler/eval:eval-thread-event (c) (declare (ignore c)))
-        (alive/session/handler/asdf:load-asdf-event (c) (declare (ignore c)))
+        (alive/session/spawn:spawned-thread (c) (declare (ignore c)))
 
         (end-of-file (c)
                      (declare (ignore c))
