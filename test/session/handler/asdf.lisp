@@ -3,6 +3,7 @@
     (:export :run-all)
     (:local-nicknames (:asdf :alive/session/handler/asdf)
                       (:deps :alive/deps)
+                      (:spawn :alive/session/spawn)
                       (:state :alive/session/state)))
 
 (in-package :alive/test/session/handler/asdf)
@@ -27,8 +28,11 @@
                                                            (list (cons :id (gethash "id" req))))
                                          :send-msg (lambda (msg)
                                                        (declare (ignore msg))))
-                (let ((thread (asdf:load-system (list (cons :id 5)))))
-                    (bt:join-thread thread))))))
+                (let ((thread nil))
+                    (handler-bind ((spawn:spawned-thread (lambda (evt)
+                                                             (setf thread (spawn:thread evt)))))
+                        (asdf:load-system (list (cons :id 5)))
+                        (bt:join-thread thread)))))))
 
 
 (defun run-all ()
