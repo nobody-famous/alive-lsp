@@ -131,7 +131,7 @@
                  :do-compile (lambda (path &key stdin-fn stdout-fn stderr-fn) (alive/file:do-compile path :stdin-fn stdin-fn :stdout-fn stdout-fn :stderr-fn stderr-fn))))
 
 
-(defun new-accept-conn ()
+(defun accept-conn ()
     (let* ((conn (usocket:socket-accept (socket *server*) :element-type '(unsigned-byte 8))))
         (context:with-context (:input-stream (flexi-streams:make-flexi-stream (usocket:socket-stream conn))
                                              :output-stream (usocket:socket-stream conn)
@@ -139,22 +139,7 @@
                                                              (usocket:socket-close conn)))
             (alive/deps:with-deps (create-deps)
                 (handlers:with-handlers *message-handlers*
-                    (session::new-start))))))
-
-
-(defun accept-conn ()
-    (let* ((conn (usocket:socket-accept (socket *server*) :element-type '(unsigned-byte 8)))
-           (session (session:create :conn conn)))
-
-        (session:add-listener session
-                              (make-instance 'session:listener
-                                  :on-done (lambda ()
-                                               (usocket:socket-close conn)
-                                               (setf (sessions *server*)
-                                                   (remove session (sessions *server*))))))
-        (session:start session)
-
-        (push session (sessions *server*))))
+                    (session:start))))))
 
 
 (defun wait-for-conn ()
@@ -162,8 +147,7 @@
 
     (when (and (running *server*)
                (usocket::state (socket *server*)))
-          (new-accept-conn)
-          #+n (accept-conn)))
+          (accept-conn)))
 
 
 (defun wake-up-accept ()

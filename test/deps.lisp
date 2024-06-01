@@ -47,9 +47,6 @@
 
 (defun test-do-eval ()
     (clue:test "Eval"
-        (clue:expect-fail (lambda () (deps:do-eval "")))
-        (deps:with-deps (deps:create)
-            (clue:expect-fail (lambda () (deps:do-eval ""))))
         (deps:with-deps (deps:create :eval-fn (lambda (data) data))
             (clue:check-equal :expected "foo"
                               :actual (deps:do-eval "foo")))))

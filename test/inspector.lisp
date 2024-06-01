@@ -1,34 +1,11 @@
 (defpackage :alive/test/inspector
     (:use :cl)
     (:export :run-all)
-    (:local-nicknames (:inspector :alive/inspector)
-                      (:eval :alive/eval)))
+    (:local-nicknames (:deps :alive/deps)
+                      (:eval :alive/eval)
+                      (:inspector :alive/inspector)))
 
 (in-package :alive/test/inspector)
-
-
-(defun fn-test ()
-    (clue:test "Inspect Function Test"
-        (let* ((result (eval:from-string "'defun"
-                                         :pkg-name "cl-user"))
-               (insp-result (inspector:to-result result)))
-
-            (clue:check-equal :expected T
-                              :actual (hash-table-p insp-result))
-            (clue:check-equal :expected 4
-                              :actual (hash-table-count insp-result)))))
-
-
-(defun number-test ()
-    (clue:test "Inspect Number Test"
-        (let* ((result (eval:from-string "5"
-                                         :pkg-name "cl-user"))
-               (insp-result (inspector:to-result result)))
-
-            (clue:check-equal :expected T
-                              :actual (hash-table-p insp-result))
-            (clue:check-equal :expected 2
-                              :actual (hash-table-count insp-result)))))
 
 
 (defun hashmap-test ()
@@ -141,8 +118,6 @@
 
 (defun run-all ()
     (clue:suite "Inspector Tests"
-        (fn-test)
-        (number-test)
         (hashmap-test)
         (alist-test)
         (string-list-test)

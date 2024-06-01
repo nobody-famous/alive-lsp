@@ -64,7 +64,7 @@
                                           (declare (ignore name stdin-fn stdout-fn stderr-fn force))
                                           T))
                     get-thread-id
-                    eval-fn
+                    (eval-fn (lambda (s) (declare (ignore s))))
                     (try-compile (lambda (path) (declare (ignore path))))
                     (do-compile (lambda (path &key stdin-fn stdout-fn stderr-fn)
                                     (declare (ignore path stdin-fn stdout-fn stderr-fn))))

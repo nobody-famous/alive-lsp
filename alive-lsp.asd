@@ -117,10 +117,8 @@
                                        (:file "lsp/sem-analysis")
                                        (:file "lsp/sem-tokens")
                                        (:file "lsp/hover")
-                                       (:file "lsp/message")
                                        (:file "lsp/packet")
 
-                                       (:file "session/messages")
                                        (:file "deps")
                                        (:file "session/handlers")
                                        (:file "session/handler/asdf")
@@ -147,7 +145,6 @@
                                        (:file "log")
                                        (:file "compile")
                                        (:file "context")
-                                       (:file "debugger")
                                        (:file "eval")
                                        (:file "forms")
                                        (:file "macros")
@@ -155,7 +152,6 @@
                                        (:file "position")
                                        (:file "range")
                                        (:file "selection")
-                                       (:file "session")
                                        (:file "streams")
 
                                        (:file "suite")
