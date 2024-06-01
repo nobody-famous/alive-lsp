@@ -17,6 +17,12 @@
                                                                                            (cons :text-document (list (cons :uri "some/path"))))))))))))
 
 
+(defun test-unexport ()
+    (clue:test "Unexport"
+        (clue:check-exists (gethash "result" (symbol:do-unexport (list (cons :id 5)))))))
+
+
 (defun run-all ()
     (clue:suite "Symbol Tests"
-        (test-for-pos)))
+        (test-for-pos)
+        (test-unexport)))

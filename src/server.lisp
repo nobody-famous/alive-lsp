@@ -97,7 +97,7 @@
                                                                                                (alive/session/handler/compile:load-file msg)))))
 
                                        (cons "$/alive/symbol" (lambda (msg) (alive/session/handler/symbol:for-pos msg)))
-                                       #+n (cons "$/alive/unexportSymbol" (lambda (msg) (handle-unexport msg)))
+                                       (cons "$/alive/unexportSymbol" (lambda (msg) (alive/session/handler/symbol::do-unexport msg)))
 
                                        #+n (cons "$/alive/macroexpand" (lambda (msg) (handle-macroexpand msg)))
                                        #+n (cons "$/alive/macroexpand1" (lambda (msg) (handle-macroexpand-1 msg)))

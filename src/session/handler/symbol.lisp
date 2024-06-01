@@ -1,7 +1,10 @@
 (defpackage :alive/session/handler/symbol
     (:use :cl)
-    (:export :for-pos)
-    (:local-nicknames (:state :alive/session/state)
+    (:export :do-unexport
+             :for-pos)
+    (:local-nicknames (:lsp-msg :alive/lsp/message/abstract)
+                      (:packages :alive/packages)
+                      (:state :alive/session/state)
                       (:utils :alive/session/handler/utils)))
 
 (in-package :alive/session/handler/symbol)
@@ -18,3 +21,14 @@
            (result (alive/lsp/symbol:for-pos :text text :pos pos)))
 
         (utils:result id "value" result)))
+
+
+(declaim (ftype (function (list) hash-table) do-unexport))
+(defun do-unexport (msg)
+    (let* ((id (cdr (assoc :id msg)))
+           (params (cdr (assoc :params msg)))
+           (sym-name (cdr (assoc :symbol params)))
+           (pkg-name (cdr (assoc :package params))))
+
+        (packages:unexport-symbol pkg-name sym-name)
+        (lsp-msg:create-response id :result-value T)))
