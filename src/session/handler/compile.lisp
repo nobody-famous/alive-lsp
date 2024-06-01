@@ -1,6 +1,7 @@
 (defpackage :alive/session/handler/compile
     (:use :cl)
     (:export :file
+             :load-file
              :try)
     (:local-nicknames (:deps :alive/deps)
                       (:lsp-msg :alive/lsp/message/abstract)
@@ -37,3 +38,21 @@
                                         (deps:send-msg (notification:stderr data))))
 
         (deps:send-msg (lsp-msg:create-response id :result-value "OK"))))
+
+
+(declaim (ftype (function (list) null) load-file))
+(defun load-file (msg)
+    (let* ((id (cdr (assoc :id msg)))
+           (params (cdr (assoc :params msg)))
+           (path (cdr (assoc :path params)))
+           (msgs (deps:do-load path
+                               :stdin-fn (lambda ()
+                                             (threads:wait-for-input))
+                               :stdout-fn (lambda (data)
+                                              (when (assoc :show-stdout params)
+                                                    (deps:send-msg (notification:stdout data))))
+                               :stderr-fn (lambda (data)
+                                              (when (assoc :show-stderr params)
+                                                    (deps:send-msg (notification:stderr data)))))))
+
+        (deps:send-msg (utils:result id "messages" msgs))))

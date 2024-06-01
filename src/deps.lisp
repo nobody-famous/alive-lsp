@@ -4,6 +4,7 @@
              :deps
              :do-compile
              :do-eval
+             :do-load
              :get-thread-id
              :kill-thread
              :list-all-threads
@@ -34,7 +35,8 @@
     (load-asdf-system nil :type (or null (function (&key (:name string) (:stdin-fn function) (:stdout-fn function) (:stderr-fn function) (:force boolean)) boolean)))
     (get-thread-id nil :type (or null (function (bt:thread) *)))
     (try-compile nil :type (or null (function (string) *)))
-    (do-compile nil :type (or null (function (string &key (:stdin-fn function) (:stdout-fn function) (:stderr-fn function)) *))))
+    (do-compile nil :type (or null (function (string &key (:stdin-fn function) (:stdout-fn function) (:stderr-fn function)) *)))
+    (do-load nil :type (or null (function (string &key (:stdin-fn function) (:stdout-fn function) (:stderr-fn function)) *))))
 
 
 (declaim (ftype (function (&key (:msg-handler (function (cons) (values (or null hash-table) &optional)))
@@ -48,7 +50,8 @@
                                 (:get-thread-id (function (bt:thread) *))
                                 (:eval-fn (function (stream) *))
                                 (:try-compile (function (string) *))
-                                (:do-compile (function (string &key (:stdin-fn function) (:stdout-fn function) (:stderr-fn function)) *)))
+                                (:do-compile (function (string &key (:stdin-fn function) (:stdout-fn function) (:stderr-fn function)) *))
+                                (:do-load (function (string &key (:stdin-fn function) (:stdout-fn function) (:stderr-fn function)) *)))
                           deps) create))
 (defun create (&key msg-handler
                     (send-msg (lambda (msg) (declare (ignore msg))))
@@ -64,7 +67,9 @@
                     eval-fn
                     (try-compile (lambda (path) (declare (ignore path))))
                     (do-compile (lambda (path &key stdin-fn stdout-fn stderr-fn)
-                                    (declare (ignore path stdin-fn stdout-fn stderr-fn)))))
+                                    (declare (ignore path stdin-fn stdout-fn stderr-fn))))
+                    (do-load (lambda (path &key stdin-fn stdout-fn stderr-fn)
+                                 (declare (ignore path stdin-fn stdout-fn stderr-fn)))))
     (make-deps :msg-handler msg-handler
                :send-msg send-msg
                :send-request send-request
@@ -76,7 +81,8 @@
                :get-thread-id get-thread-id
                :eval-fn eval-fn
                :try-compile try-compile
-               :do-compile do-compile))
+               :do-compile do-compile
+               :do-load do-load))
 
 
 (declaim (ftype (function () T) msg-handler))
@@ -176,6 +182,14 @@
     (unless (deps-do-compile *deps*) (error "Dependencies do-compile not set"))
 
     (funcall (deps-do-compile *deps*) path :stdin-fn stdin-fn :stdout-fn stdout-fn :stderr-fn stderr-fn))
+
+
+(declaim (ftype (function (string &key (:stdin-fn function) (:stdout-fn function) (:stderr-fn function)) *) do-load))
+(defun do-load (path &key stdin-fn stdout-fn stderr-fn)
+    (unless *deps* (error "Dependencies not set"))
+    (unless (deps-do-load *deps*) (error "Dependencies do-load not set"))
+
+    (funcall (deps-do-load *deps*) path :stdin-fn stdin-fn :stdout-fn stdout-fn :stderr-fn stderr-fn))
 
 
 (defmacro with-deps (deps &body body)

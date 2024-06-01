@@ -29,7 +29,19 @@
                 (clue:check-exists (gethash "result" sent-msg))))))
 
 
+(defun test-load ()
+    (clue:test "Load"
+        (let ((sent-msg nil))
+            (deps:with-deps (deps:create :send-msg (lambda (msg)
+                                                       (setf sent-msg msg)
+                                                       nil))
+                (compile:load-file (list (cons :id 5)
+                                         (cons :params (list (cons :path "some/path")))))
+                (clue:check-exists (gethash "result" sent-msg))))))
+
+
 (defun run-all ()
     (clue:suite "Compile Tests"
         (test-try)
-        (test-file)))
+        (test-file)
+        (test-load)))

@@ -90,7 +90,11 @@
                                                                                           (cdr (assoc :id msg))
                                                                                           (lambda ()
                                                                                               (alive/session/handler/compile:file msg)))))
-                                       #+n (cons "$/alive/loadFile" (lambda (msg) (handle-load-file msg)))
+                                       (cons "$/alive/loadFile" (lambda (msg)
+                                                                    (threads:run-in-thread (or (cdr (assoc :method msg)) "Load File")
+                                                                                           (cdr (assoc :id msg))
+                                                                                           (lambda ()
+                                                                                               (alive/session/handler/compile:load-file msg)))))
 
                                        #+n (cons "$/alive/macroexpand" (lambda (msg) (handle-macroexpand msg)))
                                        #+n (cons "$/alive/macroexpand1" (lambda (msg) (handle-macroexpand-1 msg)))
