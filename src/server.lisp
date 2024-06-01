@@ -96,11 +96,11 @@
                                                                                            (lambda ()
                                                                                                (alive/session/handler/compile:load-file msg)))))
 
+                                       (cons "$/alive/symbol" (lambda (msg) (alive/session/handler/symbol:for-pos msg)))
+                                       #+n (cons "$/alive/unexportSymbol" (lambda (msg) (handle-unexport msg)))
+
                                        #+n (cons "$/alive/macroexpand" (lambda (msg) (handle-macroexpand msg)))
                                        #+n (cons "$/alive/macroexpand1" (lambda (msg) (handle-macroexpand-1 msg)))
-
-                                       #+n (cons "$/alive/symbol" (lambda (msg) (handle-symbol msg)))
-                                       #+n (cons "$/alive/unexportSymbol" (lambda (msg) (handle-unexport msg)))
 
                                        #+n (cons "$/alive/inspect" (lambda (msg) (handle-inspect msg)))
                                        #+n (cons "$/alive/inspectClose" (lambda (msg) (handle-inspect-close msg)))

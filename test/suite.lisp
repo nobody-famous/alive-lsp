@@ -39,6 +39,7 @@
         (alive/test/session/handler/form-bounds:run-all)
         (alive/test/session/handler/init:run-all)
         (alive/test/session/handler/packages:run-all)
+        (alive/test/session/handler/symbol:run-all)
         (alive/test/session/handler/threads:run-all)
         (alive/test/session/handler/utils:run-all)
         (alive/test/session/message:run-all)
