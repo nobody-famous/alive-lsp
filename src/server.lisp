@@ -85,7 +85,11 @@
                                        (cons "$/alive/tryCompile" (lambda (msg)
                                                                       (spawn:new-thread "Try Compile"
                                                                           (alive/session/handler/compile:try msg))))
-                                       #+n (cons "$/alive/compile" (lambda (msg) (handle-compile msg)))
+                                       (cons "$/alive/compile" (lambda (msg)
+                                                                   (threads:run-in-thread (or (cdr (assoc :method msg)) "Compile")
+                                                                                          (cdr (assoc :id msg))
+                                                                                          (lambda ()
+                                                                                              (alive/session/handler/compile:file msg)))))
                                        #+n (cons "$/alive/loadFile" (lambda (msg) (handle-load-file msg)))
 
                                        #+n (cons "$/alive/macroexpand" (lambda (msg) (handle-macroexpand msg)))
@@ -119,7 +123,8 @@
                  :load-asdf-system (lambda (&rest args) (apply 'alive/sys/asdf:load-system args))
                  :get-thread-id (lambda (thread) (alive/sys/threads:get-id thread))
                  :eval-fn (lambda (arg) (alive/sys/eval:eval-fn arg))
-                 :try-compile (lambda (path) (alive/file:try-compile path))))
+                 :try-compile (lambda (path) (alive/file:try-compile path))
+                 :do-compile (lambda (path &key stdin-fn stdout-fn stderr-fn) (alive/file:do-compile path :stdin-fn stdin-fn :stdout-fn stdout-fn :stderr-fn stderr-fn))))
 
 
 (defun new-accept-conn ()
