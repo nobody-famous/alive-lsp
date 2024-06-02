@@ -191,27 +191,6 @@
 ;                              :result expanded)))
 
 
-#+n (defun do-expand (state msg fn)
-        (let* ((id (cdr (assoc :id msg)))
-               (params (cdr (assoc :params msg)))
-               (pkg-name (cdr (assoc :package params)))
-               (text (cdr (assoc :text params)))
-               (expanded (funcall fn text pkg-name))
-               (new-text (if (consp expanded)
-                             (princ-to-string expanded)
-                             text)))
-
-            (send-msg state (resp:macro id (princ-to-string new-text)))))
-
-
-#+n (defun handle-macroexpand (state msg)
-        (do-expand state msg 'macros:expand))
-
-
-#+n (defun handle-macroexpand-1 (state msg)
-        (do-expand state msg 'macros:expand-1))
-
-
 (defun stop ()
     (logger:info-msg "Stopping session")
 
