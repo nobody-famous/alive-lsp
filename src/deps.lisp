@@ -10,6 +10,8 @@
              :list-all-threads
              :list-all-asdf
              :load-asdf-system
+             :macro-expand
+             :macro-expand-1
              :msg-handler
              :read-msg
              :send-msg
@@ -34,6 +36,8 @@
     (list-all-asdf nil :type (or null (function () cons)))
     (load-asdf-system nil :type (or null (function (&key (:name string) (:stdin-fn function) (:stdout-fn function) (:stderr-fn function) (:force boolean)) boolean)))
     (get-thread-id nil :type (or null (function (bt:thread) *)))
+    (macro-expand nil :type (or null (function (string string) list)))
+    (macro-expand-1 nil :type (or null (function (string string) list)))
     (try-compile nil :type (or null (function (string) *)))
     (do-compile nil :type (or null (function (string &key (:stdin-fn function) (:stdout-fn function) (:stderr-fn function)) *)))
     (do-load nil :type (or null (function (string &key (:stdin-fn function) (:stdout-fn function) (:stderr-fn function)) *))))
@@ -49,6 +53,8 @@
                                 (:load-asdf-system (function (&key (:name string) (:stdin-fn function) (:stdout-fn function) (:stderr-fn function) (:force boolean)) boolean))
                                 (:get-thread-id (function (bt:thread) *))
                                 (:eval-fn (function (stream) *))
+                                (:macro-expand (function (string string) list))
+                                (:macro-expand-1 (function (string string) list))
                                 (:try-compile (function (string) *))
                                 (:do-compile (function (string &key (:stdin-fn function) (:stdout-fn function) (:stderr-fn function)) *))
                                 (:do-load (function (string &key (:stdin-fn function) (:stdout-fn function) (:stderr-fn function)) *)))
@@ -65,6 +71,12 @@
                                           T))
                     get-thread-id
                     (eval-fn (lambda (s) (declare (ignore s))))
+                    (macro-expand (lambda (txt pkg)
+                                      (declare (ignore txt pkg)
+                                               (list))))
+                    (macro-expand-1 (lambda (txt pkg)
+                                        (declare (ignore txt pkg)
+                                                 (list))))
                     (try-compile (lambda (path) (declare (ignore path))))
                     (do-compile (lambda (path &key stdin-fn stdout-fn stderr-fn)
                                     (declare (ignore path stdin-fn stdout-fn stderr-fn))))
@@ -80,6 +92,8 @@
                :load-asdf-system load-asdf-system
                :get-thread-id get-thread-id
                :eval-fn eval-fn
+               :macro-expand macro-expand
+               :macro-expand-1 macro-expand-1
                :try-compile try-compile
                :do-compile do-compile
                :do-load do-load))
@@ -166,6 +180,22 @@
     (unless (deps-eval-fn *deps*) (error "Dependencies eval-fn not set"))
 
     (funcall (deps-eval-fn *deps*) data))
+
+
+(declaim (ftype (function (string string) (values list &optional)) macro-expand))
+(defun macro-expand (txt pkg)
+    (unless *deps* (error "Dependencies not set"))
+    (unless (deps-macro-expand *deps*) (error "Dependencies macro-expand not set"))
+
+    (funcall (deps-macro-expand *deps*) txt pkg))
+
+
+(declaim (ftype (function (string string) (values list &optional)) macro-expand-1))
+(defun macro-expand-1 (txt pkg)
+    (unless *deps* (error "Dependencies not set"))
+    (unless (deps-macro-expand-1 *deps*) (error "Dependencies macro-expand-1 not set"))
+
+    (funcall (deps-macro-expand-1 *deps*) txt pkg))
 
 
 (declaim (ftype (function (string) *) try-compile))

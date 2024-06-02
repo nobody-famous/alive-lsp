@@ -26,9 +26,6 @@
          (lock :accessor lock
                :initform (bt:make-recursive-lock)
                :initarg :lock)
-         (sessions :accessor sessions
-                   :initform nil
-                   :initarg :sessions)
          (socket :accessor socket
                  :initform nil
                  :initarg :socket)))
@@ -97,10 +94,10 @@
                                                                                                (alive/session/handler/compile:load-file msg)))))
 
                                        (cons "$/alive/symbol" (lambda (msg) (alive/session/handler/symbol:for-pos msg)))
-                                       (cons "$/alive/unexportSymbol" (lambda (msg) (alive/session/handler/symbol::do-unexport msg)))
+                                       (cons "$/alive/unexportSymbol" (lambda (msg) (alive/session/handler/symbol:do-unexport msg)))
 
-                                       #+n (cons "$/alive/macroexpand" (lambda (msg) (handle-macroexpand msg)))
-                                       #+n (cons "$/alive/macroexpand1" (lambda (msg) (handle-macroexpand-1 msg)))
+                                       (cons "$/alive/macroexpand" (lambda (msg) (alive/session/handler/macro:expand msg)))
+                                       (cons "$/alive/macroexpand1" (lambda (msg) (alive/session/handler/macro:expand-1 msg)))
 
                                        #+n (cons "$/alive/inspect" (lambda (msg) (handle-inspect msg)))
                                        #+n (cons "$/alive/inspectClose" (lambda (msg) (handle-inspect-close msg)))
@@ -127,6 +124,8 @@
                  :load-asdf-system (lambda (&rest args) (apply 'alive/sys/asdf:load-system args))
                  :get-thread-id (lambda (thread) (alive/sys/threads:get-id thread))
                  :eval-fn (lambda (arg) (alive/sys/eval:eval-fn arg))
+                 :macro-expand (lambda (txt pkg) (alive/macros:expand txt pkg))
+                 :macro-expand-1 (lambda (txt pkg) (alive/macros:expand-1 txt pkg))
                  :try-compile (lambda (path) (alive/file:try-compile path))
                  :do-compile (lambda (path &key stdin-fn stdout-fn stderr-fn) (alive/file:do-compile path :stdin-fn stdin-fn :stdout-fn stdout-fn :stderr-fn stderr-fn))))
 
@@ -159,11 +158,6 @@
 (defun stop-server ()
     (bt:with-recursive-lock-held ((lock *server*))
         (setf (running *server*) nil)
-
-        (loop :for session :in (sessions *server*) :do
-                  (session:stop session))
-
-        (setf (sessions *server*) nil)
 
         (when (socket *server*)
               (wake-up-accept)
