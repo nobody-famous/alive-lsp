@@ -111,8 +111,7 @@
                                                (if skip
                                                    (invoke-restart skip)
                                                    (return-from do-cmd msgs))))))
-                (handler-bind ((sb-ext::simple-style-warning (handle-skippable types:*sev-warn*))
-                               (sb-ext:compiler-note (handle-skippable types:*sev-info*))
+                (handler-bind ((sb-ext:compiler-note (handle-skippable types:*sev-info*))
                                (sb-ext:defconstant-uneql handle-defconstant)
                                (warning (handle-skippable types:*sev-warn*))
                                (sb-c:fatal-compiler-error handle-error)
