@@ -176,7 +176,6 @@
 (declaim (ftype (function (string string) (values list &optional)) macro-expand))
 (defun macro-expand (txt pkg)
     (unless *deps* (error "Dependencies not set"))
-    (unless (deps-macro-expand *deps*) (error "Dependencies macro-expand not set"))
 
     (funcall (deps-macro-expand *deps*) txt pkg))
 
@@ -184,7 +183,6 @@
 (declaim (ftype (function (string string) (values list &optional)) macro-expand-1))
 (defun macro-expand-1 (txt pkg)
     (unless *deps* (error "Dependencies not set"))
-    (unless (deps-macro-expand-1 *deps*) (error "Dependencies macro-expand-1 not set"))
 
     (funcall (deps-macro-expand-1 *deps*) txt pkg))
 
@@ -192,7 +190,6 @@
 (declaim (ftype (function (string) *) try-compile))
 (defun try-compile (path)
     (unless *deps* (error "Dependencies not set"))
-    (unless (deps-try-compile *deps*) (error "Dependencies try-compile not set"))
 
     (funcall (deps-try-compile *deps*) path))
 
@@ -200,7 +197,6 @@
 (declaim (ftype (function (string &key (:stdin-fn function) (:stdout-fn function) (:stderr-fn function)) *) do-compile))
 (defun do-compile (path &key stdin-fn stdout-fn stderr-fn)
     (unless *deps* (error "Dependencies not set"))
-    (unless (deps-do-compile *deps*) (error "Dependencies do-compile not set"))
 
     (funcall (deps-do-compile *deps*) path :stdin-fn stdin-fn :stdout-fn stdout-fn :stderr-fn stderr-fn))
 
@@ -208,7 +204,6 @@
 (declaim (ftype (function (string &key (:stdin-fn function) (:stdout-fn function) (:stderr-fn function)) *) do-load))
 (defun do-load (path &key stdin-fn stdout-fn stderr-fn)
     (unless *deps* (error "Dependencies not set"))
-    (unless (deps-do-load *deps*) (error "Dependencies do-load not set"))
 
     (funcall (deps-do-load *deps*) path :stdin-fn stdin-fn :stdout-fn stdout-fn :stderr-fn stderr-fn))
 

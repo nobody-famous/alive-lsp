@@ -94,6 +94,20 @@
                               :actual (deps:do-eval "foo")))))
 
 
+(defun test-macro-expand ()
+    (clue:test "Macro expand"
+        (clue:expect-fail (lambda () (deps:macro-expand "foo" "bar")))
+        (deps:with-deps (deps:create)
+            (deps:macro-expand "foo" "bar"))))
+
+
+(defun test-macro-expand-1 ()
+    (clue:test "Macro expand 1"
+        (clue:expect-fail (lambda () (deps:macro-expand-1 "foo" "bar")))
+        (deps:with-deps (deps:create)
+            (deps:macro-expand-1 "foo" "bar"))))
+
+
 (defun run-all ()
     (clue:suite "Dependency Tests"
         (test-msg-handler)
@@ -105,4 +119,6 @@
         (test-get-thread-id)
         (test-list-all-asdf)
         (test-load-asdf)
-        (test-do-eval)))
+        (test-do-eval)
+        (test-macro-expand)
+        (test-macro-expand-1)))
