@@ -65,7 +65,7 @@
                     (read-msg (lambda () (list)))
                     (list-all-threads (lambda () (list)))
                     (kill-thread (lambda (id) (declare (ignore id))))
-                    list-all-asdf
+                    (list-all-asdf (lambda () (list)))
                     (load-asdf-system (lambda (&key name stdin-fn stdout-fn stderr-fn force)
                                           (declare (ignore name stdin-fn stdout-fn stderr-fn force))
                                           T))
@@ -150,7 +150,6 @@
 (declaim (ftype (function () (values cons &optional)) list-all-asdf))
 (defun list-all-asdf ()
     (unless *deps* (error "Dependencies not set"))
-    (unless (deps-list-all-asdf *deps*) (error "Dependencies list-all-asdf not set"))
 
     (funcall (deps-list-all-asdf *deps*)))
 
@@ -158,7 +157,6 @@
 (declaim (ftype (function (&key (:name string) (:stdin-fn function) (:stdout-fn function) (:stderr-fn function) (:force boolean)) (values boolean &optional)) load-asdf-system))
 (defun load-asdf-system (&key name stdin-fn stdout-fn stderr-fn force)
     (unless *deps* (error "Dependencies not set"))
-    (unless (deps-load-asdf-system *deps*) (error "Dependencies load-asdf-system not set"))
 
     (funcall (deps-load-asdf-system *deps*)
         :name name

@@ -70,6 +70,22 @@
                               :actual (deps:get-thread-id (bt:current-thread))))))
 
 
+(defun test-list-all-asdf ()
+    (clue:test "List all ASDF systems"
+        (clue:expect-fail (lambda () (deps:list-all-asdf)))
+        (deps:with-deps (deps:create :list-all-asdf (lambda () (list 1 2)))
+            (clue:check-equal :expected (list 1 2)
+                              :actual (deps:list-all-asdf)))))
+
+
+(defun test-load-asdf ()
+    (clue:test "Load ASDF system"
+        (clue:expect-fail (lambda () (deps:load-asdf-system)))
+        (deps:with-deps (deps:create :list-all-asdf (lambda () (list 1 2)))
+            (clue:check-equal :expected T
+                              :actual (deps:load-asdf-system)))))
+
+
 (defun test-do-eval ()
     (clue:test "Eval"
         (clue:expect-fail (lambda () (deps:do-eval (make-hash-table))))
@@ -87,4 +103,6 @@
         (test-list-all-threads)
         (test-kill-thread)
         (test-get-thread-id)
+        (test-list-all-asdf)
+        (test-load-asdf)
         (test-do-eval)))
