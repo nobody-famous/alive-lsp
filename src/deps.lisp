@@ -62,7 +62,7 @@
 (defun create (&key msg-handler
                     (send-msg (lambda (msg) (declare (ignore msg))))
                     (send-request (lambda (req) (declare (ignore req) (list))))
-                    read-msg
+                    (read-msg (lambda () (list)))
                     list-all-threads
                     kill-thread
                     list-all-asdf
@@ -108,7 +108,6 @@
 (declaim (ftype (function () T) read-msg))
 (defun read-msg ()
     (unless *deps* (error "Dependencies not set"))
-    (unless (deps-read-msg *deps*) (error "Dependencies read-msg not set"))
 
     (funcall (deps-read-msg *deps*)))
 
@@ -116,7 +115,6 @@
 (declaim (ftype (function (T) (values null &optional)) send-msg))
 (defun send-msg (msg)
     (unless *deps* (error "Dependencies not set"))
-    (unless (deps-send-msg *deps*) (error "Dependencies send-msg not set"))
 
     (funcall (deps-send-msg *deps*) msg))
 
@@ -124,7 +122,6 @@
 (declaim (ftype (function (hash-table) (values list &optional)) send-request))
 (defun send-request (msg)
     (unless *deps* (error "Dependencies not set"))
-    (unless (deps-send-request *deps*) (error "Dependencies send-request not set"))
 
     (funcall (deps-send-request *deps*) msg))
 
@@ -177,7 +174,6 @@
 (declaim (ftype (function (T) *) do-eval))
 (defun do-eval (data)
     (unless *deps* (error "Dependencies not set"))
-    (unless (deps-eval-fn *deps*) (error "Dependencies eval-fn not set"))
 
     (funcall (deps-eval-fn *deps*) data))
 

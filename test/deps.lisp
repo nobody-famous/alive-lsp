@@ -20,14 +20,13 @@
         (clue:expect-fail (lambda () (deps:read-msg)))
         (deps:with-deps (deps:create :read-msg (lambda () (list 1 2)))
             (clue:check-equal :expected (list 1 2)
-                              :actual (deps:read-msg)))
-        (deps:with-deps (deps:create)
-            (clue:expect-fail (lambda () (deps:read-msg))))))
+                              :actual (deps:read-msg)))))
 
 
 (defun test-send-msg ()
     (clue:test "Send message"
         (let ((sent nil))
+            (clue:expect-fail (lambda () (deps:send-msg (list (cons :id 5)))))
             (deps:with-deps (deps:create :send-msg (lambda (msg)
                                                        (declare (ignore msg))
                                                        (setf sent T)
@@ -38,6 +37,7 @@
 
 (defun test-send-request ()
     (clue:test "Send request"
+        (clue:expect-fail (lambda () (deps:send-request (make-hash-table))))
         (deps:with-deps (deps:create :send-request (lambda (msg)
                                                        (declare (ignore msg))
                                                        (list (cons :result "foo"))))
@@ -47,6 +47,7 @@
 
 (defun test-do-eval ()
     (clue:test "Eval"
+        (clue:expect-fail (lambda () (deps:do-eval (make-hash-table))))
         (deps:with-deps (deps:create :eval-fn (lambda (data) data))
             (clue:check-equal :expected "foo"
                               :actual (deps:do-eval "foo")))))
