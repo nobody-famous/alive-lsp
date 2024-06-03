@@ -69,7 +69,7 @@
                     (load-asdf-system (lambda (&key name stdin-fn stdout-fn stderr-fn force)
                                           (declare (ignore name stdin-fn stdout-fn stderr-fn force))
                                           T))
-                    (get-thread-id (lambda () nil))
+                    (get-thread-id (lambda (thread) (declare (ignore thread))))
                     (eval-fn (lambda (s) (declare (ignore s))))
                     (macro-expand (lambda (txt pkg)
                                       (declare (ignore txt pkg)

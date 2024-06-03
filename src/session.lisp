@@ -15,7 +15,6 @@
                       (:range :alive/range)
                       (:packages :alive/packages)
                       (:selection :alive/selection)
-                      (:threads :alive/threads)
                       (:formatter :alive/format)
                       (:logger :alive/logger)
 

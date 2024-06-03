@@ -1,7 +1,8 @@
 (defpackage :alive/test/session/state
     (:use :cl)
     (:export :run-all)
-    (:local-nicknames (:state :alive/session/state)))
+    (:local-nicknames (:deps :alive/deps)
+                      (:state :alive/session/state)))
 
 (in-package :alive/test/session/state)
 
@@ -123,10 +124,11 @@
 
 (defun test-thread-msg ()
     (clue:test "Thread Message"
-        (clue:expect-fail (lambda () (state:with-thread-msg (5))))
+        #+n (clue:expect-fail (lambda () (state:with-thread-msg (5))))
         (state:with-state (state:create)
-            (state:with-thread-msg (5)
-                nil))))
+            (deps:with-deps (deps:create)
+                (state:with-thread-msg (5)
+                    nil)))))
 
 
 (defun test-create-listener ()

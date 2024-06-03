@@ -7,7 +7,6 @@
                       (:lsp-msg :alive/lsp/message/abstract)
                       (:refresh :alive/session/refresh)
                       (:state :alive/session/state)
-                      (:threads :alive/threads)
                       (:utils :alive/session/handler/utils)))
 
 (in-package :alive/session/handler/threads)
@@ -32,7 +31,7 @@
                                                    :message (format nil "Request ~A canceled" msg-id))))
 
         (when thread-id
-              (deps:kill-thread thread-id))))
+              (ignore-errors (deps:kill-thread thread-id)))))
 
 
 (declaim (ftype (function (cons) (values hash-table &optional)) kill))
@@ -41,12 +40,6 @@
            (params (cdr (assoc :params msg)))
            (thread-id (cdr (assoc :id params))))
 
-        (handler-case
-                (progn (cancel-thread thread-id)
-                       (refresh:send)
-                       (lsp-msg:create-response id :result-value T))
-
-            (threads:thread-not-found (c)
-                                      (lsp-msg:create-error id
-                                                            :code errors:*request-failed*
-                                                            :message (format nil "Thread ~A not found" (threads:id c)))))))
+        (cancel-thread thread-id)
+        (refresh:send)
+        (lsp-msg:create-response id :result-value T)))

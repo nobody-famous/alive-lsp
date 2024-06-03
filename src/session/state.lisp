@@ -27,7 +27,7 @@
              :state
              :with-state
              :with-thread-msg)
-    (:local-nicknames (:threads :alive/threads)))
+    (:local-nicknames (:deps :alive/deps)))
 
 (in-package :alive/session/state)
 
@@ -202,7 +202,7 @@
 (defun save-thread-msg (id)
     (let* ((table (state-thread-msgs *state*))
            (cur-thread (bt:current-thread))
-           (thread-id (threads:get-thread-id cur-thread)))
+           (thread-id (deps:get-thread-id cur-thread)))
 
         (bt:with-recursive-lock-held ((state-lock *state*))
             (setf (gethash thread-id table) id))))
@@ -220,7 +220,7 @@
 (defun rem-thread-msg ()
     (let* ((table (state-thread-msgs *state*))
            (cur-thread (bt:current-thread))
-           (thread-id (threads:get-thread-id cur-thread)))
+           (thread-id (deps:get-thread-id cur-thread)))
 
         (bt:with-recursive-lock-held ((state-lock *state*))
             (remhash thread-id table))))
