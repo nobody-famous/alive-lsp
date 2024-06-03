@@ -63,13 +63,13 @@
                     (send-msg (lambda (msg) (declare (ignore msg))))
                     (send-request (lambda (req) (declare (ignore req) (list))))
                     (read-msg (lambda () (list)))
-                    list-all-threads
-                    kill-thread
+                    (list-all-threads (lambda () (list)))
+                    (kill-thread (lambda (id) (declare (ignore id))))
                     list-all-asdf
                     (load-asdf-system (lambda (&key name stdin-fn stdout-fn stderr-fn force)
                                           (declare (ignore name stdin-fn stdout-fn stderr-fn force))
                                           T))
-                    get-thread-id
+                    (get-thread-id (lambda () nil))
                     (eval-fn (lambda (s) (declare (ignore s))))
                     (macro-expand (lambda (txt pkg)
                                       (declare (ignore txt pkg)
@@ -129,7 +129,6 @@
 (declaim (ftype (function () (values cons &optional)) list-all-threads))
 (defun list-all-threads ()
     (unless *deps* (error "Dependencies not set"))
-    (unless (deps-list-all-threads *deps*) (error "Dependencies list-all-threads not set"))
 
     (funcall (deps-list-all-threads *deps*)))
 
@@ -137,7 +136,6 @@
 (declaim (ftype (function (T) *) kill-thread))
 (defun kill-thread (thread-id)
     (unless *deps* (error "Dependencies not set"))
-    (unless (deps-kill-thread *deps*) (error "Dependencies kill-thread not set"))
 
     (funcall (deps-kill-thread *deps*) thread-id))
 
@@ -145,7 +143,6 @@
 (declaim (ftype (function (bt:thread) *) get-thread-id))
 (defun get-thread-id (thread)
     (unless *deps* (error "Dependencies not set"))
-    (unless (deps-get-thread-id *deps*) (error "Dependencies get-thread-id not set"))
 
     (funcall (deps-get-thread-id *deps*) thread))
 
