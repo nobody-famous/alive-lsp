@@ -108,6 +108,27 @@
             (deps:macro-expand-1 "foo" "bar"))))
 
 
+(defun test-try-compile ()
+    (clue:test "Try compile"
+        (clue:expect-fail (lambda () (deps:try-compile "foo")))
+        (deps:with-deps (deps:create)
+            (deps:try-compile "foo"))))
+
+
+(defun test-do-compile ()
+    (clue:test "Do compile"
+        (clue:expect-fail (lambda () (deps:do-compile "foo")))
+        (deps:with-deps (deps:create)
+            (deps:do-compile "foo"))))
+
+
+(defun test-do-load ()
+    (clue:test "Do load"
+        (clue:expect-fail (lambda () (deps:do-load "foo")))
+        (deps:with-deps (deps:create)
+            (deps:do-load "foo"))))
+
+
 (defun run-all ()
     (clue:suite "Dependency Tests"
         (test-msg-handler)
@@ -121,4 +142,7 @@
         (test-load-asdf)
         (test-do-eval)
         (test-macro-expand)
-        (test-macro-expand-1)))
+        (test-macro-expand-1)
+        (test-try-compile)
+        (test-do-compile)
+        (test-do-load)))

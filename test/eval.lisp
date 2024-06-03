@@ -18,6 +18,13 @@
                                   :actual fn-called)))))
 
 
+(defun test-no-package ()
+    (clue:test "No package"
+        (deps:with-deps (deps:create)
+            (clue:expect-fail (lambda () (eval:from-string "(+ 1 2)" :pkg-name "foo"))))))
+
+
 (defun run-all ()
     (clue:suite "Eval Tests"
-        (test-basic)))
+        (test-basic)
+        (test-no-package)))
