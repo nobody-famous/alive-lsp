@@ -1,43 +1,8 @@
 (defpackage :alive/session
     (:use :cl)
-    (:export :add-listener
-             :create
-             :listener
-             :start
+    (:export :start
              :stop)
-    (:local-nicknames (:asdf :alive/asdf)
-                      (:eval :alive/eval)
-                      (:debugger :alive/debugger)
-                      (:inspector :alive/inspector)
-                      (:file :alive/file)
-                      (:macros :alive/macros)
-                      (:pos :alive/position)
-                      (:range :alive/range)
-                      (:packages :alive/packages)
-                      (:selection :alive/selection)
-                      (:formatter :alive/format)
-                      (:logger :alive/logger)
-
-                      (:analysis :alive/lsp/sem-analysis)
-                      (:comps :alive/lsp/completions)
-                      (:packet :alive/lsp/packet)
-                      (:parse :alive/lsp/parse)
-                      (:errors :alive/lsp/errors)
-
-                      (:tokenizer :alive/parse/tokenizer)
-                      (:form :alive/parse/form)
-                      (:forms :alive/parse/forms)
-
-                      (:config-item :alive/lsp/types/config-item)
-                      (:fmt-opts :alive/lsp/types/format-options)
-                      (:restart-info :alive/lsp/types/restart-info)
-
-                      (:resp :alive/lsp/message/response)
-                      (:req :alive/lsp/message/request)
-                      (:notification :alive/lsp/message/notification)
-                      (:message :alive/lsp/message/abstract)
-                      (:fmt-utils :alive/lsp/message/format-utils)
-
+    (:local-nicknames (:logger :alive/logger)
                       (:state :alive/session/state)
                       (:utils :alive/thread-utils)))
 
