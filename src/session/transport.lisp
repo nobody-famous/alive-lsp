@@ -27,17 +27,16 @@
 
 (declaim (ftype (function (hash-table) cons) send-request))
 (defun send-request (req)
-    (let ((cond-var (bt:make-condition-variable))
-          (response nil))
-        (state:set-sent-msg-callback (gethash "id" req)
-                                     (lambda (resp)
-                                         (state:lock (mutex)
-                                             (setf response resp)
-                                             (bt:condition-notify cond-var))))
-        (send-msg req)
-
-        (state:lock (mutex)
+    (state:lock (mutex)
+        (let ((cond-var (bt:make-condition-variable))
+              (response nil))
+            (state:set-sent-msg-callback (gethash "id" req)
+                                         (lambda (resp)
+                                             (state:lock (mutex)
+                                                 (setf response resp)
+                                                 (bt:condition-notify cond-var))))
+            (send-msg req)
             (unless response
-                (bt:condition-wait cond-var mutex)))
+                (bt:condition-wait cond-var mutex))
 
-        response))
+            response)))

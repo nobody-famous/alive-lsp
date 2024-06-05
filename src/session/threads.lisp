@@ -31,11 +31,12 @@
 
 (declaim (ftype (function ((or null string)) (or null stream)) get-frame-text-stream))
 (defun get-frame-text-stream (file)
-    (let* ((file-url (format NIL "file://~A" (file-utils:escape-file file)))
-           (text (state:get-file-text file-url)))
+    (when file
+          (let* ((file-url (format NIL "file://~A" (file-utils:escape-file file)))
+                 (text (state:get-file-text file-url)))
 
-        (when text
-              (make-string-input-stream text))))
+              (when text
+                    (make-string-input-stream text)))))
 
 
 (declaim (ftype (function (hash-table) hash-table) frame-to-wire))

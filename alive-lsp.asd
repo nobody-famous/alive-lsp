@@ -85,6 +85,7 @@
                                        (:file "session/handler/compile")
                                        (:file "session/handler/document")
                                        (:file "session/handler/init")
+                                       (:file "session/handler/inspect")
                                        (:file "session/handler/form-bounds")
                                        (:file "session/handler/macro")
                                        (:file "session/handler/packages")
