@@ -103,40 +103,40 @@
 ;         (message:create-response id :result-value T)))
 
 
-; (defun do-inspect-eval (state msg)
-;     (let* ((id (cdr (assoc :id msg)))
-;            (params (cdr (assoc :params msg)))
-;            (insp-id (cdr (assoc :id params)))
-;            (text (cdr (assoc :text params)))
-;            (inspector (get-inspector state :id insp-id))
-;            (old-result (inspector:get-result inspector))
-;            (* (if (symbolp old-result)
-;                   (symbol-value old-result)
-;                   old-result))
-;            (pkg-name (inspector:get-pkg inspector))
-;            (new-result (eval:from-string text
-;                                          :pkg-name pkg-name
-;                                          :stdin-fn (lambda ()
-;                                                        (wait-for-input state))
-;                                          :stdout-fn (lambda (data)
-;                                                         (send-msg state (notification:stdout data)))
-;                                          :stderr-fn (lambda (data)
-;                                                         (send-msg state (notification:stderr data))))))
+#+n (defun do-inspect-eval (state msg)
+        (let* ((id (cdr (assoc :id msg)))
+               (params (cdr (assoc :params msg)))
+               (insp-id (cdr (assoc :id params)))
+               (text (cdr (assoc :text params)))
+               (inspector (get-inspector state :id insp-id))
+               (old-result (inspector:get-result inspector))
+               (* (if (symbolp old-result)
+                      (symbol-value old-result)
+                      old-result))
+               (pkg-name (inspector:get-pkg inspector))
+               (new-result (eval:from-string text
+                                             :pkg-name pkg-name
+                                             :stdin-fn (lambda ()
+                                                           (wait-for-input state))
+                                             :stdout-fn (lambda (data)
+                                                            (send-msg state (notification:stdout data)))
+                                             :stderr-fn (lambda (data)
+                                                            (send-msg state (notification:stderr data))))))
 
-;         (if new-result
-;             (send-inspect-result state
-;                                  :id id
-;                                  :text text
-;                                  :pkg-name pkg-name
-;                                  :result new-result)
+            (if new-result
+                (send-inspect-result state
+                                     :id id
+                                     :text text
+                                     :pkg-name pkg-name
+                                     :result new-result)
 
-;             (send-msg state (message:create-response id
-;                                                      :result-value (make-hash-table))))))
+                (send-msg state (message:create-response id
+                                                         :result-value (make-hash-table))))))
 
 
-; (defun handle-inspect-eval (state msg)
-;     (run-in-thread state msg (lambda ()
-;                                  (do-inspect-eval state msg))))
+#+n (defun handle-inspect-eval (state msg)
+        (run-in-thread state msg (lambda ()
+                                     (do-inspect-eval state msg))))
 
 
 ; (defun handle-inspect-macro (state msg)

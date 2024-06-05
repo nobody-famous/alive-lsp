@@ -4,6 +4,7 @@
              :for-pos)
     (:local-nicknames (:lsp-msg :alive/lsp/message/abstract)
                       (:packages :alive/packages)
+                      (:refresh :alive/session/refresh)
                       (:state :alive/session/state)
                       (:utils :alive/session/handler/utils)))
 
@@ -31,4 +32,5 @@
            (pkg-name (cdr (assoc :package params))))
 
         (packages:unexport-symbol pkg-name sym-name)
+        (refresh:send)
         (lsp-msg:create-response id :result-value T)))

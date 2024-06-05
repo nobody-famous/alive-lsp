@@ -35,6 +35,7 @@
         (alive/test/session/handler/eval:run-all)
         (alive/test/session/handler/form-bounds:run-all)
         (alive/test/session/handler/init:run-all)
+        (alive/test/session/handler/inspect:run-all)
         (alive/test/session/handler/macro:run-all)
         (alive/test/session/handler/packages:run-all)
         (alive/test/session/handler/symbol:run-all)

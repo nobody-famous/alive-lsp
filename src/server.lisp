@@ -99,7 +99,11 @@
                                        (cons "$/alive/macroexpand" (lambda (msg) (alive/session/handler/macro:expand msg)))
                                        (cons "$/alive/macroexpand1" (lambda (msg) (alive/session/handler/macro:expand-1 msg)))
 
-                                       #+n (cons "$/alive/inspect" (lambda (msg) (handle-inspect msg)))
+                                       (cons "$/alive/inspect" (lambda (msg)
+                                                                   (threads:run-in-thread (or (cdr (assoc :method msg)) "Inspect")
+                                                                                          (cdr (assoc :id msg))
+                                                                                          (lambda ()
+                                                                                              (alive/session/handler/inspect:do-inspect msg)))))
                                        #+n (cons "$/alive/inspectClose" (lambda (msg) (handle-inspect-close msg)))
                                        #+n (cons "$/alive/inspectEval" (lambda (msg) (handle-inspect-eval msg)))
                                        #+n (cons "$/alive/inspectMacro" (lambda (msg) (handle-inspect-macro msg)))
@@ -127,7 +131,8 @@
                  :macro-expand (lambda (txt pkg) (alive/macros:expand txt pkg))
                  :macro-expand-1 (lambda (txt pkg) (alive/macros:expand-1 txt pkg))
                  :try-compile (lambda (path) (alive/file:try-compile path))
-                 :do-compile (lambda (path &key stdin-fn stdout-fn stderr-fn) (alive/file:do-compile path :stdin-fn stdin-fn :stdout-fn stdout-fn :stderr-fn stderr-fn))))
+                 :do-compile (lambda (path &key stdin-fn stdout-fn stderr-fn) (alive/file:do-compile path :stdin-fn stdin-fn :stdout-fn stdout-fn :stderr-fn stderr-fn))
+                 :do-load (lambda (path &key stdin-fn stdout-fn stderr-fn) (alive/file:do-load path :stdin-fn stdin-fn :stdout-fn stdout-fn :stderr-fn stderr-fn))))
 
 
 (defun accept-conn ()
