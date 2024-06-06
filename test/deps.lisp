@@ -125,7 +125,7 @@
 (defun test-do-load ()
     (clue:test "Do load"
         (clue:expect-fail (lambda () (deps:do-load "foo")))
-        (deps:with-deps (deps:create)
+        (deps:with-deps (deps:create :send-msg (lambda (msg) (declare (ignore msg))))
             (deps:do-load "foo"))))
 
 

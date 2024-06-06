@@ -61,7 +61,10 @@
                           deps) create))
 (defun create (&key msg-handler
                     (send-msg (lambda (msg) (declare (ignore msg))))
-                    (send-request (lambda (req) (declare (ignore req) (list))))
+                    (send-request (lambda (req)
+                                      (declare (ignore req))
+                                      (list)))
+
                     (read-msg (lambda () (list)))
                     (list-all-threads (lambda () (list)))
                     (kill-thread (lambda (id) (declare (ignore id))))

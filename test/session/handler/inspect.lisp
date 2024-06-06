@@ -20,9 +20,13 @@
                                                                    (cons :params (list (cons :text "foo"))))))))
 
         (clue:test "New inspect"
-            (deps:with-deps (deps:create)
-                (inspect:do-inspect (list (cons :id 5)
-                                          (cons :params (list (cons :text "foo")))))))
+            (let ((sent-msg nil))
+                (deps:with-deps (deps:create :send-msg (lambda (msg)
+                                                           (setf sent-msg msg)
+                                                           nil))
+                    (inspect:do-inspect (list (cons :id 5)
+                                              (cons :params (list (cons :text "foo")))))
+                    (clue:check-exists (gethash "result" sent-msg)))))
 
         (clue:test "New result symbol"
             (state:with-state (state:create)
@@ -30,7 +34,8 @@
                                                           (declare (ignore str))
                                                           'foo))
                     (inspect:do-inspect (list (cons :id 5)
-                                              (cons :params (list (cons :text "foo"))))))))
+                                              (cons :params (list (cons :text "foo")))))
+                    (clue:check-exists (state:get-inspector 1)))))
 
         (clue:test "Old result"
             (state:with-state (state:create)
