@@ -59,7 +59,7 @@
                                 (:do-compile (function (string &key (:stdin-fn function) (:stdout-fn function) (:stderr-fn function)) *))
                                 (:do-load (function (string &key (:stdin-fn function) (:stdout-fn function) (:stderr-fn function)) *)))
                           deps) create))
-(defun create (&key msg-handler
+(defun create (&key (msg-handler (lambda (msg) (declare (ignore msg))))
                     (send-msg (lambda (msg) (declare (ignore msg))))
                     (send-request (lambda (req)
                                       (declare (ignore req))
