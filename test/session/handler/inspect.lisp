@@ -46,6 +46,13 @@
                                                                   (cons :id 5))))))))))
 
 
+(defun test-refresh ()
+    (clue:test "Refresh"
+        (deps:with-deps (deps:create)
+            (inspect:refresh (list (cons :id 5))))))
+
+
 (defun run-all ()
     (clue:suite "Inspect Tests"
-        (test-do-inspect)))
+        (test-do-inspect)
+        (test-refresh)))

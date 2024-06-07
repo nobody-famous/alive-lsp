@@ -1,6 +1,7 @@
 (defpackage :alive/session/handler/inspect
     (:use :cl)
-    (:export :do-inspect)
+    (:export :do-inspect
+             :refresh)
     (:local-nicknames (:deps :alive/deps)
                       (:errors :alive/lsp/errors)
                       (:eval :alive/eval)
@@ -101,3 +102,21 @@
 
             (deps:send-msg (lsp-msg:create-response id
                                                     :result-value (make-hash-table))))))
+
+
+(defun refresh (msg)
+    (let* ((id (cdr (assoc :id msg)))
+           (params (cdr (assoc :params msg)))
+           (insp-id (cdr (assoc :id params)))
+           (inspector (when insp-id (state:get-inspector insp-id)))
+           (result (inspector:get-result inspector)))
+
+        (typecase result
+            (symbol (deps:send-msg (inspect-response id
+                                                     :insp-id insp-id
+                                                     :result (inspector:to-result (if (fboundp result)
+                                                                                      result
+                                                                                      (symbol-value result))))))
+            (otherwise (deps:send-msg (inspect-response id
+                                                        :insp-id insp-id
+                                                        :result (inspector:to-result result)))))))
