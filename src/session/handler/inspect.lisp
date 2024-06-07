@@ -3,12 +3,14 @@
     (:export :do-close
              :do-inspect
              :do-symbol
+             :macro
              :refresh)
     (:local-nicknames (:deps :alive/deps)
                       (:errors :alive/lsp/errors)
                       (:eval :alive/eval)
                       (:inspector :alive/inspector)
                       (:lsp-msg :alive/lsp/message/abstract)
+                      (:macros :alive/macros)
                       (:notification :alive/lsp/message/notification)
                       (:state :alive/session/state)
                       (:threads :alive/session/threads)))
@@ -43,6 +45,7 @@
                                                      (princ-to-string result))))))
 
 
+(declaim (ftype (function (integer string string) null) try-inspect))
 (defun try-inspect (id text pkg-name)
     (let ((result (eval:from-string text
                                     :pkg-name pkg-name
@@ -59,24 +62,28 @@
                              :result result)))
 
 
-(defun process-inspect (msg)
+(declaim (ftype (function (list) null) do-inspect))
+(defun do-inspect (msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
-           (pkg-name (cdr (assoc :package params)))
+           (pkg-name (or (cdr (assoc :package params))
+                         "cl-user"))
            (text (cdr (assoc :text params)))
            (* (state:get-history-item 0))
            (** (state:get-history-item 1))
            (*** (state:get-history-item 2)))
         (handler-case
-                (try-inspect id text pkg-name)
+                (progn (unless (stringp text)
+                           (error "No text to inspect"))
+                       (try-inspect id text pkg-name))
             (T (c)
                (deps:send-msg (lsp-msg:create-error id
                                                     :code errors:*internal-error*
                                                     :message (princ-to-string c)))))))
 
 
-(declaim (ftype (function (list) null) do-inspect))
-(defun do-inspect (msg)
+(declaim (ftype (function (list) null) do-inspect-eval))
+(defun do-inspect-eval (msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
            (insp-id (cdr (assoc :id params)))
@@ -151,3 +158,18 @@
                (deps:send-msg (lsp-msg:create-error id
                                                     :code errors:*internal-error*
                                                     :message (princ-to-string c)))))))
+
+
+(defun macro (msg)
+    (let* ((id (cdr (assoc :id msg)))
+           (params (cdr (assoc :params msg)))
+           (pkg-name (cdr (assoc :package params)))
+           (text (cdr (assoc :text params)))
+           (expanded (macros:expand-1 text pkg-name)))
+
+        (send-inspect-result :id id
+                             :text text
+                             :pkg-name pkg-name
+                             :result-type "macro"
+                             :convert NIL
+                             :result expanded)))

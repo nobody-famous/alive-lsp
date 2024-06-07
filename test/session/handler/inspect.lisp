@@ -16,17 +16,23 @@
 (defun test-do-inspect ()
     (clue:suite "Do inspect"
         (clue:test "Fail"
-            (clue:expect-fail (lambda () (inspect:do-inspect (list (cons :id 5)
-                                                                   (cons :params (list (cons :text "foo"))))))))
+            (let ((sent-msg nil))
+                (state:with-state (state:create)
+                    (deps:with-deps (deps:create :send-msg (lambda (msg)
+                                                               (setf sent-msg msg)
+                                                               nil))
+                        (inspect:do-inspect (list (cons :id 5)))
+                        (clue:check-exists (gethash "error" sent-msg))))))
 
         (clue:test "New inspect"
             (let ((sent-msg nil))
-                (deps:with-deps (deps:create :send-msg (lambda (msg)
-                                                           (setf sent-msg msg)
-                                                           nil))
-                    (inspect:do-inspect (list (cons :id 5)
-                                              (cons :params (list (cons :text "foo")))))
-                    (clue:check-exists (gethash "result" sent-msg)))))
+                (state:with-state (state:create)
+                    (deps:with-deps (deps:create :send-msg (lambda (msg)
+                                                               (setf sent-msg msg)
+                                                               nil))
+                        (inspect:do-inspect (list (cons :id 5)
+                                                  (cons :params (list (cons :text "foo")))))
+                        (clue:check-exists (gethash "result" sent-msg))))))
 
         (clue:test "New result symbol"
             (state:with-state (state:create)
@@ -73,9 +79,22 @@
                 (inspect:do-symbol (list (cons :id 5)))))))
 
 
+(defun test-macro ()
+    (clue:suite "Macro"
+        (clue:test "Fail"
+            (deps:with-deps nil
+                (clue:expect-fail (lambda () (inspect:macro (list (cons :id 5)))))))
+
+        (clue:test "Macro"
+            (state:with-state (state:create)
+                (deps:with-deps (deps:create)
+                    (inspect:macro (list (cons :id 5))))))))
+
+
 (defun run-all ()
     (clue:suite "Inspect Tests"
         (test-do-inspect)
         (test-refresh)
         (test-close)
-        (test-symbol)))
+        (test-symbol)
+        (test-macro)))

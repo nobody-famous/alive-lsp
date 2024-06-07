@@ -111,8 +111,8 @@
                                                                                                 (cdr (assoc :id msg))
                                                                                                 (lambda ()
                                                                                                     (alive/session/handler/inspect:do-symbol msg)))))
-                                       #+n (cons "$/alive/inspectEval" (lambda (msg) (handle-inspect-eval msg)))
-                                       #+n (cons "$/alive/inspectMacro" (lambda (msg) (handle-inspect-macro msg)))))
+                                       (cons "$/alive/inspectMacro" (lambda (msg) (alive/session/handler/inspect:macro msg)))
+                                       #+n (cons "$/alive/inspectEval" (lambda (msg) (handle-inspect-eval msg)))))
 
 
 (declaim (ftype (function () state:state) create-session-state))
