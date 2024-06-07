@@ -94,13 +94,13 @@
 ;                                  (process-inspect-sym state msg))))
 
 
-; (defun handle-inspect-close (state msg)
-;     (let* ((id (cdr (assoc :id msg)))
-;            (params (cdr (assoc :params msg)))
-;            (insp-id (cdr (assoc :id params))))
+#+n (defun handle-inspect-close (state msg)
+        (let* ((id (cdr (assoc :id msg)))
+               (params (cdr (assoc :params msg)))
+               (insp-id (cdr (assoc :id params))))
 
-;         (rem-inspector state :id insp-id)
-;         (message:create-response id :result-value T)))
+            (rem-inspector state :id insp-id)
+            (message:create-response id :result-value T)))
 
 
 #+n (defun do-inspect-eval (state msg)

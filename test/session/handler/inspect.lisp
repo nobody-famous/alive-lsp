@@ -52,7 +52,18 @@
             (inspect:refresh (list (cons :id 5))))))
 
 
+(defun test-close ()
+    (clue:test "Close"
+        (state:with-state (state:create)
+            (state:add-inspector 5 (inspector:create :text "foo" :pkg "bar" :result nil))
+            (inspect:do-close (list (cons :id 1)
+                                    (cons :params (list (cons :id 5)))))
+            (clue:check-equal :expected nil
+                              :actual (state:get-inspector 5)))))
+
+
 (defun run-all ()
     (clue:suite "Inspect Tests"
         (test-do-inspect)
-        (test-refresh)))
+        (test-refresh)
+        (test-close)))

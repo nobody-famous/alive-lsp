@@ -105,7 +105,7 @@
                                                                                           (lambda ()
                                                                                               (alive/session/handler/inspect:do-inspect msg)))))
                                        (cons "$/alive/inspectRefresh" (lambda (msg) (alive/session/handler/inspect:refresh msg)))
-                                       #+n (cons "$/alive/inspectClose" (lambda (msg) (handle-inspect-close msg)))
+                                       (cons "$/alive/inspectClose" (lambda (msg) (alive/session/handler/inspect:do-close msg)))
                                        #+n (cons "$/alive/inspectEval" (lambda (msg) (handle-inspect-eval msg)))
                                        #+n (cons "$/alive/inspectMacro" (lambda (msg) (handle-inspect-macro msg)))
                                        #+n (cons "$/alive/inspectSymbol" (lambda (msg) (handle-inspect-sym msg)))))
