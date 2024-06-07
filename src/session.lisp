@@ -14,25 +14,25 @@
 ;                                  (process-inspect state msg))))
 
 
-; (defun process-inspect-sym (state msg)
-;     (let ((id (cdr (assoc :id msg))))
+#+n (defun process-inspect-sym (state msg)
+        (let ((id (cdr (assoc :id msg))))
 
-;         (handler-case
-;                 (let* ((params (cdr (assoc :params msg)))
-;                        (pkg-name (cdr (assoc :package params)))
-;                        (name (cdr (assoc :symbol params)))
-;                        (sym (alive/symbols:lookup name pkg-name)))
+            (handler-case
+                    (let* ((params (cdr (assoc :params msg)))
+                           (pkg-name (cdr (assoc :package params)))
+                           (name (cdr (assoc :symbol params)))
+                           (sym (alive/symbols:lookup name pkg-name)))
 
-;                     (send-inspect-result state
-;                                          :id id
-;                                          :text name
-;                                          :pkg-name pkg-name
-;                                          :result sym))
+                        (send-inspect-result state
+                                             :id id
+                                             :text name
+                                             :pkg-name pkg-name
+                                             :result sym))
 
-;             (T (c)
-;                (send-msg state (message:create-error id
-;                                                      :code errors:*internal-error*
-;                                                      :message (princ-to-string c)))))))
+                (T (c)
+                   (send-msg state (message:create-error id
+                                                         :code errors:*internal-error*
+                                                         :message (princ-to-string c)))))))
 
 
 ; (defun handle-inspect-sym (state msg)

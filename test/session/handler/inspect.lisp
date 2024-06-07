@@ -62,8 +62,20 @@
                               :actual (state:get-inspector 5)))))
 
 
+(defun test-symbol ()
+    (clue:suite "Symbol"
+        (clue:test "Fail"
+            (deps:with-deps nil
+                (clue:expect-fail (lambda () (inspect:do-symbol (list (cons :id 5)))))))
+
+        (clue:test "Symbol"
+            (deps:with-deps (deps:create)
+                (inspect:do-symbol (list (cons :id 5)))))))
+
+
 (defun run-all ()
     (clue:suite "Inspect Tests"
         (test-do-inspect)
         (test-refresh)
-        (test-close)))
+        (test-close)
+        (test-symbol)))

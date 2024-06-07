@@ -106,9 +106,13 @@
                                                                                               (alive/session/handler/inspect:do-inspect msg)))))
                                        (cons "$/alive/inspectRefresh" (lambda (msg) (alive/session/handler/inspect:refresh msg)))
                                        (cons "$/alive/inspectClose" (lambda (msg) (alive/session/handler/inspect:do-close msg)))
+                                       (cons "$/alive/inspectSymbol" (lambda (msg)
+                                                                         (threads:run-in-thread (or (cdr (assoc :method msg)) "Inspect")
+                                                                                                (cdr (assoc :id msg))
+                                                                                                (lambda ()
+                                                                                                    (alive/session/handler/inspect:do-symbol msg)))))
                                        #+n (cons "$/alive/inspectEval" (lambda (msg) (handle-inspect-eval msg)))
-                                       #+n (cons "$/alive/inspectMacro" (lambda (msg) (handle-inspect-macro msg)))
-                                       #+n (cons "$/alive/inspectSymbol" (lambda (msg) (handle-inspect-sym msg)))))
+                                       #+n (cons "$/alive/inspectMacro" (lambda (msg) (handle-inspect-macro msg)))))
 
 
 (declaim (ftype (function () state:state) create-session-state))
