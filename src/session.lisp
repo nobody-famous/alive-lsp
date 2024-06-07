@@ -9,60 +9,6 @@
 (in-package :alive/session)
 
 
-#+n (defun send-inspect-result (state &key id text pkg-name result (convert T) (result-type "expr"))
-        (let ((insp-id (next-inspector-id state)))
-            (add-inspector state
-                           :id insp-id
-                           :inspector (inspector:create :text text
-                                                        :pkg pkg-name
-                                                        :result result))
-
-            (send-msg state
-                      (resp:do-inspect id
-                                       :insp-id insp-id
-                                       :result-type result-type
-                                       :result (if convert
-                                                   (inspector:to-result result)
-                                                   (princ-to-string result))))))
-
-
-#+n (defun try-inspect (state id text pkg-name)
-        (let ((result (eval:from-string text
-                                        :pkg-name pkg-name
-                                        :stdin-fn (lambda ()
-                                                      (wait-for-input state))
-                                        :stdout-fn (lambda (data)
-                                                       (send-msg state (notification:stdout data)))
-                                        :stderr-fn (lambda (data)
-                                                       (send-msg state (notification:stderr data))))))
-
-            (send-inspect-result state
-                                 :id id
-                                 :text text
-                                 :pkg-name pkg-name
-                                 :result result)))
-
-
-#+n (defun process-inspect (state msg)
-        (let ((id (cdr (assoc :id msg))))
-
-            (handler-case
-                    (let* ((params (cdr (assoc :params msg)))
-                           (pkg-name (cdr (assoc :package params)))
-                           (text (cdr (assoc :text params)))
-                           (* (elt (history state) 0))
-                           (** (elt (history state) 1))
-                           (*** (elt (history state) 2)))
-
-                        (try-inspect state id text pkg-name))
-
-                (T (c)
-                   (send-msg state
-                             (message:create-error id
-                                                   :code errors:*internal-error*
-                                                   :message (princ-to-string c)))))))
-
-
 ; (defun handle-inspect (state msg)
 ;     (run-in-thread state msg (lambda ()
 ;                                  (process-inspect state msg))))
@@ -92,15 +38,6 @@
 ; (defun handle-inspect-sym (state msg)
 ;     (run-in-thread state msg (lambda ()
 ;                                  (process-inspect-sym state msg))))
-
-
-#+n (defun handle-inspect-close (state msg)
-        (let* ((id (cdr (assoc :id msg)))
-               (params (cdr (assoc :params msg)))
-               (insp-id (cdr (assoc :id params))))
-
-            (rem-inspector state :id insp-id)
-            (message:create-response id :result-value T)))
 
 
 #+n (defun do-inspect-eval (state msg)
