@@ -1,4 +1,4 @@
-(defpackage :alive/streams
+(defpackage :alive/sys/streams
     (:use :cl)
     (:export :set-in-listener
              :set-out-listener
@@ -6,7 +6,7 @@
              :make-io-stream
              :with-redirect-streams))
 
-(in-package :alive/streams)
+(in-package :alive/sys/streams)
 
 
 (defun make-io-stream ()

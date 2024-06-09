@@ -8,7 +8,7 @@
              :refresh)
     (:local-nicknames (:deps :alive/deps)
                       (:errors :alive/lsp/errors)
-                      (:eval :alive/eval)
+                      (:eval :alive/sys/eval)
                       (:inspector :alive/inspector)
                       (:lsp-msg :alive/lsp/message/abstract)
                       (:macros :alive/macros)

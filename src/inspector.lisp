@@ -6,8 +6,8 @@
              :get-result
              :inspector
              :to-result)
-    (:local-nicknames (:eval :alive/eval)
-                      (:astreams :alive/streams)))
+    (:local-nicknames (:eval :alive/sys/eval)
+                      (:astreams :alive/sys/streams)))
 
 (in-package :alive/inspector)
 

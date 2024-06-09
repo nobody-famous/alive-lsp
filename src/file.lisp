@@ -3,7 +3,7 @@
     (:export :do-compile
              :do-load
              :try-compile)
-    (:local-nicknames (:astreams :alive/streams)))
+    (:local-nicknames (:astreams :alive/sys/streams)))
 
 (in-package :alive/file)
 

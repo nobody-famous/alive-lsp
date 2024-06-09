@@ -2,7 +2,7 @@
     (:use :cl)
     (:export :run-all)
     (:local-nicknames (:deps :alive/deps)
-                      (:eval :alive/eval)
+                      (:eval :alive/sys/eval)
                       (:inspector :alive/inspector)))
 
 (in-package :alive/test/inspector)

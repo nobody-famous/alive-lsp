@@ -2,7 +2,7 @@
     (:use :cl)
     (:export :list-all
              :load-system)
-    (:local-nicknames (:astreams :alive/streams)))
+    (:local-nicknames (:astreams :alive/sys/streams)))
 
 (in-package :alive/sys/asdf)
 

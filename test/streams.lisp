@@ -1,7 +1,7 @@
 (defpackage :alive/test/streams
     (:use :cl)
     (:export :run-all)
-    (:local-nicknames (:astreams :alive/streams)))
+    (:local-nicknames (:astreams :alive/sys/streams)))
 
 (in-package :alive/test/streams)
 
@@ -45,7 +45,7 @@
 
 (defun test-io-stream ()
     (clue:test "IO Stream"
-        (let ((io (alive/streams:make-io-stream)))
+        (let ((io (alive/sys/streams:make-io-stream)))
             (unwind-protect
                     (progn (clue:check-equal :expected 'character
                                              :actual (stream-element-type io))
@@ -57,7 +57,7 @@
 
 (defun test-unread ()
     (clue:test "Unread char"
-        (let ((io (alive/streams:make-io-stream)))
+        (let ((io (alive/sys/streams:make-io-stream)))
             (unwind-protect
                     (progn (astreams:set-in-listener io (lambda () "a"))
                            (clue:check-equal :expected #\a

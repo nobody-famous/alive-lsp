@@ -2,7 +2,7 @@
     (:use :cl)
     (:export :handle)
     (:local-nicknames (:deps :alive/deps)
-                      (:eval :alive/eval)
+                      (:eval :alive/sys/eval)
                       (:handler-utils :alive/session/handler/utils)
                       (:notification :alive/lsp/message/notification)
                       (:state :alive/session/state)

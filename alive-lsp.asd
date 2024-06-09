@@ -21,35 +21,34 @@
                                        (:file "text-edit")
 
                                        (:file "context")
+                                       (:file "deps")
 
                                        (:file "parse/token")
                                        (:file "parse/tokenizer")
                                        (:file "parse/form")
                                        (:file "parse/forms")
 
+                                       (:file "packages")
+
                                        (:file "compat/sbcl/file")
                                        (:file "compat/sbcl/streams")
                                        (:file "compat/sbcl/symbols")
                                        (:file "compat/sbcl/threads")
 
-                                       (:file "deps")
-                                       (:file "streams")
+                                       (:file "sys/streams")
+                                       (:file "sys/asdf")
+                                       (:file "sys/eval")
+                                       (:file "sys/threads")
+
                                        (:file "file")
                                        (:file "symbols")
-                                       (:file "packages")
                                        (:file "format")
                                        (:file "frames")
-                                       (:file "eval")
-                                       (:file "inspector")
-                                       (:file "asdf")
                                        (:file "debugger")
                                        (:file "macros")
                                        (:file "selection")
                                        (:file "file-utils")
-
-                                       (:file "sys/asdf")
-                                       (:file "sys/eval")
-                                       (:file "sys/threads")
+                                       (:file "inspector")
 
                                        (:file "lsp/types/config-item")
                                        (:file "lsp/types/sem-tokens")
@@ -95,7 +94,6 @@
                                        (:file "session/handler/eval")
                                        (:file "session/message")
                                        (:file "session/message-loop")
-                                       (:file "thread-utils")
                                        (:file "session")
 
                                        (:file "server")))))

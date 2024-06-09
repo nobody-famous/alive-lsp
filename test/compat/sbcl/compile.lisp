@@ -2,7 +2,7 @@
     (:use :cl)
     (:export :run-all)
 
-    (:local-nicknames (:astreams :alive/streams)
+    (:local-nicknames (:astreams :alive/sys/streams)
                       (:file :alive/file)))
 
 (in-package :alive/test/compat/sbcl/compile)
