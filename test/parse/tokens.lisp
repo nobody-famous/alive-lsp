@@ -51,25 +51,26 @@
 
 
 (defun test-string ()
-    (clue:test "String"
-        (clue:check-equal :expected (list (token:create
-                                              :type-value alive/types:*string*
-                                              :start (pos:create 0 0)
-                                              :start-offset 0
-                                              :end (pos:create 0 8)
-                                              :end-offset 8
-                                              :text "\"String\""))
-                          :actual (tokens-for-string "\"String\"")))
+    (clue:suite "String"
+        (clue:test "String"
+            (clue:check-equal :expected (list (token:create
+                                                  :type-value alive/types:*string*
+                                                  :start (pos:create 0 0)
+                                                  :start-offset 0
+                                                  :end (pos:create 0 8)
+                                                  :end-offset 8
+                                                  :text "\"String\""))
+                              :actual (tokens-for-string "\"String\"")))
 
-    (clue:test "Open String"
-        (clue:check-equal :expected (list (token:create
-                                              :type-value alive/types:*string*
-                                              :start (pos:create 0 0)
-                                              :start-offset 0
-                                              :end (pos:create 0 7)
-                                              :end-offset 7
-                                              :text "\"String"))
-                          :actual (tokens-for-string "\"String"))))
+        (clue:test "Open String"
+            (clue:check-equal :expected (list (token:create
+                                                  :type-value alive/types:*string*
+                                                  :start (pos:create 0 0)
+                                                  :start-offset 0
+                                                  :end (pos:create 0 7)
+                                                  :end-offset 7
+                                                  :text "\"String"))
+                              :actual (tokens-for-string "\"String")))))
 
 
 (defun test-basic-macro ()
@@ -85,35 +86,36 @@
 
 
 (defun test-ifdef-macro ()
-    (clue:test "Ifdef macro"
-        (clue:check-equal :expected (list (token:create
-                                              :type-value alive/types:*ifdef-false*
-                                              :start (pos:create 0 0)
-                                              :start-offset 0
-                                              :end (pos:create 0 3)
-                                              :end-offset 3
-                                              :text "#+n"))
-                          :actual (tokens-for-string "#+n")))
+    (clue:suite "ifdef"
+        (clue:test "Ifdef macro"
+            (clue:check-equal :expected (list (token:create
+                                                  :type-value alive/types:*ifdef-false*
+                                                  :start (pos:create 0 0)
+                                                  :start-offset 0
+                                                  :end (pos:create 0 3)
+                                                  :end-offset 3
+                                                  :text "#+n"))
+                              :actual (tokens-for-string "#+n")))
 
-    (clue:test "Invalid ifdef macro"
-        (clue:check-equal :expected (list (token:create
-                                              :type-value alive/types:*ifdef-false*
-                                              :start (pos:create 0 0)
-                                              :start-offset 0
-                                              :end (pos:create 0 3)
-                                              :end-offset 3
-                                              :text "#+("))
-                          :actual (tokens-for-string "#+(")))
+        (clue:test "Invalid ifdef macro"
+            (clue:check-equal :expected (list (token:create
+                                                  :type-value alive/types:*ifdef-false*
+                                                  :start (pos:create 0 0)
+                                                  :start-offset 0
+                                                  :end (pos:create 0 3)
+                                                  :end-offset 3
+                                                  :text "#+("))
+                              :actual (tokens-for-string "#+(")))
 
-    (clue:test "Valid ifdef macro"
-        (clue:check-equal :expected (list (token:create
-                                              :type-value alive/types:*ifdef-false*
-                                              :start (pos:create 0 0)
-                                              :start-offset 0
-                                              :end (pos:create 0 10)
-                                              :end-offset 10
-                                              :text "#+(or a b)"))
-                          :actual (tokens-for-string "#+(or a b)"))))
+        (clue:test "Valid ifdef macro"
+            (clue:check-equal :expected (list (token:create
+                                                  :type-value alive/types:*ifdef-false*
+                                                  :start (pos:create 0 0)
+                                                  :start-offset 0
+                                                  :end (pos:create 0 10)
+                                                  :end-offset 10
+                                                  :text "#+(or a b)"))
+                              :actual (tokens-for-string "#+(or a b)")))))
 
 
 (defun test-parens ()

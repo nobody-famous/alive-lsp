@@ -2,7 +2,8 @@
     "alive.format.closeParenOwnLine": "never",
     "alive.format.indentWidth": 4,
     "alive.format.maxBlankLines": 2,
-    "lisp.trace.server": "verbose",
+    "commonlisp.trace.server": "verbose",
+    "alive.lsp.install.path": "c:/Users/rich/work/vscode/alive-lsp",
     "editor.semanticTokenColorCustomizations": {
         "rules": {
             "error": "#ff0000",
@@ -11,4 +12,7 @@
         }
     },
     "editor.formatOnType": true,
+    "[commonlisp]": {
+        "editor.wordSeparators": "`|;:'\",()"
+    },
 }

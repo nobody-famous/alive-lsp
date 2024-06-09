@@ -1,14 +1,22 @@
 (in-package :clue)
 
 
+(defparameter *test-indent* 0)
+
+
 (defstruct test-results
     (passed 0 :type fixnum)
     (failed 0 :type fixnum))
 
 
+(defun indent ()
+    (format nil "~v@{~A~:*~}" (- *test-indent* 1) "|  "))
+
+
 (defmacro suite (label &body body)
     (let ((out (gensym)))
-        `(let ((,out (make-test-results)))
+        `(let ((,out (make-test-results))
+               (*test-indent* (+ *test-indent* 1)))
              (print-header ,label)
              ,@(loop :for expr :in body
                      :collect `(let ((expr-result ,expr))
@@ -21,13 +29,13 @@
 
 
 (defmacro test (label &body body)
-    `(let ((result (handler-case
-
+    `(let ((*test-indent* (+ *test-indent* 1))
+           (result (handler-case
                            (progn ,@body)
-
                        (error (c) (format nil "~A" c)))))
 
-         (format T "[~A] ~A~%"
+         (format T "~A[~A] ~A~%"
+             (indent)
              (if result
                  (format nil "FAILED: ~A" result)
                  "OK")

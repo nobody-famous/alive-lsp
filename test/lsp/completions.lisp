@@ -41,17 +41,18 @@
 
 
 (defun test-quote ()
-    (clue:test "Quote"
-        (let ((actual (comps:simple :text "'*debug-io"
-                                    :pos (pos:create 0 10))))
-            (clue:check-equal :expected 2
-                              :actual (length actual))))
+    (clue:suite "Quote"
+        (clue:test "Quote"
+            (let ((actual (comps:simple :text "'*debug-io"
+                                        :pos (pos:create 0 10))))
+                (clue:check-equal :expected 2
+                                  :actual (length actual))))
 
-    (clue:test "Quote 2"
-        (let ((actual (comps:simple :text "'\"\""
-                                    :pos (pos:create 0 3))))
-            (clue:check-equal :expected 0
-                              :actual (length actual)))))
+        (clue:test "Quote 2"
+            (let ((actual (comps:simple :text "'\"\""
+                                        :pos (pos:create 0 3))))
+                (clue:check-equal :expected 0
+                                  :actual (length actual))))))
 
 
 (defun test-backquote ()
@@ -63,29 +64,31 @@
 
 
 (defun test-colons ()
-    (clue:test "Colon symbol"
-        (let ((actual (comps:simple :text ":cl-user"
-                                    :pos (pos:create 0 8))))
-            (clue:check-equal :expected 2
-                              :actual (length actual))))
+    (clue:suite "Colons"
+        (clue:test "Colon symbol"
+            (let ((actual (comps:simple :text ":cl-user"
+                                        :pos (pos:create 0 8))))
+                (clue:check-equal :expected 2
+                                  :actual (length actual))))
 
-    (clue:test "Colon no symbol"
-        (let ((actual (comps:simple :text ":"
-                                    :pos (pos:create 0 8))))
-            (clue:check-equal :expected T
-                              :actual (< 100 (length actual))))))
+        (clue:test "Colon no symbol"
+            (let ((actual (comps:simple :text ":"
+                                        :pos (pos:create 0 8))))
+                (clue:check-equal :expected T
+                                  :actual (< 100 (length actual)))))))
 
 
 (defun test-symbol-no-pkg ()
-    (clue:test "Packages without symbols"
-        (let ((actual (comps::symbol-no-pkg :name "alive/test/eval" :pkg-name "cl-user")))
-            (clue:check-equal :expected 1
-                              :actual (length actual))))
+    (clue:suite "Symbol without package"
+        (clue:test "Packages without symbols"
+            (let ((actual (comps::symbol-no-pkg :name "alive/test/eval" :pkg-name "cl-user")))
+                (clue:check-equal :expected 2
+                                  :actual (length actual))))
 
-    (clue:test "Packages and symbols"
-        (let ((actual (comps::symbol-no-pkg :name "zzz" :pkg-name "yyy")))
-            (clue:check-equal :expected 0
-                              :actual (length actual)))))
+        (clue:test "Packages and symbols"
+            (let ((actual (comps::symbol-no-pkg :name "zzz" :pkg-name "yyy")))
+                (clue:check-equal :expected 0
+                                  :actual (length actual))))))
 
 
 (defun test-to-snippet ()

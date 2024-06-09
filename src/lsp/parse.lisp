@@ -74,16 +74,18 @@
                       (when ch (write-byte ch out))))))
 
 (defun read-content (input size)
-    (let ((content (flexi-streams:octets-to-string
-                       (read-content-bytes input size)
-                       :external-format :utf-8)))
-        content))
+    (flexi-streams:octets-to-string
+        (read-content-bytes input size)
+        :external-format :utf-8))
 
 
+(declaim (ftype (function (string) (values cons &optional)) decode-json))
 (defun decode-json (content)
     (with-input-from-string (str content)
         (json:decode-json str)))
 
+
+(declaim (ftype (function (T) (values cons &optional)) from-stream))
 (defun from-stream (input)
     (let* ((header (parse-header input))
            (raw-content (read-content input (packet:content-length header)))
