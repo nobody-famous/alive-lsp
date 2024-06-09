@@ -91,10 +91,35 @@
                     (inspect:macro (list (cons :id 5))))))))
 
 
+(defun test-inspect-eval ()
+    (clue:suite "Inspect Eval"
+        (clue:test "No result"
+            (let ((sent-msg nil))
+                (deps:with-deps (deps:create :send-msg (lambda (msg)
+                                                           (setf sent-msg msg)
+                                                           nil))
+                    (inspect:do-inspect-eval (list (cons :id 5)))
+                    (clue:check-exists sent-msg))))
+
+        (clue:test "Has result"
+            (let ((sent-msg nil))
+                (state:with-state (state:create)
+                    (deps:with-deps (deps:create :send-msg (lambda (msg)
+                                                               (setf sent-msg msg)
+                                                               nil)
+                                                 :eval-fn (lambda (str)
+                                                              (declare (ignore str))
+                                                              5))
+                        (inspect:do-inspect-eval (list (cons :id 5)
+                                                       (cons :params (list (cons :text "(+ 1 2)")))))
+                        (clue:check-exists sent-msg)))))))
+
+
 (defun run-all ()
     (clue:suite "Inspect Tests"
         (test-do-inspect)
         (test-refresh)
         (test-close)
         (test-symbol)
-        (test-macro)))
+        (test-macro)
+        (test-inspect-eval)))

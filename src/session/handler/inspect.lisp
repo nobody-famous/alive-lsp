@@ -2,6 +2,7 @@
     (:use :cl)
     (:export :do-close
              :do-inspect
+             :do-inspect-eval
              :do-symbol
              :macro
              :refresh)
@@ -18,6 +19,7 @@
 (in-package :alive/session/handler/inspect)
 
 
+(declaim (ftype (function (integer &key (:insp-id integer) (:result *) (:result-type string)) hash-table) inspect-response))
 (defun inspect-response (id &key insp-id result result-type)
     (let ((data (make-hash-table :test #'equalp))
           (expr-type (if result-type result-type "expr")))
@@ -87,7 +89,7 @@
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
            (insp-id (cdr (assoc :id params)))
-           (text (cdr (assoc :text params)))
+           (text (or (cdr (assoc :text params)) "nil"))
            (inspector (when insp-id (state:get-inspector insp-id)))
            (old-result (inspector:get-result inspector))
            (* (if (symbolp old-result)
@@ -113,6 +115,7 @@
                                                     :result-value (make-hash-table))))))
 
 
+(declaim (ftype (function (list) null) refresh))
 (defun refresh (msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
@@ -131,6 +134,7 @@
                                                         :result (inspector:to-result result)))))))
 
 
+(declaim (ftype (function (list) hash-table) do-close))
 (defun do-close (msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
@@ -140,6 +144,7 @@
         (lsp-msg:create-response id :result-value T)))
 
 
+(declaim (ftype (function (list) null) do-symbol))
 (defun do-symbol (msg)
     (let ((id (cdr (assoc :id msg))))
 
@@ -160,6 +165,7 @@
                                                     :message (princ-to-string c)))))))
 
 
+(declaim (ftype (function (list) null) macro))
 (defun macro (msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
