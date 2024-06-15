@@ -20,16 +20,17 @@
            (* (state:get-history-item 0))
            (** (state:get-history-item 1))
            (*** (state:get-history-item 2))
-           (result (eval:from-string text
-                                     :pkg-name pkg-name
-                                     :stdin-fn (lambda ()
-                                                   (threads:wait-for-input))
-                                     :stdout-fn (lambda (data)
-                                                    (deps:send-msg (notification:stdout data)))
-                                     :trace-fn (lambda (data)
-                                                   (deps:send-msg (notification:stdout data)))
-                                     :stderr-fn (lambda (data)
-                                                    (deps:send-msg (notification:stderr data))))))
+           (result (state:lock (mutex)
+                       (eval:from-string text
+                                         :pkg-name pkg-name
+                                         :stdin-fn (lambda ()
+                                                       (threads:wait-for-input))
+                                         :stdout-fn (lambda (data)
+                                                        (deps:send-msg (notification:stdout data)))
+                                         :trace-fn (lambda (data)
+                                                       (deps:send-msg (notification:stdout data)))
+                                         :stderr-fn (lambda (data)
+                                                        (deps:send-msg (notification:stderr data)))))))
 
         (when (cdr (assoc :store-result params))
               (state:add-history result))
