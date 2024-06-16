@@ -52,6 +52,7 @@
                     (cons "textDocument/hover" (lambda (msg) (alive/session/handler/document:hover msg)))
                     (cons "textDocument/onTypeFormatting" (lambda (msg) (alive/session/handler/document:on-type msg)))
                     (cons "textDocument/rangeFormatting" (lambda (msg) (alive/session/handler/document:formatting msg)))
+                    (cons "textDocument/references" (lambda (msg) (alive/session/handler/document:references msg)))
                     (cons "textDocument/selectionRange" (lambda (msg) (alive/session/handler/document:selection msg)))
                     (cons "textDocument/semanticTokens/full" (lambda (msg) (alive/session/handler/document:sem-tokens msg)))
 
