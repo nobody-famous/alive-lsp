@@ -41,6 +41,7 @@
                                        (:file "sys/threads")
 
                                        (:file "file")
+                                       (:file "location")
                                        (:file "symbols")
                                        (:file "format")
                                        (:file "frames")

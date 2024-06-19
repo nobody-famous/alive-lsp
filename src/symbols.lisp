@@ -10,7 +10,8 @@
              :function-p
              :lookup
              :macro-p)
-    (:local-nicknames (:forms :alive/parse/forms)))
+    (:local-nicknames (:forms :alive/parse/forms)
+                      (:loc :alive/location)))
 
 (in-package :alive/symbols)
 
@@ -154,17 +155,18 @@
         (when file (namestring file))))
 
 
+(declaim (ftype (function (symbol) (values (or null loc:text-location) &optional)) get-location))
 (defun get-location (sym)
     (let* ((src (when sym (lookup-sources sym)))
            (file (when src (sb-introspect:definition-source-pathname src)))
            (form-path (when src (sb-introspect:definition-source-form-path src))))
 
-        (if file
-            (list (url-encode-filename (namestring file))
-                  (get-range-from-file file form-path))
-            (list nil nil))))
+        (when file
+              (loc:create (url-encode-filename (namestring file))
+                          (get-range-from-file file form-path)))))
 
 
+(declaim (ftype (function (package string) list) find-syms))
 (defun find-syms (pkg pref)
     (loop :with syms := ()
           :for sym :in (alive/symbols:get-all pkg)
