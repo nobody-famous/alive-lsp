@@ -1,6 +1,7 @@
 (defpackage :alive/location
     (:use :cl)
     (:export :create
+             :list-of-location
              :text-location)
     (:local-nicknames (:range :alive/range)))
 
@@ -10,13 +11,24 @@
 (defun location-p (obj)
     (and (consp obj)
          (stringp (first obj))
-         (typep (second obj) 'range:text-range)))
+         (or (not (second obj))
+             (typep (second obj) 'range:text-range))))
 
 
 (deftype text-location ()
     `(satisfies location-p))
 
 
-(declaim (ftype (function (string range:text-range) list) create))
+(defun list-of-location-p (data)
+    (or (not data)
+        (and (consp data)
+             (every #'location-p data))))
+
+
+(deftype list-of-location ()
+    `(satisfies list-of-location-p))
+
+
+(declaim (ftype (function (string (or null range:text-range)) text-location) create))
 (defun create (uri range)
     (list uri range))

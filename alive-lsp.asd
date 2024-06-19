@@ -61,6 +61,7 @@
                                        (:file "lsp/completions")
                                        (:file "lsp/definition")
                                        (:file "lsp/hover")
+                                       (:file "lsp/references")
                                        (:file "lsp/symbol")
 
                                        (:file "lsp/sem-analysis")

@@ -238,9 +238,6 @@
            (pos (cdr (assoc :position params)))
            (uri (cdr (assoc :uri doc)))
            (text (or (state:get-file-text uri) ""))
-           (location (alive/lsp/definition:get-location text pos))
-           (uri (first location))
-           (range (second location)))
+           (refs (alive/lsp/references:get-locations text pos)))
 
-        (alive/logger:info-msg "***** REFERENCES ~A" location)
-        (lsp-msg:create-error id :code errors:*internal-error* :message "Not Done yet")))
+        (lsp-msg:create-response id :result-value (or refs (make-array 0)))))

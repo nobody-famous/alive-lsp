@@ -19,7 +19,7 @@
 
         (multiple-value-bind (name pkg-name)
 
-                (utils:symbol-for-pos :text text :pos pos)
+                (utils:symbol-for-pos text pos)
 
             (when (and name pkg-name)
                   (list name pkg-name)))))

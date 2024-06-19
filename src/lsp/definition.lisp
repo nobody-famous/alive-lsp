@@ -20,11 +20,11 @@
 (defun get-location (text pos)
     (let* ((pkg-name (packages:for-pos text pos))
            (pkg (packages:lookup pkg-name))
-           (*package* (if pkg pkg *package*)))
+           (*package* (or pkg *package*)))
 
         (multiple-value-bind (name pkg-name)
 
-                (utils:symbol-for-pos :text text :pos pos)
+                (utils:symbol-for-pos text pos)
 
             (when (and name pkg-name)
                   (get-location-for-name name pkg-name)))))
