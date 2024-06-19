@@ -16,8 +16,8 @@
         (alive/symbols:get-location sym)))
 
 
-(declaim (ftype (function (&key (:text string) (:pos pos:text-position)) (or null loc:text-location)) get-location))
-(defun get-location (&key text pos)
+(declaim (ftype (function (string pos:text-position) (or null loc:text-location)) get-location))
+(defun get-location (text pos)
     (let* ((pkg-name (packages:for-pos text pos))
            (pkg (packages:lookup pkg-name))
            (*package* (if pkg pkg *package*)))

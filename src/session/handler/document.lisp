@@ -56,7 +56,7 @@
            (pos (cdr (assoc :position params)))
            (uri (cdr (assoc :uri doc)))
            (text (or (state:get-file-text uri) ""))
-           (location (alive/lsp/definition:get-location :text text :pos pos))
+           (location (alive/lsp/definition:get-location text pos))
            (uri (first location))
            (range (second location)))
 
@@ -238,7 +238,7 @@
            (pos (cdr (assoc :position params)))
            (uri (cdr (assoc :uri doc)))
            (text (or (state:get-file-text uri) ""))
-           (location (alive/lsp/definition:get-location :text text :pos pos))
+           (location (alive/lsp/definition:get-location text pos))
            (uri (first location))
            (range (second location)))
 
