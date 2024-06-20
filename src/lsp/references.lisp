@@ -12,16 +12,23 @@
 
 (declaim (ftype (function (string string) *) find-callers))
 (defun find-callers (name pkg-name)
-    (cond ((sym:function-p name pkg-name) (sb-introspect:who-calls (sym:lookup name pkg-name)))
-          ((sym:macro-p name pkg-name) (sb-introspect:who-macroexpands (sym:lookup name pkg-name)))))
+    (let ((to-find (sym:lookup name pkg-name)))
+        (cond ((sym:function-p name pkg-name) (sb-introspect:who-calls to-find))
+              ((sym:macro-p name pkg-name) (sb-introspect:who-macroexpands to-find))
+              (T (sb-introspect:who-references to-find)))))
+
+
+(declaim (ftype (function (cons) (values list &optional)) find-caller-location))
+(defun find-caller-location (caller)
+    (let ((src (cdr caller)))
+        (when src
+              (alive/source-utils:get-source-location src))))
 
 
 (declaim (ftype (function (string string) loc:list-of-location) find-references))
 (defun find-references (name pkg-name)
     (let ((callers (find-callers name pkg-name)))
-        (alive/logger:info-msg "***** FIND REFS ~A IN ~A ~A" name *package* (length callers))
-        (loop :for caller :in callers
-              :do (alive/logger:info-msg "***** CALLER ~A" caller))))
+        (remove nil (mapcar #'find-caller-location callers))))
 
 
 (declaim (ftype (function (string pos:text-position) loc:list-of-location) get-locations))

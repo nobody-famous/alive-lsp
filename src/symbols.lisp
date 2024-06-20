@@ -11,7 +11,8 @@
              :lookup
              :macro-p)
     (:local-nicknames (:forms :alive/parse/forms)
-                      (:loc :alive/location)))
+                      (:loc :alive/location)
+                      (:src-utils :alive/source-utils)))
 
 (in-package :alive/symbols)
 
@@ -82,33 +83,6 @@
             (push (string-downcase (string s)) syms))))
 
 
-(defun needs-encoding (char)
-    (eq char #\:))
-
-
-(defun encode-char (char)
-    (if (needs-encoding char)
-        (format nil "%~2,'0X" (char-code char))
-        (string char)))
-
-
-(defun url-encode (str)
-    (let ((chars (map 'list (lambda (char)
-                                (encode-char char))
-                     str)))
-        (apply #'concatenate 'string chars)))
-
-
-(defun url-encode-filename (name)
-    (let* ((raw-pieces (uiop:split-string name :separator "/\\"))
-           (pieces (mapcar (lambda (piece)
-                               (if (string= piece "")
-                                   ""
-                                   (format NIL "/~A" (url-encode piece))))
-                           raw-pieces)))
-        (apply #'concatenate 'string pieces)))
-
-
 (defun lookup-sources (sym)
     (let ((types (list :class
                        :compiler-macro
@@ -140,14 +114,6 @@
             :initial-value nil)))
 
 
-(defun get-range-from-file (file source-path)
-    (handler-case
-            (with-open-file (in-stream file)
-                (let ((forms (forms:from-stream in-stream)))
-                    (forms:get-range-for-path forms source-path)))
-        (T nil)))
-
-
 (defun get-source-file (sym)
     (let* ((src (when sym (lookup-sources sym)))
            (file (when src (sb-introspect:definition-source-pathname src))))
@@ -162,8 +128,8 @@
            (form-path (when src (sb-introspect:definition-source-form-path src))))
 
         (when file
-              (loc:create (url-encode-filename (namestring file))
-                          (get-range-from-file file form-path)))))
+              (loc:create (src-utils:url-encode-filename (namestring file))
+                          (src-utils:get-range-from-file file form-path)))))
 
 
 (declaim (ftype (function (package string) list) find-syms))

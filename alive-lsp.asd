@@ -42,6 +42,7 @@
 
                                        (:file "file")
                                        (:file "location")
+                                       (:file "source-utils")
                                        (:file "symbols")
                                        (:file "format")
                                        (:file "frames")
