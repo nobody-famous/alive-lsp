@@ -10,9 +10,8 @@
 
 (defun location-p (obj)
     (and (consp obj)
-         (stringp (first obj))
-         (or (not (second obj))
-             (typep (second obj) 'range:text-range))))
+         (stringp (cdr (assoc :uri obj)))
+         (typep (cdr (assoc :range obj)) 'range:text-range)))
 
 
 (deftype text-location ()
@@ -31,4 +30,5 @@
 
 (declaim (ftype (function (string (or null range:text-range)) text-location) create))
 (defun create (uri range)
-    (list uri range))
+    (list (cons :uri uri)
+          (cons :range range)))

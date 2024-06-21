@@ -125,11 +125,12 @@
 (defun get-location (sym)
     (let* ((src (when sym (lookup-sources sym)))
            (file (when src (sb-introspect:definition-source-pathname src)))
-           (form-path (when src (sb-introspect:definition-source-form-path src))))
+           (form-path (when src (sb-introspect:definition-source-form-path src)))
+           (uri (when file (src-utils:url-encode-filename (namestring file))))
+           (range (when file (src-utils:get-range-from-file file form-path))))
 
-        (when file
-              (loc:create (src-utils:url-encode-filename (namestring file))
-                          (src-utils:get-range-from-file file form-path)))))
+        (when (and uri range)
+              (loc:create uri range))))
 
 
 (declaim (ftype (function (package string) list) find-syms))
@@ -137,12 +138,12 @@
     (loop :with syms := ()
           :for sym :in (alive/symbols:get-all pkg)
 
-          :do (let ((file (alive/symbols:get-source-file sym)))
+          :do (let ((file (get-source-file sym)))
                   (when (and file
                              (not (and (< 3 (length file))
                                        (string= "sys" (string-downcase file) :end1 3 :end2 3)))
                              (symbolp sym)
                              (alive/utils:fuzzy-match pref (symbol-name sym)))
-                        (push (alive/symbols:get-location sym) syms)))
+                        (push (get-location sym) syms)))
 
           :finally (return syms)))

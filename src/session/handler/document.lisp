@@ -57,8 +57,8 @@
            (uri (cdr (assoc :uri doc)))
            (text (or (state:get-file-text uri) ""))
            (location (alive/lsp/definition:get-location text pos))
-           (uri (first location))
-           (range (second location)))
+           (uri (cdr (assoc :uri location)))
+           (range (cdr (assoc :range location))))
 
         (let ((data (make-hash-table :test #'equalp)))
 
