@@ -240,5 +240,4 @@
            (text (or (state:get-file-text uri) ""))
            (refs (alive/lsp/references:get-locations text pos)))
 
-        (alive/logger:info-msg "***** REFERENCES ~A" refs)
         (lsp-msg:create-response id :result-value (or refs (make-array 0)))))

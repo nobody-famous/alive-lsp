@@ -22,11 +22,7 @@
 (defun find-caller-location (caller)
     (let ((src (cdr caller)))
         (when src
-              (alive/logger:info-msg "***** SRC ~A" src)
-              #+n (setf (sb-introspect:definition-source-form-path src)
-                      (reverse
-                          (push (sb-introspect:definition-source-form-number src)
-                                (sb-introspect:definition-source-form-path src))))
+              (alive/source-utils::get-source-form src)
               (alive/source-utils:get-source-location src))))
 
 
