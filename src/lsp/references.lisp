@@ -22,8 +22,7 @@
 (defun find-caller-location (caller)
     (let ((src (cdr caller)))
         (when src
-              (alive/source-utils::get-source-form src)
-              (alive/source-utils:get-source-location src))))
+              (alive/source-utils::get-source-form src))))
 
 
 (declaim (ftype (function (string string) loc:list-of-location) find-references))

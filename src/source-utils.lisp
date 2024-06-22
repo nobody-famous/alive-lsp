@@ -78,16 +78,33 @@
                       (return tokens)))))
 
 
+(defun find-nth-parens (tokens num)
+    (loop :with count := 0
+          :with token := nil
+
+          :while tokens
+          :do (setf token (pop tokens))
+              (when (eq alive/types:*open-paren* (gethash "typeValue" token))
+                    (incf count)
+                    (when (eq (+ 1 num) count)
+                          (return token)))))
+
+
 (defun get-source-form (src)
     (let* ((file (sb-introspect:definition-source-pathname src))
+           (file-path (when file (url-encode-filename (namestring file))))
            (nth-form (first (sb-introspect:definition-source-form-path src)))
-           (form-num (sb-introspect:definition-source-form-number src))
-           (file-path (when file (url-encode-filename (namestring file)))))
-        (alive/logger:info-msg "***** GET SRC FORM ~A ~A" nth-form form-num)
+           (form-num (sb-introspect:definition-source-form-number src)))
         (handler-case
                 (with-open-file (in-stream file)
                     (let* ((tokens (tokens-for-file file))
                            (forms (forms-for-file file))
-                           (form-tokens (find-form-token tokens (nth nth-form forms))))
-                        (alive/test/utils:print-hash-table "***** FORM" (first form-tokens))))
+                           (form (nth nth-form forms))
+                           (form-tokens (find-form-token tokens form))
+                           (paren-token (find-nth-parens form-tokens form-num))
+                           (source-form (forms:get-outer-form form (gethash "start" paren-token))))
+                        (when source-form
+                              (loc:create file-path
+                                          (alive/range:create (gethash "start" source-form)
+                                                              (gethash "end" source-form))))))
             (T nil))))
