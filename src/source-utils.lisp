@@ -62,11 +62,8 @@
         (T nil)))
 
 
-(defun forms-for-file (file)
-    (handler-case
-            (with-open-file (in-stream file)
-                (forms:from-stream in-stream))
-        (T nil)))
+(defun forms-for-tokens (tokens)
+    (forms:from-tokens tokens))
 
 
 (defun find-form-token (tokens form)
@@ -98,7 +95,7 @@
         (handler-case
                 (with-open-file (in-stream file)
                     (let* ((tokens (tokens-for-file file))
-                           (forms (forms-for-file file))
+                           (forms (forms-for-tokens tokens))
                            (form (nth nth-form forms))
                            (form-tokens (find-form-token tokens form))
                            (paren-token (find-nth-parens form-tokens form-num))

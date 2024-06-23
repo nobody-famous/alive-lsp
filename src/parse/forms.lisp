@@ -2,6 +2,7 @@
     (:use :cl)
     (:export :from-stream
              :from-stream-or-nil
+             :from-tokens
              :get-outer-form
              :get-nth-form
              :get-range-for-path
@@ -175,11 +176,11 @@
     (collapse-opens state types:*open-paren*))
 
 
-(declaim (ftype (function (T) (or null cons)) from-stream))
-(defun from-stream (input)
+(declaim (ftype (function (list) (or null list)) from-tokens))
+(defun from-tokens (tokens)
     (loop :with state := (make-parse-state)
 
-          :for token :in (tokenizer:from-stream input) :do
+          :for token :in tokens :do
 
               (cond ((token:is-type types:*open-paren* token) (open-paren state token))
 
@@ -217,6 +218,11 @@
 
           :finally (progn (collapse-opens state)
                           (return (reverse (parse-state-forms state))))))
+
+
+(declaim (ftype (function (T) (or null list)) from-stream))
+(defun from-stream (input)
+    (from-tokens (tokenizer:from-stream input)))
 
 
 (declaim (ftype (function (stream) (or null cons)) from-stream-or-nil))
