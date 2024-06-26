@@ -1,6 +1,7 @@
 (defpackage :alive/source-utils
     (:use :cl)
     (:export :get-range-from-file
+             :get-source-form
              :get-source-location
              :url-encode-filename)
     (:local-nicknames (:forms :alive/parse/forms)
@@ -87,6 +88,7 @@
                           (return token)))))
 
 
+(declaim (ftype (function (sb-introspect:definition-source) (or null loc:text-location)) get-source-form))
 (defun get-source-form (src)
     (let* ((file (sb-introspect:definition-source-pathname src))
            (file-path (when file (url-encode-filename (namestring file))))

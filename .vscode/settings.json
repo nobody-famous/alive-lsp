@@ -3,7 +3,7 @@
     "alive.format.indentWidth": 4,
     "alive.format.maxBlankLines": 2,
     "commonlisp.trace.server": "verbose",
-    "alive.lsp.install.path": "c:/Users/rich/work/vscode/alive-lsp",
+    "alive.lsp.install.path": "c:/Users/rich/work/vscode/alive-lsp/xref",
     "editor.semanticTokenColorCustomizations": {
         "rules": {
             "error": "#ff0000",
