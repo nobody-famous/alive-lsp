@@ -197,9 +197,9 @@
           (logger logger:*logger*))
         (bt:make-thread (lambda ()
                             (let ((*server* server)
-                                  (logger:*logger* logger))
-                                (let ((*standard-output* stdout))
-                                    (listen-for-conns port))))
+                                  (logger:*logger* logger)
+                                  (*standard-output* stdout))
+                                (listen-for-conns port)))
                         :name "Alive LSP Server")))
 
 
