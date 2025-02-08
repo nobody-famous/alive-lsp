@@ -173,7 +173,9 @@
 (defun do-eval (data)
     (unless *deps* (error "Dependencies not set"))
 
-    (funcall (deps-eval-fn *deps*) data))
+    (let ((results (multiple-value-list (funcall (deps-eval-fn *deps*) data))))
+        (finish-output)
+        results))
 
 
 (declaim (ftype (function (string string) (values list &optional)) macro-expand))

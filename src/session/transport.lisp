@@ -21,8 +21,10 @@
     (state:lock (mutex)
         (when (and (hash-table-p msg)
                    (gethash "jsonrpc" msg))
-              (write-sequence (packet:to-wire msg) (context:get-output-stream))
-              (force-output (context:get-output-stream)))))
+
+              (let ((steam (context:get-output-stream)))
+                  (write-sequence (packet:to-wire msg) steam)
+                  (force-output steam)))))
 
 
 (declaim (ftype (function (hash-table) cons) send-request))
