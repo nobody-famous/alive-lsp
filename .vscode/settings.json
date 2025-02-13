@@ -2,9 +2,7 @@
     "alive.format.closeParenOwnLine": "never",
     "alive.format.indentWidth": 4,
     "alive.format.maxBlankLines": 2,
-    "commonlisp.trace.server": "verbose",
-    "alive.lsp.install.path": "/home/rich/work/lisp/alive-lsp",
-    "alive.packageTree.separator": ["/", "-"],
+    "lisp.trace.server": "verbose",
     "editor.semanticTokenColorCustomizations": {
         "rules": {
             "error": "#ff0000",
@@ -13,7 +11,4 @@
         }
     },
     "editor.formatOnType": true,
-    "[commonlisp]": {
-        "editor.wordSeparators": "`|;:'\",()"
-    }
 }
