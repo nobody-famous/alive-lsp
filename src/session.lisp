@@ -1064,8 +1064,7 @@
     (let* ((id (cdr (assoc :id msg))))
 
         (cond ((assoc :method msg) (handle-request state msg))
-              ((or (assoc :result msg)
-                   (assoc :error msg)) (handle-response state msg))
+              ((assoc :result msg) (handle-response state msg))
               (T (message:create-error id
                                        :code errors:*request-failed*
                                        :message (format nil "No handler for message"))))))
