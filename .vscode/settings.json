@@ -10,5 +10,8 @@
             "parenthesis": "#999"
         }
     },
-    "editor.formatOnType": true
+    "editor.formatOnType": true,
+    "[commonlisp]": {
+        "editor.wordSeparators": "`|;:'\",()"
+    }
 }
