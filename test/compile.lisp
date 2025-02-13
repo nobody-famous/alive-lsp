@@ -37,16 +37,17 @@
 
 
 (defun test-try-compile ()
-    (clue:test "Try Compile"
-        (clue:check-equal :actual (do-compile 'alive/file:try-compile "test/files/compile/broken.lisp")
-                          :expected (list alive/types:*sev-error*
-                                          alive/types:*sev-info*
-                                          alive/types:*sev-warn*
-                                          alive/types:*sev-warn*)))
+    (clue:suite "Try compile"
+        (clue:test "Try Compile"
+            (clue:check-equal :actual (do-compile 'alive/file:try-compile "test/files/compile/broken.lisp")
+                              :expected (list alive/types:*sev-error*
+                                              alive/types:*sev-info*
+                                              alive/types:*sev-warn*
+                                              alive/types:*sev-warn*)))
 
-    (clue:test "Try Compile"
-        (clue:check-equal :actual (do-compile 'alive/file:try-compile "test/files/compile/parens.lisp")
-                          :expected (list alive/types:*sev-error*))))
+        (clue:test "Try Compile"
+            (clue:check-equal :actual (do-compile 'alive/file:try-compile "test/files/compile/parens.lisp")
+                              :expected (list alive/types:*sev-error*)))))
 
 
 (defun test-compile ()

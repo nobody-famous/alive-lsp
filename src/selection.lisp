@@ -13,13 +13,13 @@
          (pos:less-than pos end)))
 
 
-(declaim (ftype (function (cons pos:text-position) (or T cons)) find-form-for-pos))
+(declaim (ftype (function (cons pos:text-position) (or null hash-table)) find-form-for-pos))
 (defun find-form-for-pos (forms pos)
     (find-if (lambda (form)
                  (in-range pos (gethash "start" form) (gethash "end" form))) forms))
 
 
-(declaim (ftype (function ((or T cons) hash-table)) create-node))
+(declaim (ftype (function ((or null cons) (or null hash-table)) cons) create-node))
 (defun create-node (parent form)
     (list (cons :range (range:create (gethash "start" form) (gethash "end" form)))
           (cons :parent parent)))
@@ -49,7 +49,7 @@
     `(satisfies list-of-position-p))
 
 
-(declaim (ftype (function (cons list-of-position)) ranges))
+(declaim (ftype (function (cons list-of-position) cons) ranges))
 (defun ranges (forms pos-list)
     (mapcar (lambda (pos)
                 (get-range-tree forms pos))

@@ -85,7 +85,7 @@
 
 (defmacro with-logging (logger &body body)
     `(let ((*logger* ,logger))
-         ,@body))
+         (progn ,@body)))
 
 
 (defun create (out &optional lvl)

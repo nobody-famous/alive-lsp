@@ -8,6 +8,7 @@
 (in-package :alive/lsp/message/abstract)
 
 
+(declaim (ftype (function (fixnum string &key (:params hash-table)) hash-table) create-request))
 (defun create-request (id name &key params)
     (let ((req (make-hash-table :test #'equalp)))
 
@@ -29,6 +30,7 @@
         req))
 
 
+(declaim (ftype (function (fixnum &key (:result-value T) (:error-value T)) hash-table) create-response))
 (defun create-response (id &key result-value error-value)
     (let ((resp (make-hash-table :test #'equalp)))
 

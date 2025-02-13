@@ -11,27 +11,27 @@
 
 (defun test-list-systems ()
     (clue:test "List Systems"
-        (clue:check-exists (find "foo" (alive/asdf:list-systems) :test #'string=))))
+        (clue:check-exists (find "foo" (alive/sys/asdf:list-all) :test #'string=))))
 
 
 (defun test-load-system ()
     (clue:test "Load System"
         (handler-case
-                (alive/asdf:load-system :name "foo"
-                                        :force T
-                                        :stdout-fn (lambda (data)
-                                                       (declare (ignore data)))
-                                        :stderr-fn (lambda (data)
-                                                       (declare (ignore data))))
+                (alive/sys/asdf:load-system :name "foo"
+                                            :force T
+                                            :stdout-fn (lambda (data)
+                                                           (declare (ignore data)))
+                                            :stderr-fn (lambda (data)
+                                                           (declare (ignore data))))
             (error (c) (declare (ignore c))))
 
-        (alive/asdf:load-system :name "foo/2"
-                                :stdout-fn (lambda (data)
-                                               (declare (ignore data)))
-                                :stderr-fn (lambda (data)
-                                               (declare (ignore data))))
+        (alive/sys/asdf:load-system :name "foo/2"
+                                    :stdout-fn (lambda (data)
+                                                   (declare (ignore data)))
+                                    :stderr-fn (lambda (data)
+                                                   (declare (ignore data))))
 
-        (clue:check-exists (find "foo" (alive/asdf:list-systems) :test #'string=))))
+        (clue:check-exists (find "foo" (alive/sys/asdf:list-all) :test #'string=))))
 
 
 (defun run-all ()

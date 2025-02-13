@@ -67,7 +67,9 @@
 
 (defun name-from-string (str)
     (let ((pkg (for-string str)))
-        (when pkg (string-downcase (package-name pkg)))))
+        (if (packagep pkg)
+            (string-downcase (package-name pkg))
+            "cl-user")))
 
 
 (defun for-pos (text pos)

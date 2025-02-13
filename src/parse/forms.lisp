@@ -175,6 +175,7 @@
     (collapse-opens state types:*open-paren*))
 
 
+(declaim (ftype (function (T) (or null cons)) from-stream))
 (defun from-stream (input)
     (loop :with state := (make-parse-state)
 
@@ -218,6 +219,7 @@
                           (return (reverse (parse-state-forms state))))))
 
 
+(declaim (ftype (function (stream) (or null cons)) from-stream-or-nil))
 (defun from-stream-or-nil (input)
     (handler-case
             (from-stream input)
