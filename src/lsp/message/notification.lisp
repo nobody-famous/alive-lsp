@@ -1,6 +1,7 @@
 (defpackage :alive/lsp/message/notification
     (:use :cl)
-    (:export :refresh
+    (:export :query
+             :refresh
              :stderr
              :stdout)
     (:local-nicknames (:message :alive/lsp/message/abstract)))
@@ -29,5 +30,11 @@
 
 (defun stderr (value)
     (create "$/alive/stderr"
+            :key "data"
+            :value value))
+
+
+(defun query (value)
+    (create "$/alive/query-io"
             :key "data"
             :value value))
