@@ -27,6 +27,8 @@
                                                         (threads:wait-for-input))
                                           :stdout-fn (lambda (data)
                                                          (deps:send-msg (notification:stdout data)))
+                                          :query-fn (lambda (data)
+                                                        (deps:send-msg (notification:query data)))
                                           :trace-fn (lambda (data)
                                                         (deps:send-msg (notification:stdout data)))
                                           :stderr-fn (lambda (data)

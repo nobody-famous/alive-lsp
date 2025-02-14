@@ -95,11 +95,12 @@
     (clue:suite "Inspect Eval"
         (clue:test "No result"
             (let ((sent-msg nil))
-                (deps:with-deps (deps:create :send-msg (lambda (msg)
-                                                           (setf sent-msg msg)
-                                                           nil))
-                    (inspect:do-inspect-eval (list (cons :id 5)))
-                    (clue:check-exists sent-msg))))
+                (state:with-state (state:create)
+                    (deps:with-deps (deps:create :send-msg (lambda (msg)
+                                                               (setf sent-msg msg)
+                                                               nil))
+                        (inspect:do-inspect-eval (list (cons :id 5)))
+                        (clue:check-exists sent-msg)))))
 
         (clue:test "Has result"
             (let ((sent-msg nil))
