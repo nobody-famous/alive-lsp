@@ -90,7 +90,7 @@
     (clue:test "Eval"
         (clue:expect-fail (lambda () (deps:do-eval (make-hash-table))))
         (deps:with-deps (deps:create :eval-fn (lambda (data) data))
-            (clue:check-equal :expected "foo"
+            (clue:check-equal :expected (list "foo")
                               :actual (deps:do-eval "foo")))))
 
 
