@@ -57,6 +57,25 @@
                                       :actual txt))))))
 
 
+(defun get-macro-text ()
+    (clue:suite "Macro Text"
+        (clue:test "Simple macro"
+            (let* ((response (macro:get-text (list (cons :id 5)
+                                                   (cons :params (list (cons :text "(bar 1 2)"))))))
+                   (result (gethash "result" response))
+                   (txt (gethash "text" result)))
+                (clue:check-equal :expected "(bar 1 2)"
+                                  :actual txt)))
+
+        (clue:test "Defmacro"
+            (let* ((response (macro:get-text (list (cons :id 5)
+                                                   (cons :params (list (cons :text "(defmacro bar (x y) `(+ x y))"))))))
+                   (result (gethash "result" response))
+                   (txt (gethash "text" result)))
+                (clue:check-equal :expected "(bar x y)"
+                                  :actual txt)))))
+
+
 (defun run-all ()
     (clue:suite "Macro Tests"
         (test-expand)

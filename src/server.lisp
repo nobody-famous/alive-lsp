@@ -99,6 +99,7 @@
 
                     (cons "$/alive/macroexpand" (lambda (msg) (alive/session/handler/macro:expand msg)))
                     (cons "$/alive/macroexpand1" (lambda (msg) (alive/session/handler/macro:expand-1 msg)))
+                    (cons "$/alive/getMacroText" (lambda (msg) (alive/session/handler/macro:get-text msg)))
 
                     (cons "$/alive/inspect" (lambda (msg)
                                                 (threads:run-in-thread (or (cdr (assoc :method msg)) "Inspect")
