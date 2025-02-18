@@ -8,7 +8,7 @@
 (in-package :alive/session/handler/macro)
 
 
-(declaim (ftype (function (list (function (string string) list)) hash-table) do-expand))
+(declaim (ftype (function (list (function ((or null string) (or null string)) list)) hash-table) do-expand))
 (defun do-expand (msg fn)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
