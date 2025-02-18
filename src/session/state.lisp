@@ -14,6 +14,8 @@
              :listener
              :listeners
              :lock
+             :new-rem-thread-msg
+             :new-with-thread-msg
              :next-inspector-id
              :next-send-id
              :next-thread-id
@@ -208,6 +210,16 @@
             (setf (gethash thread-id table) id))))
 
 
+(declaim (ftype (function (deps:dependencies T)) new-save-thread-msg))
+(defun new-save-thread-msg (deps id)
+    (let* ((table (state-thread-msgs *state*))
+           (cur-thread (bt:current-thread))
+           (thread-id (deps:new-get-thread-id deps cur-thread)))
+
+        (bt:with-recursive-lock-held ((state-lock *state*))
+            (setf (gethash thread-id table) id))))
+
+
 (declaim (ftype (function (T) (or null integer)) get-thread-msg))
 (defun get-thread-msg (thread-id)
     (let ((table (state-thread-msgs *state*)))
@@ -226,12 +238,30 @@
             (remhash thread-id table))))
 
 
+(declaim (ftype (function (deps:dependencies) boolean) new-rem-thread-msg))
+(defun new-rem-thread-msg (deps)
+    (let* ((table (state-thread-msgs *state*))
+           (cur-thread (bt:current-thread))
+           (thread-id (deps:new-get-thread-id deps cur-thread)))
+
+        (bt:with-recursive-lock-held ((state-lock *state*))
+            (remhash thread-id table))))
+
+
 (defmacro with-thread-msg ((id) &body body)
     `(progn (unless *state* (error "State not set"))
             (when ,id (save-thread-msg ,id))
             (unwind-protect
                     (progn ,@body)
                 (when ,id (rem-thread-msg)))))
+
+
+(defmacro new-with-thread-msg ((deps id) &body body)
+    `(progn (unless *state* (error "State not set"))
+            (when ,id (new-save-thread-msg ,deps ,id))
+            (unwind-protect
+                    (progn ,@body)
+                (when ,id (new-rem-thread-msg ,deps)))))
 
 
 (defmacro with-state (state &body body)

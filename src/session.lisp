@@ -1,6 +1,7 @@
 (defpackage :alive/session
     (:use :cl)
-    (:export :start
+    (:export :new-start
+             :start
              :stop)
     (:local-nicknames (:logger :alive/logger)
                       (:state :alive/session/state)
@@ -25,6 +26,19 @@
 
         (spawn:new-thread "Session Message Reader"
             (alive/session/message-loop:run))
+
+        (logger:info-msg "Session started")
+        nil))
+
+
+(declaim (ftype (function (alive/deps:dependencies) null) new-start))
+(defun new-start (deps)
+    (state:with-state (state:create)
+        (state:add-listener (state:create-listener (lambda () (alive/context:destroy))))
+        (state:set-running T)
+
+        (spawn:new-thread "Session Message Reader"
+            (alive/session/message-loop:new-run deps))
 
         (logger:info-msg "Session started")
         nil))

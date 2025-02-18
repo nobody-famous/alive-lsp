@@ -143,15 +143,36 @@
                  :do-load (lambda (path &key stdin-fn stdout-fn stderr-fn) (alive/file:do-load path :stdin-fn stdin-fn :stdout-fn stdout-fn :stderr-fn stderr-fn))))
 
 
+(declaim (ftype (function () deps:dependencies) new-create-deps))
+(defun new-create-deps ()
+    (deps:new-create :msg-handler (lambda (msg) (alive/session/message:handle msg))
+                     :send-msg (lambda (msg) (alive/session/transport:send-msg msg))
+                     :send-request (lambda (req) (alive/session/transport:send-request req))
+                     :read-msg (lambda () (alive/session/transport:read-msg))
+                     :list-all-threads (lambda () (alive/sys/threads:list-all))
+                     :kill-thread (lambda (id) (alive/sys/threads:kill id))
+                     :list-all-asdf (lambda () (alive/sys/asdf:list-all))
+                     :load-asdf-system (lambda (&rest args) (apply 'alive/sys/asdf:load-system args))
+                     :get-thread-id (lambda (thread) (alive/sys/threads:get-id thread))
+                     :eval-fn (lambda (arg) (alive/sys/eval:eval-fn arg))
+                     :macro-expand (lambda (txt pkg) (alive/macros:expand txt pkg))
+                     :macro-expand-1 (lambda (txt pkg) (alive/macros:expand-1 txt pkg))
+                     :try-compile (lambda (path) (alive/file:try-compile path))
+                     :do-compile (lambda (path &key stdin-fn stdout-fn stderr-fn) (alive/file:do-compile path :stdin-fn stdin-fn :stdout-fn stdout-fn :stderr-fn stderr-fn))
+                     :do-load (lambda (path &key stdin-fn stdout-fn stderr-fn) (alive/file:do-load path :stdin-fn stdin-fn :stdout-fn stdout-fn :stderr-fn stderr-fn))))
+
+
 (defun accept-conn ()
     (let* ((conn (usocket:socket-accept (socket *server*) :element-type '(unsigned-byte 8))))
         (context:with-context (:input-stream (flexi-streams:make-flexi-stream (usocket:socket-stream conn))
                                              :output-stream (usocket:socket-stream conn)
                                              :destroy-fn (lambda ()
                                                              (usocket:socket-close conn)))
-            (alive/deps:with-deps (create-deps)
-                (handlers:with-handlers *message-handlers*
-                    (session:start))))))
+            (handlers:with-handlers *message-handlers*
+                (session:new-start (new-create-deps)))
+            #+n (alive/deps:with-deps (create-deps)
+                    (handlers:with-handlers *message-handlers*
+                        (session:start))))))
 
 
 (defun wait-for-conn ()

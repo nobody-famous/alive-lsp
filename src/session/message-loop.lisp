@@ -1,6 +1,7 @@
 (defpackage :alive/session/message-loop
     (:use :cl)
-    (:export :run
+    (:export :new-run
+             :run
              :stop)
     (:local-nicknames (:deps :alive/deps)
                       (:errors :alive/lsp/errors)
@@ -17,6 +18,19 @@
         (state:with-thread-msg (id)
             (handler-case
                     (funcall (deps:msg-handler) msg)
+                (error (c)
+                    (logger:error-msg "Message Handler: ~A ~A" msg c)
+                    (lsp-msg:create-error id
+                                          :code errors:*internal-error*
+                                          :message (princ-to-string c)))))))
+
+
+(declaim (ftype (function (deps:dependencies cons) (values (or null hash-table) &optional)) new-process-msg))
+(defun new-process-msg (deps msg)
+    (let ((id (cdr (assoc :id msg))))
+        (state:new-with-thread-msg (deps id)
+            (handler-case
+                    (funcall (deps:new-msg-handler deps) msg)
                 (error (c)
                     (logger:error-msg "Message Handler: ~A ~A" msg c)
                     (lsp-msg:create-error id
@@ -63,6 +77,38 @@
            (stop))))
 
 
+(declaim (ftype (function (deps:dependencies) (values (or null hash-table) &optional)) new-get-next-response))
+(defun new-get-next-response (deps)
+    (handler-case
+            (let ((msg (deps:new-read-msg deps)))
+                (when msg
+                      (new-process-msg deps msg)))
+
+        (errors:unhandled-request (c)
+                                  (logger:error-msg "Unhandled Request: ~A" c)
+                                  (when (errors:id c)
+                                        (lsp-msg:create-error (errors:id c)
+                                                              :code errors:*method-not-found*
+                                                              :message (format nil "Unhandled request: ~A" (errors:method-name c)))))
+
+        (errors:server-error (c)
+                             (logger:error-msg "Server Error: ~A" c)
+                             (when (errors:id c)
+                                   (lsp-msg:create-error (errors:id c)
+                                                         :code errors:*internal-error*
+                                                         :message (format nil "Server error: ~A" (errors:message c)))))
+
+        (alive/session/spawn:spawned-thread (c) (declare (ignore c)))
+
+        (end-of-file (c)
+                     (declare (ignore c))
+                     (stop))
+
+        (T (c)
+           (logger:error-msg "Unknown Error: ~A ~A" (type-of c) c)
+           (stop))))
+
+
 (declaim (ftype (function () null) run))
 (defun run ()
     (state:set-running T)
@@ -70,3 +116,12 @@
           :do (let ((resp (get-next-response)))
                   (when resp
                         (deps:send-msg resp)))))
+
+
+(declaim (ftype (function (deps:dependencies) null) new-run))
+(defun new-run (deps)
+    (state:set-running T)
+    (loop :while (state:running)
+          :do (let ((resp (new-get-next-response deps)))
+                  (when resp
+                        (deps:new-send-msg deps resp)))))
