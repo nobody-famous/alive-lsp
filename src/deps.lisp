@@ -16,6 +16,7 @@
              :msg-handler
              :new-create
              :new-get-thread-id
+             :new-list-all-threads
              :new-msg-handler
              :new-read-msg
              :new-send-msg
@@ -232,6 +233,11 @@
     (unless *deps* (error "list-all-threads dependencies not set"))
 
     (funcall (deps-list-all-threads *deps*)))
+
+
+(declaim (ftype (function (dependencies) (values cons &optional)) new-list-all-threads))
+(defun new-list-all-threads (deps)
+    (funcall (dependencies-list-all-threads deps)))
 
 
 (declaim (ftype (function (T) *) kill-thread))

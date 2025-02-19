@@ -2,6 +2,7 @@
     (:use :cl)
     (:export :get-handler
              :list-of-handlers
+             :new-get-handler
              :with-handlers))
 
 (in-package :alive/session/handlers)
@@ -35,6 +36,11 @@
 (declaim (ftype (function (string) (or null (function (cons) (or null hash-table)))) get-handler))
 (defun get-handler (name)
     (cdr (assoc name *handlers* :test #'string=)))
+
+
+(declaim (ftype (function (list-of-handlers string) (or null (function (cons) (or null hash-table)))) new-get-handler))
+(defun new-get-handler (handlers name)
+    (cdr (assoc name handlers :test #'string=)))
 
 
 (defmacro with-handlers (handlers &body body)
