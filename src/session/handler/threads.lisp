@@ -1,7 +1,8 @@
 (defpackage :alive/session/handler/threads
     (:use :cl)
     (:export :kill
-             :list-all)
+             :list-all
+             :new-list-all)
     (:local-nicknames (:deps :alive/deps)
                       (:errors :alive/lsp/errors)
                       (:lsp-msg :alive/lsp/message/abstract)
@@ -18,6 +19,16 @@
         (let ((threads (remove-if (lambda (thread)
                                       (eq (cdr (assoc :id thread)) (deps:get-thread-id (bt:current-thread))))
                                (deps:list-all-threads))))
+
+            (utils:result (cdr (assoc :id msg)) "threads" threads))))
+
+
+(declaim (ftype (function (deps:dependencies cons) hash-table) new-list-all))
+(defun new-list-all (deps msg)
+    (state:lock (mutex)
+        (let ((threads (remove-if (lambda (thread)
+                                      (eq (cdr (assoc :id thread)) (deps:new-get-thread-id deps (bt:current-thread))))
+                               (deps:new-list-all-threads deps))))
 
             (utils:result (cdr (assoc :id msg)) "threads" threads))))
 

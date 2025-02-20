@@ -121,84 +121,84 @@
 
 (declaim (type (or null alive/session/handlers:list-of-handlers) *new-message-handlers*))
 (defparameter *new-message-handlers*
-              (list (cons "initialize" (lambda (msg) (alive/session/handler/init:request msg)))
-                    (cons "initialized" (lambda (msg) (alive/session/handler/init:initialized msg)))
+              (list (cons "initialize" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/init:request msg)))
+                    (cons "initialized" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/init:initialized msg)))
 
-                    (cons "textDocument/completion" (lambda (msg) (alive/session/handler/document:completion msg)))
-                    (cons "textDocument/definition" (lambda (msg) (alive/session/handler/document:definition msg)))
-                    (cons "textDocument/didChange" (lambda (msg) (alive/session/handler/document:did-change msg)))
-                    (cons "textDocument/didClose" (lambda (msg) (ignore-msg msg)))
-                    (cons "textDocument/didOpen" (lambda (msg) (alive/session/handler/document:did-open msg)))
-                    (cons "textDocument/didSave" (lambda (msg) (ignore-msg msg)))
-                    (cons "textDocument/documentSymbol" (lambda (msg) (alive/session/handler/document:doc-symbols msg)))
-                    (cons "textDocument/hover" (lambda (msg) (alive/session/handler/document:hover msg)))
-                    (cons "textDocument/onTypeFormatting" (lambda (msg) (alive/session/handler/document:on-type msg)))
-                    (cons "textDocument/rangeFormatting" (lambda (msg) (alive/session/handler/document:formatting msg)))
-                    (cons "textDocument/selectionRange" (lambda (msg) (alive/session/handler/document:selection msg)))
-                    (cons "textDocument/semanticTokens/full" (lambda (msg) (alive/session/handler/document:sem-tokens msg)))
+                    (cons "textDocument/completion" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/document:completion msg)))
+                    (cons "textDocument/definition" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/document:definition msg)))
+                    (cons "textDocument/didChange" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/document:did-change msg)))
+                    (cons "textDocument/didClose" (lambda (deps msg) (declare (ignore deps)) (ignore-msg msg)))
+                    (cons "textDocument/didOpen" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/document:did-open msg)))
+                    (cons "textDocument/didSave" (lambda (deps msg) (declare (ignore deps)) (ignore-msg msg)))
+                    (cons "textDocument/documentSymbol" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/document:doc-symbols msg)))
+                    (cons "textDocument/hover" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/document:hover msg)))
+                    (cons "textDocument/onTypeFormatting" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/document:on-type msg)))
+                    (cons "textDocument/rangeFormatting" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/document:formatting msg)))
+                    (cons "textDocument/selectionRange" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/document:selection msg)))
+                    (cons "textDocument/semanticTokens/full" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/document:sem-tokens msg)))
 
-                    (cons "$/setTrace" (lambda (msg) (ignore-msg msg)))
-                    (cons "$/cancelRequest" (lambda (msg) (ignore-msg msg)))
+                    (cons "$/setTrace" (lambda (deps msg) (declare (ignore deps)) (ignore-msg msg)))
+                    (cons "$/cancelRequest" (lambda (deps msg) (declare (ignore deps)) (ignore-msg msg)))
 
-                    (cons "$/alive/eval" (lambda (msg)
+                    (cons "$/alive/eval" (lambda (deps msg) (declare (ignore deps))
                                              (threads:run-in-thread (or (cdr (assoc :method msg)) "eval")
                                                                     (cdr (assoc :id msg))
                                                                     (lambda ()
                                                                         (alive/session/handler/eval:handle msg)))))
-                    (cons "$/alive/topFormBounds" (lambda (msg) (alive/session/handler/form-bounds:top-form msg)))
-                    (cons "$/alive/surroundingFormBounds" (lambda (msg) (alive/session/handler/form-bounds:surrounding-form msg)))
+                    (cons "$/alive/topFormBounds" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/form-bounds:top-form msg)))
+                    (cons "$/alive/surroundingFormBounds" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/form-bounds:surrounding-form msg)))
 
-                    (cons "$/alive/getPackageForPosition" (lambda (msg) (alive/session/handler/packages:for-position msg)))
-                    (cons "$/alive/listPackages" (lambda (msg) (alive/session/handler/packages:list-all msg)))
-                    (cons "$/alive/removePackage" (lambda (msg) (alive/session/handler/packages:remove-pkg msg)))
+                    (cons "$/alive/getPackageForPosition" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/packages:for-position msg)))
+                    (cons "$/alive/listPackages" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/packages:list-all msg)))
+                    (cons "$/alive/removePackage" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/packages:remove-pkg msg)))
 
-                    (cons "$/alive/listThreads" (lambda (msg) (alive/session/handler/threads:list-all msg)))
-                    (cons "$/alive/killThread" (lambda (msg) (alive/session/handler/threads:kill msg)))
+                    (cons "$/alive/listThreads" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/threads:list-all msg)))
+                    (cons "$/alive/killThread" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/threads:kill msg)))
 
-                    (cons "$/alive/listAsdfSystems" (lambda (msg) (alive/session/handler/asdf:list-all msg)))
-                    (cons "$/alive/loadAsdfSystem" (lambda (msg)
+                    (cons "$/alive/listAsdfSystems" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/asdf:list-all msg)))
+                    (cons "$/alive/loadAsdfSystem" (lambda (deps msg) (declare (ignore deps))
                                                        (threads:run-in-thread (or (cdr (assoc :method msg)) "ASDF")
                                                                               (cdr (assoc :id msg))
                                                                               (lambda ()
                                                                                   (alive/session/handler/asdf:load-system msg)))))
 
-                    (cons "$/alive/tryCompile" (lambda (msg)
+                    (cons "$/alive/tryCompile" (lambda (deps msg) (declare (ignore deps))
                                                    (spawn:new-thread "Try Compile"
                                                        (alive/session/handler/compile:try msg))))
-                    (cons "$/alive/compile" (lambda (msg)
+                    (cons "$/alive/compile" (lambda (deps msg) (declare (ignore deps))
                                                 (threads:run-in-thread (or (cdr (assoc :method msg)) "Compile")
                                                                        (cdr (assoc :id msg))
                                                                        (lambda ()
                                                                            (alive/session/handler/compile:file msg)))))
-                    (cons "$/alive/loadFile" (lambda (msg)
+                    (cons "$/alive/loadFile" (lambda (deps msg) (declare (ignore deps))
                                                  (threads:run-in-thread (or (cdr (assoc :method msg)) "Load File")
                                                                         (cdr (assoc :id msg))
                                                                         (lambda ()
                                                                             (alive/session/handler/compile:load-file msg)))))
 
-                    (cons "$/alive/symbol" (lambda (msg) (alive/session/handler/symbol:for-pos msg)))
-                    (cons "$/alive/unexportSymbol" (lambda (msg) (alive/session/handler/symbol:do-unexport msg)))
+                    (cons "$/alive/symbol" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/symbol:for-pos msg)))
+                    (cons "$/alive/unexportSymbol" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/symbol:do-unexport msg)))
 
-                    (cons "$/alive/macroexpand" (lambda (msg) (alive/session/handler/macro:expand msg)))
-                    (cons "$/alive/macroexpand1" (lambda (msg) (alive/session/handler/macro:expand-1 msg)))
+                    (cons "$/alive/macroexpand" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/macro:expand msg)))
+                    (cons "$/alive/macroexpand1" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/macro:expand-1 msg)))
 
-                    (cons "$/alive/inspect" (lambda (msg)
+                    (cons "$/alive/inspect" (lambda (deps msg) (declare (ignore deps))
                                                 (threads:run-in-thread (or (cdr (assoc :method msg)) "Inspect")
                                                                        (cdr (assoc :id msg))
                                                                        (lambda ()
                                                                            (alive/session/handler/inspect:do-inspect msg)))))
-                    (cons "$/alive/inspectRefresh" (lambda (msg) (alive/session/handler/inspect:refresh msg)))
-                    (cons "$/alive/inspectClose" (lambda (msg) (alive/session/handler/inspect:do-close msg)))
-                    (cons "$/alive/inspectSymbol" (lambda (msg)
+                    (cons "$/alive/inspectRefresh" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/inspect:refresh msg)))
+                    (cons "$/alive/inspectClose" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/inspect:do-close msg)))
+                    (cons "$/alive/inspectSymbol" (lambda (deps msg) (declare (ignore deps))
                                                       (threads:run-in-thread (or (cdr (assoc :method msg)) "Inspect")
                                                                              (cdr (assoc :id msg))
                                                                              (lambda ()
                                                                                  (alive/session/handler/inspect:do-symbol msg)))))
-                    (cons "$/alive/inspectEval" (lambda (msg) (threads:run-in-thread (or (cdr (assoc :method msg)) "Inspect")
-                                                                                     (cdr (assoc :id msg))
-                                                                                     (lambda ()
-                                                                                         (alive/session/handler/inspect:do-inspect-eval msg)))))
-                    (cons "$/alive/inspectMacro" (lambda (msg) (alive/session/handler/inspect:macro msg)))))
+                    (cons "$/alive/inspectEval" (lambda (deps msg) (declare (ignore deps)) (threads:run-in-thread (or (cdr (assoc :method msg)) "Inspect")
+                                                                                                                  (cdr (assoc :id msg))
+                                                                                                                  (lambda ()
+                                                                                                                      (alive/session/handler/inspect:do-inspect-eval msg)))))
+                    (cons "$/alive/inspectMacro" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/inspect:macro msg)))))
 
 
 (declaim (ftype (function () state:state) create-session-state))
@@ -227,7 +227,7 @@
 
 (declaim (ftype (function () deps:dependencies) new-create-deps))
 (defun new-create-deps ()
-    (deps:new-create :msg-handler (lambda (msg) (alive/session/message:new-handle *new-message-handlers* msg))
+    (deps:new-create :msg-handler (lambda (deps msg) (alive/session/message:new-handle deps *new-message-handlers* msg))
                      :send-msg (lambda (msg) (alive/session/transport:send-msg msg))
                      :send-request (lambda (req) (alive/session/transport:send-request req))
                      :read-msg (lambda () (alive/session/transport:read-msg))
@@ -255,7 +255,6 @@
                 (handlers:with-handlers *message-handlers*
                     (session:start))))))
 
-
 (defun wait-for-conn ()
     (usocket:wait-for-input (socket *server*))
 
@@ -263,12 +262,10 @@
                (usocket::state (socket *server*)))
           (accept-conn)))
 
-
 (defun wake-up-accept ()
     (ignore-errors
         (let ((conn (usocket:socket-connect "127.0.0.1" (usocket:get-local-port (socket *server*)))))
             (usocket:socket-close conn))))
-
 
 (defun stop-server ()
     (bt:with-recursive-lock-held ((lock *server*))
@@ -278,7 +275,6 @@
               (wake-up-accept)
               (usocket:socket-close (socket *server*))
               (setf (socket *server*) nil))))
-
 
 (defun listen-for-conns (port)
     (let ((socket (usocket:socket-listen "127.0.0.1" port :reuse-address T)))
@@ -292,7 +288,6 @@
                              :do (wait-for-conn)))
             (stop-server))))
 
-
 (defun start-server (port)
     (let ((stdout *standard-output*)
           (server *server*)
@@ -304,14 +299,12 @@
                                 (listen-for-conns port)))
                         :name "Alive LSP Server")))
 
-
 (defun stop ()
     (logger:info-msg "Stop server")
 
     (stop-server)
 
     (setf *server* nil))
-
 
 (defun start (&key (port *default-port*))
     (logger:with-logging (logger:create *standard-output* logger:*info*)

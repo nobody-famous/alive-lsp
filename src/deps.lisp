@@ -51,7 +51,7 @@
 
 
 (defstruct dependencies
-    (msg-handler nil :type (or null (function (cons) (values (or null hash-table) &optional))))
+    (msg-handler nil :type (or null (function (dependencies cons) (values (or null hash-table) &optional))))
     (read-msg nil :type (or null (function () (values (or null cons) &optional))))
     (send-msg nil :type (or null (function (cons) null)))
     (send-request nil :type (or null (function (list) hash-table)))
@@ -127,7 +127,7 @@
                :do-load do-load))
 
 
-(declaim (ftype (function (&key (:msg-handler (function (cons) (values (or null hash-table) &optional)))
+(declaim (ftype (function (&key (:msg-handler (function (dependencies cons) (values (or null hash-table) &optional)))
                                 (:send-msg (function (cons) null))
                                 (:send-request (function (hash-table) list))
                                 (:read-msg (function () (values (or null cons) &optional)))
@@ -143,7 +143,7 @@
                                 (:do-compile (function (string &key (:stdin-fn function) (:stdout-fn function) (:stderr-fn function)) *))
                                 (:do-load (function (string &key (:stdin-fn function) (:stdout-fn function) (:stderr-fn function)) *)))
                           dependencies) new-create))
-(defun new-create (&key (msg-handler (lambda (msg) (declare (ignore msg))))
+(defun new-create (&key (msg-handler (lambda (deps msg) (declare (ignore deps msg))))
                         (send-msg (lambda (msg) (declare (ignore msg))))
                         (send-request (lambda (req)
                                           (declare (ignore req))

@@ -30,7 +30,7 @@
     (let ((id (cdr (assoc :id msg))))
         (state:new-with-thread-msg (deps id)
             (handler-case
-                    (funcall (deps:new-msg-handler deps) msg)
+                    (funcall (deps:new-msg-handler deps) deps msg)
                 (error (c)
                     (logger:error-msg "Message Handler: ~A ~A" msg c)
                     (lsp-msg:create-error id
