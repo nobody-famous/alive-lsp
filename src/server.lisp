@@ -156,11 +156,11 @@
                     (cons "$/alive/killThread" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/threads:kill msg)))
 
                     (cons "$/alive/listAsdfSystems" (lambda (deps msg) (alive/session/handler/asdf:new-list-all deps msg)))
-                    (cons "$/alive/loadAsdfSystem" (lambda (deps msg) (declare (ignore deps))
-                                                       (threads:run-in-thread (or (cdr (assoc :method msg)) "ASDF")
-                                                                              (cdr (assoc :id msg))
-                                                                              (lambda ()
-                                                                                  (alive/session/handler/asdf:load-system msg)))))
+                    (cons "$/alive/loadAsdfSystem" (lambda (deps msg)
+                                                       (threads:new-run-in-thread deps (or (cdr (assoc :method msg)) "ASDF")
+                                                                                  (cdr (assoc :id msg))
+                                                                                  (lambda ()
+                                                                                      (alive/session/handler/asdf:new-load-system deps msg)))))
 
                     (cons "$/alive/tryCompile" (lambda (deps msg)
                                                    (spawn:new-thread "Try Compile"
@@ -225,12 +225,12 @@
                  :do-load (lambda (path &key stdin-fn stdout-fn stderr-fn) (alive/file:do-load path :stdin-fn stdin-fn :stdout-fn stdout-fn :stderr-fn stderr-fn))))
 
 
-(declaim (ftype (function () deps:dependencies) new-create-deps))
-(defun new-create-deps ()
+(declaim (ftype (function (&key (:input-stream flexi-streams:flexi-io-stream) (:output-stream T)) deps:dependencies) new-create-deps))
+(defun new-create-deps (&key input-stream output-stream)
     (deps:new-create :msg-handler (lambda (deps msg) (alive/session/message:new-handle deps *new-message-handlers* msg))
-                     :send-msg (lambda (msg) (alive/session/transport:send-msg msg))
-                     :send-request (lambda (req) (alive/session/transport:send-request req))
-                     :read-msg (lambda () (alive/session/transport:read-msg))
+                     :send-msg (lambda (msg) (alive/session/transport:new-send-msg output-stream msg))
+                     :send-request (lambda (req) (alive/session/transport:new-send-request output-stream req))
+                     :read-msg (lambda () (alive/session/transport:new-read-msg input-stream))
                      :list-all-threads (lambda () (alive/sys/threads:list-all))
                      :kill-thread (lambda (id) (alive/sys/threads:kill id))
                      :list-all-asdf (lambda () (alive/sys/asdf:list-all))
@@ -246,12 +246,13 @@
 
 (defun accept-conn ()
     (let* ((conn (usocket:socket-accept (socket *server*) :element-type '(unsigned-byte 8))))
-        (context:with-context (:input-stream (flexi-streams:make-flexi-stream (usocket:socket-stream conn))
-                                             :output-stream (usocket:socket-stream conn)
-                                             :destroy-fn (lambda ()
-                                                             (usocket:socket-close conn)))
-            (session:new-start (new-create-deps))
-            #+n (alive/deps:with-deps (create-deps)
+        (session:new-start (new-create-deps :input-stream (flexi-streams:make-flexi-stream (usocket:socket-stream conn))
+                                            :output-stream (usocket:socket-stream conn)))
+        #+n (context:with-context (:input-stream (flexi-streams:make-flexi-stream (usocket:socket-stream conn))
+                                                 :output-stream (usocket:socket-stream conn)
+                                                 :destroy-fn (lambda ()
+                                                                 (usocket:socket-close conn)))
+                (alive/deps:with-deps (create-deps)
                     (handlers:with-handlers *message-handlers*
                         (session:start))))))
 

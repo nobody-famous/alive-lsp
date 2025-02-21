@@ -2,7 +2,8 @@
     (:use :cl)
     (:export :list-all
              :load-system
-             :new-list-all)
+             :new-list-all
+             :new-load-system)
     (:local-nicknames (:deps :alive/deps)
                       (:lsp-msg :alive/lsp/message/abstract)
                       (:notification :alive/lsp/message/notification)
@@ -41,3 +42,19 @@
             :stderr-fn (lambda (data)
                            (deps:send-msg (notification:stderr data))))
         (deps:send-msg (lsp-msg:create-response id :result-value T))))
+
+
+(declaim (ftype (function (deps:dependencies cons) (values null &optional)) new-load-system))
+(defun new-load-system (deps msg)
+    (let* ((id (cdr (assoc :id msg)))
+           (params (cdr (assoc :params msg)))
+           (name (cdr (assoc :name params))))
+        (deps:new-load-asdf-system deps
+                                   :name name
+                                   :stdin-fn (lambda ()
+                                                 (threads:new-wait-for-input deps))
+                                   :stdout-fn (lambda (data)
+                                                  (deps:new-send-msg deps (notification:stdout data)))
+                                   :stderr-fn (lambda (data)
+                                                  (deps:new-send-msg deps (notification:stderr data))))
+        (deps:new-send-msg deps (lsp-msg:create-response id :result-value T))))

@@ -19,6 +19,7 @@
              :new-get-thread-id
              :new-list-all-asdf
              :new-list-all-threads
+             :new-load-asdf-system
              :new-msg-handler
              :new-read-msg
              :new-send-msg
@@ -285,6 +286,16 @@
     (unless *deps* (error "load-asdf-system dependencies not set"))
 
     (funcall (deps-load-asdf-system *deps*)
+        :name name
+        :stdin-fn stdin-fn
+        :stdout-fn stdout-fn
+        :stderr-fn stderr-fn
+        :force force))
+
+
+(declaim (ftype (function (dependencies &key (:name string) (:stdin-fn function) (:stdout-fn function) (:stderr-fn function) (:force boolean)) (values boolean &optional)) new-load-asdf-system))
+(defun new-load-asdf-system (deps &key name stdin-fn stdout-fn stderr-fn force)
+    (funcall (dependencies-load-asdf-system deps)
         :name name
         :stdin-fn stdin-fn
         :stdout-fn stdout-fn
