@@ -140,11 +140,11 @@
                     (cons "$/setTrace" (lambda (deps msg) (declare (ignore deps)) (ignore-msg msg)))
                     (cons "$/cancelRequest" (lambda (deps msg) (declare (ignore deps)) (ignore-msg msg)))
 
-                    (cons "$/alive/eval" (lambda (deps msg) (declare (ignore deps))
-                                             (threads:run-in-thread (or (cdr (assoc :method msg)) "eval")
-                                                                    (cdr (assoc :id msg))
-                                                                    (lambda ()
-                                                                        (alive/session/handler/eval:handle msg)))))
+                    (cons "$/alive/eval" (lambda (deps msg)
+                                             (threads:new-run-in-thread deps (or (cdr (assoc :method msg)) "eval")
+                                                                        (cdr (assoc :id msg))
+                                                                        (lambda ()
+                                                                            (alive/session/handler/eval:new-handle deps msg)))))
                     (cons "$/alive/topFormBounds" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/form-bounds:top-form msg)))
                     (cons "$/alive/surroundingFormBounds" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/form-bounds:surrounding-form msg)))
 
@@ -162,9 +162,9 @@
                                                                               (lambda ()
                                                                                   (alive/session/handler/asdf:load-system msg)))))
 
-                    (cons "$/alive/tryCompile" (lambda (deps msg) (declare (ignore deps))
+                    (cons "$/alive/tryCompile" (lambda (deps msg)
                                                    (spawn:new-thread "Try Compile"
-                                                       (alive/session/handler/compile:try msg))))
+                                                       (alive/session/handler/compile:new-try deps msg))))
                     (cons "$/alive/compile" (lambda (deps msg) (declare (ignore deps))
                                                 (threads:run-in-thread (or (cdr (assoc :method msg)) "Compile")
                                                                        (cdr (assoc :id msg))
@@ -250,10 +250,10 @@
                                              :output-stream (usocket:socket-stream conn)
                                              :destroy-fn (lambda ()
                                                              (usocket:socket-close conn)))
-            #+n (session:new-start (new-create-deps))
-            (alive/deps:with-deps (create-deps)
-                (handlers:with-handlers *message-handlers*
-                    (session:start))))))
+            (session:new-start (new-create-deps))
+            #+n (alive/deps:with-deps (create-deps)
+                    (handlers:with-handlers *message-handlers*
+                        (session:start))))))
 
 (defun wait-for-conn ()
     (usocket:wait-for-input (socket *server*))

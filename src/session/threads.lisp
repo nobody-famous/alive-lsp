@@ -1,6 +1,8 @@
 (defpackage :alive/session/threads
     (:use :cl)
-    (:export :run-in-thread
+    (:export :new-run-in-thread
+             :new-wait-for-input
+             :run-in-thread
              :wait-for-input)
     (:local-nicknames (:debugger :alive/debugger)
                       (:deps :alive/deps)
@@ -19,6 +21,19 @@
 (declaim (ftype (function () (values (or null string) &optional)) wait-for-input))
 (defun wait-for-input ()
     (let ((input-resp (deps:send-request (lsp-msg:create-request (state:next-send-id) "$/alive/userInput"))))
+
+        (cond ((assoc :error input-resp)
+                  (logger:error-msg "Input Error ~A" input-resp))
+
+              ((assoc :result input-resp)
+                  (let* ((result (cdr (assoc :result input-resp))))
+                      (or (cdr (assoc :text result))
+                          ""))))))
+
+
+(declaim (ftype (function (deps:dependencies) (values (or null string) &optional)) new-wait-for-input))
+(defun new-wait-for-input (deps)
+    (let ((input-resp (deps:new-send-request deps (lsp-msg:create-request (state:next-send-id) "$/alive/userInput"))))
 
         (cond ((assoc :error input-resp)
                   (logger:error-msg "Input Error ~A" input-resp))
@@ -69,6 +84,21 @@
                       (cdr (assoc :index result)))))))
 
 
+(declaim (ftype (function (deps:dependencies condition cons cons)) new-wait-for-debug))
+(defun new-wait-for-debug (deps err restarts frames)
+    (let ((debug-resp (deps:new-send-request deps (req:debugger (state:next-send-id)
+                                                                :message (princ-to-string err)
+                                                                :restarts restarts
+                                                                :stack-trace (mapcar #'frame-to-wire frames)))))
+
+        (cond ((assoc :error debug-resp)
+                  (logger:error-msg "Debugger Error ~A" debug-resp))
+
+              ((assoc :result debug-resp)
+                  (let* ((result (cdr (assoc :result debug-resp))))
+                      (cdr (assoc :index result)))))))
+
+
 (declaim (ftype (function (condition cons) null) start-debugger))
 (defun start-debugger (err frames)
     (let* ((restarts (compute-restarts err))
@@ -78,6 +108,22 @@
                                                                       :description (princ-to-string item)))
                                         restarts)
                                 frames)))
+
+        (when (and ndx
+                   (<= 0 ndx (- (length restarts) 1)))
+              (invoke-restart-interactively (elt restarts ndx)))
+        nil))
+
+
+(declaim (ftype (function (deps:dependencies condition cons) null) new-start-debugger))
+(defun new-start-debugger (deps err frames)
+    (let* ((restarts (compute-restarts err))
+           (ndx (new-wait-for-debug deps err
+                                    (mapcar (lambda (item)
+                                                (restart-info:create-item :name (restart-name item)
+                                                                          :description (princ-to-string item)))
+                                            restarts)
+                                    frames)))
 
         (when (and ndx
                    (<= 0 ndx (- (length restarts) 1)))
@@ -98,6 +144,19 @@
         (funcall fn)))
 
 
+(declaim (ftype (function (deps:dependencies function)) new-run-with-debugger))
+(defun new-run-with-debugger (deps fn)
+    (let ((sb-ext:*invoke-debugger-hook* (lambda (c h)
+                                             (declare (ignore h))
+                                             (new-start-debugger deps c (alive/frames:list-debug-frames))
+                                             (return-from new-run-with-debugger)))
+          (*debugger-hook* (lambda (c h)
+                               (declare (ignore h))
+                               (new-start-debugger deps c (alive/frames:list-debug-frames))
+                               (return-from new-run-with-debugger))))
+        (funcall fn)))
+
+
 (declaim (ftype (function (string) string) next-thread-name))
 (defun next-thread-name (method-name)
     (format nil "~A - ~A" (state:next-thread-id) method-name))
@@ -111,3 +170,13 @@
                     (progn (refresh:send)
                            (run-with-debugger fn))
                 (refresh:send)))))
+
+
+(declaim (ftype (function (deps:dependencies string integer function) null) new-run-in-thread))
+(defun new-run-in-thread (deps method-name msg-id fn)
+    (spawn:new-thread (next-thread-name method-name)
+        (state:new-with-thread-msg (deps msg-id)
+            (unwind-protect
+                    (progn (refresh:new-send deps)
+                           (new-run-with-debugger deps fn))
+                (refresh:new-send deps)))))

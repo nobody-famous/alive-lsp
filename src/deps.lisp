@@ -15,12 +15,15 @@
              :macro-expand-1
              :msg-handler
              :new-create
+             :new-do-eval
              :new-get-thread-id
              :new-list-all-asdf
              :new-list-all-threads
              :new-msg-handler
              :new-read-msg
              :new-send-msg
+             :new-send-request
+             :new-try-compile
              :read-msg
              :send-msg
              :send-request
@@ -229,6 +232,11 @@
     (funcall (deps-send-request *deps*) msg))
 
 
+(declaim (ftype (function (dependencies hash-table) (values list &optional)) new-send-request))
+(defun new-send-request (deps msg)
+    (funcall (dependencies-send-request deps) msg))
+
+
 (declaim (ftype (function () (values cons &optional)) list-all-threads))
 (defun list-all-threads ()
     (unless *deps* (error "list-all-threads dependencies not set"))
@@ -293,6 +301,13 @@
         results))
 
 
+(declaim (ftype (function (dependencies T) *) new-do-eval))
+(defun new-do-eval (deps data)
+    (let ((results (multiple-value-list (funcall (dependencies-eval-fn deps) data))))
+        (finish-output)
+        results))
+
+
 (declaim (ftype (function (string string) (values list &optional)) macro-expand))
 (defun macro-expand (txt pkg)
     (unless *deps* (error "macro-expand dependencies not set"))
@@ -312,6 +327,10 @@
     (unless *deps* (error "try-compile dependencies not set"))
 
     (funcall (deps-try-compile *deps*) path))
+
+(declaim (ftype (function (dependencies string) *) new-try-compile))
+(defun new-try-compile (deps path)
+    (funcall (dependencies-try-compile deps) path))
 
 
 (declaim (ftype (function (string &key (:stdin-fn function) (:stdout-fn function) (:stderr-fn function)) *) do-compile))

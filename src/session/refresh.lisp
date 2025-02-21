@@ -1,6 +1,7 @@
 (defpackage :alive/session/refresh
     (:use :cl)
-    (:export :send)
+    (:export :new-send
+             :send)
     (:local-nicknames (:deps :alive/deps)
                       (:logger :alive/logger)
                       (:lsp-msg :alive/lsp/message/abstract)
@@ -19,3 +20,13 @@
             (when (assoc :error response)
                   (logger:error-msg "Failed to refresh tokens: ~A" (cdr (assoc :error response))))
             (deps:send-msg (notification:refresh)))))
+
+
+(declaim (ftype (function (deps:dependencies) null) new-send))
+(defun new-send (deps)
+    (spawn:new-thread "Refresh Thread"
+        (let* ((send-id (state:next-send-id))
+               (response (deps:new-send-request deps (lsp-msg:create-request send-id "workspace/semanticTokens/refresh"))))
+            (when (assoc :error response)
+                  (logger:error-msg "Failed to refresh tokens: ~A" (cdr (assoc :error response))))
+            (deps:new-send-msg deps (notification:refresh)))))

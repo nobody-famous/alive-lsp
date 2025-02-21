@@ -2,6 +2,7 @@
     (:use :cl)
     (:export :file
              :load-file
+             :new-try
              :try)
     (:local-nicknames (:deps :alive/deps)
                       (:lsp-msg :alive/lsp/message/abstract)
@@ -21,6 +22,16 @@
                          (deps:try-compile path)
                      (T () nil))))
         (deps:send-msg (utils:result (cdr (assoc :id msg)) "messages" msgs))))
+
+
+(declaim (ftype (function (deps:dependencies list) null) new-try))
+(defun new-try (deps msg)
+    (let* ((params (cdr (assoc :params msg)))
+           (path (cdr (assoc :path params)))
+           (msgs (handler-case
+                         (deps:new-try-compile deps path)
+                     (T () nil))))
+        (deps:new-send-msg deps (utils:result (cdr (assoc :id msg)) "messages" msgs))))
 
 
 (declaim (ftype (function (list) null) try))
