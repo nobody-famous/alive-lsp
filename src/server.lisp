@@ -152,10 +152,10 @@
                     (cons "$/alive/listPackages" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/packages:list-all msg)))
                     (cons "$/alive/removePackage" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/packages:remove-pkg msg)))
 
-                    (cons "$/alive/listThreads" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/threads:list-all msg)))
+                    (cons "$/alive/listThreads" (lambda (deps msg) (alive/session/handler/threads:new-list-all deps msg)))
                     (cons "$/alive/killThread" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/threads:kill msg)))
 
-                    (cons "$/alive/listAsdfSystems" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/asdf:list-all msg)))
+                    (cons "$/alive/listAsdfSystems" (lambda (deps msg) (alive/session/handler/asdf:new-list-all deps msg)))
                     (cons "$/alive/loadAsdfSystem" (lambda (deps msg) (declare (ignore deps))
                                                        (threads:run-in-thread (or (cdr (assoc :method msg)) "ASDF")
                                                                               (cdr (assoc :id msg))

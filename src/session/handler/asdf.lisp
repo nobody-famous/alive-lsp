@@ -1,7 +1,8 @@
 (defpackage :alive/session/handler/asdf
     (:use :cl)
     (:export :list-all
-             :load-system)
+             :load-system
+             :new-list-all)
     (:local-nicknames (:deps :alive/deps)
                       (:lsp-msg :alive/lsp/message/abstract)
                       (:notification :alive/lsp/message/notification)
@@ -17,6 +18,13 @@
     (utils:result (cdr (assoc :id msg))
                   "systems"
                   (deps:list-all-asdf)))
+
+
+(declaim (ftype (function (deps:dependencies cons) hash-table) new-list-all))
+(defun new-list-all (deps msg)
+    (utils:result (cdr (assoc :id msg))
+                  "systems"
+                  (deps:new-list-all-asdf deps)))
 
 
 (declaim (ftype (function (cons) (values null &optional)) load-system))

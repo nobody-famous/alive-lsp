@@ -16,6 +16,7 @@
              :msg-handler
              :new-create
              :new-get-thread-id
+             :new-list-all-asdf
              :new-list-all-threads
              :new-msg-handler
              :new-read-msg
@@ -264,6 +265,11 @@
     (unless *deps* (error "list-all-asdf dependencies not set"))
 
     (funcall (deps-list-all-asdf *deps*)))
+
+
+(declaim (ftype (function (dependencies) (values cons &optional)) new-list-all-asdf))
+(defun new-list-all-asdf (deps)
+    (funcall (dependencies-list-all-asdf deps)))
 
 
 (declaim (ftype (function (&key (:name string) (:stdin-fn function) (:stdout-fn function) (:stderr-fn function) (:force boolean)) (values boolean &optional)) load-asdf-system))
