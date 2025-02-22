@@ -15,6 +15,7 @@
              :listeners
              :lock
              :new-add-listener
+             :new-get-file-text
              :new-lock
              :new-rem-thread-msg
              :new-running
@@ -190,6 +191,11 @@
 (defun get-file-text (uri)
     (unless *state* (error "get-file-text State not set"))
     (gethash uri (state-files *state*)))
+
+
+(declaim (ftype (function (state string) (or null string)) new-get-file-text))
+(defun new-get-file-text (state uri)
+    (gethash uri (state-files state)))
 
 
 (defmacro next-id (fn)

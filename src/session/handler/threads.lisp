@@ -23,9 +23,9 @@
             (utils:result (cdr (assoc :id msg)) "threads" threads))))
 
 
-(declaim (ftype (function (deps:dependencies cons) hash-table) new-list-all))
-(defun new-list-all (deps msg)
-    (state:lock (mutex)
+(declaim (ftype (function (deps:dependencies state:state cons) hash-table) new-list-all))
+(defun new-list-all (deps state msg)
+    (state:new-lock (state mutex)
         (let ((threads (remove-if (lambda (thread)
                                       (eq (cdr (assoc :id thread)) (deps:new-get-thread-id deps (bt:current-thread))))
                                (deps:new-list-all-threads deps))))
