@@ -25,10 +25,10 @@
                                           :message (princ-to-string c)))))))
 
 
-(declaim (ftype (function (deps:dependencies cons) (values (or null hash-table) &optional)) new-process-msg))
-(defun new-process-msg (deps msg)
+(declaim (ftype (function (deps:dependencies state:state cons) (values (or null hash-table) &optional)) new-process-msg))
+(defun new-process-msg (deps state msg)
     (let ((id (cdr (assoc :id msg))))
-        (state:new-with-thread-msg (deps id)
+        (state:new-with-thread-msg (deps state id)
             (handler-case
                     (funcall (deps:new-msg-handler deps) deps msg)
                 (error (c)
@@ -42,6 +42,13 @@
 (defun stop ()
     (logger:info-msg "Stopping message loop")
     (state:set-running NIL)
+    nil)
+
+
+(declaim (ftype (function (state:state) null) new-stop))
+(defun new-stop (state)
+    (logger:info-msg "New Stopping message loop")
+    (state:new-set-running state NIL)
     nil)
 
 
@@ -77,12 +84,12 @@
            (stop))))
 
 
-(declaim (ftype (function (deps:dependencies) (values (or null hash-table) &optional)) new-get-next-response))
-(defun new-get-next-response (deps)
+(declaim (ftype (function (deps:dependencies state:state) (values (or null hash-table) &optional)) new-get-next-response))
+(defun new-get-next-response (deps state)
     (handler-case
             (let ((msg (deps:new-read-msg deps)))
                 (when msg
-                      (new-process-msg deps msg)))
+                      (new-process-msg deps state msg)))
 
         (errors:unhandled-request (c)
                                   (logger:error-msg "Unhandled Request: ~A" c)
@@ -102,11 +109,11 @@
 
         (end-of-file (c)
                      (declare (ignore c))
-                     (stop))
+                     (new-stop state))
 
         (T (c)
            (logger:error-msg "Unknown Error: ~A ~A" (type-of c) c)
-           (stop))))
+           (new-stop state))))
 
 
 (declaim (ftype (function () null) run))
@@ -118,10 +125,9 @@
                         (deps:send-msg resp)))))
 
 
-(declaim (ftype (function (deps:dependencies) null) new-run))
-(defun new-run (deps)
-    (state:set-running T)
-    (loop :while (state:running)
-          :do (let ((resp (new-get-next-response deps)))
+(declaim (ftype (function (deps:dependencies state:state) null) new-run))
+(defun new-run (deps state)
+    (loop :while (state:new-running state)
+          :do (let ((resp (new-get-next-response deps state)))
                   (when resp
                         (deps:new-send-msg deps resp)))))

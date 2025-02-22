@@ -31,14 +31,13 @@
         nil))
 
 
-(declaim (ftype (function (alive/deps:dependencies) null) new-start))
-(defun new-start (deps)
-    (state:with-state (state:create)
-        (state:add-listener (state:create-listener (lambda () (alive/context:destroy))))
-        (state:set-running T)
+(declaim (ftype (function (alive/deps:dependencies state:state) null) new-start))
+(defun new-start (deps state)
+    (state:new-add-listener state (state:create-listener (lambda () (alive/context:destroy))))
+    (state:new-set-running state T)
 
-        (spawn:new-thread "Session Message Reader"
-            (alive/session/message-loop:new-run deps))
+    (spawn:new-thread "Session Message Reader"
+        (alive/session/message-loop:new-run deps state))
 
-        (logger:info-msg "Session started")
-        nil))
+    (logger:info-msg "Session started")
+    nil)

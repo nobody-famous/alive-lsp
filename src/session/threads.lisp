@@ -172,10 +172,10 @@
                 (refresh:send)))))
 
 
-(declaim (ftype (function (deps:dependencies string integer function) null) new-run-in-thread))
-(defun new-run-in-thread (deps method-name msg-id fn)
+(declaim (ftype (function (deps:dependencies state:state string integer function) null) new-run-in-thread))
+(defun new-run-in-thread (deps state method-name msg-id fn)
     (spawn:new-thread (next-thread-name method-name)
-        (state:new-with-thread-msg (deps msg-id)
+        (state:new-with-thread-msg (deps state msg-id)
             (unwind-protect
                     (progn (refresh:new-send deps)
                            (new-run-with-debugger deps fn))

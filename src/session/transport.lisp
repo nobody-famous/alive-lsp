@@ -16,7 +16,6 @@
 
 (declaim (ftype (function () (or null cons)) read-msg))
 (defun read-msg ()
-    (alive/logger:info-msg "***** ORIGINAL READ MSG")
     (parse:from-stream (context:get-input-stream)))
 
 
@@ -36,9 +35,9 @@
                   (force-output steam)))))
 
 
-(declaim (ftype (function (T T)) new-send-msg))
-(defun new-send-msg (out-stream msg)
-    (state:lock (mutex)
+(declaim (ftype (function (state:state T T)) new-send-msg))
+(defun new-send-msg (state out-stream msg)
+    (state:new-lock (state mutex)
         (when (and (hash-table-p msg)
                    (gethash "jsonrpc" msg))
               (write-sequence (packet:to-wire msg) out-stream)
@@ -62,17 +61,17 @@
             response)))
 
 
-(declaim (ftype (function (T hash-table) cons) new-send-request))
-(defun new-send-request (out-stream req)
-    (state:lock (mutex)
+(declaim (ftype (function (state:state T hash-table) cons) new-send-request))
+(defun new-send-request (state out-stream req)
+    (state:new-lock (state mutex)
         (let ((cond-var (bt:make-condition-variable))
               (response nil))
             (state:set-sent-msg-callback (gethash "id" req)
                                          (lambda (resp)
-                                             (state:lock (mutex)
+                                             (state:new-lock (state mutex)
                                                  (setf response resp)
                                                  (bt:condition-notify cond-var))))
-            (new-send-msg out-stream req)
+            (new-send-msg state out-stream req)
             (unless response
                 (bt:condition-wait cond-var mutex))
 
