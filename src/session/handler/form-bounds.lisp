@@ -1,6 +1,7 @@
 (defpackage :alive/session/handler/form-bounds
     (:use :cl)
-    (:export :surrounding-form
+    (:export :new-top-form
+             :surrounding-form
              :top-form)
     (:local-nicknames (:forms :alive/parse/forms)
                       (:lsp-msg :alive/lsp/message/abstract)
@@ -15,6 +16,16 @@
            (doc (cdr (assoc :text-document params)))
            (uri (cdr (assoc :uri doc)))
            (text (or (state:get-file-text uri) "")))
+
+        (forms:from-stream-or-nil (make-string-input-stream text))))
+
+
+(declaim (ftype (function (state:state cons) (or null cons)) new-get-forms))
+(defun new-get-forms (state msg)
+    (let* ((params (cdr (assoc :params msg)))
+           (doc (cdr (assoc :text-document params)))
+           (uri (cdr (assoc :uri doc)))
+           (text (or (state:new-get-file-text state uri) "")))
 
         (forms:from-stream-or-nil (make-string-input-stream text))))
 
@@ -35,6 +46,18 @@
            (params (cdr (assoc :params msg)))
            (pos (cdr (assoc :position params)))
            (forms (get-forms msg))
+           (form (forms:get-top-form forms pos))
+           (start (when form (gethash "start" form)))
+           (end (when form (gethash "end" form))))
+        (create-response id start end)))
+
+
+(declaim (ftype (function (state:state cons) hash-table) new-top-form))
+(defun new-top-form (state msg)
+    (let* ((id (cdr (assoc :id msg)))
+           (params (cdr (assoc :params msg)))
+           (pos (cdr (assoc :position params)))
+           (forms (new-get-forms state msg))
            (form (forms:get-top-form forms pos))
            (start (when form (gethash "start" form)))
            (end (when form (gethash "end" form))))

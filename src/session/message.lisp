@@ -26,13 +26,13 @@
                                                :message error-msg))))))
 
 
-(declaim (ftype (function (alive/deps:dependencies state:state handlers:list-of-handlers cons) (values (or null hash-table) &optional)) new-handle-request))
-(defun new-handle-request (deps state handlers msg)
+(declaim (ftype (function (alive/deps:dependencies handlers:list-of-handlers cons) (values (or null hash-table) &optional)) new-handle-request))
+(defun new-handle-request (deps handlers msg)
     (let* ((method-name (cdr (assoc :method msg)))
            (handler (handlers:new-get-handler handlers method-name)))
 
         (if handler
-            (funcall handler deps state msg)
+            (funcall handler deps msg)
             (let ((error-msg (format nil "No handler for ~A" method-name))
                   (id (cdr (assoc :id msg))))
                 (logger:error-msg error-msg)
@@ -77,7 +77,7 @@
 
 (declaim (ftype (function (alive/deps:dependencies state:state handlers:list-of-handlers cons) (values (or null hash-table) &optional)) new-handle))
 (defun new-handle (deps state handlers msg)
-    (cond ((assoc :method msg) (new-handle-request deps state handlers msg))
+    (cond ((assoc :method msg) (new-handle-request deps handlers msg))
           ((or (assoc :result msg)
                (assoc :error msg)) (new-handle-response state msg))
           (T (lsp-msg:create-error (cdr (assoc :id msg))

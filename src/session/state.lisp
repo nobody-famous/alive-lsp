@@ -16,6 +16,7 @@
              :lock
              :new-add-listener
              :new-get-file-text
+             :new-get-history-item
              :new-get-sent-msg-callback
              :new-lock
              :new-next-send-id
@@ -167,6 +168,13 @@
     (when (and (<= 0 index)
                (< index (length (state-history *state*))))
           (elt (state-history *state*) index)))
+
+
+(declaim (ftype (function (state integer) T) new-get-history-item))
+(defun new-get-history-item (state index)
+    (when (and (<= 0 index)
+               (< index (length (state-history state))))
+          (elt (state-history state) index)))
 
 
 (declaim (ftype (function (listener)) add-listener))
