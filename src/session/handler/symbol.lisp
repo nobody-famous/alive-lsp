@@ -1,7 +1,8 @@
 (defpackage :alive/session/handler/symbol
     (:use :cl)
     (:export :do-unexport
-             :for-pos)
+             :for-pos
+             :new-for-pos)
     (:local-nicknames (:lsp-msg :alive/lsp/message/abstract)
                       (:packages :alive/packages)
                       (:refresh :alive/session/refresh)
@@ -19,6 +20,19 @@
            (pos (cdr (assoc :position params)))
            (uri (cdr (assoc :uri doc)))
            (text (or (state:get-file-text uri) ""))
+           (result (alive/lsp/symbol:for-pos :text text :pos pos)))
+
+        (utils:result id "value" result)))
+
+
+(declaim (ftype (function (state:state list) hash-table) new-for-pos))
+(defun new-for-pos (state msg)
+    (let* ((id (cdr (assoc :id msg)))
+           (params (cdr (assoc :params msg)))
+           (doc (cdr (assoc :text-document params)))
+           (pos (cdr (assoc :position params)))
+           (uri (cdr (assoc :uri doc)))
+           (text (or (state:new-get-file-text state uri) ""))
            (result (alive/lsp/symbol:for-pos :text text :pos pos)))
 
         (utils:result id "value" result)))

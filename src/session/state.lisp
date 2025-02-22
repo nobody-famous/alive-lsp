@@ -17,10 +17,12 @@
              :new-add-listener
              :new-get-file-text
              :new-lock
+             :new-next-send-id
              :new-rem-thread-msg
              :new-running
              :new-set-initialized
              :new-set-running
+             :new-set-sent-msg-callback
              :new-with-thread-msg
              :next-inspector-id
              :next-send-id
@@ -138,6 +140,12 @@
     nil)
 
 
+(declaim (ftype (function (state fixnum (function (cons) (or null hash-table))) null) new-set-sent-msg-callback))
+(defun new-set-sent-msg-callback (state id cb)
+    (setf (gethash id (state-sent-msg-callbacks state)) cb)
+    nil)
+
+
 (declaim (ftype (function (T)) add-history))
 (defun add-history (item)
     (unless *state* (error "add-history State not set"))
@@ -206,9 +214,21 @@
                     id))))
 
 
+(defmacro new-next-id (state fn)
+    `(progn (bt:with-recursive-lock-held ((state-lock ,state))
+                (let ((id (,fn state)))
+                    (incf (,fn state))
+                    id))))
+
+
 (declaim (ftype (function () integer) next-send-id))
 (defun next-send-id ()
     (next-id state-send-msg-id))
+
+
+(declaim (ftype (function (state) integer) new-next-send-id))
+(defun new-next-send-id (state)
+    (new-next-id state state-send-msg-id))
 
 
 (declaim (ftype (function () integer) next-inspector-id))
