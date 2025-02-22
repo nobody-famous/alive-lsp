@@ -7,6 +7,7 @@
              :doc-symbols
              :formatting
              :hover
+             :new-did-open
              :on-type
              :selection
              :sem-tokens)
@@ -92,6 +93,19 @@
         (when text
               (state:lock (mutex)
                   (state:set-file-text uri text)
+                  nil))))
+
+
+(declaim (ftype (function (state:state cons) null) new-did-open))
+(defun new-did-open (state msg)
+    (let* ((params (cdr (assoc :params msg)))
+           (doc (cdr (assoc :text-document params)))
+           (uri (cdr (assoc :uri doc)))
+           (text (cdr (assoc :text doc))))
+
+        (when text
+              (state:new-lock (state mutex)
+                  (state:new-set-file-text state uri text)
                   nil))))
 
 

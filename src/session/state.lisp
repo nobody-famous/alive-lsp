@@ -23,6 +23,7 @@
              :new-with-thread-msg
              :next-inspector-id
              :next-send-id
+             :new-set-file-text
              :next-thread-id
              :rem-inspector
              :rem-thread-msg
@@ -178,6 +179,11 @@
 (defun set-file-text (uri text)
     (unless *state* (error "set-file-text State not set"))
     (setf (gethash uri (state-files *state*)) text))
+
+
+(declaim (ftype (function (state string string)) new-set-file-text))
+(defun new-set-file-text (state uri text)
+    (setf (gethash uri (state-files state)) text))
 
 
 (declaim (ftype (function (string) (or null string)) get-file-text))

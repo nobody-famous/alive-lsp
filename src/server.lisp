@@ -128,7 +128,7 @@
                     (cons "textDocument/definition" (lambda (deps state msg) (declare (ignore deps state)) (alive/session/handler/document:definition msg)))
                     (cons "textDocument/didChange" (lambda (deps state msg) (declare (ignore deps state)) (alive/session/handler/document:did-change msg)))
                     (cons "textDocument/didClose" (lambda (deps state msg) (declare (ignore deps state)) (ignore-msg msg)))
-                    (cons "textDocument/didOpen" (lambda (deps state msg) (declare (ignore deps state)) (alive/session/handler/document:did-open msg)))
+                    (cons "textDocument/didOpen" (lambda (deps state msg) (declare (ignore deps)) (alive/session/handler/document:new-did-open state msg)))
                     (cons "textDocument/didSave" (lambda (deps state msg) (declare (ignore deps state)) (ignore-msg msg)))
                     (cons "textDocument/documentSymbol" (lambda (deps state msg) (declare (ignore deps state)) (alive/session/handler/document:doc-symbols msg)))
                     (cons "textDocument/hover" (lambda (deps state msg) (declare (ignore deps state)) (alive/session/handler/document:hover msg)))
