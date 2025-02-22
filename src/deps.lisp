@@ -15,11 +15,16 @@
              :macro-expand-1
              :msg-handler
              :new-create
+             :new-do-compile
              :new-do-eval
+             :new-do-load
              :new-get-thread-id
+             :new-kill-thread
              :new-list-all-asdf
              :new-list-all-threads
              :new-load-asdf-system
+             :new-macro-expand
+             :new-macro-expand-1
              :new-msg-handler
              :new-read-msg
              :new-send-msg
@@ -257,6 +262,11 @@
     (funcall (deps-kill-thread *deps*) thread-id))
 
 
+(declaim (ftype (function (dependencies T) *) new-kill-thread))
+(defun new-kill-thread (deps thread-id)
+    (funcall (dependencies-kill-thread deps) thread-id))
+
+
 (declaim (ftype (function (bt:thread) *) get-thread-id))
 (defun get-thread-id (thread)
     (unless *deps* (error "get-thread-id dependencies not set"))
@@ -326,11 +336,21 @@
     (funcall (deps-macro-expand *deps*) txt pkg))
 
 
+(declaim (ftype (function (dependencies string string) (values list &optional)) new-macro-expand))
+(defun new-macro-expand (deps txt pkg)
+    (funcall (dependencies-macro-expand deps) txt pkg))
+
+
 (declaim (ftype (function (string string) (values list &optional)) macro-expand-1))
 (defun macro-expand-1 (txt pkg)
     (unless *deps* (error "macro-expand-1 dependencies not set"))
 
     (funcall (deps-macro-expand-1 *deps*) txt pkg))
+
+
+(declaim (ftype (function (dependencies string string) (values list &optional)) new-macro-expand-1))
+(defun new-macro-expand-1 (deps txt pkg)
+    (funcall (dependencies-macro-expand-1 deps) txt pkg))
 
 
 (declaim (ftype (function (string) *) try-compile))
@@ -351,11 +371,21 @@
     (funcall (deps-do-compile *deps*) path :stdin-fn stdin-fn :stdout-fn stdout-fn :stderr-fn stderr-fn))
 
 
+(declaim (ftype (function (dependencies string &key (:stdin-fn function) (:stdout-fn function) (:stderr-fn function)) *) new-do-compile))
+(defun new-do-compile (deps path &key stdin-fn stdout-fn stderr-fn)
+    (funcall (dependencies-do-compile deps) path :stdin-fn stdin-fn :stdout-fn stdout-fn :stderr-fn stderr-fn))
+
+
 (declaim (ftype (function (string &key (:stdin-fn function) (:stdout-fn function) (:stderr-fn function)) *) do-load))
 (defun do-load (path &key stdin-fn stdout-fn stderr-fn)
     (unless *deps* (error "Dependencies not set"))
 
     (funcall (deps-do-load *deps*) path :stdin-fn stdin-fn :stdout-fn stdout-fn :stderr-fn stderr-fn))
+
+
+(declaim (ftype (function (dependencies string &key (:stdin-fn function) (:stdout-fn function) (:stderr-fn function)) *) new-do-load))
+(defun new-do-load (deps path &key stdin-fn stdout-fn stderr-fn)
+    (funcall (dependencies-do-load deps) path :stdin-fn stdin-fn :stdout-fn stdout-fn :stderr-fn stderr-fn))
 
 
 (defmacro with-deps (deps &body body)

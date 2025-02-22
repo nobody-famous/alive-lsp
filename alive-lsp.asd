@@ -145,7 +145,6 @@
 
                                        (:file "log")
                                        (:file "compile")
-                                       (:file "context")
                                        (:file "eval")
                                        (:file "file-utils")
                                        (:file "forms")
