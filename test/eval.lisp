@@ -9,19 +9,19 @@
 
 (defun test-basic ()
     (clue:test "Basic Eval"
-        (let ((fn-called nil))
-            (deps:with-deps (deps:create :eval-fn (lambda (s)
-                                                      (declare (ignore s))
-                                                      (setf fn-called T)))
-                (eval:from-string "(+ 1 2)")
-                (clue:check-equal :expected T
-                                  :actual fn-called)))))
+        (let* ((fn-called nil)
+               (deps (deps:new-create :eval-fn (lambda (s)
+                                                   (declare (ignore s))
+                                                   (setf fn-called T)))))
+            (eval:new-from-string deps "(+ 1 2)")
+            (clue:check-equal :expected T
+                              :actual fn-called))))
 
 
 (defun test-no-package ()
     (clue:test "No package"
-        (deps:with-deps (deps:create)
-            (clue:expect-fail (lambda () (eval:from-string "(+ 1 2)" :pkg-name "foo"))))))
+        (let ((deps (deps:new-create)))
+            (clue:expect-fail (lambda () (eval:new-from-string deps "(+ 1 2)" :pkg-name "foo"))))))
 
 
 (defun run-all ()
