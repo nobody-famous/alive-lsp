@@ -19,6 +19,7 @@
              :new-get-sent-msg-callback
              :new-lock
              :new-next-send-id
+             :new-next-thread-id
              :new-rem-thread-msg
              :new-running
              :new-set-initialized
@@ -229,6 +230,7 @@
 
 (declaim (ftype (function () integer) next-send-id))
 (defun next-send-id ()
+    (alive/logger:info-msg "***** OLD NEXT SEND ID")
     (next-id state-send-msg-id))
 
 
@@ -244,7 +246,13 @@
 
 (declaim (ftype (function () integer) next-thread-id))
 (defun next-thread-id ()
+    (alive/logger:info-msg "***** OLD NEXT THREAD ID")
     (next-id state-thread-name-id))
+
+
+(declaim (ftype (function (state) integer) new-next-thread-id))
+(defun new-next-thread-id (state)
+    (new-next-id state state-thread-name-id))
 
 
 (declaim (ftype (function (integer alive/inspector:inspector)) add-inspector))

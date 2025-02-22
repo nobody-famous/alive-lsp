@@ -66,7 +66,7 @@
     (state:new-lock (state mutex)
         (let ((cond-var (bt:make-condition-variable))
               (response nil))
-            (state:set-sent-msg-callback (gethash "id" req)
+            (state:new-set-sent-msg-callback state (gethash "id" req)
                                          (lambda (resp)
                                              (state:new-lock (state mutex)
                                                  (setf response resp)

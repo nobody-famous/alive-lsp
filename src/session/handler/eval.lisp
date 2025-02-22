@@ -44,8 +44,8 @@
             (deps:send-msg (handler-utils:result id "text" response-content)))))
 
 
-(declaim (ftype (function (deps:dependencies cons) null) new-handle))
-(defun new-handle (deps msg)
+(declaim (ftype (function (deps:dependencies state:state cons) null) new-handle))
+(defun new-handle (deps state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
            (pkg-name (cdr (assoc :package params)))
@@ -53,11 +53,11 @@
            (* (state:get-history-item 0))
            (** (state:get-history-item 1))
            (*** (state:get-history-item 2))
-           (results (state:lock (mutex)
+           (results (state:new-lock (state mutex)
                         (eval:new-from-string deps text
                                               :pkg-name pkg-name
                                               :stdin-fn (lambda ()
-                                                            (threads:new-wait-for-input deps))
+                                                            (threads:new-wait-for-input deps state))
                                               :stdout-fn (lambda (data)
                                                              (deps:new-send-msg deps (notification:stdout data)))
                                               :query-fn (lambda (data)

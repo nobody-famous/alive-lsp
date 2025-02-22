@@ -31,9 +31,9 @@
                           ""))))))
 
 
-(declaim (ftype (function (deps:dependencies) (values (or null string) &optional)) new-wait-for-input))
-(defun new-wait-for-input (deps)
-    (let ((input-resp (deps:new-send-request deps (lsp-msg:create-request (state:next-send-id) "$/alive/userInput"))))
+(declaim (ftype (function (deps:dependencies state:state) (values (or null string) &optional)) new-wait-for-input))
+(defun new-wait-for-input (deps state)
+    (let ((input-resp (deps:new-send-request deps (lsp-msg:create-request (state:new-next-send-id state) "$/alive/userInput"))))
 
         (cond ((assoc :error input-resp)
                   (logger:error-msg "Input Error ~A" input-resp))
@@ -162,6 +162,11 @@
     (format nil "~A - ~A" (state:next-thread-id) method-name))
 
 
+(declaim (ftype (function (state:state string) string) new-next-thread-name))
+(defun new-next-thread-name (state method-name)
+    (format nil "~A - ~A" (state:new-next-thread-id state) method-name))
+
+
 (declaim (ftype (function (string integer function) null) run-in-thread))
 (defun run-in-thread (method-name msg-id fn)
     (spawn:new-thread (next-thread-name method-name)
@@ -174,9 +179,9 @@
 
 (declaim (ftype (function (deps:dependencies state:state string integer function) null) new-run-in-thread))
 (defun new-run-in-thread (deps state method-name msg-id fn)
-    (spawn:new-thread (next-thread-name method-name)
+    (spawn:new-thread (new-next-thread-name state method-name)
         (state:new-with-thread-msg (deps state msg-id)
             (unwind-protect
-                    (progn (refresh:new-send deps)
+                    (progn (refresh:new-send deps state)
                            (new-run-with-debugger deps fn))
-                (refresh:new-send deps)))))
+                (refresh:new-send deps state)))))
