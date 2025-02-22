@@ -291,6 +291,23 @@
                                  :result-value (fmt-utils:to-text-edits edits))))
 
 
+(declaim (ftype (function (state:state cons cons) hash-table) new-format-msg))
+(defun new-format-msg (state options msg)
+    (let* ((id (cdr (assoc :id msg)))
+           (params (cdr (assoc :params msg)))
+           (range (cdr (assoc :range params)))
+           (doc (cdr (assoc :text-document params)))
+           (uri (cdr (assoc :uri doc)))
+           (file-text (state:new-get-file-text state uri))
+           (text (if file-text file-text ""))
+           (edits (formatter:range (make-string-input-stream text)
+                                   range
+                                   options)))
+
+        (lsp-msg:create-response id
+                                 :result-value (fmt-utils:to-text-edits edits))))
+
+
 (declaim (ftype (function (cons) hash-table) formatting))
 (defun formatting (msg)
     (let ((id (state:next-send-id)))
@@ -314,7 +331,7 @@
                                          (lambda (config-resp)
                                              (declare (type cons config-resp))
                                              (let ((opts (cdr (assoc :result config-resp))))
-                                                 (format-msg (first opts) msg))))
+                                                 (new-format-msg state (first opts) msg))))
 
         (let ((params (make-hash-table :test #'equalp)))
             (setf (gethash "items" params) (list (config-item:create-item :section "alive.format")))

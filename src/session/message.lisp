@@ -53,6 +53,18 @@
                                   :message (format nil "No callback for request: ~A" msg-id)))))
 
 
+(declaim (ftype (function (state:state cons) (values (or null hash-table) &optional)) new-handle-response))
+(defun new-handle-response (state msg)
+    (let* ((msg-id (cdr (assoc :id msg)))
+           (cb (state:new-get-sent-msg-callback state msg-id)))
+
+        (if cb
+            (funcall cb msg)
+            (lsp-msg:create-error msg-id
+                                  :code errors:*request-failed*
+                                  :message (format nil "No callback for request: ~A" msg-id)))))
+
+
 (declaim (ftype (function (cons) (values (or null hash-table) &optional)) handle))
 (defun handle (msg)
     (cond ((assoc :method msg) (handle-request msg))
@@ -67,7 +79,7 @@
 (defun new-handle (deps state handlers msg)
     (cond ((assoc :method msg) (new-handle-request deps state handlers msg))
           ((or (assoc :result msg)
-               (assoc :error msg)) (handle-response msg))
+               (assoc :error msg)) (new-handle-response state msg))
           (T (lsp-msg:create-error (cdr (assoc :id msg))
                                    :code errors:*request-failed*
                                    :message (format nil "No handler for message")))))

@@ -251,14 +251,14 @@
            (deps (new-create-deps :input-stream (flexi-streams:make-flexi-stream (usocket:socket-stream conn))
                                   :output-stream (usocket:socket-stream conn)
                                   :state state)))
-        #+n (session:new-start deps state)
-        (context:with-context (:input-stream (flexi-streams:make-flexi-stream (usocket:socket-stream conn))
-                                             :output-stream (usocket:socket-stream conn)
-                                             :destroy-fn (lambda ()
-                                                             (usocket:socket-close conn)))
-            (alive/deps:with-deps (create-deps)
-                (handlers:with-handlers *message-handlers*
-                    (session:start))))))
+        (session:new-start deps state)
+        #+n (context:with-context (:input-stream (flexi-streams:make-flexi-stream (usocket:socket-stream conn))
+                                                 :output-stream (usocket:socket-stream conn)
+                                                 :destroy-fn (lambda ()
+                                                                 (usocket:socket-close conn)))
+                (alive/deps:with-deps (create-deps)
+                    (handlers:with-handlers *message-handlers*
+                        (session:start))))))
 
 (defun wait-for-conn ()
     (usocket:wait-for-input (socket *server*))

@@ -16,6 +16,7 @@
              :lock
              :new-add-listener
              :new-get-file-text
+             :new-get-sent-msg-callback
              :new-lock
              :new-next-send-id
              :new-rem-thread-msg
@@ -131,6 +132,11 @@
 (defun get-sent-msg-callback (id)
     (unless *state* (error "get-sent-msg-callback State not set"))
     (gethash id (state-sent-msg-callbacks *state*)))
+
+
+(declaim (ftype (function (state fixnum) (or null function)) new-get-sent-msg-callback))
+(defun new-get-sent-msg-callback (state id)
+    (gethash id (state-sent-msg-callbacks state)))
 
 
 (declaim (ftype (function (fixnum (function (cons) (or null hash-table))) null) set-sent-msg-callback))
