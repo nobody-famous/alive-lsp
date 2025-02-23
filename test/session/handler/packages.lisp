@@ -14,11 +14,11 @@
 
 
 (defun run-test (exp-pkg text)
-    (state:with-state (state:create)
-        (state:set-file-text "some/uri" text)
+    (let ((state (state:create)))
+        (state:new-set-file-text state "some/uri" text)
         (clue:check-equal :expected exp-pkg
                           :actual (gethash "package"
-                                           (gethash "result" (handler:for-position *default-message*))))))
+                                           (gethash "result" (handler:new-for-position state *default-message*))))))
 
 
 (defun test-for-pos ()
