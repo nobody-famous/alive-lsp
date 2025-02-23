@@ -1,6 +1,7 @@
 (defpackage :alive/session/handler/form-bounds
     (:use :cl)
-    (:export :new-top-form
+    (:export :new-surrounding-form
+             :new-top-form
              :surrounding-form
              :top-form)
     (:local-nicknames (:forms :alive/parse/forms)
@@ -70,6 +71,19 @@
            (params (cdr (assoc :params msg)))
            (pos (cdr (assoc :position params)))
            (forms (get-forms msg))
+           (top-form (forms:get-top-form forms pos))
+           (form (forms:get-outer-form top-form pos))
+           (start (when form (gethash "start" form)))
+           (end (when form (gethash "end" form))))
+        (create-response id start end)))
+
+
+(declaim (ftype (function (state:state cons) hash-table) new-surrounding-form))
+(defun new-surrounding-form (state msg)
+    (let* ((id (cdr (assoc :id msg)))
+           (params (cdr (assoc :params msg)))
+           (pos (cdr (assoc :position params)))
+           (forms (new-get-forms state msg))
            (top-form (forms:get-top-form forms pos))
            (form (forms:get-outer-form top-form pos))
            (start (when form (gethash "start" form)))
