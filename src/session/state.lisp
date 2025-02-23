@@ -14,13 +14,21 @@
              :listener
              :listeners
              :lock
+             :new-add-history
+             :new-add-inspector
              :new-add-listener
              :new-get-file-text
              :new-get-history-item
+             :new-get-inspector
              :new-get-sent-msg-callback
+             :new-get-thread-msg
+             :new-initialized
+             :new-listeners
              :new-lock
+             :new-next-inspector-id
              :new-next-send-id
              :new-next-thread-id
+             :new-rem-inspector
              :new-rem-thread-msg
              :new-running
              :new-set-initialized
@@ -89,10 +97,20 @@
     (state-listeners *state*))
 
 
+(declaim (ftype (function (state) (or null cons)) new-listeners))
+(defun new-listeners (state)
+    (state-listeners state))
+
+
 (declaim (ftype (function () boolean) initialized))
 (defun initialized ()
     (unless *state* (error "initialized State not set"))
     (state-initialized *state*))
+
+
+(declaim (ftype (function (state) boolean) new-initialized))
+(defun new-initialized (state)
+    (state-initialized state))
 
 
 (declaim (ftype (function () boolean) running))
@@ -160,6 +178,13 @@
     (setf (elt (state-history *state*) 2) (elt (state-history *state*) 1))
     (setf (elt (state-history *state*) 1) (elt (state-history *state*) 0))
     (setf (elt (state-history *state*) 0) item))
+
+
+(declaim (ftype (function (state T)) new-add-history))
+(defun new-add-history (state item)
+    (setf (elt (state-history state) 2) (elt (state-history state) 1))
+    (setf (elt (state-history state) 1) (elt (state-history state) 0))
+    (setf (elt (state-history state) 0) item))
 
 
 (declaim (ftype (function (integer) T) get-history-item))
@@ -252,6 +277,11 @@
     (next-id state-inspector-id))
 
 
+(declaim (ftype (function (state) integer) new-next-inspector-id))
+(defun new-next-inspector-id (state)
+    (new-next-id state state-inspector-id))
+
+
 (declaim (ftype (function () integer) next-thread-id))
 (defun next-thread-id ()
     (alive/logger:info-msg "***** OLD NEXT THREAD ID")
@@ -271,6 +301,13 @@
             inspector)))
 
 
+(declaim (ftype (function (state integer alive/inspector:inspector)) new-add-inspector))
+(defun new-add-inspector (state id inspector)
+    (bt:with-recursive-lock-held ((state-lock state))
+        (setf (gethash id (state-inspectors state))
+            inspector)))
+
+
 (declaim (ftype (function (integer)) rem-inspector))
 (defun rem-inspector (id)
     (unless *state* (error "rem-inspector State not set"))
@@ -278,11 +315,23 @@
         (remhash id (state-inspectors *state*))))
 
 
+(declaim (ftype (function (state integer)) new-rem-inspector))
+(defun new-rem-inspector (state id)
+    (bt:with-recursive-lock-held ((state-lock state))
+        (remhash id (state-inspectors state))))
+
+
 (declaim (ftype (function (integer) (or null alive/inspector:inspector)) get-inspector))
 (defun get-inspector (id)
     (unless *state* (error "get-inspector State not set"))
     (bt:with-recursive-lock-held ((state-lock *state*))
         (gethash id (state-inspectors *state*))))
+
+
+(declaim (ftype (function (state integer) (or null alive/inspector:inspector)) new-get-inspector))
+(defun new-get-inspector (state id)
+    (bt:with-recursive-lock-held ((state-lock state))
+        (gethash id (state-inspectors state))))
 
 
 (declaim (ftype (function (T)) save-thread-msg))
@@ -310,6 +359,13 @@
     (let ((table (state-thread-msgs *state*)))
 
         (bt:with-recursive-lock-held ((state-lock *state*))
+            (gethash thread-id table))))
+
+
+(declaim (ftype (function (state T) (or null integer)) new-get-thread-msg))
+(defun new-get-thread-msg (state thread-id)
+    (let ((table (state-thread-msgs state)))
+        (bt:with-recursive-lock-held ((state-lock state))
             (gethash thread-id table))))
 
 
