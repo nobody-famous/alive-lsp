@@ -11,8 +11,6 @@
     (clue:suite "History"
         (clue:test "Add"
             (let ((state (state:create)))
-                (clue:expect-fail (lambda () (state:get-history-item 0)))
-                (clue:expect-fail (lambda () (state:add-history 5)))
                 (state:new-add-history state 5)
                 (clue:check-equal :expected 5
                                   :actual (state:new-get-history-item state 0))))

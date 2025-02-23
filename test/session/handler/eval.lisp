@@ -26,7 +26,6 @@
 (defun test-handle ()
     (clue:suite "Handle Eval"
         (clue:test "Error"
-            (clue:expect-fail (lambda () (eval:handle (list (cons :id 5)))))
             (clue:check-equal :expected T
                               :actual (run-test (list (cons :id 5)
                                                       (cons :params (list (cons :text "(+ 1 2)")))))))

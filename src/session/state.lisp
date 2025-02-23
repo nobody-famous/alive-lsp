@@ -1,9 +1,6 @@
 (defpackage :alive/session/state
     (:use :cl)
-    (:export :add-history
-             :add-inspector
-             :add-listener
-             :create
+    (:export :create
              :create-listener
              :get-file-text
              :get-history-item
@@ -170,14 +167,6 @@
 (defun new-set-sent-msg-callback (state id cb)
     (setf (gethash id (state-sent-msg-callbacks state)) cb)
     nil)
-
-
-(declaim (ftype (function (T)) add-history))
-(defun add-history (item)
-    (unless *state* (error "add-history State not set"))
-    (setf (elt (state-history *state*) 2) (elt (state-history *state*) 1))
-    (setf (elt (state-history *state*) 1) (elt (state-history *state*) 0))
-    (setf (elt (state-history *state*) 0) item))
 
 
 (declaim (ftype (function (state T)) new-add-history))
