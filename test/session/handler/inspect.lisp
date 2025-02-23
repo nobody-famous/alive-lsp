@@ -72,8 +72,9 @@
 (defun test-symbol ()
     (clue:suite "Symbol"
         (clue:test "Symbol"
-            (let ((deps (deps:new-create)))
-                (inspect:new-do-symbol deps (list (cons :id 5)))))))
+            (let ((state (state:create))
+                  (deps (deps:new-create)))
+                (inspect:new-do-symbol deps state (list (cons :id 5)))))))
 
 
 (defun test-macro ()

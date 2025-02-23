@@ -288,20 +288,20 @@
                                                     :message (princ-to-string c)))))))
 
 
-(declaim (ftype (function (deps:dependencies list) null) new-do-symbol))
-(defun new-do-symbol (deps msg)
+(declaim (ftype (function (deps:dependencies state:state list) null) new-do-symbol))
+(defun new-do-symbol (deps state msg)
     (let ((id (cdr (assoc :id msg))))
-
         (handler-case
                 (let* ((params (cdr (assoc :params msg)))
                        (pkg-name (cdr (assoc :package params)))
                        (name (cdr (assoc :symbol params)))
                        (sym (alive/symbols:lookup name pkg-name)))
 
-                    (send-inspect-result :id id
-                                         :text name
-                                         :pkg-name pkg-name
-                                         :result sym))
+                    (new-send-inspect-result deps state
+                                             :id id
+                                             :text name
+                                             :pkg-name pkg-name
+                                             :result sym))
 
             (T (c)
                (deps:new-send-msg deps (lsp-msg:create-error id
