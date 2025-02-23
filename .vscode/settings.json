@@ -2,8 +2,6 @@
     "alive.format.closeParenOwnLine": "never",
     "alive.format.indentWidth": 4,
     "alive.format.maxBlankLines": 2,
-    "alive.lsp.install.path": "/home/rich/work/lisp/alive-lsp/fix-context",
-    "alive.packageTree.separator": ["/", "-"],
     "commonlisp.trace.server": "verbose",
     "editor.semanticTokenColorCustomizations": {
         "rules": {
