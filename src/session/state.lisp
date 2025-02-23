@@ -263,7 +263,6 @@
 
 (declaim (ftype (function () integer) next-send-id))
 (defun next-send-id ()
-    (alive/logger:info-msg "***** OLD NEXT SEND ID")
     (next-id state-send-msg-id))
 
 
