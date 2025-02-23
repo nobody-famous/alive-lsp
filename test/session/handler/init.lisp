@@ -15,11 +15,10 @@
 
 (defun test-initialized ()
     (clue:test "Initialized"
-        (clue:expect-fail (lambda () (init:initialized (list (cons :id 5)))))
-        (state:with-state (state:create)
-            (init:initialized (list (cons :id 5)))
+        (let ((state (state:create)))
+            (init:new-initialized state (list (cons :id 5)))
             (clue:check-equal :expected T
-                              :actual (state:initialized)))))
+                              :actual (state:new-initialized state)))))
 
 
 (defun run-all ()
