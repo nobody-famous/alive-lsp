@@ -1,6 +1,7 @@
 (defpackage :alive/session/message-loop
     (:use :cl)
     (:export :new-run
+             :new-stop
              :run
              :stop)
     (:local-nicknames (:deps :alive/deps)

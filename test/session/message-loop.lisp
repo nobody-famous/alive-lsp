@@ -23,62 +23,64 @@
                                        :actual ,send-called))))))
 
 
-(defun test-valid-message ()
-    (clue:suite "Valid message"
-        (clue:test "With handler"
-            (deps:with-deps (deps:create :read-msg (lambda ()
-                                                       (msg-loop:stop)
-                                                       (list (cons :id 5)))
-                                         :send-msg (lambda (msg)
-                                                       (declare (ignore msg))))
-                (state:with-state (state:create)
-                    (msg-loop:run))))
+(defun check-send (state expected &key read-fn)
+    (let* ((send-called nil)
+           (deps (deps:new-create :send-msg (lambda (msg)
+                                                (declare (ignore msg))
+                                                (setf send-called T)
+                                                nil)
+                                  :read-msg read-fn)))
+        (state:new-set-running state T)
+        (msg-loop:new-run deps state)
+        (clue:check-equal :expected expected
+                          :actual send-called)))
 
-        (clue:test "No handler"
-            (deps:with-deps (deps:create :read-msg (lambda ()
-                                                       (msg-loop:stop)
-                                                       (list (cons :id 5)))
-                                         :send-msg (lambda (msg)
-                                                       (declare (ignore msg))))
-                (state:with-state (state:create)
-                    (msg-loop:run))))))
+
+(defun test-valid-message ()
+    (clue:test "Valid message"
+        (let* ((state (state:create))
+               (deps (deps:new-create :read-msg (lambda ()
+                                                    (msg-loop:new-stop state)
+                                                    (list (cons :id 5)))
+                                      :send-msg (lambda (msg)
+                                                    (declare (ignore msg))))))
+            (msg-loop:new-run deps state))))
 
 
 (defun test-errors ()
     (clue:suite "Errors"
         (clue:test "EOF"
-            (with-check-send (nil :read-fn (lambda () (error (make-instance 'end-of-file))))
-                (msg-loop:run)))
+            (let ((state (state:create)))
+                (check-send state nil :read-fn (lambda () (error (make-instance 'end-of-file))))))
 
         (clue:test "Server error no id"
-            (with-check-send (nil :read-fn (lambda ()
-                                               (msg-loop:stop)
-                                               (error (make-instance 'errors:server-error))))
-                (msg-loop:run)))
+            (let ((state (state:create)))
+                (check-send state nil :read-fn (lambda ()
+                                                   (msg-loop:new-stop state)
+                                                   (error (make-instance 'errors:server-error))))))
 
         (clue:test "Server error with id"
-            (with-check-send (T :read-fn (lambda ()
-                                             (msg-loop:stop)
-                                             (error (make-instance 'errors:server-error :id 10))))
-                (msg-loop:run)))
+            (let ((state (state:create)))
+                (check-send state T :read-fn (lambda ()
+                                                 (msg-loop:new-stop state)
+                                                 (error (make-instance 'errors:server-error :id 10))))))
 
         (clue:test "Unhandled request no id"
-            (with-check-send (nil :read-fn (lambda ()
-                                               (msg-loop:stop)
-                                               (error (make-instance 'errors:unhandled-request))))
-                (msg-loop:run)))
+            (let ((state (state:create)))
+                (check-send state nil :read-fn (lambda ()
+                                                   (msg-loop:new-stop state)
+                                                   (error (make-instance 'errors:unhandled-request))))))
 
         (clue:test "Unhandled request with id"
-            (with-check-send (T :read-fn (lambda ()
-                                             (msg-loop:stop)
-                                             (error (make-instance 'errors:unhandled-request :id 10))))
-                (msg-loop:run)))
+            (let ((state (state:create)))
+                (check-send state T :read-fn (lambda ()
+                                                 (msg-loop:new-stop state)
+                                                 (error (make-instance 'errors:unhandled-request :id 10))))))
 
         (clue:test "Generic error"
-            (with-check-send (nil :read-fn (lambda ()
-                                               (msg-loop:stop)
-                                               (error "Failed, as requested")))
-                (msg-loop:run)))))
+            (let ((state (state:create)))
+                (check-send state nil :read-fn (lambda ()
+                                             (error "Failed, as requested")))))))
 
 
 (defun run-all ()
