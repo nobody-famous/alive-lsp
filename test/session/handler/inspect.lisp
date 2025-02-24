@@ -19,52 +19,52 @@
             (let* ((sent-msg nil)
                    (state (state:create))
                    (deps (deps:create :send-msg (lambda (msg)
-                                                        (setf sent-msg msg)
-                                                        nil))))
-                (inspect:new-do-inspect deps state (list (cons :id 5)))
+                                                    (setf sent-msg msg)
+                                                    nil))))
+                (inspect:do-inspect deps state (list (cons :id 5)))
                 (clue:check-exists (gethash "error" sent-msg))))
 
         (clue:test "New inspect"
             (let* ((sent-msg nil)
                    (state (state:create))
                    (deps (deps:create :send-msg (lambda (msg)
-                                                        (setf sent-msg msg)
-                                                        nil))))
-                (inspect:new-do-inspect deps state (list (cons :id 5)
-                                                         (cons :params (list (cons :text "foo")))))
+                                                    (setf sent-msg msg)
+                                                    nil))))
+                (inspect:do-inspect deps state (list (cons :id 5)
+                                                     (cons :params (list (cons :text "foo")))))
                 (clue:check-exists (gethash "result" sent-msg))))
 
         (clue:test "New result symbol"
             (let ((state (state:create))
                   (deps (deps:create :eval-fn (lambda (str)
-                                                      (declare (ignore str))
-                                                      'foo))))
-                (inspect:new-do-inspect deps state (list (cons :id 5)
-                                                         (cons :params (list (cons :text "foo")))))
+                                                  (declare (ignore str))
+                                                  'foo))))
+                (inspect:do-inspect deps state (list (cons :id 5)
+                                                     (cons :params (list (cons :text "foo")))))
                 (clue:check-exists (state:get-inspector state 1))))
 
         (clue:test "Old result"
             (let ((state (state:create))
                   (deps (deps:create)))
                 (state:add-inspector state 5 (fake-inspector 10))
-                (inspect:new-do-inspect deps state (list (cons :id 5)
-                                                         (cons :params (list (cons :text "foo")
-                                                                             (cons :id 5)))))))))
+                (inspect:do-inspect deps state (list (cons :id 5)
+                                                     (cons :params (list (cons :text "foo")
+                                                                         (cons :id 5)))))))))
 
 
 (defun test-refresh ()
     (clue:test "Refresh"
         (let ((state (state:create))
               (deps (deps:create)))
-            (inspect:new-refresh deps state (list (cons :id 5))))))
+            (inspect:refresh deps state (list (cons :id 5))))))
 
 
 (defun test-close ()
     (clue:test "Close"
         (let ((state (state:create)))
             (state:add-inspector state 5 (inspector:create :text "foo" :pkg "bar" :result nil))
-            (inspect:new-do-close state (list (cons :id 1)
-                                              (cons :params (list (cons :id 5)))))
+            (inspect:do-close state (list (cons :id 1)
+                                          (cons :params (list (cons :id 5)))))
             (clue:check-equal :expected nil
                               :actual (state:get-inspector state 5)))))
 
@@ -74,7 +74,7 @@
         (clue:test "Symbol"
             (let ((state (state:create))
                   (deps (deps:create)))
-                (inspect:new-do-symbol deps state (list (cons :id 5)))))))
+                (inspect:do-symbol deps state (list (cons :id 5)))))))
 
 
 (defun test-macro ()
@@ -82,7 +82,7 @@
         (clue:test "Macro"
             (let ((state (state:create))
                   (deps (deps:create)))
-                (inspect:new-macro deps state (list (cons :id 5)))))))
+                (inspect:macro deps state (list (cons :id 5)))))))
 
 
 (defun test-inspect-eval ()
@@ -91,22 +91,22 @@
             (let* ((sent-msg nil)
                    (state (state:create))
                    (deps (deps:create :send-msg (lambda (msg)
-                                                        (setf sent-msg msg)
-                                                        nil))))
-                (inspect:new-do-inspect-eval deps state (list (cons :id 5)))
+                                                    (setf sent-msg msg)
+                                                    nil))))
+                (inspect:do-inspect-eval deps state (list (cons :id 5)))
                 (clue:check-exists sent-msg)))
 
         (clue:test "Has result"
             (let* ((sent-msg nil)
                    (state (state:create))
                    (deps (deps:create :send-msg (lambda (msg)
-                                                        (setf sent-msg msg)
-                                                        nil)
-                                          :eval-fn (lambda (str)
-                                                       (declare (ignore str))
-                                                       5))))
-                (inspect:new-do-inspect-eval deps state (list (cons :id 5)
-                                                              (cons :params (list (cons :text "(+ 1 2)")))))
+                                                    (setf sent-msg msg)
+                                                    nil)
+                                      :eval-fn (lambda (str)
+                                                   (declare (ignore str))
+                                                   5))))
+                (inspect:do-inspect-eval deps state (list (cons :id 5)
+                                                          (cons :params (list (cons :text "(+ 1 2)")))))
                 (clue:check-exists sent-msg)))))
 
 
