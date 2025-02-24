@@ -104,7 +104,7 @@
     (clue:test "Thread Message"
         (let ((state (state:create))
               (deps (deps:new-create)))
-            (state:new-with-thread-msg (deps state 5)
+            (state:new-with-thread-msg (state deps 5)
                 nil))))
 
 

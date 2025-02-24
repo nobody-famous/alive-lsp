@@ -14,7 +14,7 @@
 (declaim (ftype (function (deps:dependencies state:state cons) (values (or null hash-table) &optional)) new-process-msg))
 (defun new-process-msg (deps state msg)
     (let ((id (cdr (assoc :id msg))))
-        (state:new-with-thread-msg (deps state id)
+        (state:new-with-thread-msg (state deps id)
             (handler-case
                     (funcall (deps:new-msg-handler deps) deps msg)
                 (error (c)

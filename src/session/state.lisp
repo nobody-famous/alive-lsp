@@ -177,8 +177,8 @@
         (gethash id (state-inspectors state))))
 
 
-(declaim (ftype (function (deps:dependencies state T)) new-save-thread-msg))
-(defun new-save-thread-msg (deps state id)
+(declaim (ftype (function (state deps:dependencies T)) new-save-thread-msg))
+(defun new-save-thread-msg (state deps id)
     (let* ((table (state-thread-msgs state))
            (cur-thread (bt:current-thread))
            (thread-id (deps:new-get-thread-id deps cur-thread)))
@@ -194,8 +194,8 @@
             (gethash thread-id table))))
 
 
-(declaim (ftype (function (deps:dependencies state) boolean) new-rem-thread-msg))
-(defun new-rem-thread-msg (deps state)
+(declaim (ftype (function (state deps:dependencies) boolean) new-rem-thread-msg))
+(defun new-rem-thread-msg (state deps)
     (let* ((table (state-thread-msgs state))
            (cur-thread (bt:current-thread))
            (thread-id (deps:new-get-thread-id deps cur-thread)))
@@ -204,8 +204,8 @@
             (remhash thread-id table))))
 
 
-(defmacro new-with-thread-msg ((deps state id) &body body)
-    `(progn (when ,id (new-save-thread-msg ,deps ,state ,id))
+(defmacro new-with-thread-msg ((state deps id) &body body)
+    `(progn (when ,id (new-save-thread-msg ,state ,deps ,id))
             (unwind-protect
                     (progn ,@body)
-                (when ,id (new-rem-thread-msg ,deps ,state)))))
+                (when ,id (new-rem-thread-msg ,state ,deps)))))

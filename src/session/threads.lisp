@@ -106,7 +106,7 @@
 (declaim (ftype (function (deps:dependencies state:state string integer function) null) new-run-in-thread))
 (defun new-run-in-thread (deps state method-name msg-id fn)
     (spawn:new-thread (new-next-thread-name state method-name)
-        (state:new-with-thread-msg (deps state msg-id)
+        (state:new-with-thread-msg (state deps msg-id)
             (unwind-protect
                     (progn (refresh:new-send deps state)
                            (new-run-with-debugger deps state fn))
