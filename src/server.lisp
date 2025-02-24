@@ -72,12 +72,12 @@
           (cons "$/alive/listThreads" (lambda (deps msg) (alive/session/handler/threads:list-all deps state msg)))
           (cons "$/alive/killThread" (lambda (deps msg) (alive/session/handler/threads:kill deps state msg)))
 
-          (cons "$/alive/listAsdfSystems" (lambda (deps msg) (alive/session/handler/asdf:new-list-all deps msg)))
+          (cons "$/alive/listAsdfSystems" (lambda (deps msg) (alive/session/handler/asdf:list-all deps msg)))
           (cons "$/alive/loadAsdfSystem" (lambda (deps msg)
                                              (threads:run-in-thread deps state (or (cdr (assoc :method msg)) "ASDF")
                                                                     (cdr (assoc :id msg))
                                                                     (lambda ()
-                                                                        (alive/session/handler/asdf:new-load-system deps state msg)))))
+                                                                        (alive/session/handler/asdf:load-system deps state msg)))))
 
           (cons "$/alive/tryCompile" (lambda (deps msg)
                                          (spawn:new-thread "Try Compile"
