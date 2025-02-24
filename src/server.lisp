@@ -96,8 +96,8 @@
           (cons "$/alive/symbol" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/symbol:for-pos state msg)))
           (cons "$/alive/unexportSymbol" (lambda (deps msg) (alive/session/handler/symbol:do-unexport deps state msg)))
 
-          (cons "$/alive/macroexpand" (lambda (deps msg) (alive/session/handler/macro:new-expand deps msg)))
-          (cons "$/alive/macroexpand1" (lambda (deps msg) (alive/session/handler/macro:new-expand-1 deps msg)))
+          (cons "$/alive/macroexpand" (lambda (deps msg) (alive/session/handler/macro:expand deps msg)))
+          (cons "$/alive/macroexpand1" (lambda (deps msg) (alive/session/handler/macro:expand-1 deps msg)))
 
           (cons "$/alive/inspect" (lambda (deps msg)
                                       (threads:run-in-thread deps state (or (cdr (assoc :method msg)) "Inspect")
