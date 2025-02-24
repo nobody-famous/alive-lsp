@@ -16,7 +16,7 @@
 (defun test-initialized ()
     (clue:test "Initialized"
         (let ((state (state:create)))
-            (init:new-initialized state (list (cons :id 5)))
+            (init:initialized state (list (cons :id 5)))
             (clue:check-equal :expected T
                               :actual (state:initialized state)))))
 

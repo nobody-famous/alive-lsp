@@ -1,15 +1,15 @@
 (defpackage :alive/session/handler/document
     (:use :cl)
-    (:export :new-completion
-             :new-definition
-             :new-did-change
-             :new-did-open
-             :new-doc-symbols
-             :new-formatting
-             :new-hover
-             :new-on-type
-             :new-selection
-             :new-sem-tokens)
+    (:export :completion
+             :definition
+             :did-change
+             :did-open
+             :doc-symbols
+             :formatting
+             :hover
+             :on-type
+             :selection
+             :sem-tokens)
     (:local-nicknames (:analysis :alive/lsp/sem-analysis)
                       (:comps :alive/lsp/completions)
                       (:config-item :alive/lsp/types/config-item)
@@ -27,8 +27,8 @@
 (in-package :alive/session/handler/document)
 
 
-(declaim (ftype (function (state:state cons) hash-table) new-completion))
-(defun new-completion (state msg)
+(declaim (ftype (function (state:state cons) hash-table) completion))
+(defun completion (state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
            (doc (cdr (assoc :text-document params)))
@@ -47,8 +47,8 @@
             (lsp-msg:create-response id :result-value data))))
 
 
-(declaim (ftype (function (state:state cons) hash-table) new-definition))
-(defun new-definition (state msg)
+(declaim (ftype (function (state:state cons) hash-table) definition))
+(defun definition (state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
            (doc (cdr (assoc :text-document params)))
@@ -68,8 +68,8 @@
             (lsp-msg:create-response id :result-value data))))
 
 
-(declaim (ftype (function (state:state cons) null) new-did-change))
-(defun new-did-change (state msg)
+(declaim (ftype (function (state:state cons) null) did-change))
+(defun did-change (state msg)
     (let* ((params (cdr (assoc :params msg)))
            (doc (cdr (assoc :text-document params)))
            (uri (cdr (assoc :uri doc)))
@@ -82,8 +82,8 @@
                   nil))))
 
 
-(declaim (ftype (function (state:state cons) null) new-did-open))
-(defun new-did-open (state msg)
+(declaim (ftype (function (state:state cons) null) did-open))
+(defun did-open (state msg)
     (let* ((params (cdr (assoc :params msg)))
            (doc (cdr (assoc :text-document params)))
            (uri (cdr (assoc :uri doc)))
@@ -95,8 +95,8 @@
                   nil))))
 
 
-(declaim (ftype (function (state:state cons) hash-table) new-doc-symbols))
-(defun new-doc-symbols (state msg)
+(declaim (ftype (function (state:state cons) hash-table) doc-symbols))
+(defun doc-symbols (state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
            (doc (cdr (assoc :text-document params)))
@@ -111,8 +111,8 @@
                                      :result-value result))))
 
 
-(declaim (ftype (function (state:state cons) hash-table) new-hover))
-(defun new-hover (state msg)
+(declaim (ftype (function (state:state cons) hash-table) hover))
+(defun hover (state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
            (doc (cdr (assoc :text-document params)))
@@ -126,8 +126,8 @@
         (utils:result id "value" result)))
 
 
-(declaim (ftype (function (state:state cons) hash-table) new-on-type))
-(defun new-on-type (state msg)
+(declaim (ftype (function (state:state cons) hash-table) on-type))
+(defun on-type (state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
            (doc (cdr (assoc :text-document params)))
@@ -146,8 +146,8 @@
         (lsp-msg:create-response id :result-value value)))
 
 
-(declaim (ftype (function (state:state cons cons) hash-table) new-format-msg))
-(defun new-format-msg (state options msg)
+(declaim (ftype (function (state:state cons cons) hash-table) format-msg))
+(defun format-msg (state options msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
            (range (cdr (assoc :range params)))
@@ -163,23 +163,23 @@
                                  :result-value (fmt-utils:to-text-edits edits))))
 
 
-(declaim (ftype (function (state:state cons) hash-table) new-formatting))
-(defun new-formatting (state msg)
+(declaim (ftype (function (state:state cons) hash-table) formatting))
+(defun formatting (state msg)
     (let ((id (state:next-send-id state)))
 
         (state:set-sent-msg-callback state id
-                                         (lambda (config-resp)
-                                             (declare (type cons config-resp))
-                                             (let ((opts (cdr (assoc :result config-resp))))
-                                                 (new-format-msg state (first opts) msg))))
+                                     (lambda (config-resp)
+                                         (declare (type cons config-resp))
+                                         (let ((opts (cdr (assoc :result config-resp))))
+                                             (format-msg state (first opts) msg))))
 
         (let ((params (make-hash-table :test #'equalp)))
             (setf (gethash "items" params) (list (config-item:create-item :section "alive.format")))
             (lsp-msg:create-request id "workspace/configuration" :params params))))
 
 
-(declaim (ftype (function (state:state cons) hash-table) new-selection))
-(defun new-selection (state msg)
+(declaim (ftype (function (state:state cons) hash-table) selection))
+(defun selection (state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
            (doc (cdr (assoc :text-document params)))
@@ -219,8 +219,8 @@
           :finally (return (reverse out-list))))
 
 
-(declaim (ftype (function (state:state cons) hash-table) new-sem-tokens))
-(defun new-sem-tokens (state msg)
+(declaim (ftype (function (state:state cons) hash-table) sem-tokens))
+(defun sem-tokens (state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
            (doc (cdr (assoc :text-document params)))
