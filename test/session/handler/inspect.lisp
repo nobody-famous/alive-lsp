@@ -41,12 +41,12 @@
                                                       'foo))))
                 (inspect:new-do-inspect deps state (list (cons :id 5)
                                                          (cons :params (list (cons :text "foo")))))
-                (clue:check-exists (state:new-get-inspector state 1))))
+                (clue:check-exists (state:get-inspector state 1))))
 
         (clue:test "Old result"
             (let ((state (state:create))
                   (deps (deps:create)))
-                (state:new-add-inspector state 5 (fake-inspector 10))
+                (state:add-inspector state 5 (fake-inspector 10))
                 (inspect:new-do-inspect deps state (list (cons :id 5)
                                                          (cons :params (list (cons :text "foo")
                                                                              (cons :id 5)))))))))
@@ -62,11 +62,11 @@
 (defun test-close ()
     (clue:test "Close"
         (let ((state (state:create)))
-            (state:new-add-inspector state 5 (inspector:create :text "foo" :pkg "bar" :result nil))
+            (state:add-inspector state 5 (inspector:create :text "foo" :pkg "bar" :result nil))
             (inspect:new-do-close state (list (cons :id 1)
                                               (cons :params (list (cons :id 5)))))
             (clue:check-equal :expected nil
-                              :actual (state:new-get-inspector state 5)))))
+                              :actual (state:get-inspector state 5)))))
 
 
 (defun test-symbol ()

@@ -11,12 +11,12 @@
 
 (defun new-stop (state)
     (logger:info-msg "Stopping session")
-    (state:new-set-running state nil))
+    (state:set-running state nil))
 
 
 (declaim (ftype (function (alive/deps:dependencies state:state) null) new-start))
 (defun new-start (deps state)
-    (state:new-set-running state T)
+    (state:set-running state T)
 
     (spawn:new-thread "Session Message Reader"
         (alive/session/message-loop:new-run deps state))

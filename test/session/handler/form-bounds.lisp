@@ -21,7 +21,7 @@
 
         (clue:test "With text"
             (let ((state (state:create)))
-                (state:new-set-file-text state "some/uri" "foo")
+                (state:set-file-text state "some/uri" "foo")
                 (clue:check-exists (gethash "result" (form-bounds:new-top-form state *default-msg*)))))))
 
 
@@ -33,7 +33,7 @@
 
         (clue:test "With text"
             (let ((state (state:create)))
-                (state:new-set-file-text state "some/uri" "(foo)")
+                (state:set-file-text state "some/uri" "(foo)")
                 (clue:check-exists (gethash "result" (form-bounds:new-surrounding-form state *default-msg*)))))))
 
 

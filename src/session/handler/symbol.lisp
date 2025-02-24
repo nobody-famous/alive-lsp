@@ -18,7 +18,7 @@
            (doc (cdr (assoc :text-document params)))
            (pos (cdr (assoc :position params)))
            (uri (cdr (assoc :uri doc)))
-           (text (or (state:new-get-file-text state uri) ""))
+           (text (or (state:get-file-text state uri) ""))
            (result (alive/lsp/symbol:for-pos :text text :pos pos)))
 
         (utils:result id "value" result)))

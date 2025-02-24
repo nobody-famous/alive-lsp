@@ -18,7 +18,7 @@
         (let ((state (state:create)))
             (init:new-initialized state (list (cons :id 5)))
             (clue:check-equal :expected T
-                              :actual (state:new-initialized state)))))
+                              :actual (state:initialized state)))))
 
 
 (defun run-all ()

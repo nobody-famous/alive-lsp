@@ -43,14 +43,14 @@
             (let ((state (state:create)))
                 (doc:new-did-change state (list (cons :params (list (cons :text-document (list (cons :uri "some/uri")))))))
                 (clue:check-equal :expected nil
-                                  :actual (state:new-get-file-text state "some/uri"))))
+                                  :actual (state:get-file-text state "some/uri"))))
 
         (clue:test "Has text"
             (let ((state (state:create)))
                 (doc:new-did-change state (list (cons :params (list (cons :text-document (list (cons :uri "some/uri")))
                                                                     (cons :content-changes (list (list (cons :text "Some text"))))))))
                 (clue:check-equal :expected "Some text"
-                                  :actual (state:new-get-file-text state "some/uri"))))))
+                                  :actual (state:get-file-text state "some/uri"))))))
 
 
 (defun test-did-open ()
@@ -59,14 +59,14 @@
             (let ((state (state:create)))
                 (doc:new-did-open state (list (cons :params (list (cons :text-document (list (cons :uri "some/uri")))))))
                 (clue:check-equal :expected nil
-                                  :actual (state:new-get-file-text state "some/uri"))))
+                                  :actual (state:get-file-text state "some/uri"))))
 
         (clue:test "Has text"
             (let ((state (state:create)))
                 (doc:new-did-open state (list (cons :params (list (cons :text-document (list (cons :uri "some/uri")
                                                                                              (cons :text "Some text")))))))
                 (clue:check-equal :expected "Some text"
-                                  :actual (state:new-get-file-text state "some/uri"))))))
+                                  :actual (state:get-file-text state "some/uri"))))))
 
 
 (defun test-doc-symbols ()
@@ -93,7 +93,7 @@
 
         (clue:test "With text"
             (let ((state (state:create)))
-                (state:new-set-file-text state "some/uri" "foo")
+                (state:set-file-text state "some/uri" "foo")
                 (clue:check-equal :expected T
                                   :actual (hash-table-p (doc:new-on-type state *msg-with-position*)))))))
 
@@ -101,11 +101,11 @@
 (defun test-range-formatting ()
     (clue:test "Range Formatting"
         (let ((state (state:create)))
-            (state:new-set-file-text state "uri" "Some test")
+            (state:set-file-text state "uri" "Some test")
             (let* ((request (doc:new-formatting state (list (cons :id 5)
                                                             (cons :params (list (cons :text-document (list (cons :uri "some/uri"))))))))
                    (id (gethash "id" request))
-                   (cb (state:new-get-sent-msg-callback state id)))
+                   (cb (state:get-sent-msg-callback state id)))
 
                 (clue:check-equal :expected T
                                   :actual (hash-table-p (funcall cb (list (cons :id id)
@@ -124,7 +124,7 @@
 
         (clue:test "Have forms"
             (let ((state (state:create)))
-                (state:new-set-file-text state "some/uri" "Some text")
+                (state:set-file-text state "some/uri" "Some text")
                 (clue:check-equal :expected T
                                   :actual (hash-table-p (doc:new-selection state (list (cons :id 1)
                                                                                        (cons :params (list (cons :text-document (list (cons :uri "some/uri")))
@@ -144,7 +144,7 @@
 
         (clue:test "Simple tokens"
             (let ((state (state:create)))
-                (state:new-set-file-text state "some/uri" "#+n")
+                (state:set-file-text state "some/uri" "#+n")
                 (let* ((response (doc:new-sem-tokens state (list (cons :id 5)
                                                                  (cons :params (list (cons :text-document (list (cons :uri "some/uri"))))))))
                        (result (gethash "result" response)))
@@ -153,7 +153,7 @@
 
         (clue:test "Multi-line token"
             (let ((state (state:create)))
-                (state:new-set-file-text state "some/uri" (format nil "#| a bb~%~%ccc dddd~%|#"))
+                (state:set-file-text state "some/uri" (format nil "#| a bb~%~%ccc dddd~%|#"))
                 (let* ((response (doc:new-sem-tokens state (list (cons :id 5)
                                                                  (cons :params (list (cons :text-document (list (cons :uri "some/uri"))))))))
                        (result (gethash "result" response)))

@@ -14,7 +14,7 @@
 (declaim (ftype (function (deps:dependencies state:state) null) new-send))
 (defun new-send (deps state)
     (spawn:new-thread "Refresh Thread"
-        (let* ((send-id (state:new-next-send-id state))
+        (let* ((send-id (state:next-send-id state))
                (response (deps:send-request deps (lsp-msg:create-request send-id "workspace/semanticTokens/refresh"))))
             (when (assoc :error response)
                   (logger:error-msg "Failed to refresh tokens: ~A" (cdr (assoc :error response))))

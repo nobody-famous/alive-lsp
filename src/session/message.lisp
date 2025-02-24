@@ -28,7 +28,7 @@
 (declaim (ftype (function (state:state cons) (values (or null hash-table) &optional)) new-handle-response))
 (defun new-handle-response (state msg)
     (let* ((msg-id (cdr (assoc :id msg)))
-           (cb (state:new-get-sent-msg-callback state msg-id)))
+           (cb (state:get-sent-msg-callback state msg-id)))
 
         (if cb
             (funcall cb msg)

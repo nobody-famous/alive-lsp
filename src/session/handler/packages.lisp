@@ -18,7 +18,7 @@
            (doc (cdr (assoc :text-document params)))
            (pos (cdr (assoc :position params)))
            (uri (cdr (assoc :uri doc)))
-           (text (or (state:new-get-file-text state uri) ""))
+           (text (or (state:get-file-text state uri) ""))
            (pkg (packages:for-pos text pos)))
 
         (utils:result id "package" pkg)))

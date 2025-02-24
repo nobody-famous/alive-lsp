@@ -36,8 +36,8 @@
 
 (declaim (ftype (function (deps:dependencies state:state &key (:id integer) (:text string) (:pkg-name string) (:result *) (:result-type string) (:convert boolean)) null) new-send-inspect-result))
 (defun new-send-inspect-result (deps state &key id text pkg-name result (convert T) (result-type "expr"))
-    (let ((insp-id (state:new-next-inspector-id state)))
-        (state:new-add-inspector state insp-id
+    (let ((insp-id (state:next-inspector-id state)))
+        (state:add-inspector state insp-id
                                  (inspector:create :text text
                                                    :pkg pkg-name
                                                    :result result))
@@ -75,9 +75,9 @@
            (pkg-name (or (cdr (assoc :package params))
                          "cl-user"))
            (text (cdr (assoc :text params)))
-           (* (state:new-get-history-item state 0))
-           (** (state:new-get-history-item state 1))
-           (*** (state:new-get-history-item state 2)))
+           (* (state:get-history-item state 0))
+           (** (state:get-history-item state 1))
+           (*** (state:get-history-item state 2)))
         (handler-case
                 (progn (unless (stringp text)
                            (error "No text to inspect"))
@@ -94,7 +94,7 @@
            (params (cdr (assoc :params msg)))
            (insp-id (cdr (assoc :id params)))
            (text (or (cdr (assoc :text params)) "nil"))
-           (inspector (when insp-id (state:new-get-inspector state insp-id)))
+           (inspector (when insp-id (state:get-inspector state insp-id)))
            (old-result (inspector:get-result inspector))
            (* (if (symbolp old-result)
                   (symbol-value old-result)
@@ -125,7 +125,7 @@
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
            (insp-id (cdr (assoc :id params)))
-           (inspector (when insp-id (state:new-get-inspector state insp-id)))
+           (inspector (when insp-id (state:get-inspector state insp-id)))
            (result (inspector:get-result inspector)))
 
         (typecase result
@@ -145,7 +145,7 @@
            (params (cdr (assoc :params msg)))
            (insp-id (cdr (assoc :id params))))
 
-        (state:new-rem-inspector state insp-id)
+        (state:rem-inspector state insp-id)
         (lsp-msg:create-response id :result-value T)))
 
 

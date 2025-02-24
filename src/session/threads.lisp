@@ -18,7 +18,7 @@
 
 (declaim (ftype (function (deps:dependencies state:state) (values (or null string) &optional)) new-wait-for-input))
 (defun new-wait-for-input (deps state)
-    (let ((input-resp (deps:send-request deps (lsp-msg:create-request (state:new-next-send-id state) "$/alive/userInput"))))
+    (let ((input-resp (deps:send-request deps (lsp-msg:create-request (state:next-send-id state) "$/alive/userInput"))))
 
         (cond ((assoc :error input-resp)
                   (logger:error-msg "Input Error ~A" input-resp))
@@ -33,7 +33,7 @@
 (defun new-get-frame-text-stream (state file)
     (when file
           (let* ((file-url (format NIL "file://~A" (file-utils:escape-file file)))
-                 (text (state:new-get-file-text state file-url)))
+                 (text (state:get-file-text state file-url)))
 
               (when text
                     (make-string-input-stream text)))))
@@ -56,7 +56,7 @@
 
 (declaim (ftype (function (deps:dependencies state:state condition cons cons)) new-wait-for-debug))
 (defun new-wait-for-debug (deps state err restarts frames)
-    (let ((debug-resp (deps:send-request deps (req:debugger (state:new-next-send-id state)
+    (let ((debug-resp (deps:send-request deps (req:debugger (state:next-send-id state)
                                                                 :message (princ-to-string err)
                                                                 :restarts restarts
                                                                 :stack-trace (mapcar (lambda (frame) (new-frame-to-wire state frame)) frames)))))
@@ -100,13 +100,13 @@
 
 (declaim (ftype (function (state:state string) string) new-next-thread-name))
 (defun new-next-thread-name (state method-name)
-    (format nil "~A - ~A" (state:new-next-thread-id state) method-name))
+    (format nil "~A - ~A" (state:next-thread-id state) method-name))
 
 
 (declaim (ftype (function (deps:dependencies state:state string integer function) null) new-run-in-thread))
 (defun new-run-in-thread (deps state method-name msg-id fn)
     (spawn:new-thread (new-next-thread-name state method-name)
-        (state:new-with-thread-msg (state deps msg-id)
+        (state:with-thread-msg (state deps msg-id)
             (unwind-protect
                     (progn (refresh:new-send deps state)
                            (new-run-with-debugger deps state fn))

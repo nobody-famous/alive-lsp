@@ -34,7 +34,7 @@
            (doc (cdr (assoc :text-document params)))
            (pos (cdr (assoc :position params)))
            (uri (cdr (assoc :uri doc)))
-           (file-text (state:new-get-file-text state uri))
+           (file-text (state:get-file-text state uri))
            (text (if file-text file-text ""))
            (items (or (comps:simple :text text :pos pos)
                       (make-array 0))))
@@ -54,7 +54,7 @@
            (doc (cdr (assoc :text-document params)))
            (pos (cdr (assoc :position params)))
            (uri (cdr (assoc :uri doc)))
-           (file-text (state:new-get-file-text state uri))
+           (file-text (state:get-file-text state uri))
            (text (if file-text file-text ""))
            (location (alive/lsp/definition:get-location :text text :pos pos))
            (uri (first location))
@@ -77,8 +77,8 @@
            (text (cdr (assoc :text (first changes)))))
 
         (when text
-              (state:new-lock (state mutex)
-                  (state:new-set-file-text state uri text)
+              (state:lock (state mutex)
+                  (state:set-file-text state uri text)
                   nil))))
 
 
@@ -90,8 +90,8 @@
            (text (cdr (assoc :text doc))))
 
         (when text
-              (state:new-lock (state mutex)
-                  (state:new-set-file-text state uri text)
+              (state:lock (state mutex)
+                  (state:set-file-text state uri text)
                   nil))))
 
 
@@ -101,7 +101,7 @@
            (params (cdr (assoc :params msg)))
            (doc (cdr (assoc :text-document params)))
            (uri (cdr (assoc :uri doc)))
-           (file-text (state:new-get-file-text state uri))
+           (file-text (state:get-file-text state uri))
            (text (if file-text file-text ""))
            (forms (forms:from-stream-or-nil (make-string-input-stream text)))
            (symbols (alive/lsp/symbol:for-document text forms)))
@@ -118,7 +118,7 @@
            (doc (cdr (assoc :text-document params)))
            (pos (cdr (assoc :position params)))
            (uri (cdr (assoc :uri doc)))
-           (file-text (state:new-get-file-text state uri))
+           (file-text (state:get-file-text state uri))
            (text (if file-text file-text ""))
            (hov-text (alive/lsp/hover:get-text :text text :pos pos))
            (result (if hov-text hov-text "")))
@@ -134,7 +134,7 @@
            (opts (cdr (assoc :options params)))
            (pos (cdr (assoc :position params)))
            (uri (cdr (assoc :uri doc)))
-           (file-text (state:new-get-file-text state uri))
+           (file-text (state:get-file-text state uri))
            (text (if file-text file-text ""))
            (edits (formatter:on-type (make-string-input-stream text)
                                      :options (fmt-opts:convert opts)
@@ -153,7 +153,7 @@
            (range (cdr (assoc :range params)))
            (doc (cdr (assoc :text-document params)))
            (uri (cdr (assoc :uri doc)))
-           (file-text (state:new-get-file-text state uri))
+           (file-text (state:get-file-text state uri))
            (text (if file-text file-text ""))
            (edits (formatter:range (make-string-input-stream text)
                                    range
@@ -165,9 +165,9 @@
 
 (declaim (ftype (function (state:state cons) hash-table) new-formatting))
 (defun new-formatting (state msg)
-    (let ((id (state:new-next-send-id state)))
+    (let ((id (state:next-send-id state)))
 
-        (state:new-set-sent-msg-callback state id
+        (state:set-sent-msg-callback state id
                                          (lambda (config-resp)
                                              (declare (type cons config-resp))
                                              (let ((opts (cdr (assoc :result config-resp))))
@@ -184,7 +184,7 @@
            (params (cdr (assoc :params msg)))
            (doc (cdr (assoc :text-document params)))
            (uri (cdr (assoc :uri doc)))
-           (file-text (state:new-get-file-text state uri))
+           (file-text (state:get-file-text state uri))
            (text (if file-text file-text ""))
            (forms (forms:from-stream-or-nil (make-string-input-stream text)))
            (pos-list (cdr (assoc :positions params)))
@@ -225,7 +225,7 @@
            (params (cdr (assoc :params msg)))
            (doc (cdr (assoc :text-document params)))
            (uri (cdr (assoc :uri doc)))
-           (file-text (state:new-get-file-text state uri))
+           (file-text (state:get-file-text state uri))
            (text (if file-text file-text ""))
            (sem-tokens (analysis:to-sem-tokens
                            (tokenizer:from-stream

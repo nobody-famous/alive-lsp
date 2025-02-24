@@ -54,5 +54,5 @@
 (declaim (ftype (function (state:state cons) null) new-initialized))
 (defun new-initialized (state msg)
     (declare (ignore msg))
-    (state:new-set-initialized state T)
+    (state:set-initialized state T)
     nil)

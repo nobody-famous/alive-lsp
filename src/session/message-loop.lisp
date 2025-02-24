@@ -14,7 +14,7 @@
 (declaim (ftype (function (deps:dependencies state:state cons) (values (or null hash-table) &optional)) new-process-msg))
 (defun new-process-msg (deps state msg)
     (let ((id (cdr (assoc :id msg))))
-        (state:new-with-thread-msg (state deps id)
+        (state:with-thread-msg (state deps id)
             (handler-case
                     (funcall (deps:msg-handler deps) deps msg)
                 (error (c)
@@ -27,7 +27,7 @@
 (declaim (ftype (function (state:state) null) new-stop))
 (defun new-stop (state)
     (logger:info-msg "New Stopping message loop")
-    (state:new-set-running state NIL)
+    (state:set-running state NIL)
     nil)
 
 
@@ -65,7 +65,7 @@
 
 (declaim (ftype (function (deps:dependencies state:state) null) new-run))
 (defun new-run (deps state)
-    (loop :while (state:new-running state)
+    (loop :while (state:running state)
           :do (let ((resp (new-get-next-response deps state)))
                   (when resp
                         (deps:send-msg deps resp)))))

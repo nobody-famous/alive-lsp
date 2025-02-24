@@ -14,7 +14,7 @@
     (let* ((params (cdr (assoc :params msg)))
            (doc (cdr (assoc :text-document params)))
            (uri (cdr (assoc :uri doc)))
-           (text (or (state:new-get-file-text state uri) "")))
+           (text (or (state:get-file-text state uri) "")))
 
         (forms:from-stream-or-nil (make-string-input-stream text))))
 

@@ -16,7 +16,7 @@
                                                 (setf send-called T)
                                                 nil)
                                   :read-msg read-fn)))
-        (state:new-set-running state T)
+        (state:set-running state T)
         (msg-loop:new-run deps state)
         (clue:check-equal :expected expected
                           :actual send-called)))

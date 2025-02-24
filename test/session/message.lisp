@@ -46,7 +46,7 @@
             (let ((state (state:create))
                   (deps (deps:create))
                   (handlers (list (cons "foo" (lambda (deps msg) (declare (ignore deps msg)))))))
-                (state:new-set-sent-msg-callback state 1 (lambda (msg)
+                (state:set-sent-msg-callback state 1 (lambda (msg)
                                                              (declare (ignore msg))
                                                              (make-hash-table)))
                 (clue:check-equal :expected T

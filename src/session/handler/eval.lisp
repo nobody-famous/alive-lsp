@@ -17,10 +17,10 @@
            (params (cdr (assoc :params msg)))
            (pkg-name (cdr (assoc :package params)))
            (text (cdr (assoc :text params)))
-           (* (state:new-get-history-item state 0))
-           (** (state:new-get-history-item state 1))
-           (*** (state:new-get-history-item state 2))
-           (results (state:new-lock (state mutex)
+           (* (state:get-history-item state 0))
+           (** (state:get-history-item state 1))
+           (*** (state:get-history-item state 2))
+           (results (state:lock (state mutex)
                         (eval:new-from-string deps text
                                               :pkg-name pkg-name
                                               :stdin-fn (lambda ()
@@ -35,7 +35,7 @@
                                                              (deps:send-msg deps (notification:stderr data)))))))
 
         (when (cdr (assoc :store-result params))
-              (state:new-add-history state results))
+              (state:add-history state results))
 
         (let ((response-content (if (= (length results) 1)
                                     (format nil "~A" (car results))
