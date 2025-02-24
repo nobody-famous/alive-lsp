@@ -13,9 +13,9 @@
     (clue:test "Try"
         (let* ((sent-msg nil)
                (deps (deps:create :send-msg (lambda (msg)
-                                                    (setf sent-msg msg)
-                                                    nil))))
-            (compile:new-try deps (list (cons :id 5)))
+                                                (setf sent-msg msg)
+                                                nil))))
+            (compile:try deps (list (cons :id 5)))
             (clue:check-exists (gethash "result" sent-msg)))))
 
 
@@ -24,10 +24,10 @@
         (let* ((sent-msg nil)
                (state (state:create))
                (deps (deps:create :send-msg (lambda (msg)
-                                                    (setf sent-msg msg)
-                                                    nil))))
-            (compile:new-file deps state (list (cons :id 5)
-                                               (cons :params (list (cons :path "some/path")))))
+                                                (setf sent-msg msg)
+                                                nil))))
+            (compile:file deps state (list (cons :id 5)
+                                           (cons :params (list (cons :path "some/path")))))
             (clue:check-exists (gethash "result" sent-msg)))))
 
 
@@ -36,10 +36,10 @@
         (let* ((sent-msg nil)
                (state (state:create))
                (deps (deps:create :send-msg (lambda (msg)
-                                                    (setf sent-msg msg)
-                                                    nil))))
-            (compile:new-load-file deps state (list (cons :id 5)
-                                                    (cons :params (list (cons :path "some/path")))))
+                                                (setf sent-msg msg)
+                                                nil))))
+            (compile:load-file deps state (list (cons :id 5)
+                                                (cons :params (list (cons :path "some/path")))))
             (clue:check-exists (gethash "result" sent-msg)))))
 
 

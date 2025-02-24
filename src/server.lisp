@@ -81,17 +81,17 @@
 
           (cons "$/alive/tryCompile" (lambda (deps msg)
                                          (spawn:new-thread "Try Compile"
-                                             (alive/session/handler/compile:new-try deps msg))))
+                                             (alive/session/handler/compile:try deps msg))))
           (cons "$/alive/compile" (lambda (deps msg)
                                       (threads:run-in-thread deps state (or (cdr (assoc :method msg)) "Compile")
                                                              (cdr (assoc :id msg))
                                                              (lambda ()
-                                                                 (alive/session/handler/compile:new-file deps state msg)))))
+                                                                 (alive/session/handler/compile:file deps state msg)))))
           (cons "$/alive/loadFile" (lambda (deps msg)
                                        (threads:run-in-thread deps state (or (cdr (assoc :method msg)) "Load File")
                                                               (cdr (assoc :id msg))
                                                               (lambda ()
-                                                                  (alive/session/handler/compile:new-load-file deps state msg)))))
+                                                                  (alive/session/handler/compile:load-file deps state msg)))))
 
           (cons "$/alive/symbol" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/symbol:for-pos state msg)))
           (cons "$/alive/unexportSymbol" (lambda (deps msg) (alive/session/handler/symbol:do-unexport deps state msg)))
