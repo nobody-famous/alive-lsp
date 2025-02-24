@@ -1,9 +1,7 @@
 (defpackage :alive/session/message-loop
     (:use :cl)
     (:export :new-run
-             :new-stop
-             :run
-             :stop)
+             :new-stop)
     (:local-nicknames (:deps :alive/deps)
                       (:errors :alive/lsp/errors)
                       (:logger :alive/logger)
@@ -24,13 +22,6 @@
                     (lsp-msg:create-error id
                                           :code errors:*internal-error*
                                           :message (princ-to-string c)))))))
-
-
-(declaim (ftype (function () null) stop))
-(defun stop ()
-    (logger:info-msg "Stopping message loop")
-    (state:set-running NIL)
-    nil)
 
 
 (declaim (ftype (function (state:state) null) new-stop))
