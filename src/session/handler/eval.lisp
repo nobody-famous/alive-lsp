@@ -24,7 +24,7 @@
                         (eval:new-from-string deps text
                                               :pkg-name pkg-name
                                               :stdin-fn (lambda ()
-                                                            (threads:new-wait-for-input deps state))
+                                                            (threads:wait-for-input deps state))
                                               :stdout-fn (lambda (data)
                                                              (deps:send-msg deps (notification:stdout data)))
                                               :query-fn (lambda (data)

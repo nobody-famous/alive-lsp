@@ -1,7 +1,7 @@
 (defpackage :alive/session/threads
     (:use :cl)
-    (:export :new-run-in-thread
-             :new-wait-for-input)
+    (:export :run-in-thread
+             :wait-for-input)
     (:local-nicknames (:debugger :alive/debugger)
                       (:deps :alive/deps)
                       (:file-utils :alive/file-utils)
@@ -16,8 +16,8 @@
 (in-package :alive/session/threads)
 
 
-(declaim (ftype (function (deps:dependencies state:state) (values (or null string) &optional)) new-wait-for-input))
-(defun new-wait-for-input (deps state)
+(declaim (ftype (function (deps:dependencies state:state) (values (or null string) &optional)) wait-for-input))
+(defun wait-for-input (deps state)
     (let ((input-resp (deps:send-request deps (lsp-msg:create-request (state:next-send-id state) "$/alive/userInput"))))
 
         (cond ((assoc :error input-resp)
@@ -29,8 +29,8 @@
                           ""))))))
 
 
-(declaim (ftype (function (state:state (or null string)) (or null stream)) new-get-frame-text-stream))
-(defun new-get-frame-text-stream (state file)
+(declaim (ftype (function (state:state (or null string)) (or null stream)) get-frame-text-stream))
+(defun get-frame-text-stream (state file)
     (when file
           (let* ((file-url (format NIL "file://~A" (file-utils:escape-file file)))
                  (text (state:get-file-text state file-url)))
@@ -39,12 +39,12 @@
                     (make-string-input-stream text)))))
 
 
-(declaim (ftype (function (state:state hash-table) hash-table) new-frame-to-wire))
-(defun new-frame-to-wire (state frame)
+(declaim (ftype (function (state:state hash-table) hash-table) frame-to-wire))
+(defun frame-to-wire (state frame)
     (let* ((obj (make-hash-table :test #'equalp))
            (file (gethash "file" frame))
            (fn-name (gethash "function" frame))
-           (pos (debugger:get-frame-loc (new-get-frame-text-stream state file)
+           (pos (debugger:get-frame-loc (get-frame-text-stream state file)
                                         frame)))
 
         (setf (gethash "function" obj) fn-name)
@@ -54,12 +54,12 @@
         obj))
 
 
-(declaim (ftype (function (deps:dependencies state:state condition cons cons)) new-wait-for-debug))
-(defun new-wait-for-debug (deps state err restarts frames)
+(declaim (ftype (function (deps:dependencies state:state condition cons cons)) wait-for-debug))
+(defun wait-for-debug (deps state err restarts frames)
     (let ((debug-resp (deps:send-request deps (req:debugger (state:next-send-id state)
-                                                                :message (princ-to-string err)
-                                                                :restarts restarts
-                                                                :stack-trace (mapcar (lambda (frame) (new-frame-to-wire state frame)) frames)))))
+                                                            :message (princ-to-string err)
+                                                            :restarts restarts
+                                                            :stack-trace (mapcar (lambda (frame) (frame-to-wire state frame)) frames)))))
 
         (cond ((assoc :error debug-resp)
                   (logger:error-msg "Debugger Error ~A" debug-resp))
@@ -69,15 +69,15 @@
                       (cdr (assoc :index result)))))))
 
 
-(declaim (ftype (function (deps:dependencies state:state condition cons) null) new-start-debugger))
-(defun new-start-debugger (deps state err frames)
+(declaim (ftype (function (deps:dependencies state:state condition cons) null) start-debugger))
+(defun start-debugger (deps state err frames)
     (let* ((restarts (compute-restarts err))
-           (ndx (new-wait-for-debug deps state err
-                                    (mapcar (lambda (item)
-                                                (restart-info:create-item :name (restart-name item)
-                                                                          :description (princ-to-string item)))
-                                            restarts)
-                                    frames)))
+           (ndx (wait-for-debug deps state err
+                                (mapcar (lambda (item)
+                                            (restart-info:create-item :name (restart-name item)
+                                                                      :description (princ-to-string item)))
+                                        restarts)
+                                frames)))
 
         (when (and ndx
                    (<= 0 ndx (- (length restarts) 1)))
@@ -85,29 +85,29 @@
         nil))
 
 
-(declaim (ftype (function (deps:dependencies state:state function)) new-run-with-debugger))
-(defun new-run-with-debugger (deps state fn)
+(declaim (ftype (function (deps:dependencies state:state function)) run-with-debugger))
+(defun run-with-debugger (deps state fn)
     (let ((sb-ext:*invoke-debugger-hook* (lambda (c h)
                                              (declare (ignore h))
-                                             (new-start-debugger deps state c (alive/frames:list-debug-frames))
-                                             (return-from new-run-with-debugger)))
+                                             (start-debugger deps state c (alive/frames:list-debug-frames))
+                                             (return-from run-with-debugger)))
           (*debugger-hook* (lambda (c h)
                                (declare (ignore h))
-                               (new-start-debugger deps state c (alive/frames:list-debug-frames))
-                               (return-from new-run-with-debugger))))
+                               (start-debugger deps state c (alive/frames:list-debug-frames))
+                               (return-from run-with-debugger))))
         (funcall fn)))
 
 
-(declaim (ftype (function (state:state string) string) new-next-thread-name))
-(defun new-next-thread-name (state method-name)
+(declaim (ftype (function (state:state string) string) next-thread-name))
+(defun next-thread-name (state method-name)
     (format nil "~A - ~A" (state:next-thread-id state) method-name))
 
 
-(declaim (ftype (function (deps:dependencies state:state string integer function) null) new-run-in-thread))
-(defun new-run-in-thread (deps state method-name msg-id fn)
-    (spawn:new-thread (new-next-thread-name state method-name)
+(declaim (ftype (function (deps:dependencies state:state string integer function) null) run-in-thread))
+(defun run-in-thread (deps state method-name msg-id fn)
+    (spawn:new-thread (next-thread-name state method-name)
         (state:with-thread-msg (state deps msg-id)
             (unwind-protect
-                    (progn (refresh:new-send deps state)
-                           (new-run-with-debugger deps state fn))
-                (refresh:new-send deps state)))))
+                    (progn (refresh:send deps state)
+                           (run-with-debugger deps state fn))
+                (refresh:send deps state)))))

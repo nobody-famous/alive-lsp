@@ -27,7 +27,7 @@
         (deps:load-asdf-system deps
                                    :name name
                                    :stdin-fn (lambda ()
-                                                 (threads:new-wait-for-input deps state))
+                                                 (threads:wait-for-input deps state))
                                    :stdout-fn (lambda (data)
                                                   (deps:send-msg deps (notification:stdout data)))
                                    :stderr-fn (lambda (data)

@@ -32,7 +32,7 @@
 
         (deps:do-compile deps path
                              :stdin-fn (lambda ()
-                                           (threads:new-wait-for-input deps state))
+                                           (threads:wait-for-input deps state))
                              :stdout-fn (lambda (data)
                                             (deps:send-msg deps (notification:stdout data)))
                              :stderr-fn (lambda (data)
@@ -48,7 +48,7 @@
            (path (cdr (assoc :path params)))
            (msgs (deps:do-load deps path
                                    :stdin-fn (lambda ()
-                                                 (threads:new-wait-for-input deps state))
+                                                 (threads:wait-for-input deps state))
                                    :stdout-fn (lambda (data)
                                                   (when (assoc :show-stdout params)
                                                         (deps:send-msg deps (notification:stdout data))))

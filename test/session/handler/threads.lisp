@@ -16,7 +16,7 @@
                                      :get-thread-id (lambda (thread)
                                                         (declare (ignore thread))
                                                         5))))
-            (clue:check-exists (gethash "result" (threads:new-list-all deps state (list (cons :id 5))))))))
+            (clue:check-exists (gethash "result" (threads:list-all deps state (list (cons :id 5))))))))
 
 
 (defun test-kill ()
@@ -28,7 +28,7 @@
                                                        (declare (ignore req))
                                                        (list (cons :id 5))))))
             (clue:check-equal :expected T
-                              :actual (gethash "result" (threads:new-kill deps state (list (cons :id 5)
+                              :actual (gethash "result" (threads:kill deps state (list (cons :id 5)
                                                                                            (cons :params (list (cons :id 10))))))))))
 
 
