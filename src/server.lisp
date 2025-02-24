@@ -62,10 +62,10 @@
                                                           (cdr (assoc :id msg))
                                                           (lambda ()
                                                               (alive/session/handler/eval:new-handle deps state msg)))))
-          (cons "$/alive/topFormBounds" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/form-bounds:new-top-form state msg)))
-          (cons "$/alive/surroundingFormBounds" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/form-bounds:new-surrounding-form state msg)))
+          (cons "$/alive/topFormBounds" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/form-bounds:top-form state msg)))
+          (cons "$/alive/surroundingFormBounds" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/form-bounds:surrounding-form state msg)))
 
-          (cons "$/alive/getPackageForPosition" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/packages:new-for-position state msg)))
+          (cons "$/alive/getPackageForPosition" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/packages:for-position state msg)))
           (cons "$/alive/listPackages" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/packages:list-all msg)))
           (cons "$/alive/removePackage" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/packages:remove-pkg msg)))
 

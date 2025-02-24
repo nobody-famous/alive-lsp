@@ -1,7 +1,7 @@
 (defpackage :alive/session/handler/packages
     (:use :cl)
     (:export :list-all
-             :new-for-position
+             :for-position
              :remove-pkg)
     (:local-nicknames (:lsp-msg :alive/lsp/message/abstract)
                       (:packages :alive/packages)
@@ -11,8 +11,8 @@
 (in-package :alive/session/handler/packages)
 
 
-(declaim (ftype (function (state:state cons) hash-table) new-for-position))
-(defun new-for-position (state msg)
+(declaim (ftype (function (state:state cons) hash-table) for-position))
+(defun for-position (state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
            (doc (cdr (assoc :text-document params)))

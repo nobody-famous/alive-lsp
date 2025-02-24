@@ -17,24 +17,24 @@
     (clue:suite "Top Form"
         (clue:test "No text"
             (let ((state (state:create)))
-                (clue:check-exists (gethash "result" (form-bounds:new-top-form state *default-msg*)))))
+                (clue:check-exists (gethash "result" (form-bounds:top-form state *default-msg*)))))
 
         (clue:test "With text"
             (let ((state (state:create)))
                 (state:set-file-text state "some/uri" "foo")
-                (clue:check-exists (gethash "result" (form-bounds:new-top-form state *default-msg*)))))))
+                (clue:check-exists (gethash "result" (form-bounds:top-form state *default-msg*)))))))
 
 
 (defun test-surrounding-form ()
     (clue:suite "Surrounding Form"
         (clue:test "No text"
             (let ((state (state:create)))
-                (clue:check-exists (gethash "result" (form-bounds:new-surrounding-form state *default-msg*)))))
+                (clue:check-exists (gethash "result" (form-bounds:surrounding-form state *default-msg*)))))
 
         (clue:test "With text"
             (let ((state (state:create)))
                 (state:set-file-text state "some/uri" "(foo)")
-                (clue:check-exists (gethash "result" (form-bounds:new-surrounding-form state *default-msg*)))))))
+                (clue:check-exists (gethash "result" (form-bounds:surrounding-form state *default-msg*)))))))
 
 
 (defun run-all ()

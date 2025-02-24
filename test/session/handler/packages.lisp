@@ -18,7 +18,7 @@
         (state:set-file-text state "some/uri" text)
         (clue:check-equal :expected exp-pkg
                           :actual (gethash "package"
-                                           (gethash "result" (handler:new-for-position state *default-message*))))))
+                                           (gethash "result" (handler:for-position state *default-message*))))))
 
 
 (defun test-for-pos ()
