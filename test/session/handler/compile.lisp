@@ -3,7 +3,8 @@
     (:export :run-all)
     (:local-nicknames (:compile :alive/session/handler/compile)
                       (:deps :alive/deps)
-                      (:spawn :alive/session/spawn)))
+                      (:spawn :alive/session/spawn)
+                      (:state :alive/session/state)))
 
 (in-package :alive/test/session/handler/compile)
 
@@ -21,22 +22,24 @@
 (defun test-file ()
     (clue:test "File"
         (let* ((sent-msg nil)
+               (state (state:create))
                (deps (deps:new-create :send-msg (lambda (msg)
                                                     (setf sent-msg msg)
                                                     nil))))
-            (compile:new-file deps (list (cons :id 5)
-                                         (cons :params (list (cons :path "some/path")))))
+            (compile:new-file deps state (list (cons :id 5)
+                                               (cons :params (list (cons :path "some/path")))))
             (clue:check-exists (gethash "result" sent-msg)))))
 
 
 (defun test-load ()
     (clue:test "Load"
         (let* ((sent-msg nil)
+               (state (state:create))
                (deps (deps:new-create :send-msg (lambda (msg)
                                                     (setf sent-msg msg)
                                                     nil))))
-            (compile:new-load-file deps (list (cons :id 5)
-                                              (cons :params (list (cons :path "some/path")))))
+            (compile:new-load-file deps state (list (cons :id 5)
+                                                    (cons :params (list (cons :path "some/path")))))
             (clue:check-exists (gethash "result" sent-msg)))))
 
 

@@ -1,11 +1,6 @@
 (defpackage :alive/session/handler/inspect
     (:use :cl)
-    (:export :do-close
-             :do-inspect
-             :do-inspect-eval
-             :do-symbol
-             :macro
-             :new-do-close
+    (:export :new-do-close
              :new-do-inspect
              :new-do-inspect-eval
              :new-do-symbol
@@ -125,25 +120,6 @@
                                                              :result-value (make-hash-table))))))
 
 
-(declaim (ftype (function (list) null) refresh))
-(defun refresh (msg)
-    (let* ((id (cdr (assoc :id msg)))
-           (params (cdr (assoc :params msg)))
-           (insp-id (cdr (assoc :id params)))
-           (inspector (when insp-id (state:get-inspector insp-id)))
-           (result (inspector:get-result inspector)))
-
-        (typecase result
-            (symbol (deps:send-msg (inspect-response id
-                                                     :insp-id insp-id
-                                                     :result (inspector:to-result (if (fboundp result)
-                                                                                      result
-                                                                                      (symbol-value result))))))
-            (otherwise (deps:send-msg (inspect-response id
-                                                        :insp-id insp-id
-                                                        :result (inspector:to-result result)))))))
-
-
 (declaim (ftype (function (deps:dependencies state:state list) null) new-refresh))
 (defun new-refresh (deps state msg)
     (let* ((id (cdr (assoc :id msg)))
@@ -161,16 +137,6 @@
             (otherwise (deps:new-send-msg deps (inspect-response id
                                                                  :insp-id insp-id
                                                                  :result (inspector:to-result result)))))))
-
-
-(declaim (ftype (function (list) hash-table) do-close))
-(defun do-close (msg)
-    (let* ((id (cdr (assoc :id msg)))
-           (params (cdr (assoc :params msg)))
-           (insp-id (cdr (assoc :id params))))
-
-        (state:rem-inspector insp-id)
-        (lsp-msg:create-response id :result-value T)))
 
 
 (declaim (ftype (function (state:state list) hash-table) new-do-close))

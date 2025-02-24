@@ -39,18 +39,6 @@
         (utils:result id "value" result)))
 
 
-(declaim (ftype (function (list) hash-table) do-unexport))
-(defun do-unexport (msg)
-    (let* ((id (cdr (assoc :id msg)))
-           (params (cdr (assoc :params msg)))
-           (sym-name (cdr (assoc :symbol params)))
-           (pkg-name (cdr (assoc :package params))))
-
-        (packages:unexport-symbol pkg-name sym-name)
-        (refresh:send)
-        (lsp-msg:create-response id :result-value T)))
-
-
 (declaim (ftype (function (alive/deps:dependencies state:state list) hash-table) new-do-unexport))
 (defun new-do-unexport (deps state msg)
     (let* ((id (cdr (assoc :id msg)))

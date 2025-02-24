@@ -1,8 +1,6 @@
 (defpackage :alive/session/handler/macro
     (:use :cl)
-    (:export :expand
-             :expand-1
-             :new-expand
+    (:export :new-expand
              :new-expand-1)
     (:local-nicknames (:deps :alive/deps)
                       (:utils :alive/session/handler/utils)))
@@ -23,28 +21,12 @@
         (utils:result id "text" (princ-to-string new-text))))
 
 
-(declaim (ftype (function (list) hash-table) expand))
-(defun expand (msg)
-    (do-expand msg (lambda (txt pkg)
-                       (when (and (stringp txt)
-                                  (stringp pkg))
-                             (deps:macro-expand txt pkg)))))
-
-
 (declaim (ftype (function (deps:dependencies list) hash-table) new-expand))
 (defun new-expand (deps msg)
     (do-expand msg (lambda (txt pkg)
                        (when (and (stringp txt)
                                   (stringp pkg))
                              (deps:new-macro-expand deps txt pkg)))))
-
-
-(declaim (ftype (function (list) hash-table) expand-1))
-(defun expand-1 (msg)
-    (do-expand msg (lambda (txt pkg)
-                       (when (and (stringp txt)
-                                  (stringp pkg))
-                             (deps:macro-expand-1 txt pkg)))))
 
 
 (declaim (ftype (function (deps:dependencies list) hash-table) new-expand-1))

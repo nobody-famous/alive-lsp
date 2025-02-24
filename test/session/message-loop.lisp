@@ -9,20 +9,6 @@
 (in-package :alive/test/session/message-loop)
 
 
-(defmacro with-check-send ((expected &key read-fn) &body body)
-    (let ((send-called (gensym)))
-        `(let ((,send-called nil))
-             (deps:with-deps (deps:create :send-msg (lambda (msg)
-                                                        (declare (ignore msg))
-                                                        (setf ,send-called T)
-                                                        nil)
-                                          :read-msg ,read-fn)
-                 (state:with-state (state:create)
-                     (progn ,@body)
-                     (clue:check-equal :expected ,expected
-                                       :actual ,send-called))))))
-
-
 (defun check-send (state expected &key read-fn)
     (let* ((send-called nil)
            (deps (deps:new-create :send-msg (lambda (msg)
@@ -80,7 +66,7 @@
         (clue:test "Generic error"
             (let ((state (state:create)))
                 (check-send state nil :read-fn (lambda ()
-                                             (error "Failed, as requested")))))))
+                                                   (error "Failed, as requested")))))))
 
 
 (defun run-all ()

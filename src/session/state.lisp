@@ -322,16 +322,6 @@
         (gethash id (state-inspectors state))))
 
 
-(declaim (ftype (function (T)) save-thread-msg))
-(defun save-thread-msg (id)
-    (let* ((table (state-thread-msgs *state*))
-           (cur-thread (bt:current-thread))
-           (thread-id (deps:get-thread-id cur-thread)))
-
-        (bt:with-recursive-lock-held ((state-lock *state*))
-            (setf (gethash thread-id table) id))))
-
-
 (declaim (ftype (function (deps:dependencies state T)) new-save-thread-msg))
 (defun new-save-thread-msg (deps state id)
     (let* ((table (state-thread-msgs state))
@@ -355,16 +345,6 @@
     (let ((table (state-thread-msgs state)))
         (bt:with-recursive-lock-held ((state-lock state))
             (gethash thread-id table))))
-
-
-(declaim (ftype (function () boolean) rem-thread-msg))
-(defun rem-thread-msg ()
-    (let* ((table (state-thread-msgs *state*))
-           (cur-thread (bt:current-thread))
-           (thread-id (deps:get-thread-id cur-thread)))
-
-        (bt:with-recursive-lock-held ((state-lock *state*))
-            (remhash thread-id table))))
 
 
 (declaim (ftype (function (deps:dependencies state) boolean) new-rem-thread-msg))
