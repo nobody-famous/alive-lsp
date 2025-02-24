@@ -16,12 +16,10 @@
 (defun test-top-form ()
     (clue:suite "Top Form"
         (clue:test "No text"
-            (clue:expect-fail (lambda () (form-bounds:top-form *default-msg*)))
             (let ((state (state:create)))
                 (clue:check-exists (gethash "result" (form-bounds:new-top-form state *default-msg*)))))
 
         (clue:test "With text"
-            (clue:expect-fail (lambda () (form-bounds:top-form *default-msg*)))
             (let ((state (state:create)))
                 (state:new-set-file-text state "some/uri" "foo")
                 (clue:check-exists (gethash "result" (form-bounds:new-top-form state *default-msg*)))))))

@@ -41,7 +41,7 @@
     (clue:suite "Did Change"
         (clue:test "No text"
             (let ((state (state:create)))
-                (doc:did-change (list (cons :params (list (cons :text-document (list (cons :uri "some/uri")))))))
+                (doc:new-did-change state (list (cons :params (list (cons :text-document (list (cons :uri "some/uri")))))))
                 (clue:check-equal :expected nil
                                   :actual (state:new-get-file-text state "some/uri"))))
 

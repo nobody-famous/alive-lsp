@@ -2,6 +2,7 @@
     (:use :cl)
     (:export :create
              :create-listener
+             :listener
              :new-add-history
              :new-add-inspector
              :new-add-listener
