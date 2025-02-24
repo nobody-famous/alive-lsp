@@ -39,7 +39,7 @@
 (declaim (ftype (function (state:state) alive/session/handlers:list-of-handlers) get-message-handlers))
 (defun get-message-handlers (state)
     (list (cons "initialize" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/init:request msg)))
-          (cons "initialized" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/init:new-initialized state msg)))
+          (cons "initialized" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/init:initialized state msg)))
 
           (cons "textDocument/completion" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/document:new-completion state msg)))
           (cons "textDocument/definition" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/document:new-definition state msg)))

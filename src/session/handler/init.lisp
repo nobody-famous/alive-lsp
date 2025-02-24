@@ -1,6 +1,6 @@
 (defpackage :alive/session/handler/init
     (:use :cl)
-    (:export :new-initialized
+    (:export :initialized
              :request)
     (:local-nicknames (:lsp-msg :alive/lsp/message/abstract)
                       (:sem-tokens :alive/lsp/types/sem-tokens)
@@ -51,8 +51,8 @@
         (lsp-msg:create-response id :result-value data)))
 
 
-(declaim (ftype (function (state:state cons) null) new-initialized))
-(defun new-initialized (state msg)
+(declaim (ftype (function (state:state cons) null) initialized))
+(defun initialized (state msg)
     (declare (ignore msg))
     (state:set-initialized state T)
     nil)
