@@ -1,6 +1,6 @@
 (defpackage :alive/session/message
     (:use :cl)
-    (:export :new-handle)
+    (:export :handle)
     (:local-nicknames (:errors :alive/lsp/errors)
                       (:handlers :alive/session/handlers)
                       (:logger :alive/logger)
@@ -10,10 +10,10 @@
 (in-package :alive/session/message)
 
 
-(declaim (ftype (function (alive/deps:dependencies handlers:list-of-handlers cons) (values (or null hash-table) &optional)) new-handle-request))
-(defun new-handle-request (deps handlers msg)
+(declaim (ftype (function (alive/deps:dependencies handlers:list-of-handlers cons) (values (or null hash-table) &optional)) handle-request))
+(defun handle-request (deps handlers msg)
     (let* ((method-name (cdr (assoc :method msg)))
-           (handler (handlers:new-get-handler handlers method-name)))
+           (handler (handlers:get-handler handlers method-name)))
 
         (if handler
             (funcall handler deps msg)
@@ -25,8 +25,8 @@
                                                :message error-msg))))))
 
 
-(declaim (ftype (function (state:state cons) (values (or null hash-table) &optional)) new-handle-response))
-(defun new-handle-response (state msg)
+(declaim (ftype (function (state:state cons) (values (or null hash-table) &optional)) handle-response))
+(defun handle-response (state msg)
     (let* ((msg-id (cdr (assoc :id msg)))
            (cb (state:get-sent-msg-callback state msg-id)))
 
@@ -37,11 +37,11 @@
                                   :message (format nil "No callback for request: ~A" msg-id)))))
 
 
-(declaim (ftype (function (alive/deps:dependencies state:state handlers:list-of-handlers cons) (values (or null hash-table) &optional)) new-handle))
-(defun new-handle (deps state handlers msg)
-    (cond ((assoc :method msg) (new-handle-request deps handlers msg))
+(declaim (ftype (function (alive/deps:dependencies state:state handlers:list-of-handlers cons) (values (or null hash-table) &optional)) handle))
+(defun handle (deps state handlers msg)
+    (cond ((assoc :method msg) (handle-request deps handlers msg))
           ((or (assoc :result msg)
-               (assoc :error msg)) (new-handle-response state msg))
+               (assoc :error msg)) (handle-response state msg))
           (T (lsp-msg:create-error (cdr (assoc :id msg))
                                    :code errors:*request-failed*
                                    :message (format nil "No handler for message")))))

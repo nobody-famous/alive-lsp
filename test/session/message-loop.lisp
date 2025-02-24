@@ -12,12 +12,12 @@
 (defun check-send (state expected &key read-fn)
     (let* ((send-called nil)
            (deps (deps:create :send-msg (lambda (msg)
-                                                (declare (ignore msg))
-                                                (setf send-called T)
-                                                nil)
-                                  :read-msg read-fn)))
+                                            (declare (ignore msg))
+                                            (setf send-called T)
+                                            nil)
+                              :read-msg read-fn)))
         (state:set-running state T)
-        (msg-loop:new-run deps state)
+        (msg-loop:run deps state)
         (clue:check-equal :expected expected
                           :actual send-called)))
 
@@ -26,11 +26,11 @@
     (clue:test "Valid message"
         (let* ((state (state:create))
                (deps (deps:create :read-msg (lambda ()
-                                                    (msg-loop:new-stop state)
-                                                    (list (cons :id 5)))
-                                      :send-msg (lambda (msg)
-                                                    (declare (ignore msg))))))
-            (msg-loop:new-run deps state))))
+                                                (msg-loop:stop state)
+                                                (list (cons :id 5)))
+                                  :send-msg (lambda (msg)
+                                                (declare (ignore msg))))))
+            (msg-loop:run deps state))))
 
 
 (defun test-errors ()
@@ -42,25 +42,25 @@
         (clue:test "Server error no id"
             (let ((state (state:create)))
                 (check-send state nil :read-fn (lambda ()
-                                                   (msg-loop:new-stop state)
+                                                   (msg-loop:stop state)
                                                    (error (make-instance 'errors:server-error))))))
 
         (clue:test "Server error with id"
             (let ((state (state:create)))
                 (check-send state T :read-fn (lambda ()
-                                                 (msg-loop:new-stop state)
+                                                 (msg-loop:stop state)
                                                  (error (make-instance 'errors:server-error :id 10))))))
 
         (clue:test "Unhandled request no id"
             (let ((state (state:create)))
                 (check-send state nil :read-fn (lambda ()
-                                                   (msg-loop:new-stop state)
+                                                   (msg-loop:stop state)
                                                    (error (make-instance 'errors:unhandled-request))))))
 
         (clue:test "Unhandled request with id"
             (let ((state (state:create)))
                 (check-send state T :read-fn (lambda ()
-                                                 (msg-loop:new-stop state)
+                                                 (msg-loop:stop state)
                                                  (error (make-instance 'errors:unhandled-request :id 10))))))
 
         (clue:test "Generic error"

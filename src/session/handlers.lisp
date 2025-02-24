@@ -1,7 +1,7 @@
 (defpackage :alive/session/handlers
     (:use :cl)
     (:export :list-of-handlers
-             :new-get-handler))
+             :get-handler))
 
 (in-package :alive/session/handlers)
 
@@ -27,6 +27,6 @@
     `(satisfies list-of-handlers-p))
 
 
-(declaim (ftype (function (list-of-handlers string) (or null (function (alive/deps:dependencies cons) (or null hash-table)))) new-get-handler))
-(defun new-get-handler (handlers name)
+(declaim (ftype (function (list-of-handlers string) (or null (function (alive/deps:dependencies cons) (or null hash-table)))) get-handler))
+(defun get-handler (handlers name)
     (cdr (assoc name handlers :test #'string=)))
