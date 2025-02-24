@@ -1,7 +1,6 @@
 (defpackage :alive/session/handler/asdf
     (:use :cl)
     (:export :list-all
-             :load-system
              :new-list-all
              :new-load-system)
     (:local-nicknames (:deps :alive/deps)
@@ -26,22 +25,6 @@
     (utils:result (cdr (assoc :id msg))
                   "systems"
                   (deps:new-list-all-asdf deps)))
-
-
-(declaim (ftype (function (cons) (values null &optional)) load-system))
-(defun load-system (msg)
-    (let* ((id (cdr (assoc :id msg)))
-           (params (cdr (assoc :params msg)))
-           (name (cdr (assoc :name params))))
-        (deps:load-asdf-system
-            :name name
-            :stdin-fn (lambda ()
-                          (threads:wait-for-input))
-            :stdout-fn (lambda (data)
-                           (deps:send-msg (notification:stdout data)))
-            :stderr-fn (lambda (data)
-                           (deps:send-msg (notification:stderr data))))
-        (deps:send-msg (lsp-msg:create-response id :result-value T))))
 
 
 (declaim (ftype (function (deps:dependencies state:state cons) (values null &optional)) new-load-system))
