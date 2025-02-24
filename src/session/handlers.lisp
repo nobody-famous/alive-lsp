@@ -1,9 +1,7 @@
 (defpackage :alive/session/handlers
     (:use :cl)
-    (:export :get-handler
-             :list-of-handlers
-             :new-get-handler
-             :with-handlers))
+    (:export :list-of-handlers
+             :new-get-handler))
 
 (in-package :alive/session/handlers)
 
@@ -29,20 +27,6 @@
     `(satisfies list-of-handlers-p))
 
 
-(declaim (type (or null list-of-handlers) *handlers*))
-(defparameter *handlers* nil)
-
-
-(declaim (ftype (function (string) (or null (function (cons) (or null hash-table)))) get-handler))
-(defun get-handler (name)
-    (cdr (assoc name *handlers* :test #'string=)))
-
-
 (declaim (ftype (function (list-of-handlers string) (or null (function (alive/deps:dependencies cons) (or null hash-table)))) new-get-handler))
 (defun new-get-handler (handlers name)
     (cdr (assoc name handlers :test #'string=)))
-
-
-(defmacro with-handlers (handlers &body body)
-    `(let ((*handlers* ,handlers))
-         (progn ,@body)))

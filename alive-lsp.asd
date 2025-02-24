@@ -20,7 +20,6 @@
                                        (:file "range")
                                        (:file "text-edit")
 
-                                       (:file "context")
                                        (:file "deps")
 
                                        (:file "parse/token")

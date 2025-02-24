@@ -3,8 +3,7 @@
     (:export :new-read-msg
              :new-send-msg
              :new-send-request)
-    (:local-nicknames (:context :alive/context)
-                      (:packet :alive/lsp/packet)
+    (:local-nicknames (:packet :alive/lsp/packet)
                       (:parse :alive/lsp/parse)
                       (:state :alive/session/state)))
 

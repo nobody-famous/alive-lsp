@@ -3,8 +3,7 @@
     (:export :stop
              :start)
 
-    (:local-nicknames (:context :alive/context)
-                      (:deps :alive/deps)
+    (:local-nicknames (:deps :alive/deps)
                       (:handlers :alive/session/handlers)
                       (:logger :alive/logger)
                       (:packet :alive/lsp/packet)

@@ -16,7 +16,6 @@
 
 (declaim (ftype (function (alive/deps:dependencies state:state) null) new-start))
 (defun new-start (deps state)
-    (state:new-add-listener state (state:create-listener (lambda () (alive/context:destroy))))
     (state:new-set-running state T)
 
     (spawn:new-thread "Session Message Reader"
