@@ -11,7 +11,7 @@
 
 (defun check-send (state expected &key read-fn)
     (let* ((send-called nil)
-           (deps (deps:new-create :send-msg (lambda (msg)
+           (deps (deps:create :send-msg (lambda (msg)
                                                 (declare (ignore msg))
                                                 (setf send-called T)
                                                 nil)
@@ -25,7 +25,7 @@
 (defun test-valid-message ()
     (clue:test "Valid message"
         (let* ((state (state:create))
-               (deps (deps:new-create :read-msg (lambda ()
+               (deps (deps:create :read-msg (lambda ()
                                                     (msg-loop:new-stop state)
                                                     (list (cons :id 5)))
                                       :send-msg (lambda (msg)

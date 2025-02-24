@@ -10,7 +10,7 @@
 (defun test-basic ()
     (clue:test "Basic Eval"
         (let* ((fn-called nil)
-               (deps (deps:new-create :eval-fn (lambda (s)
+               (deps (deps:create :eval-fn (lambda (s)
                                                    (declare (ignore s))
                                                    (setf fn-called T)))))
             (eval:new-from-string deps "(+ 1 2)")
@@ -20,7 +20,7 @@
 
 (defun test-no-package ()
     (clue:test "No package"
-        (let ((deps (deps:new-create)))
+        (let ((deps (deps:create)))
             (clue:expect-fail (lambda () (eval:new-from-string deps "(+ 1 2)" :pkg-name "foo"))))))
 
 

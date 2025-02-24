@@ -18,7 +18,7 @@
         (clue:test "Fail"
             (let* ((sent-msg nil)
                    (state (state:create))
-                   (deps (deps:new-create :send-msg (lambda (msg)
+                   (deps (deps:create :send-msg (lambda (msg)
                                                         (setf sent-msg msg)
                                                         nil))))
                 (inspect:new-do-inspect deps state (list (cons :id 5)))
@@ -27,7 +27,7 @@
         (clue:test "New inspect"
             (let* ((sent-msg nil)
                    (state (state:create))
-                   (deps (deps:new-create :send-msg (lambda (msg)
+                   (deps (deps:create :send-msg (lambda (msg)
                                                         (setf sent-msg msg)
                                                         nil))))
                 (inspect:new-do-inspect deps state (list (cons :id 5)
@@ -36,7 +36,7 @@
 
         (clue:test "New result symbol"
             (let ((state (state:create))
-                  (deps (deps:new-create :eval-fn (lambda (str)
+                  (deps (deps:create :eval-fn (lambda (str)
                                                       (declare (ignore str))
                                                       'foo))))
                 (inspect:new-do-inspect deps state (list (cons :id 5)
@@ -45,7 +45,7 @@
 
         (clue:test "Old result"
             (let ((state (state:create))
-                  (deps (deps:new-create)))
+                  (deps (deps:create)))
                 (state:new-add-inspector state 5 (fake-inspector 10))
                 (inspect:new-do-inspect deps state (list (cons :id 5)
                                                          (cons :params (list (cons :text "foo")
@@ -55,7 +55,7 @@
 (defun test-refresh ()
     (clue:test "Refresh"
         (let ((state (state:create))
-              (deps (deps:new-create)))
+              (deps (deps:create)))
             (inspect:new-refresh deps state (list (cons :id 5))))))
 
 
@@ -73,7 +73,7 @@
     (clue:suite "Symbol"
         (clue:test "Symbol"
             (let ((state (state:create))
-                  (deps (deps:new-create)))
+                  (deps (deps:create)))
                 (inspect:new-do-symbol deps state (list (cons :id 5)))))))
 
 
@@ -81,7 +81,7 @@
     (clue:suite "Macro"
         (clue:test "Macro"
             (let ((state (state:create))
-                  (deps (deps:new-create)))
+                  (deps (deps:create)))
                 (inspect:new-macro deps state (list (cons :id 5)))))))
 
 
@@ -90,7 +90,7 @@
         (clue:test "No result"
             (let* ((sent-msg nil)
                    (state (state:create))
-                   (deps (deps:new-create :send-msg (lambda (msg)
+                   (deps (deps:create :send-msg (lambda (msg)
                                                         (setf sent-msg msg)
                                                         nil))))
                 (inspect:new-do-inspect-eval deps state (list (cons :id 5)))
@@ -99,7 +99,7 @@
         (clue:test "Has result"
             (let* ((sent-msg nil)
                    (state (state:create))
-                   (deps (deps:new-create :send-msg (lambda (msg)
+                   (deps (deps:create :send-msg (lambda (msg)
                                                         (setf sent-msg msg)
                                                         nil)
                                           :eval-fn (lambda (str)

@@ -10,7 +10,7 @@
 (defun test-expand ()
     (clue:suite "Expand"
         (clue:test "No text, no package"
-            (let* ((deps (deps:new-create))
+            (let* ((deps (deps:create))
                    (response (macro:new-expand deps (list (cons :id 5))))
                    (result (gethash "result" response))
                    (txt (gethash "text" result)))
@@ -18,7 +18,7 @@
                                   :actual txt)))
 
         (clue:test "Text, no package"
-            (let* ((deps (deps:new-create))
+            (let* ((deps (deps:create))
                    (response (macro:new-expand deps (list (cons :id 5)
                                                           (cons :params (list (cons :text "foo"))))))
                    (result (gethash "result" response))
@@ -27,7 +27,7 @@
                                   :actual txt)))
 
         (clue:test "Have text and package"
-            (let* ((deps (deps:new-create :macro-expand (lambda (txt pkg)
+            (let* ((deps (deps:create :macro-expand (lambda (txt pkg)
                                                             (list txt pkg))))
                    (response (macro:new-expand deps (list (cons :id 5)
                                                           (cons :params (list (cons :text "bar")
@@ -41,7 +41,7 @@
 (defun test-expand-1 ()
     (clue:suite "Expand 1"
         (clue:test "No text, no package"
-            (let* ((deps (deps:new-create))
+            (let* ((deps (deps:create))
                    (response (macro:new-expand-1 deps (list (cons :id 5))))
                    (result (gethash "result" response))
                    (txt (gethash "text" result)))
@@ -49,7 +49,7 @@
                                   :actual txt)))
 
         (clue:test "Have text and package"
-            (let* ((deps (deps:new-create :macro-expand-1 (lambda (txt pkg)
+            (let* ((deps (deps:create :macro-expand-1 (lambda (txt pkg)
                                                               (list txt pkg))))
                    (response (macro:new-expand-1 deps (list (cons :id 5)
                                                             (cons :params (list (cons :text "bar")

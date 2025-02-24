@@ -11,7 +11,7 @@
 
 (defun test-list-all ()
     (clue:test "List All"
-        (let ((deps (deps:new-create :list-all-asdf (lambda ()
+        (let ((deps (deps:create :list-all-asdf (lambda ()
                                                         (list 1)))))
             (clue:check-exists (gethash "systems"
                                         (gethash "result" (asdf:new-list-all deps (list (cons :id 5)))))))))
@@ -20,7 +20,7 @@
 (defun test-load-system ()
     (clue:test "Load System"
         (let ((state (state:create))
-              (deps (deps:new-create)))
+              (deps (deps:create)))
             (asdf:new-load-system deps state (list (cons :id 5))))))
 
 

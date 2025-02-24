@@ -29,4 +29,4 @@
             (when (and pkg-name (not pkg))
                   (error (make-condition 'pkgs:package-not-found :name pkg-name)))
 
-            (deps:new-do-eval deps input))))
+            (deps:do-eval deps input))))

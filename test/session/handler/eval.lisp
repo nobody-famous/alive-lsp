@@ -12,7 +12,7 @@
 (defun run-test (msg)
     (let ((msg-sent nil))
         (let* ((state (state:create))
-               (deps (deps:new-create :send-msg (lambda (msg)
+               (deps (deps:create :send-msg (lambda (msg)
                                                     (let* ((id (gethash "id" msg))
                                                            (fn (when id (state:new-get-sent-msg-callback state id))))
                                                         (setf msg-sent T)

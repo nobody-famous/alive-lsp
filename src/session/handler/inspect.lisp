@@ -42,7 +42,7 @@
                                                    :pkg pkg-name
                                                    :result result))
 
-        (deps:new-send-msg deps (inspect-response id
+        (deps:send-msg deps (inspect-response id
                                                   :insp-id insp-id
                                                   :result-type result-type
                                                   :result (if convert
@@ -57,9 +57,9 @@
                                         :stdin-fn (lambda ()
                                                       (threads:new-wait-for-input deps state))
                                         :stdout-fn (lambda (data)
-                                                       (deps:new-send-msg deps (notification:stdout data)))
+                                                       (deps:send-msg deps (notification:stdout data)))
                                         :stderr-fn (lambda (data)
-                                                       (deps:new-send-msg deps (notification:stderr data))))))
+                                                       (deps:send-msg deps (notification:stderr data))))))
 
         (new-send-inspect-result deps state
                                  :id id
@@ -83,7 +83,7 @@
                            (error "No text to inspect"))
                        (new-try-inspect deps state id text pkg-name))
             (T (c)
-               (deps:new-send-msg deps (lsp-msg:create-error id
+               (deps:send-msg deps (lsp-msg:create-error id
                                                              :code errors:*internal-error*
                                                              :message (princ-to-string c)))))))
 
@@ -105,9 +105,9 @@
                                              :stdin-fn (lambda ()
                                                            (threads:new-wait-for-input deps state))
                                              :stdout-fn (lambda (data)
-                                                            (deps:new-send-msg deps (notification:stdout data)))
+                                                            (deps:send-msg deps (notification:stdout data)))
                                              :stderr-fn (lambda (data)
-                                                            (deps:new-send-msg deps (notification:stderr data))))))
+                                                            (deps:send-msg deps (notification:stderr data))))))
 
         (if new-result
             (new-send-inspect-result deps state
@@ -116,7 +116,7 @@
                                      :pkg-name pkg-name
                                      :result new-result)
 
-            (deps:new-send-msg deps (lsp-msg:create-response id
+            (deps:send-msg deps (lsp-msg:create-response id
                                                              :result-value (make-hash-table))))))
 
 
@@ -129,12 +129,12 @@
            (result (inspector:get-result inspector)))
 
         (typecase result
-            (symbol (deps:new-send-msg deps (inspect-response id
+            (symbol (deps:send-msg deps (inspect-response id
                                                               :insp-id insp-id
                                                               :result (inspector:to-result (if (fboundp result)
                                                                                                result
                                                                                                (symbol-value result))))))
-            (otherwise (deps:new-send-msg deps (inspect-response id
+            (otherwise (deps:send-msg deps (inspect-response id
                                                                  :insp-id insp-id
                                                                  :result (inspector:to-result result)))))))
 
@@ -165,7 +165,7 @@
                                              :result sym))
 
             (T (c)
-               (deps:new-send-msg deps (lsp-msg:create-error id
+               (deps:send-msg deps (lsp-msg:create-error id
                                                              :code errors:*internal-error*
                                                              :message (princ-to-string c)))))))
 

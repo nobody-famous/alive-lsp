@@ -21,7 +21,7 @@
 (defun test-unexport ()
     (clue:test "Unexport"
         (let ((state (state:create))
-              (deps (deps:new-create)))
+              (deps (deps:create)))
             (clue:check-exists (gethash "result" (symbol:new-do-unexport deps state (list (cons :id 5))))))))
 
 

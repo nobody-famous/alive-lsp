@@ -11,7 +11,7 @@
 (defun test-list-all ()
     (clue:test "List all"
         (let ((state (state:create))
-              (deps (deps:new-create :list-all-threads (lambda ()
+              (deps (deps:create :list-all-threads (lambda ()
                                                            (list (list (cons :id 5))))
                                      :get-thread-id (lambda (thread)
                                                         (declare (ignore thread))
@@ -22,7 +22,7 @@
 (defun test-kill ()
     (clue:test "Kill"
         (let ((state (state:create))
-              (deps (deps:new-create :kill-thread (lambda (id) (declare (ignore id)))
+              (deps (deps:create :kill-thread (lambda (id) (declare (ignore id)))
                                      :send-msg (lambda (msg) (declare (ignore msg)))
                                      :send-request (lambda (req)
                                                        (declare (ignore req))

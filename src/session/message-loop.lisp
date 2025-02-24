@@ -16,7 +16,7 @@
     (let ((id (cdr (assoc :id msg))))
         (state:new-with-thread-msg (state deps id)
             (handler-case
-                    (funcall (deps:new-msg-handler deps) deps msg)
+                    (funcall (deps:msg-handler deps) deps msg)
                 (error (c)
                     (logger:error-msg "Message Handler: ~A ~A" msg c)
                     (lsp-msg:create-error id
@@ -34,7 +34,7 @@
 (declaim (ftype (function (deps:dependencies state:state) (values (or null hash-table) &optional)) new-get-next-response))
 (defun new-get-next-response (deps state)
     (handler-case
-            (let ((msg (deps:new-read-msg deps)))
+            (let ((msg (deps:read-msg deps)))
                 (when msg
                       (new-process-msg deps state msg)))
 
@@ -68,4 +68,4 @@
     (loop :while (state:new-running state)
           :do (let ((resp (new-get-next-response deps state)))
                   (when resp
-                        (deps:new-send-msg deps resp)))))
+                        (deps:send-msg deps resp)))))

@@ -181,7 +181,7 @@
 (defun new-save-thread-msg (state deps id)
     (let* ((table (state-thread-msgs state))
            (cur-thread (bt:current-thread))
-           (thread-id (deps:new-get-thread-id deps cur-thread)))
+           (thread-id (deps:get-thread-id deps cur-thread)))
 
         (bt:with-recursive-lock-held ((state-lock state))
             (setf (gethash thread-id table) id))))
@@ -198,7 +198,7 @@
 (defun new-rem-thread-msg (state deps)
     (let* ((table (state-thread-msgs state))
            (cur-thread (bt:current-thread))
-           (thread-id (deps:new-get-thread-id deps cur-thread)))
+           (thread-id (deps:get-thread-id deps cur-thread)))
 
         (bt:with-recursive-lock-held ((state-lock state))
             (remhash thread-id table))))

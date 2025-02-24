@@ -12,7 +12,7 @@
     (let* ((sent-msg nil)
            (thread nil)
            (state (state:create))
-           (deps (deps:new-create :send-request (lambda (req)
+           (deps (deps:create :send-request (lambda (req)
                                                     (declare (ignore req))
                                                     response)
                                   :send-msg (lambda (msg)

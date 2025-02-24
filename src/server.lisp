@@ -126,7 +126,7 @@
 (declaim (ftype (function (&key (:input-stream flexi-streams:flexi-io-stream) (:output-stream T) (:state state:state)) deps:dependencies) new-create-deps))
 (defun new-create-deps (&key input-stream output-stream state)
     (let ((handlers (get-message-handlers state)))
-        (deps:new-create :msg-handler (lambda (deps msg) (alive/session/message:new-handle deps state handlers msg))
+        (deps:create :msg-handler (lambda (deps msg) (alive/session/message:new-handle deps state handlers msg))
                          :send-msg (lambda (msg) (alive/session/transport:new-send-msg state output-stream msg))
                          :send-request (lambda (req) (alive/session/transport:new-send-request state output-stream req))
                          :read-msg (lambda () (alive/session/transport:new-read-msg input-stream))

@@ -17,8 +17,8 @@
 (defun new-list-all (deps state msg)
     (state:new-lock (state mutex)
         (let ((threads (remove-if (lambda (thread)
-                                      (eq (cdr (assoc :id thread)) (deps:new-get-thread-id deps (bt:current-thread))))
-                               (deps:new-list-all-threads deps))))
+                                      (eq (cdr (assoc :id thread)) (deps:get-thread-id deps (bt:current-thread))))
+                               (deps:list-all-threads deps))))
 
             (utils:result (cdr (assoc :id msg)) "threads" threads))))
 
@@ -27,12 +27,12 @@
 (defun new-cancel-thread (deps state thread-id)
     (let ((msg-id (state:new-get-thread-msg state thread-id)))
         (when msg-id
-              (deps:new-send-msg deps (lsp-msg:create-error msg-id
+              (deps:send-msg deps (lsp-msg:create-error msg-id
                                                             :code errors:*request-cancelled*
                                                             :message (format nil "Request ~A canceled" msg-id))))
 
         (when thread-id
-              (ignore-errors (deps:new-kill-thread deps thread-id)))))
+              (ignore-errors (deps:kill-thread deps thread-id)))))
 
 
 (declaim (ftype (function (deps:dependencies state:state cons) (values hash-table &optional)) new-kill))

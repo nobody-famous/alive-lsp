@@ -16,7 +16,7 @@
 (defun new-list-all (deps msg)
     (utils:result (cdr (assoc :id msg))
                   "systems"
-                  (deps:new-list-all-asdf deps)))
+                  (deps:list-all-asdf deps)))
 
 
 (declaim (ftype (function (deps:dependencies state:state cons) (values null &optional)) new-load-system))
@@ -24,12 +24,12 @@
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
            (name (cdr (assoc :name params))))
-        (deps:new-load-asdf-system deps
+        (deps:load-asdf-system deps
                                    :name name
                                    :stdin-fn (lambda ()
                                                  (threads:new-wait-for-input deps state))
                                    :stdout-fn (lambda (data)
-                                                  (deps:new-send-msg deps (notification:stdout data)))
+                                                  (deps:send-msg deps (notification:stdout data)))
                                    :stderr-fn (lambda (data)
-                                                  (deps:new-send-msg deps (notification:stderr data))))
-        (deps:new-send-msg deps (lsp-msg:create-response id :result-value T))))
+                                                  (deps:send-msg deps (notification:stderr data))))
+        (deps:send-msg deps (lsp-msg:create-response id :result-value T))))

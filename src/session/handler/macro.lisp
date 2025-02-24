@@ -26,7 +26,7 @@
     (do-expand msg (lambda (txt pkg)
                        (when (and (stringp txt)
                                   (stringp pkg))
-                             (deps:new-macro-expand deps txt pkg)))))
+                             (deps:macro-expand deps txt pkg)))))
 
 
 (declaim (ftype (function (deps:dependencies list) hash-table) new-expand-1))
@@ -34,4 +34,4 @@
     (do-expand msg (lambda (txt pkg)
                        (when (and (stringp txt)
                                   (stringp pkg))
-                             (deps:new-macro-expand-1 deps txt pkg)))))
+                             (deps:macro-expand-1 deps txt pkg)))))

@@ -1,22 +1,22 @@
 (defpackage :alive/deps
     (:use :cl)
     (:export :dependencies
-             :new-create
-             :new-do-compile
-             :new-do-eval
-             :new-do-load
-             :new-get-thread-id
-             :new-kill-thread
-             :new-list-all-asdf
-             :new-list-all-threads
-             :new-load-asdf-system
-             :new-macro-expand
-             :new-macro-expand-1
-             :new-msg-handler
-             :new-read-msg
-             :new-send-msg
-             :new-send-request
-             :new-try-compile))
+             :create
+             :do-compile
+             :do-eval
+             :do-load
+             :get-thread-id
+             :kill-thread
+             :list-all-asdf
+             :list-all-threads
+             :load-asdf-system
+             :macro-expand
+             :macro-expand-1
+             :msg-handler
+             :read-msg
+             :send-msg
+             :send-request
+             :try-compile))
 
 (in-package :alive/deps)
 
@@ -54,8 +54,8 @@
                                 (:try-compile (function (string) *))
                                 (:do-compile (function (string &key (:stdin-fn function) (:stdout-fn function) (:stderr-fn function)) *))
                                 (:do-load (function (string &key (:stdin-fn function) (:stdout-fn function) (:stderr-fn function)) *)))
-                          dependencies) new-create))
-(defun new-create (&key (msg-handler (lambda (deps msg) (declare (ignore deps msg))))
+                          dependencies) create))
+(defun create (&key (msg-handler (lambda (deps msg) (declare (ignore deps msg))))
                         (send-msg (lambda (msg) (declare (ignore msg))))
                         (send-request (lambda (req)
                                           (declare (ignore req))
@@ -98,48 +98,48 @@
                        :do-load do-load))
 
 
-(declaim (ftype (function (dependencies) T) new-msg-handler))
-(defun new-msg-handler (deps)
+(declaim (ftype (function (dependencies) T) msg-handler))
+(defun msg-handler (deps)
     (dependencies-msg-handler deps))
 
 
-(declaim (ftype (function (dependencies) T) new-read-msg))
-(defun new-read-msg (deps)
+(declaim (ftype (function (dependencies) T) read-msg))
+(defun read-msg (deps)
     (funcall (dependencies-read-msg deps)))
 
 
-(declaim (ftype (function (dependencies T) (values null &optional)) new-send-msg))
-(defun new-send-msg (deps msg)
+(declaim (ftype (function (dependencies T) (values null &optional)) send-msg))
+(defun send-msg (deps msg)
     (funcall (dependencies-send-msg deps) msg))
 
 
-(declaim (ftype (function (dependencies hash-table) (values list &optional)) new-send-request))
-(defun new-send-request (deps msg)
+(declaim (ftype (function (dependencies hash-table) (values list &optional)) send-request))
+(defun send-request (deps msg)
     (funcall (dependencies-send-request deps) msg))
 
 
-(declaim (ftype (function (dependencies) (values cons &optional)) new-list-all-threads))
-(defun new-list-all-threads (deps)
+(declaim (ftype (function (dependencies) (values cons &optional)) list-all-threads))
+(defun list-all-threads (deps)
     (funcall (dependencies-list-all-threads deps)))
 
 
-(declaim (ftype (function (dependencies T) *) new-kill-thread))
-(defun new-kill-thread (deps thread-id)
+(declaim (ftype (function (dependencies T) *) kill-thread))
+(defun kill-thread (deps thread-id)
     (funcall (dependencies-kill-thread deps) thread-id))
 
 
-(declaim (ftype (function (dependencies bt:thread) *) new-get-thread-id))
-(defun new-get-thread-id (deps thread)
+(declaim (ftype (function (dependencies bt:thread) *) get-thread-id))
+(defun get-thread-id (deps thread)
     (funcall (dependencies-get-thread-id deps) thread))
 
 
-(declaim (ftype (function (dependencies) (values cons &optional)) new-list-all-asdf))
-(defun new-list-all-asdf (deps)
+(declaim (ftype (function (dependencies) (values cons &optional)) list-all-asdf))
+(defun list-all-asdf (deps)
     (funcall (dependencies-list-all-asdf deps)))
 
 
-(declaim (ftype (function (dependencies &key (:name string) (:stdin-fn function) (:stdout-fn function) (:stderr-fn function) (:force boolean)) (values boolean &optional)) new-load-asdf-system))
-(defun new-load-asdf-system (deps &key name stdin-fn stdout-fn stderr-fn force)
+(declaim (ftype (function (dependencies &key (:name string) (:stdin-fn function) (:stdout-fn function) (:stderr-fn function) (:force boolean)) (values boolean &optional)) load-asdf-system))
+(defun load-asdf-system (deps &key name stdin-fn stdout-fn stderr-fn force)
     (funcall (dependencies-load-asdf-system deps)
         :name name
         :stdin-fn stdin-fn
@@ -148,33 +148,33 @@
         :force force))
 
 
-(declaim (ftype (function (dependencies T) *) new-do-eval))
-(defun new-do-eval (deps data)
+(declaim (ftype (function (dependencies T) *) do-eval))
+(defun do-eval (deps data)
     (let ((results (multiple-value-list (funcall (dependencies-eval-fn deps) data))))
         (finish-output)
         results))
 
 
-(declaim (ftype (function (dependencies string string) (values list &optional)) new-macro-expand))
-(defun new-macro-expand (deps txt pkg)
+(declaim (ftype (function (dependencies string string) (values list &optional)) macro-expand))
+(defun macro-expand (deps txt pkg)
     (funcall (dependencies-macro-expand deps) txt pkg))
 
 
-(declaim (ftype (function (dependencies string string) (values list &optional)) new-macro-expand-1))
-(defun new-macro-expand-1 (deps txt pkg)
+(declaim (ftype (function (dependencies string string) (values list &optional)) macro-expand-1))
+(defun macro-expand-1 (deps txt pkg)
     (funcall (dependencies-macro-expand-1 deps) txt pkg))
 
 
-(declaim (ftype (function (dependencies string) *) new-try-compile))
-(defun new-try-compile (deps path)
+(declaim (ftype (function (dependencies string) *) try-compile))
+(defun try-compile (deps path)
     (funcall (dependencies-try-compile deps) path))
 
 
-(declaim (ftype (function (dependencies string &key (:stdin-fn function) (:stdout-fn function) (:stderr-fn function)) *) new-do-compile))
-(defun new-do-compile (deps path &key stdin-fn stdout-fn stderr-fn)
+(declaim (ftype (function (dependencies string &key (:stdin-fn function) (:stdout-fn function) (:stderr-fn function)) *) do-compile))
+(defun do-compile (deps path &key stdin-fn stdout-fn stderr-fn)
     (funcall (dependencies-do-compile deps) path :stdin-fn stdin-fn :stdout-fn stdout-fn :stderr-fn stderr-fn))
 
 
-(declaim (ftype (function (dependencies string &key (:stdin-fn function) (:stdout-fn function) (:stderr-fn function)) *) new-do-load))
-(defun new-do-load (deps path &key stdin-fn stdout-fn stderr-fn)
+(declaim (ftype (function (dependencies string &key (:stdin-fn function) (:stdout-fn function) (:stderr-fn function)) *) do-load))
+(defun do-load (deps path &key stdin-fn stdout-fn stderr-fn)
     (funcall (dependencies-do-load deps) path :stdin-fn stdin-fn :stdout-fn stdout-fn :stderr-fn stderr-fn))

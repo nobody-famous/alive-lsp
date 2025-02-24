@@ -12,7 +12,7 @@
 (defun test-try ()
     (clue:test "Try"
         (let* ((sent-msg nil)
-               (deps (deps:new-create :send-msg (lambda (msg)
+               (deps (deps:create :send-msg (lambda (msg)
                                                     (setf sent-msg msg)
                                                     nil))))
             (compile:new-try deps (list (cons :id 5)))
@@ -23,7 +23,7 @@
     (clue:test "File"
         (let* ((sent-msg nil)
                (state (state:create))
-               (deps (deps:new-create :send-msg (lambda (msg)
+               (deps (deps:create :send-msg (lambda (msg)
                                                     (setf sent-msg msg)
                                                     nil))))
             (compile:new-file deps state (list (cons :id 5)
@@ -35,7 +35,7 @@
     (clue:test "Load"
         (let* ((sent-msg nil)
                (state (state:create))
-               (deps (deps:new-create :send-msg (lambda (msg)
+               (deps (deps:create :send-msg (lambda (msg)
                                                     (setf sent-msg msg)
                                                     nil))))
             (compile:new-load-file deps state (list (cons :id 5)

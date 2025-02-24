@@ -18,7 +18,7 @@
 
 (declaim (ftype (function (deps:dependencies state:state) (values (or null string) &optional)) new-wait-for-input))
 (defun new-wait-for-input (deps state)
-    (let ((input-resp (deps:new-send-request deps (lsp-msg:create-request (state:new-next-send-id state) "$/alive/userInput"))))
+    (let ((input-resp (deps:send-request deps (lsp-msg:create-request (state:new-next-send-id state) "$/alive/userInput"))))
 
         (cond ((assoc :error input-resp)
                   (logger:error-msg "Input Error ~A" input-resp))
@@ -56,7 +56,7 @@
 
 (declaim (ftype (function (deps:dependencies state:state condition cons cons)) new-wait-for-debug))
 (defun new-wait-for-debug (deps state err restarts frames)
-    (let ((debug-resp (deps:new-send-request deps (req:debugger (state:new-next-send-id state)
+    (let ((debug-resp (deps:send-request deps (req:debugger (state:new-next-send-id state)
                                                                 :message (princ-to-string err)
                                                                 :restarts restarts
                                                                 :stack-trace (mapcar (lambda (frame) (new-frame-to-wire state frame)) frames)))))
