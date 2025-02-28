@@ -21,7 +21,7 @@
     (let ((input-resp (deps:send-request deps (lsp-msg:create-request (state:next-send-id state) "$/alive/userInput"))))
 
         (cond ((assoc :error input-resp)
-                  (logger:error-msg "Input Error ~A" input-resp))
+                  (logger:error-msg (state:get-log state) "Input Error ~A" input-resp))
 
               ((assoc :result input-resp)
                   (let* ((result (cdr (assoc :result input-resp))))
@@ -62,7 +62,7 @@
                                                             :stack-trace (mapcar (lambda (frame) (frame-to-wire state frame)) frames)))))
 
         (cond ((assoc :error debug-resp)
-                  (logger:error-msg "Debugger Error ~A" debug-resp))
+                  (logger:error-msg (state:get-log state) "Debugger Error ~A" debug-resp))
 
               ((assoc :result debug-resp)
                   (let* ((result (cdr (assoc :result debug-resp))))

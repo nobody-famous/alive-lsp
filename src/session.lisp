@@ -10,7 +10,7 @@
 
 
 (defun stop (state)
-    (logger:info-msg "Stopping session")
+    (logger:info-msg (state:get-log state) "Stopping session")
     (state:set-running state nil))
 
 
@@ -21,5 +21,5 @@
     (spawn:new-thread "Session Message Reader"
         (alive/session/message-loop:run deps state))
 
-    (logger:info-msg "Session started")
+    (logger:info-msg (state:get-log state) "Session started")
     nil)

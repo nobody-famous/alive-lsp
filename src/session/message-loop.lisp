@@ -18,7 +18,7 @@
             (handler-case
                     (funcall (deps:msg-handler deps) deps msg)
                 (error (c)
-                    (logger:error-msg "Message Handler: ~A ~A" msg c)
+                    (logger:error-msg (state:get-log state) "Message Handler: ~A ~A" msg c)
                     (lsp-msg:create-error id
                                           :code errors:*internal-error*
                                           :message (princ-to-string c)))))))
@@ -26,7 +26,7 @@
 
 (declaim (ftype (function (state:state) null) stop))
 (defun stop (state)
-    (logger:info-msg "New Stopping message loop")
+    (logger:info-msg (state:get-log state) "New Stopping message loop")
     (state:set-running state NIL)
     nil)
 
@@ -39,14 +39,14 @@
                       (process-msg deps state msg)))
 
         (errors:unhandled-request (c)
-                                  (logger:error-msg "Unhandled Request: ~A" c)
+                                  (logger:error-msg (state:get-log state) "Unhandled Request: ~A" c)
                                   (when (errors:id c)
                                         (lsp-msg:create-error (errors:id c)
                                                               :code errors:*method-not-found*
                                                               :message (format nil "Unhandled request: ~A" (errors:method-name c)))))
 
         (errors:server-error (c)
-                             (logger:error-msg "Server Error: ~A" c)
+                             (logger:error-msg (state:get-log state) "Server Error: ~A" c)
                              (when (errors:id c)
                                    (lsp-msg:create-error (errors:id c)
                                                          :code errors:*internal-error*
@@ -59,7 +59,7 @@
                      (stop state))
 
         (T (c)
-           (logger:error-msg "Unknown Error: ~A ~A" (type-of c) c)
+           (logger:error-msg (state:get-log state) "Unknown Error: ~A ~A" (type-of c) c)
            (stop state))))
 
 

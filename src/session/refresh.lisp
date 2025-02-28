@@ -17,5 +17,5 @@
         (let* ((send-id (state:next-send-id state))
                (response (deps:send-request deps (lsp-msg:create-request send-id "workspace/semanticTokens/refresh"))))
             (when (assoc :error response)
-                  (logger:error-msg "Failed to refresh tokens: ~A" (cdr (assoc :error response))))
+                  (logger:error-msg (state:get-log state) "Failed to refresh tokens: ~A" (cdr (assoc :error response))))
             (deps:send-msg deps (notification:refresh)))))

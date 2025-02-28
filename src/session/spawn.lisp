@@ -17,16 +17,13 @@
 
 (defmacro new-thread (name &body body)
     (let ((stdin (gensym))
-          (stdout (gensym))
-          (logger (gensym)))
+          (stdout (gensym)))
 
         `(let* ((,stdout *standard-output*)
                 (,stdin *standard-input*)
-                (,logger alive/logger:*logger*)
                 (thread (bt:make-thread (lambda ()
                                             (let ((*standard-output* ,stdout)
-                                                  (*standard-input* ,stdin)
-                                                  (alive/logger:*logger* ,logger))
+                                                  (*standard-input* ,stdin))
                                                 (progn ,@body)))
                                         :name ,name)))
              (signal (make-condition 'spawned-thread :thread thread))

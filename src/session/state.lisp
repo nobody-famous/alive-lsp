@@ -9,6 +9,7 @@
              :get-file-text
              :get-history-item
              :get-inspector
+             :get-log
              :get-sent-msg-callback
              :get-thread-msg
              :initialized
@@ -26,7 +27,8 @@
              :set-sent-msg-callback
              :with-thread-msg
              :state)
-    (:local-nicknames (:deps :alive/deps)))
+    (:local-nicknames (:deps :alive/deps)
+                      (:logger :alive/logger)))
 
 (in-package :alive/session/state)
 
@@ -44,6 +46,8 @@
     (running nil :type boolean)
     (initialized nil :type boolean)
 
+    (log nil :type (or null logger:logger))
+
     (files (make-hash-table :test 'equalp) :type hash-table)
     (thread-msgs (make-hash-table :test 'equalp) :type hash-table)
     (sent-msg-callbacks (make-hash-table :test 'equalp) :type hash-table)
@@ -60,9 +64,9 @@
     (lock (bt:make-recursive-lock) :type sb-thread:mutex))
 
 
-(declaim (ftype (function () state) create))
-(defun create ()
-    (make-state))
+(declaim (ftype (function (&key (:log logger:logger)) state) create))
+(defun create (&key log)
+    (make-state :log log))
 
 
 (declaim (ftype (function (state) (or null cons)) listeners))
@@ -89,6 +93,11 @@
     `(progn (let ((,mutex (state-lock ,state)))
                 (bt:with-recursive-lock-held (,mutex)
                     (progn ,@body)))))
+
+
+(declaim (ftype (function (state) logger:logger) get-log))
+(defun get-log (state)
+    (state-log state))
 
 
 (declaim (ftype (function (state fixnum) (or null function)) get-sent-msg-callback))
