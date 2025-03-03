@@ -64,7 +64,7 @@
     (lock (bt:make-recursive-lock) :type sb-thread:mutex))
 
 
-(declaim (ftype (function (&key (:log logger:logger)) state) create))
+(declaim (ftype (function (&key (:log (or null logger:logger))) state) create))
 (defun create (&key log)
     (make-state :log log))
 
@@ -95,7 +95,7 @@
                     (progn ,@body)))))
 
 
-(declaim (ftype (function (state) logger:logger) get-log))
+(declaim (ftype (function (state) (or null logger:logger)) get-log))
 (defun get-log (state)
     (state-log state))
 
