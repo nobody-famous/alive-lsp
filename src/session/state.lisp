@@ -1,17 +1,18 @@
 (defpackage :alive/session/state
     (:use :cl)
-    (:export :add-history
+    (:export :create
+             :create-listener
+             :listener
+             :add-history
              :add-inspector
              :add-listener
-             :create
-             :create-listener
              :get-file-text
              :get-history-item
              :get-inspector
+             :get-log
              :get-sent-msg-callback
              :get-thread-msg
              :initialized
-             :listener
              :listeners
              :lock
              :next-inspector-id
@@ -24,15 +25,12 @@
              :set-initialized
              :set-running
              :set-sent-msg-callback
-             :state
-             :with-state
-             :with-thread-msg)
-    (:local-nicknames (:deps :alive/deps)))
+             :with-thread-msg
+             :state)
+    (:local-nicknames (:deps :alive/deps)
+                      (:logger :alive/logger)))
 
 (in-package :alive/session/state)
-
-
-(defparameter *state* nil)
 
 
 (defstruct listener
@@ -47,6 +45,8 @@
 (defstruct state
     (running nil :type boolean)
     (initialized nil :type boolean)
+
+    (log nil :type (or null logger:logger))
 
     (files (make-hash-table :test 'equalp) :type hash-table)
     (thread-msgs (make-hash-table :test 'equalp) :type hash-table)
@@ -64,176 +64,157 @@
     (lock (bt:make-recursive-lock) :type sb-thread:mutex))
 
 
-(declaim (ftype (function () state) create))
-(defun create ()
-    (make-state))
+(declaim (ftype (function (&key (:log (or null logger:logger))) state) create))
+(defun create (&key log)
+    (make-state :log log))
 
 
-(declaim (ftype (function () (or null cons)) listeners))
-(defun listeners ()
-    (unless *state* (error "State not set"))
-    (state-listeners *state*))
+(declaim (ftype (function (state) (or null cons)) listeners))
+(defun listeners (state)
+    (state-listeners state))
 
 
-(declaim (ftype (function () boolean) initialized))
-(defun initialized ()
-    (unless *state* (error "State not set"))
-    (state-initialized *state*))
+(declaim (ftype (function (state) boolean) initialized))
+(defun initialized (state)
+    (state-initialized state))
 
 
-(declaim (ftype (function () boolean) running))
-(defun running ()
-    (unless *state* (error "State not set"))
-    (state-running *state*))
+(declaim (ftype (function (state) boolean) running))
+(defun running (state)
+    (state-running state))
 
 
-(declaim (ftype (function (boolean)) set-running))
-(defun set-running (value)
-    (unless *state* (error "State not set"))
-    (setf (state-running *state*) value))
+(declaim (ftype (function (state boolean)) set-running))
+(defun set-running (state value)
+    (setf (state-running state) value))
 
 
-(defmacro lock ((mutex) &body body)
-    `(progn (unless *state* (error "State not set"))
-            (let ((,mutex (state-lock *state*)))
+(defmacro lock ((state mutex) &body body)
+    `(progn (let ((,mutex (state-lock ,state)))
                 (bt:with-recursive-lock-held (,mutex)
                     (progn ,@body)))))
 
 
-(declaim (ftype (function (fixnum) (or null function)) get-sent-msg-callback))
-(defun get-sent-msg-callback (id)
-    (unless *state* (error "State not set"))
-    (gethash id (state-sent-msg-callbacks *state*)))
+(declaim (ftype (function (state) (or null logger:logger)) get-log))
+(defun get-log (state)
+    (state-log state))
 
 
-(declaim (ftype (function (fixnum (function (cons) (or null hash-table))) null) set-sent-msg-callback))
-(defun set-sent-msg-callback (id cb)
-    (unless *state* (error "State not set"))
-    (setf (gethash id (state-sent-msg-callbacks *state*)) cb)
+(declaim (ftype (function (state fixnum) (or null function)) get-sent-msg-callback))
+(defun get-sent-msg-callback (state id)
+    (gethash id (state-sent-msg-callbacks state)))
+
+
+(declaim (ftype (function (state fixnum (function (cons) (or null hash-table))) null) set-sent-msg-callback))
+(defun set-sent-msg-callback (state id cb)
+    (setf (gethash id (state-sent-msg-callbacks state)) cb)
     nil)
 
 
-(declaim (ftype (function (T)) add-history))
-(defun add-history (item)
-    (unless *state* (error "State not set"))
-    (setf (elt (state-history *state*) 2) (elt (state-history *state*) 1))
-    (setf (elt (state-history *state*) 1) (elt (state-history *state*) 0))
-    (setf (elt (state-history *state*) 0) item))
+(declaim (ftype (function (state T)) add-history))
+(defun add-history (state item)
+    (setf (elt (state-history state) 2) (elt (state-history state) 1))
+    (setf (elt (state-history state) 1) (elt (state-history state) 0))
+    (setf (elt (state-history state) 0) item))
 
 
-(declaim (ftype (function (integer) T) get-history-item))
-(defun get-history-item (index)
-    (unless *state* (error "State not set"))
+(declaim (ftype (function (state integer) T) get-history-item))
+(defun get-history-item (state index)
     (when (and (<= 0 index)
-               (< index (length (state-history *state*))))
-          (elt (state-history *state*) index)))
+               (< index (length (state-history state))))
+          (elt (state-history state) index)))
 
 
-(declaim (ftype (function (listener)) add-listener))
-(defun add-listener (to-add)
-    (unless *state* (error "State not set"))
-    (push to-add (state-listeners *state*)))
+(declaim (ftype (function (state listener)) add-listener))
+(defun add-listener (state to-add)
+    (push to-add (state-listeners state)))
 
 
-(declaim (ftype (function (boolean)) set-initialized))
-(defun set-initialized (value)
-    (unless *state* (error "State not set"))
-    (setf (state-initialized *state*) value))
+(declaim (ftype (function (state boolean)) set-initialized))
+(defun set-initialized (state value)
+    (setf (state-initialized state) value))
 
 
-(declaim (ftype (function (string string)) set-file-text))
-(defun set-file-text (uri text)
-    (unless *state* (error "State not set"))
-    (setf (gethash uri (state-files *state*)) text))
+(declaim (ftype (function (state string string)) set-file-text))
+(defun set-file-text (state uri text)
+    (setf (gethash uri (state-files state)) text))
 
 
-(declaim (ftype (function (string) (or null string)) get-file-text))
-(defun get-file-text (uri)
-    (unless *state* (error "State not set"))
-    (gethash uri (state-files *state*)))
+(declaim (ftype (function (state string) (or null string)) get-file-text))
+(defun get-file-text (state uri)
+    (gethash uri (state-files state)))
 
 
-(defmacro next-id (fn)
-    `(progn (unless *state* (error "State not set"))
-            (bt:with-recursive-lock-held ((state-lock *state*))
-                (let ((id (,fn *state*)))
-                    (incf (,fn *state*))
+(defmacro next-id (state fn)
+    `(progn (bt:with-recursive-lock-held ((state-lock ,state))
+                (let ((id (,fn state)))
+                    (incf (,fn state))
                     id))))
 
 
-(declaim (ftype (function () integer) next-send-id))
-(defun next-send-id ()
-    (next-id state-send-msg-id))
+(declaim (ftype (function (state) integer) next-send-id))
+(defun next-send-id (state)
+    (next-id state state-send-msg-id))
 
 
-(declaim (ftype (function () integer) next-inspector-id))
-(defun next-inspector-id ()
-    (next-id state-inspector-id))
+(declaim (ftype (function (state) integer) next-inspector-id))
+(defun next-inspector-id (state)
+    (next-id state state-inspector-id))
 
 
-(declaim (ftype (function () integer) next-thread-id))
-(defun next-thread-id ()
-    (next-id state-thread-name-id))
+(declaim (ftype (function (state) integer) next-thread-id))
+(defun next-thread-id (state)
+    (next-id state state-thread-name-id))
 
 
-(declaim (ftype (function (integer alive/inspector:inspector)) add-inspector))
-(defun add-inspector (id inspector)
-    (unless *state* (error "State not set"))
-    (bt:with-recursive-lock-held ((state-lock *state*))
-        (setf (gethash id (state-inspectors *state*))
+(declaim (ftype (function (state integer alive/inspector:inspector)) add-inspector))
+(defun add-inspector (state id inspector)
+    (bt:with-recursive-lock-held ((state-lock state))
+        (setf (gethash id (state-inspectors state))
             inspector)))
 
 
-(declaim (ftype (function (integer)) rem-inspector))
-(defun rem-inspector (id)
-    (unless *state* (error "State not set"))
-    (bt:with-recursive-lock-held ((state-lock *state*))
-        (remhash id (state-inspectors *state*))))
+(declaim (ftype (function (state integer)) rem-inspector))
+(defun rem-inspector (state id)
+    (bt:with-recursive-lock-held ((state-lock state))
+        (remhash id (state-inspectors state))))
 
 
-(declaim (ftype (function (integer) (or null alive/inspector:inspector)) get-inspector))
-(defun get-inspector (id)
-    (unless *state* (error "State not set"))
-    (bt:with-recursive-lock-held ((state-lock *state*))
-        (gethash id (state-inspectors *state*))))
+(declaim (ftype (function (state integer) (or null alive/inspector:inspector)) get-inspector))
+(defun get-inspector (state id)
+    (bt:with-recursive-lock-held ((state-lock state))
+        (gethash id (state-inspectors state))))
 
 
-(declaim (ftype (function (T)) save-thread-msg))
-(defun save-thread-msg (id)
-    (let* ((table (state-thread-msgs *state*))
+(declaim (ftype (function (state deps:dependencies T)) save-thread-msg))
+(defun save-thread-msg (state deps id)
+    (let* ((table (state-thread-msgs state))
            (cur-thread (bt:current-thread))
-           (thread-id (deps:get-thread-id cur-thread)))
+           (thread-id (deps:get-thread-id deps cur-thread)))
 
-        (bt:with-recursive-lock-held ((state-lock *state*))
+        (bt:with-recursive-lock-held ((state-lock state))
             (setf (gethash thread-id table) id))))
 
 
-(declaim (ftype (function (T) (or null integer)) get-thread-msg))
-(defun get-thread-msg (thread-id)
-    (let ((table (state-thread-msgs *state*)))
-
-        (bt:with-recursive-lock-held ((state-lock *state*))
+(declaim (ftype (function (state T) (or null integer)) get-thread-msg))
+(defun get-thread-msg (state thread-id)
+    (let ((table (state-thread-msgs state)))
+        (bt:with-recursive-lock-held ((state-lock state))
             (gethash thread-id table))))
 
 
-(declaim (ftype (function () boolean) rem-thread-msg))
-(defun rem-thread-msg ()
-    (let* ((table (state-thread-msgs *state*))
+(declaim (ftype (function (state deps:dependencies) boolean) rem-thread-msg))
+(defun rem-thread-msg (state deps)
+    (let* ((table (state-thread-msgs state))
            (cur-thread (bt:current-thread))
-           (thread-id (deps:get-thread-id cur-thread)))
+           (thread-id (deps:get-thread-id deps cur-thread)))
 
-        (bt:with-recursive-lock-held ((state-lock *state*))
+        (bt:with-recursive-lock-held ((state-lock state))
             (remhash thread-id table))))
 
 
-(defmacro with-thread-msg ((id) &body body)
-    `(progn (unless *state* (error "State not set"))
-            (when ,id (save-thread-msg ,id))
+(defmacro with-thread-msg ((state deps id) &body body)
+    `(progn (when ,id (save-thread-msg ,state ,deps ,id))
             (unwind-protect
                     (progn ,@body)
-                (when ,id (rem-thread-msg)))))
-
-
-(defmacro with-state (state &body body)
-    `(let ((*state* ,state))
-         (progn ,@body)))
+                (when ,id (rem-thread-msg ,state ,deps)))))

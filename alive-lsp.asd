@@ -20,7 +20,6 @@
                                        (:file "range")
                                        (:file "text-edit")
 
-                                       (:file "context")
                                        (:file "deps")
 
                                        (:file "parse/token")
@@ -75,6 +74,7 @@
 
                                        (:file "session/state")
                                        (:file "session/handlers")
+
                                        (:file "session/spawn")
                                        (:file "session/refresh")
                                        (:file "session/threads")
@@ -145,7 +145,6 @@
 
                                        (:file "log")
                                        (:file "compile")
-                                       (:file "context")
                                        (:file "eval")
                                        (:file "file-utils")
                                        (:file "forms")

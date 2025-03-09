@@ -16,29 +16,25 @@
 (defun test-top-form ()
     (clue:suite "Top Form"
         (clue:test "No text"
-            (clue:expect-fail (lambda () (form-bounds:top-form *default-msg*)))
-            (state:with-state (state:create)
-                (clue:check-exists (gethash "result" (form-bounds:top-form *default-msg*)))))
+            (let ((state (state:create)))
+                (clue:check-exists (gethash "result" (form-bounds:top-form state *default-msg*)))))
 
         (clue:test "With text"
-            (clue:expect-fail (lambda () (form-bounds:top-form *default-msg*)))
-            (state:with-state (state:create)
-                (state:set-file-text "some/uri" "foo")
-                (clue:check-exists (gethash "result" (form-bounds:top-form *default-msg*)))))))
+            (let ((state (state:create)))
+                (state:set-file-text state "some/uri" "foo")
+                (clue:check-exists (gethash "result" (form-bounds:top-form state *default-msg*)))))))
 
 
 (defun test-surrounding-form ()
     (clue:suite "Surrounding Form"
         (clue:test "No text"
-            (clue:expect-fail (lambda () (form-bounds:surrounding-form *default-msg*)))
-            (state:with-state (state:create)
-                (clue:check-exists (gethash "result" (form-bounds:surrounding-form *default-msg*)))))
+            (let ((state (state:create)))
+                (clue:check-exists (gethash "result" (form-bounds:surrounding-form state *default-msg*)))))
 
         (clue:test "With text"
-            (clue:expect-fail (lambda () (form-bounds:surrounding-form *default-msg*)))
-            (state:with-state (state:create)
-                (state:set-file-text "some/uri" "(foo)")
-                (clue:check-exists (gethash "result" (form-bounds:surrounding-form *default-msg*)))))))
+            (let ((state (state:create)))
+                (state:set-file-text state "some/uri" "(foo)")
+                (clue:check-exists (gethash "result" (form-bounds:surrounding-form state *default-msg*)))))))
 
 
 (defun run-all ()

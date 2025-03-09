@@ -27,14 +27,14 @@
 (in-package :alive/session/handler/document)
 
 
-(declaim (ftype (function (cons) hash-table) completion))
-(defun completion (msg)
+(declaim (ftype (function (state:state cons) hash-table) completion))
+(defun completion (state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
            (doc (cdr (assoc :text-document params)))
            (pos (cdr (assoc :position params)))
            (uri (cdr (assoc :uri doc)))
-           (file-text (state:get-file-text uri))
+           (file-text (state:get-file-text state uri))
            (text (if file-text file-text ""))
            (items (or (comps:simple :text text :pos pos)
                       (make-array 0))))
@@ -47,14 +47,14 @@
             (lsp-msg:create-response id :result-value data))))
 
 
-(declaim (ftype (function (cons) hash-table) definition))
-(defun definition (msg)
+(declaim (ftype (function (state:state cons) hash-table) definition))
+(defun definition (state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
            (doc (cdr (assoc :text-document params)))
            (pos (cdr (assoc :position params)))
            (uri (cdr (assoc :uri doc)))
-           (file-text (state:get-file-text uri))
+           (file-text (state:get-file-text state uri))
            (text (if file-text file-text ""))
            (location (alive/lsp/definition:get-location :text text :pos pos))
            (uri (first location))
@@ -68,8 +68,8 @@
             (lsp-msg:create-response id :result-value data))))
 
 
-(declaim (ftype (function (cons) null) did-change))
-(defun did-change (msg)
+(declaim (ftype (function (state:state cons) null) did-change))
+(defun did-change (state msg)
     (let* ((params (cdr (assoc :params msg)))
            (doc (cdr (assoc :text-document params)))
            (uri (cdr (assoc :uri doc)))
@@ -77,31 +77,31 @@
            (text (cdr (assoc :text (first changes)))))
 
         (when text
-              (state:lock (mutex)
-                  (state:set-file-text uri text)
+              (state:lock (state mutex)
+                  (state:set-file-text state uri text)
                   nil))))
 
 
-(declaim (ftype (function (cons) null) did-open))
-(defun did-open (msg)
+(declaim (ftype (function (state:state cons) null) did-open))
+(defun did-open (state msg)
     (let* ((params (cdr (assoc :params msg)))
            (doc (cdr (assoc :text-document params)))
            (uri (cdr (assoc :uri doc)))
            (text (cdr (assoc :text doc))))
 
         (when text
-              (state:lock (mutex)
-                  (state:set-file-text uri text)
+              (state:lock (state mutex)
+                  (state:set-file-text state uri text)
                   nil))))
 
 
-(declaim (ftype (function (cons) hash-table) doc-symbols))
-(defun doc-symbols (msg)
+(declaim (ftype (function (state:state cons) hash-table) doc-symbols))
+(defun doc-symbols (state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
            (doc (cdr (assoc :text-document params)))
            (uri (cdr (assoc :uri doc)))
-           (file-text (state:get-file-text uri))
+           (file-text (state:get-file-text state uri))
            (text (if file-text file-text ""))
            (forms (forms:from-stream-or-nil (make-string-input-stream text)))
            (symbols (alive/lsp/symbol:for-document text forms)))
@@ -111,14 +111,14 @@
                                      :result-value result))))
 
 
-(declaim (ftype (function (cons) hash-table) hover))
-(defun hover (msg)
+(declaim (ftype (function (state:state cons) hash-table) hover))
+(defun hover (state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
            (doc (cdr (assoc :text-document params)))
            (pos (cdr (assoc :position params)))
            (uri (cdr (assoc :uri doc)))
-           (file-text (state:get-file-text uri))
+           (file-text (state:get-file-text state uri))
            (text (if file-text file-text ""))
            (hov-text (alive/lsp/hover:get-text :text text :pos pos))
            (result (if hov-text hov-text "")))
@@ -126,15 +126,15 @@
         (utils:result id "value" result)))
 
 
-(declaim (ftype (function (cons) hash-table) on-type))
-(defun on-type (msg)
+(declaim (ftype (function (state:state cons) hash-table) on-type))
+(defun on-type (state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
            (doc (cdr (assoc :text-document params)))
            (opts (cdr (assoc :options params)))
            (pos (cdr (assoc :position params)))
            (uri (cdr (assoc :uri doc)))
-           (file-text (state:get-file-text uri))
+           (file-text (state:get-file-text state uri))
            (text (if file-text file-text ""))
            (edits (formatter:on-type (make-string-input-stream text)
                                      :options (fmt-opts:convert opts)
@@ -146,14 +146,14 @@
         (lsp-msg:create-response id :result-value value)))
 
 
-(declaim (ftype (function (cons cons) hash-table) format-msg))
-(defun format-msg (options msg)
+(declaim (ftype (function (state:state cons cons) hash-table) format-msg))
+(defun format-msg (state options msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
            (range (cdr (assoc :range params)))
            (doc (cdr (assoc :text-document params)))
            (uri (cdr (assoc :uri doc)))
-           (file-text (state:get-file-text uri))
+           (file-text (state:get-file-text state uri))
            (text (if file-text file-text ""))
            (edits (formatter:range (make-string-input-stream text)
                                    range
@@ -163,28 +163,28 @@
                                  :result-value (fmt-utils:to-text-edits edits))))
 
 
-(declaim (ftype (function (cons) hash-table) formatting))
-(defun formatting (msg)
-    (let ((id (state:next-send-id)))
+(declaim (ftype (function (state:state cons) hash-table) formatting))
+(defun formatting (state msg)
+    (let ((id (state:next-send-id state)))
 
-        (state:set-sent-msg-callback id
+        (state:set-sent-msg-callback state id
                                      (lambda (config-resp)
                                          (declare (type cons config-resp))
                                          (let ((opts (cdr (assoc :result config-resp))))
-                                             (format-msg (first opts) msg))))
+                                             (format-msg state (first opts) msg))))
 
         (let ((params (make-hash-table :test #'equalp)))
             (setf (gethash "items" params) (list (config-item:create-item :section "alive.format")))
             (lsp-msg:create-request id "workspace/configuration" :params params))))
 
 
-(declaim (ftype (function (cons) hash-table) selection))
-(defun selection (msg)
+(declaim (ftype (function (state:state cons) hash-table) selection))
+(defun selection (state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
            (doc (cdr (assoc :text-document params)))
            (uri (cdr (assoc :uri doc)))
-           (file-text (state:get-file-text uri))
+           (file-text (state:get-file-text state uri))
            (text (if file-text file-text ""))
            (forms (forms:from-stream-or-nil (make-string-input-stream text)))
            (pos-list (cdr (assoc :positions params)))
@@ -219,13 +219,13 @@
           :finally (return (reverse out-list))))
 
 
-(declaim (ftype (function (cons) hash-table) sem-tokens))
-(defun sem-tokens (msg)
+(declaim (ftype (function (state:state cons) hash-table) sem-tokens))
+(defun sem-tokens (state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
            (doc (cdr (assoc :text-document params)))
            (uri (cdr (assoc :uri doc)))
-           (file-text (state:get-file-text uri))
+           (file-text (state:get-file-text state uri))
            (text (if file-text file-text ""))
            (sem-tokens (analysis:to-sem-tokens
                            (tokenizer:from-stream

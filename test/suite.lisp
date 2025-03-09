@@ -9,7 +9,6 @@
     (clue:suite "Run all Alive LSP tests"
         (alive/test/asdf/load:run-all)
         (alive/test/compile:run-all)
-        (alive/test/context:run-all)
         (alive/test/eval:run-all)
         (alive/test/file-utils:run-all)
         (alive/test/format/on-type:run-all)

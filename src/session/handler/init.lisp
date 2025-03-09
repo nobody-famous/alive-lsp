@@ -51,8 +51,8 @@
         (lsp-msg:create-response id :result-value data)))
 
 
-(declaim (ftype (function (cons) null) initialized))
-(defun initialized (msg)
+(declaim (ftype (function (state:state cons) null) initialized))
+(defun initialized (state msg)
     (declare (ignore msg))
-    (state:set-initialized T)
+    (state:set-initialized state T)
     nil)
