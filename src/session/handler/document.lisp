@@ -9,7 +9,8 @@
              :hover
              :on-type
              :selection
-             :sem-tokens)
+             :sem-tokens
+             :sig-help)
     (:local-nicknames (:analysis :alive/lsp/sem-analysis)
                       (:comps :alive/lsp/completions)
                       (:config-item :alive/lsp/types/config-item)
@@ -20,6 +21,7 @@
                       (:lsp-msg :alive/lsp/message/abstract)
                       (:selection :alive/selection)
                       (:sem-types :alive/lsp/types/sem-tokens)
+                      (:sig-help :alive/lsp/sig-help)
                       (:state :alive/session/state)
                       (:tokenizer :alive/parse/tokenizer)
                       (:utils :alive/session/handler/utils)))
@@ -234,3 +236,18 @@
         (utils:result id "data" (if sem-tokens
                                     (to-sem-array sem-tokens)
                                     nil))))
+
+
+(declaim (ftype (function (state:state cons) hash-table) sig-help))
+(defun sig-help (state msg)
+    (let* ((id (cdr (assoc :id msg)))
+           (params (cdr (assoc :params msg)))
+           (doc (cdr (assoc :text-document params)))
+           (uri (cdr (assoc :uri doc)))
+           (pos (cdr (assoc :position params)))
+           (file-text (state:get-file-text state uri))
+           (text (if file-text file-text ""))
+           (items (or (sig-help:signatures :text text :pos pos)
+                      (make-array 0))))
+        (alive/logger:info-msg (state:get-log state) "***** SIG HELP ~A" items)
+        (utils:result id "signatures" items)))

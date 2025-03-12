@@ -52,6 +52,8 @@
           (cons "textDocument/rangeFormatting" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/document:formatting state msg)))
           (cons "textDocument/selectionRange" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/document:selection state msg)))
           (cons "textDocument/semanticTokens/full" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/document:sem-tokens state msg)))
+          (cons "textDocument/signatureHelp" (lambda (deps msg) (declare (ignore deps))
+                                                 (alive/session/handler/document:sig-help state msg)))
 
           (cons "$/setTrace" (lambda (deps msg) (declare (ignore deps)) (ignore-msg msg)))
           (cons "$/cancelRequest" (lambda (deps msg) (declare (ignore deps)) (ignore-msg msg)))

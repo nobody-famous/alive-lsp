@@ -59,6 +59,7 @@
                                        (:file "lsp/completions")
                                        (:file "lsp/definition")
                                        (:file "lsp/hover")
+                                       (:file "lsp/sig-help")
                                        (:file "lsp/symbol")
 
                                        (:file "lsp/sem-analysis")
