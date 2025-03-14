@@ -46,9 +46,10 @@
         (error "Object has no result")))
 
 
-(declaim (ftype (function (string hash-table) null) print-hash-table))
+(declaim (ftype (function (string (or null hash-table)) null) print-hash-table))
 (defun print-hash-table (label ht)
-    (format T "~A~%" label)
-    (loop :for key :being :the :hash-key :of ht
-          :using (hash-value value)
-          :do (format T "  ~A |~A|~%" key value)))
+    (when (hash-table-p ht)
+          (format T "~A~%" label)
+          (loop :for key :being :the :hash-key :of ht
+                :using (hash-value value)
+                :do (format T "  ~A |~A|~%" key value))))

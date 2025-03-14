@@ -2,7 +2,12 @@
     (:use :cl)
     (:export :signatures)
     (:local-nicknames (:forms :alive/parse/forms)
-                      (:tokenizer :alive/parse/tokenizer)))
+                      (:pkgs :alive/packages)
+                      (:pos :alive/position)
+                      (:symbols :alive/symbols)
+                      (:token :alive/parse/token)
+                      (:tokenizer :alive/parse/tokenizer)
+                      (:types :alive/types)))
 
 (in-package :alive/lsp/sig-help)
 
@@ -23,6 +28,29 @@
         info))
 
 
+(declaim (ftype (function ((or null hash-table) (or null hash-table) (or null hash-table)) (values (or null string) &optional)) get-fn-package))
+(defun get-fn-package (token1 token2 token3)
+    (when (and (eq (token:get-type-value token1) types:*symbol*)
+               (eq (token:get-type-value token2) types:*colons*)
+               (eq (token:get-type-value token3) types:*symbol*))
+          (token:get-text token3)))
+
+
+(declaim (ftype (function ((or null hash-table)) (values (or null string) &optional)) get-fn-name))
+(defun get-fn-name (token)
+    (when (eq (token:get-type-value token) types:*symbol*)
+          (token:get-text token)))
+
+
+(declaim (ftype (function ((or null hash-table) (or null hash-table) (or null hash-table)) (or null hash-table)) get-sig))
+(defun get-sig (token1 token2 token3)
+    (let* ((pkg-name (get-fn-package token1 token2 token3))
+           (fn-name (get-fn-name token1))
+           (lambda-list (symbols:get-lambda-list fn-name pkg-name)))
+        (format T "***** GET-SIG ~A ~A ~A~%" fn-name lambda-list (type-of lambda-list))))
+
+
+(declaim (ftype (function (&key (:text string) (:pos pos:text-position)) (or null cons)) signatures))
 (defun signatures (&key text pos)
     (let* ((forms (forms:from-stream-or-nil (make-string-input-stream text)))
            (tokens (tokenizer:from-stream (make-string-input-stream text)))
@@ -31,12 +59,16 @@
            (name-form (when (hash-table-p outer-form)
                             (first (gethash "kids" outer-form))))
            (name-tokens (when (hash-table-p name-form)
-                              (alive/lsp/utils:find-tokens tokens (gethash "end" name-form)))))
-
-        (format T "***** TOKENS~%")
-        (loop :for token :in name-tokens
-              :do (alive/test/utils:print-hash-table "***** TOKEN" token))
-        (format T "***** END TOKENS~%")
+                              (alive/lsp/utils:find-tokens tokens (gethash "end" name-form))))
+           (pkg-name (alive/packages:for-pos text pos))
+           (pkg (pkgs:lookup pkg-name))
+           (*package* (if pkg pkg *package*)))
 
         (list (get-sig-info "foo x y")
-              (get-sig-info "foo a b"))))
+              (get-sig-info "foo a b"))
+
+        (when (>= (length name-tokens) 3)
+              (destructuring-bind (token1 token2 token3)
+                      name-tokens
+                  (get-sig token1 token2 token3)
+                  nil))))
