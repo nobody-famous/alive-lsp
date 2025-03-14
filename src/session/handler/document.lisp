@@ -240,5 +240,5 @@
            (text (or (state:get-file-text state uri) ""))
            (items (or (sig-help:signatures :text text :pos pos)
                       (make-array 0))))
-        (alive/logger:info-msg (state:get-log state) "***** SIG HELP ~A" items)
+
         (utils:result id "signatures" items)))
