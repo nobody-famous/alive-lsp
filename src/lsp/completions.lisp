@@ -96,46 +96,12 @@
                       ((eq status :inherited) (push name inherited)))))))
 
 
-(defun list-to-snippet (name lambda-list)
-    (loop :with is-keys := nil
-          :with skip-rest := nil
-          :with ndx := 1
-          :with items := '()
-
-          :for item :in lambda-list :do
-              (cond ((not (eq 'symbol (type-of item)))
-                        (string-downcase (format NIL "${~A:~A}~%" ndx item))
-                        (incf ndx))
-                    ((string= "&KEY" item) (setf is-keys T))
-                    ((char= #\& (char (string item) 0)) (setf skip-rest T))
-                    ((not skip-rest) (setf items
-                                         (cons
-                                             (let ((item-text (string-downcase item)))
-                                                 (if is-keys
-                                                     (format nil ":~A ${~A:~A}" item-text ndx item-text)
-                                                     (format nil "${~A:~A}" ndx (string-downcase item))))
-
-                                             items))
-                                     (incf ndx)))
-
-          :finally (return (format nil "~{~A~^ ~}" (cons name (reverse items))))))
-
-
-(defun to-snippet (name lambda-list)
-    (when (and (eq (type-of lambda-list) 'cons)
-               (or (not (cdr lambda-list))
-                   (eq (type-of (cdr lambda-list)) 'cons)))
-          (list-to-snippet name lambda-list)))
-
-
 (defun to-item (name pkg-name)
     (let* ((lambda-list (symbols:get-lambda-list name pkg-name))
            (kind (if lambda-list
                      *kind-function*
                      *kind-text*))
-           (text (if lambda-list
-                     (to-snippet name lambda-list)
-                     name))
+           (text name)
            (insert-format (if lambda-list
                               *insert-snippet*
                               *insert-plain*))
