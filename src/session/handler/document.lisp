@@ -9,7 +9,8 @@
              :hover
              :on-type
              :selection
-             :sem-tokens)
+             :sem-tokens
+             :sig-help)
     (:local-nicknames (:analysis :alive/lsp/sem-analysis)
                       (:comps :alive/lsp/completions)
                       (:config-item :alive/lsp/types/config-item)
@@ -20,6 +21,7 @@
                       (:lsp-msg :alive/lsp/message/abstract)
                       (:selection :alive/selection)
                       (:sem-types :alive/lsp/types/sem-tokens)
+                      (:sig-help :alive/lsp/sig-help)
                       (:state :alive/session/state)
                       (:tokenizer :alive/parse/tokenizer)
                       (:utils :alive/session/handler/utils)))
@@ -34,8 +36,7 @@
            (doc (cdr (assoc :text-document params)))
            (pos (cdr (assoc :position params)))
            (uri (cdr (assoc :uri doc)))
-           (file-text (state:get-file-text state uri))
-           (text (if file-text file-text ""))
+           (text (or (state:get-file-text state uri) ""))
            (items (or (comps:simple :text text :pos pos)
                       (make-array 0))))
 
@@ -54,8 +55,7 @@
            (doc (cdr (assoc :text-document params)))
            (pos (cdr (assoc :position params)))
            (uri (cdr (assoc :uri doc)))
-           (file-text (state:get-file-text state uri))
-           (text (if file-text file-text ""))
+           (text (or (state:get-file-text state uri) ""))
            (location (alive/lsp/definition:get-location :text text :pos pos))
            (uri (first location))
            (range (second location)))
@@ -101,8 +101,7 @@
            (params (cdr (assoc :params msg)))
            (doc (cdr (assoc :text-document params)))
            (uri (cdr (assoc :uri doc)))
-           (file-text (state:get-file-text state uri))
-           (text (if file-text file-text ""))
+           (text (or (state:get-file-text state uri) ""))
            (forms (forms:from-stream-or-nil (make-string-input-stream text)))
            (symbols (alive/lsp/symbol:for-document text forms)))
 
@@ -118,8 +117,7 @@
            (doc (cdr (assoc :text-document params)))
            (pos (cdr (assoc :position params)))
            (uri (cdr (assoc :uri doc)))
-           (file-text (state:get-file-text state uri))
-           (text (if file-text file-text ""))
+           (text (or (state:get-file-text state uri) ""))
            (hov-text (alive/lsp/hover:get-text :text text :pos pos))
            (result (if hov-text hov-text "")))
 
@@ -134,8 +132,7 @@
            (opts (cdr (assoc :options params)))
            (pos (cdr (assoc :position params)))
            (uri (cdr (assoc :uri doc)))
-           (file-text (state:get-file-text state uri))
-           (text (if file-text file-text ""))
+           (text (or (state:get-file-text state uri) ""))
            (edits (formatter:on-type (make-string-input-stream text)
                                      :options (fmt-opts:convert opts)
                                      :pos pos))
@@ -153,8 +150,7 @@
            (range (cdr (assoc :range params)))
            (doc (cdr (assoc :text-document params)))
            (uri (cdr (assoc :uri doc)))
-           (file-text (state:get-file-text state uri))
-           (text (if file-text file-text ""))
+           (text (or (state:get-file-text state uri) ""))
            (edits (formatter:range (make-string-input-stream text)
                                    range
                                    options)))
@@ -184,8 +180,7 @@
            (params (cdr (assoc :params msg)))
            (doc (cdr (assoc :text-document params)))
            (uri (cdr (assoc :uri doc)))
-           (file-text (state:get-file-text state uri))
-           (text (if file-text file-text ""))
+           (text (or (state:get-file-text state uri) ""))
            (forms (forms:from-stream-or-nil (make-string-input-stream text)))
            (pos-list (cdr (assoc :positions params)))
            (ranges (when (and forms pos-list)
@@ -225,8 +220,7 @@
            (params (cdr (assoc :params msg)))
            (doc (cdr (assoc :text-document params)))
            (uri (cdr (assoc :uri doc)))
-           (file-text (state:get-file-text state uri))
-           (text (if file-text file-text ""))
+           (text (or (state:get-file-text state uri) ""))
            (sem-tokens (analysis:to-sem-tokens
                            (tokenizer:from-stream
                                (make-string-input-stream text)))))
@@ -234,3 +228,17 @@
         (utils:result id "data" (if sem-tokens
                                     (to-sem-array sem-tokens)
                                     nil))))
+
+
+(declaim (ftype (function (state:state cons) hash-table) sig-help))
+(defun sig-help (state msg)
+    (let* ((id (cdr (assoc :id msg)))
+           (params (cdr (assoc :params msg)))
+           (doc (cdr (assoc :text-document params)))
+           (uri (cdr (assoc :uri doc)))
+           (pos (cdr (assoc :position params)))
+           (text (or (state:get-file-text state uri) ""))
+           (items (or (sig-help:signatures :text text :pos pos)
+                      (make-array 0))))
+
+        (utils:result id "signatures" items)))

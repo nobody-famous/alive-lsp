@@ -22,7 +22,8 @@
            (sem-opts (make-hash-table :test #'equalp))
            (legend-opts (make-hash-table :test #'equalp))
            (comp-opts (make-hash-table :test #'equalp))
-           (on-type-opts (make-hash-table :test #'equalp)))
+           (on-type-opts (make-hash-table :test #'equalp))
+           (sig-help-opts (make-hash-table :test #'equalp)))
         (declare (type fixnum id))
 
         (setf (gethash "triggerCharacters" comp-opts) (list #\: #\+ #\- #\*))
@@ -35,6 +36,9 @@
 
         (setf (gethash "firstTriggerCharacter" on-type-opts) #\newline)
         (setf (gethash "moreTriggerCharacters" on-type-opts) (list))
+
+        (setf (gethash "triggerCharacters" sig-help-opts) (list #\space))
+        (setf (gethash "signatureHelpProvider" caps) sig-help-opts)
 
         (setf (gethash "textDocumentSync" caps) *doc-sync-full*)
         (setf (gethash "hoverProvider" caps) nil)

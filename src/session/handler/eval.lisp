@@ -35,7 +35,7 @@
                                                          (deps:send-msg deps (notification:stderr data)))))))
 
         (when (cdr (assoc :store-result params))
-              (state:add-history state results))
+              (state:add-history state (car results)))
 
         (let ((response-content (if (= (length results) 1)
                                     (format nil "~A" (car results))
