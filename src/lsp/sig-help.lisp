@@ -54,22 +54,27 @@
           :finally (return (values label (or (reverse params) (make-array 0))))))
 
 
+(declaim (ftype (function (number string string cons) (or null hash-table)) get-sig-info))
+(defun get-sig-info (active-param fn-name pkg-name lambda-list)
+    (multiple-value-bind (label params)
+            (generate-label fn-name lambda-list)
+        (when (< active-param (length params))
+              (let ((doc (or (documentation (symbols:lookup fn-name pkg-name) 'function) ""))
+                    (info (make-hash-table)))
+                  (setf (gethash "label" info) label)
+                  (setf (gethash "documentation" info) doc)
+                  (setf (gethash "parameters" info) params)
+                  (setf (gethash "activeParameter" info) active-param)
+                  info))))
+
+
 (declaim (ftype (function (number (or null hash-table) (or null hash-table) (or null hash-table)) (or null hash-table)) get-sig))
 (defun get-sig (active-param token1 token2 token3)
     (let* ((pkg-name (get-fn-package token1 token2 token3))
            (fn-name (get-fn-name token1))
-           (lambda-list (symbols:get-lambda-list fn-name pkg-name))
-           (doc (or (documentation (symbols:lookup fn-name pkg-name) 'function) ""))
-           (info (make-hash-table)))
+           (lambda-list (symbols:get-lambda-list fn-name pkg-name)))
         (when (and lambda-list fn-name pkg-name)
-              (multiple-value-bind (label params)
-                      (generate-label fn-name lambda-list)
-                  (when (< active-param (length params))
-                        (setf (gethash "label" info) label)
-                        (setf (gethash "documentation" info) doc)
-                        (setf (gethash "parameters" info) params)
-                        (setf (gethash "activeParameter" info) active-param)
-                        info)))))
+              (get-sig-info active-param fn-name pkg-name lambda-list))))
 
 
 (declaim (ftype (function (pos:text-position hash-table) number) get-active-parameter))
