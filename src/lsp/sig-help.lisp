@@ -12,19 +12,9 @@
 (in-package :alive/lsp/sig-help)
 
 
-(defun get-param-info (name)
+(defun get-param-info (label)
     (let ((info (make-hash-table)))
-        (setf (gethash "label" info) name)
-        (setf (gethash "documentation" info) "Some param docs")
-        info))
-
-
-(defun get-sig-info (name)
-    (let ((info (make-hash-table)))
-        (setf (gethash "label" info) name)
-        (setf (gethash "documentation" info) "This is some doc stuff")
-        (setf (gethash "parameters" info) (list (get-param-info (list 4 5)) (get-param-info (list 6 7))))
-        (setf (gethash "activeParameter" info) 1)
+        (setf (gethash "label" info) label)
         info))
 
 
@@ -43,42 +33,52 @@
           (token:get-text token)))
 
 
-(declaim (ftype (function (string string) string) generate-label))
-(defun generate-label (pkg-name fn-name)
-    (loop :with lambda-list := (symbols:get-lambda-list fn-name pkg-name)
-          :with label := fn-name
+(declaim (ftype (function (string cons) string) generate-label))
+(defun generate-label (fn-name lambda-list)
+    (loop :with label := fn-name
           :with params := ()
           :with index := (length label)
           :with add-params := T
 
           :for item :in lambda-list
-          :do (when (char= #\& (char (string item) 0))
-                    (setf add-params nil))
-              (when add-params
-                    (setf params (push (list (+ 1 index)
-                                             (+ 1 index (length (string item))))
-                                       params))
-                    (setf index (+ 1 index (length (string item)))))
-              (setf label (format nil "~A ~A" label item))
+          :do (let ((item-str (format nil "~A" item)))
+                  (when (char= #\& (char item-str 0))
+                        (setf add-params nil))
+                  (when add-params
+                        (setf params (push (get-param-info (list (+ 1 index)
+                                                                 (+ 1 index (length item-str))))
+                                           params))
+                        (setf index (+ 1 index (length item-str))))
+                  (setf label (format nil "~A ~A" label item)))
 
-          :finally (return (values label (reverse params)))))
+          :finally (return (values label (or (reverse params) (make-array 0))))))
 
 
-(declaim (ftype (function ((or null hash-table) (or null hash-table) (or null hash-table)) (or null hash-table)) get-sig))
-(defun get-sig (token1 token2 token3)
+(declaim (ftype (function (number (or null hash-table) (or null hash-table) (or null hash-table)) (or null hash-table)) get-sig))
+(defun get-sig (active-param token1 token2 token3)
     (let* ((pkg-name (get-fn-package token1 token2 token3))
            (fn-name (get-fn-name token1))
-           (doc (documentation (symbols:lookup fn-name pkg-name) 'function))
+           (lambda-list (symbols:get-lambda-list fn-name pkg-name))
+           (doc (or (documentation (symbols:lookup fn-name pkg-name) 'function) ""))
            (info (make-hash-table)))
-        (multiple-value-bind (label params)
-                (generate-label pkg-name fn-name)
-            (setf (gethash "label" info) label)
-            (setf (gethash "documentation" info) doc)
-            (setf (gethash "parameters" info) params)
-            (setf (gethash "activeParameter" info) 0)
+        (when (and lambda-list fn-name pkg-name)
+              (multiple-value-bind (label params)
+                      (generate-label fn-name lambda-list)
+                  (when (< active-param (length params))
+                        (setf (gethash "label" info) label)
+                        (setf (gethash "documentation" info) doc)
+                        (setf (gethash "parameters" info) params)
+                        (setf (gethash "activeParameter" info) active-param)
+                        info)))))
 
-            (alive/test/utils:print-hash-table "***** INFO" info)
-            info)))
+
+(declaim (ftype (function (pos:text-position hash-table) number) get-active-parameter))
+(defun get-active-parameter (pos form)
+    (loop :with param := 0
+          :for kid :in (cdr (gethash "kids" form))
+          :do (when (pos:less-than (gethash "end" kid) pos)
+                    (incf param))
+          :finally (return param)))
 
 
 (declaim (ftype (function (&key (:text string) (:pos pos:text-position)) (values (or null cons) &optional)) signatures))
@@ -89,14 +89,17 @@
            (outer-form (forms:get-outer-form top-form pos))
            (name-form (when (hash-table-p outer-form)
                             (first (gethash "kids" outer-form))))
+           (active-param (if (hash-table-p outer-form)
+                             (get-active-parameter pos outer-form)
+                             0))
            (name-tokens (when (hash-table-p name-form)
                               (alive/lsp/utils:find-tokens tokens (gethash "end" name-form))))
            (pkg-name (alive/packages:for-pos text pos))
            (pkg (pkgs:lookup pkg-name))
            (*package* (if pkg pkg *package*)))
 
-        #+n (list (get-sig-info "foo x y"))
         (when (>= (length name-tokens) 3)
               (destructuring-bind (token1 token2 token3)
                       name-tokens
-                  (list (get-sig token1 token2 token3))))))
+                  (when (pos:less-than (token:get-end token1) pos)
+                        (list (get-sig active-param token1 token2 token3)))))))
