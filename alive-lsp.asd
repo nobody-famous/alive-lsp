@@ -116,6 +116,7 @@
                                        (:file "lsp/completions")
                                        (:file "lsp/sem-analysis")
                                        (:file "lsp/sem-tokens")
+                                       (:file "lsp/sig-help")
                                        (:file "lsp/hover")
                                        (:file "lsp/packet")
 

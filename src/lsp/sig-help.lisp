@@ -13,7 +13,7 @@
 
 
 (defun get-param-info (label)
-    (let ((info (make-hash-table)))
+    (let ((info (make-hash-table :test #'equalp)))
         (setf (gethash "label" info) label)
         info))
 
@@ -33,9 +33,10 @@
           (string-upcase (token:get-text token))))
 
 
-(declaim (ftype (function (string cons) string) generate-label))
-(defun generate-label (fn-name lambda-list)
+(declaim (ftype (function (string string) string) generate-label))
+(defun generate-label (fn-name pkg-name)
     (loop :with label := fn-name
+          :with lambda-list := (symbols:get-lambda-list fn-name pkg-name)
           :with params := ()
           :with index := (length label)
           :with add-params := T
@@ -54,13 +55,14 @@
           :finally (return (values label (or (reverse params) (make-array 0))))))
 
 
-(declaim (ftype (function (number string string cons) (or null hash-table)) get-sig-info))
-(defun get-sig-info (active-param fn-name pkg-name lambda-list)
+(declaim (ftype (function (number string string) (or null hash-table)) get-sig-info))
+(defun get-sig-info (active-param fn-name pkg-name)
     (multiple-value-bind (label params)
-            (generate-label fn-name lambda-list)
-        (when (< active-param (length params))
+            (generate-label fn-name pkg-name)
+        (when (or (zerop (length params))
+                  (< active-param (length params)))
               (let ((doc (or (documentation (symbols:lookup fn-name pkg-name) 'function) ""))
-                    (info (make-hash-table)))
+                    (info (make-hash-table :test #'equalp)))
                   (setf (gethash "label" info) label)
                   (setf (gethash "documentation" info) doc)
                   (setf (gethash "parameters" info) params)
@@ -68,13 +70,15 @@
                   info))))
 
 
-(declaim (ftype (function (number (or null hash-table) (or null hash-table) (or null hash-table)) (or null hash-table)) get-sig))
-(defun get-sig (active-param token1 token2 token3)
+(declaim (ftype (function (pos:text-position number (or null hash-table) (or null hash-table) (or null hash-table)) (or null hash-table)) get-sig))
+(defun get-sig (pos active-param token1 token2 token3)
     (let* ((pkg-name (get-fn-package token1 token2 token3))
-           (fn-name (get-fn-name token1))
-           (lambda-list (symbols:get-lambda-list fn-name pkg-name)))
-        (when (and lambda-list fn-name pkg-name)
-              (get-sig-info active-param fn-name pkg-name lambda-list))))
+           (fn-name (get-fn-name token1)))
+        (when (and (pos:less-than (token:get-start token1) pos)
+                   (or (symbols:function-p fn-name pkg-name) (symbols:macro-p fn-name pkg-name))
+                   fn-name
+                   pkg-name)
+              (get-sig-info active-param fn-name pkg-name))))
 
 
 (declaim (ftype (function (pos:text-position hash-table) number) get-active-parameter))
@@ -106,5 +110,6 @@
         (when (>= (length name-tokens) 3)
               (destructuring-bind (token1 token2 token3)
                       name-tokens
-                  (when (pos:less-than (token:get-start token1) pos)
-                        (list (get-sig active-param token1 token2 token3)))))))
+                  (let ((sig (get-sig pos active-param token1 token2 token3)))
+                      (when sig
+                            (list sig)))))))
