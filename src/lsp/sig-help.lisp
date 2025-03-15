@@ -30,7 +30,7 @@
 (declaim (ftype (function ((or null hash-table)) (values (or null string) &optional)) get-fn-name))
 (defun get-fn-name (token)
     (when (eq (token:get-type-value token) types:*symbol*)
-          (token:get-text token)))
+          (string-upcase (token:get-text token))))
 
 
 (declaim (ftype (function (string cons) string) generate-label))
@@ -106,5 +106,5 @@
         (when (>= (length name-tokens) 3)
               (destructuring-bind (token1 token2 token3)
                       name-tokens
-                  (when (pos:less-than (token:get-end token1) pos)
+                  (when (pos:less-than (token:get-start token1) pos)
                         (list (get-sig active-param token1 token2 token3)))))))
