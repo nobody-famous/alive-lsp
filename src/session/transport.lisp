@@ -27,7 +27,7 @@
                   (force-output steam)))))
 
 
-(declaim (ftype (function (hash-table) cons) send-request))
+(declaim (ftype (function (hash-table) (or cons null)) send-request))
 (defun send-request (req)
     (state:lock (mutex)
         (let ((cond-var (bt:make-condition-variable))
@@ -40,5 +40,5 @@
             (send-msg req)
             (unless response
                 (bt:condition-wait cond-var mutex))
-
+            
             response)))
