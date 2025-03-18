@@ -40,5 +40,5 @@
             (send-msg req)
             (unless response
                 (bt:condition-wait cond-var mutex))
-            
+
             response)))
