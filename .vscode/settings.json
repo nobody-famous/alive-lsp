@@ -3,7 +3,6 @@
     "alive.format.indentWidth": 4,
     "alive.format.maxBlankLines": 2,
     "commonlisp.trace.server": "verbose",
-    "alive.lsp.install.path": "c:/Users/rich/work/vscode/alive-lsp",
     "editor.semanticTokenColorCustomizations": {
         "rules": {
             "error": "#ff0000",
@@ -11,8 +10,5 @@
             "parenthesis": "#999"
         }
     },
-    "editor.formatOnType": true,
-    "[commonlisp]": {
-        "editor.wordSeparators": "`|;:'\",()"
-    },
+    "editor.formatOnType": true
 }

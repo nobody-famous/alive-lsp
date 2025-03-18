@@ -1,8 +1,7 @@
 (defpackage :alive/test/inspector
     (:use :cl)
     (:export :run-all)
-    (:local-nicknames (:deps :alive/deps)
-                      (:eval :alive/sys/eval)
+    (:local-nicknames (:eval :alive/sys/eval)
                       (:inspector :alive/inspector)))
 
 (in-package :alive/test/inspector)

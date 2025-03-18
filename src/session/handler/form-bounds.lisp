@@ -9,12 +9,12 @@
 (in-package :alive/session/handler/form-bounds)
 
 
-(declaim (ftype (function (cons) (or null cons)) get-forms))
-(defun get-forms (msg)
+(declaim (ftype (function (state:state cons) (or null cons)) get-forms))
+(defun get-forms (state msg)
     (let* ((params (cdr (assoc :params msg)))
            (doc (cdr (assoc :text-document params)))
            (uri (cdr (assoc :uri doc)))
-           (text (or (state:get-file-text uri) "")))
+           (text (or (state:get-file-text state uri) "")))
 
         (forms:from-stream-or-nil (make-string-input-stream text))))
 
@@ -29,24 +29,24 @@
                                  :result-value data)))
 
 
-(declaim (ftype (function (cons) hash-table) top-form))
-(defun top-form (msg)
+(declaim (ftype (function (state:state cons) hash-table) top-form))
+(defun top-form (state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
            (pos (cdr (assoc :position params)))
-           (forms (get-forms msg))
+           (forms (get-forms state msg))
            (form (forms:get-top-form forms pos))
            (start (when form (gethash "start" form)))
            (end (when form (gethash "end" form))))
         (create-response id start end)))
 
 
-(declaim (ftype (function (cons) hash-table) surrounding-form))
-(defun surrounding-form (msg)
+(declaim (ftype (function (state:state cons) hash-table) surrounding-form))
+(defun surrounding-form (state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
            (pos (cdr (assoc :position params)))
-           (forms (get-forms msg))
+           (forms (get-forms state msg))
            (top-form (forms:get-top-form forms pos))
            (form (forms:get-outer-form top-form pos))
            (start (when form (gethash "start" form)))

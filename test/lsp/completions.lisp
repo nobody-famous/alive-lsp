@@ -91,12 +91,6 @@
                                   :actual (length actual))))))
 
 
-(defun test-to-snippet ()
-    (clue:test "To snippet"
-        (let ((actual (comps::to-snippet "foo" 5)))
-            (clue:check-equal :expected nil :actual actual))))
-
-
 (defun run-all ()
     (clue:suite "Completion Tests"
         (test-symbols-m)
@@ -106,5 +100,4 @@
         (test-quote)
         (test-backquote)
         (test-colons)
-        (test-symbol-no-pkg)
-        (test-to-snippet)))
+        (test-symbol-no-pkg)))

@@ -16,12 +16,12 @@
 (in-package :alive/session/threads)
 
 
-(declaim (ftype (function () (values (or null string) &optional)) wait-for-input))
-(defun wait-for-input ()
-    (let ((input-resp (deps:send-request (lsp-msg:create-request (state:next-send-id) "$/alive/userInput"))))
+(declaim (ftype (function (deps:dependencies state:state) (values (or null string) &optional)) wait-for-input))
+(defun wait-for-input (deps state)
+    (let ((input-resp (deps:send-request deps (lsp-msg:create-request (state:next-send-id state) "$/alive/userInput"))))
 
         (cond ((assoc :error input-resp)
-                  (logger:error-msg "Input Error ~A" input-resp))
+                  (logger:error-msg (state:get-log state) "Input Error ~A" input-resp))
 
               ((assoc :result input-resp)
                   (let* ((result (cdr (assoc :result input-resp))))
@@ -29,22 +29,22 @@
                           ""))))))
 
 
-(declaim (ftype (function ((or null string)) (or null stream)) get-frame-text-stream))
-(defun get-frame-text-stream (file)
+(declaim (ftype (function (state:state (or null string)) (or null stream)) get-frame-text-stream))
+(defun get-frame-text-stream (state file)
     (when file
           (let* ((file-url (format NIL "file://~A" (file-utils:escape-file file)))
-                 (text (state:get-file-text file-url)))
+                 (text (state:get-file-text state file-url)))
 
               (when text
                     (make-string-input-stream text)))))
 
 
-(declaim (ftype (function (hash-table) hash-table) frame-to-wire))
-(defun frame-to-wire (frame)
+(declaim (ftype (function (state:state hash-table) hash-table) frame-to-wire))
+(defun frame-to-wire (state frame)
     (let* ((obj (make-hash-table :test #'equalp))
            (file (gethash "file" frame))
            (fn-name (gethash "function" frame))
-           (pos (debugger:get-frame-loc (get-frame-text-stream file)
+           (pos (debugger:get-frame-loc (get-frame-text-stream state file)
                                         frame)))
 
         (setf (gethash "function" obj) fn-name)
@@ -54,25 +54,25 @@
         obj))
 
 
-(declaim (ftype (function (condition cons cons)) wait-for-debug))
-(defun wait-for-debug (err restarts frames)
-    (let ((debug-resp (deps:send-request (req:debugger (state:next-send-id)
-                                                       :message (princ-to-string err)
-                                                       :restarts restarts
-                                                       :stack-trace (mapcar #'frame-to-wire frames)))))
+(declaim (ftype (function (deps:dependencies state:state condition cons cons)) wait-for-debug))
+(defun wait-for-debug (deps state err restarts frames)
+    (let ((debug-resp (deps:send-request deps (req:debugger (state:next-send-id state)
+                                                            :message (princ-to-string err)
+                                                            :restarts restarts
+                                                            :stack-trace (mapcar (lambda (frame) (frame-to-wire state frame)) frames)))))
 
         (cond ((assoc :error debug-resp)
-                  (logger:error-msg "Debugger Error ~A" debug-resp))
+                  (logger:error-msg (state:get-log state) "Debugger Error ~A" debug-resp))
 
               ((assoc :result debug-resp)
                   (let* ((result (cdr (assoc :result debug-resp))))
                       (cdr (assoc :index result)))))))
 
 
-(declaim (ftype (function (condition cons) null) start-debugger))
-(defun start-debugger (err frames)
+(declaim (ftype (function (deps:dependencies state:state condition cons) null) start-debugger))
+(defun start-debugger (deps state err frames)
     (let* ((restarts (compute-restarts err))
-           (ndx (wait-for-debug err
+           (ndx (wait-for-debug deps state err
                                 (mapcar (lambda (item)
                                             (restart-info:create-item :name (restart-name item)
                                                                       :description (princ-to-string item)))
@@ -85,29 +85,29 @@
         nil))
 
 
-(declaim (ftype (function (function)) run-with-debugger))
-(defun run-with-debugger (fn)
+(declaim (ftype (function (deps:dependencies state:state function)) run-with-debugger))
+(defun run-with-debugger (deps state fn)
     (let ((sb-ext:*invoke-debugger-hook* (lambda (c h)
                                              (declare (ignore h))
-                                             (start-debugger c (alive/frames:list-debug-frames))
+                                             (start-debugger deps state c (alive/frames:list-debug-frames))
                                              (return-from run-with-debugger)))
           (*debugger-hook* (lambda (c h)
                                (declare (ignore h))
-                               (start-debugger c (alive/frames:list-debug-frames))
+                               (start-debugger deps state c (alive/frames:list-debug-frames))
                                (return-from run-with-debugger))))
         (funcall fn)))
 
 
-(declaim (ftype (function (string) string) next-thread-name))
-(defun next-thread-name (method-name)
-    (format nil "~A - ~A" (state:next-thread-id) method-name))
+(declaim (ftype (function (state:state string) string) next-thread-name))
+(defun next-thread-name (state method-name)
+    (format nil "~A - ~A" (state:next-thread-id state) method-name))
 
 
-(declaim (ftype (function (string integer function) null) run-in-thread))
-(defun run-in-thread (method-name msg-id fn)
-    (spawn:new-thread (next-thread-name method-name)
-        (state:with-thread-msg (msg-id)
+(declaim (ftype (function (deps:dependencies state:state string integer function) null) run-in-thread))
+(defun run-in-thread (deps state method-name msg-id fn)
+    (spawn:new-thread (next-thread-name state method-name)
+        (state:with-thread-msg (state deps msg-id)
             (unwind-protect
-                    (progn (refresh:send)
-                           (run-with-debugger fn))
-                (refresh:send)))))
+                    (progn (refresh:send deps state)
+                           (run-with-debugger deps state fn))
+                (refresh:send deps state)))))

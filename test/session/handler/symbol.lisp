@@ -10,19 +10,19 @@
 
 (defun test-for-pos ()
     (clue:test "For position"
-        (clue:expect-fail (lambda () (symbol:for-pos (list (cons :id 5)))))
-        (state:with-state (state:create)
-            (clue:check-exists (gethash "result" (symbol:for-pos (list (cons :id 5)
-                                                                       (cons :params (list (cons :position (list (cons :line 1)
-                                                                                                                 (cons :character 2)))
-                                                                                           (cons :text-document (list (cons :uri "some/path"))))))))))))
+        (let ((state (state:create)))
+            (clue:expect-fail (lambda () (symbol:for-pos state (list (cons :id 5)))))
+            (clue:check-exists (gethash "result" (symbol:for-pos state (list (cons :id 5)
+                                                                                 (cons :params (list (cons :position (list (cons :line 1)
+                                                                                                                           (cons :character 2)))
+                                                                                                     (cons :text-document (list (cons :uri "some/path"))))))))))))
 
 
 (defun test-unexport ()
     (clue:test "Unexport"
-        (state:with-state (state:create)
-            (deps:with-deps (deps:create)
-                (clue:check-exists (gethash "result" (symbol:do-unexport (list (cons :id 5)))))))))
+        (let ((state (state:create))
+              (deps (deps:create)))
+            (clue:check-exists (gethash "result" (symbol:do-unexport deps state (list (cons :id 5))))))))
 
 
 (defun run-all ()
