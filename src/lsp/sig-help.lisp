@@ -74,7 +74,8 @@
 (defun get-sig (pos active-param token1 token2 token3)
     (let* ((pkg-name (get-fn-package token1 token2 token3))
            (fn-name (get-fn-name token1)))
-        (when (and (pos:less-than (token:get-start token1) pos)
+        (when (and (token:get-start token1)
+                   (pos:less-than (token:get-start token1) pos)
                    (or (symbols:function-p fn-name pkg-name) (symbols:macro-p fn-name pkg-name))
                    fn-name
                    pkg-name)
@@ -85,7 +86,8 @@
 (defun get-active-parameter (pos form)
     (loop :with param := 0
           :for kid :in (cdr (gethash "kids" form))
-          :do (when (pos:less-than (gethash "end" kid) pos)
+          :do (when (gethash "end" kid)
+                    (pos:less-than (gethash "end" kid) pos)
                     (incf param))
           :finally (return param)))
 
