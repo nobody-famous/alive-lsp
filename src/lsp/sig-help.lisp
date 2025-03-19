@@ -86,8 +86,8 @@
 (defun get-active-parameter (pos form)
     (loop :with param := 0
           :for kid :in (cdr (gethash "kids" form))
-          :do (when (gethash "end" kid)
-                    (pos:less-than (gethash "end" kid) pos)
+          :do (when (and (gethash "end" kid)
+                         (pos:less-than (gethash "end" kid) pos))
                     (incf param))
           :finally (return param)))
 
