@@ -39,10 +39,18 @@
                     (make-string-input-stream text)))))
 
 
+(declaim (ftype (function (cons) cons) stringify-vars))
+(defun stringify-vars (vars)
+    (mapcar (lambda (var) (cons (car var)
+                                (prin1-to-string (cdr var))))
+            vars))
+
+
 (declaim (ftype (function (state:state hash-table) hash-table) frame-to-wire))
 (defun frame-to-wire (state frame)
     (let* ((obj (make-hash-table :test #'equalp))
            (file (gethash "file" frame))
+           (vars (gethash "vars" frame))
            (fn-name (gethash "function" frame))
            (pos (debugger:get-frame-loc (get-frame-text-stream state file)
                                         frame)))
@@ -50,6 +58,9 @@
         (setf (gethash "function" obj) fn-name)
         (setf (gethash "file" obj) file)
         (setf (gethash "position" obj) pos)
+        (setf (gethash "vars" obj) (if (consp vars)
+                                       (stringify-vars vars)
+                                       vars))
 
         obj))
 

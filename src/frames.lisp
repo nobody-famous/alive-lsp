@@ -36,6 +36,26 @@
            nil)))
 
 
+(defun var-is-valid (var loc)
+    (ecase (sb-di:debug-var-validity var loc)
+        (:valid T)
+        ((:invalid :unknown) nil)))
+
+
+(defun get-frame-vars (frame code-loc)
+    (loop :with dbg-vars := (or (sb-di::debug-fun-debug-vars (sb-di:frame-debug-fun frame)) (make-array 0))
+          :with vars := nil
+
+          :for var :across dbg-vars
+          :do (push (cons (sb-di::debug-var-symbol var)
+                          (if (var-is-valid var code-loc)
+                              (sb-di:debug-var-value var frame)
+                              nil))
+                    vars)
+
+          :finally (return vars)))
+
+
 (defun create-frame-obj (frame)
     (let* ((obj (make-hash-table :test #'equalp))
            (code-loc (sb-di:frame-code-location frame))
@@ -45,14 +65,27 @@
            (src-name (when has-dbg
                            (sb-di:debug-source-namestring dbg-src)))
            (top-form (get-top-form-offset code-loc))
-           (form-num (get-form-number code-loc)))
+           (form-num (get-form-number code-loc))
+           #+n (vars (sb-di::debug-fun-debug-vars (sb-di:frame-debug-fun frame)))
+           (vars (get-frame-vars frame code-loc)))
 
+        #+n (when vars
+                  (loop :for var :across vars
+                        :do (format T "***** VAR ~A ~A~%"
+                                (sb-di::debug-var-symbol var)
+                                (if (var-is-valid var code-loc)
+                                    (sb-di:debug-var-value var frame)
+                                    ""))))
+        #+n (format T "***** VARS ~A ~A~%"
+                (sb-di:frame-debug-fun frame)
+                (sb-di::debug-fun-debug-vars (sb-di:frame-debug-fun frame)))
         (setf (gethash "function" obj) (get-fun-name frame))
 
         (when src-name
               (setf (gethash "file" obj) src-name)
               (setf (gethash "topForm" obj) top-form)
-              (setf (gethash "formNumber" obj) form-num))
+              (setf (gethash "formNumber" obj) form-num)
+              (setf (gethash "vars" obj) vars))
 
         obj))
 
