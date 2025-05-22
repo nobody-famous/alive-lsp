@@ -66,19 +66,8 @@
                            (sb-di:debug-source-namestring dbg-src)))
            (top-form (get-top-form-offset code-loc))
            (form-num (get-form-number code-loc))
-           #+n (vars (sb-di::debug-fun-debug-vars (sb-di:frame-debug-fun frame)))
            (vars (get-frame-vars frame code-loc)))
 
-        #+n (when vars
-                  (loop :for var :across vars
-                        :do (format T "***** VAR ~A ~A~%"
-                                (sb-di::debug-var-symbol var)
-                                (if (var-is-valid var code-loc)
-                                    (sb-di:debug-var-value var frame)
-                                    ""))))
-        #+n (format T "***** VARS ~A ~A~%"
-                (sb-di:frame-debug-fun frame)
-                (sb-di::debug-fun-debug-vars (sb-di:frame-debug-fun frame)))
         (setf (gethash "function" obj) (get-fun-name frame))
 
         (when src-name
