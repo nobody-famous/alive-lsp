@@ -72,7 +72,7 @@
 
 (defun to-doc-sym (name kind start end)
     (let ((doc-sym (make-hash-table :test #'equalp))
-          (range (alive/range:create start end)))
+          (range (alive/range:create start (if end end start))))
 
         (setf (gethash "name" doc-sym) name)
         (setf (gethash "kind" doc-sym) kind)
