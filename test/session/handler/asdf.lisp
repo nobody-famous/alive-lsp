@@ -11,18 +11,17 @@
 
 (defun test-list-all ()
     (clue:test "List All"
-        (clue:expect-fail (lambda () (asdf:list-all (list (cons :id 5)))))
-        (deps:with-deps (deps:create :list-all-asdf (lambda ()
-                                                        (list 1)))
+        (let ((deps (deps:create :list-all-asdf (lambda ()
+                                                    (list 1)))))
             (clue:check-exists (gethash "systems"
-                                        (gethash "result" (asdf:list-all (list (cons :id 5)))))))))
+                                        (gethash "result" (asdf:list-all deps (list (cons :id 5)))))))))
 
 
 (defun test-load-system ()
     (clue:test "Load System"
-        (state:with-state (state:create)
-            (deps:with-deps (deps:create)
-                (asdf:load-system (list (cons :id 5)))))))
+        (let ((state (state:create))
+              (deps (deps:create)))
+            (asdf:load-system deps state (list (cons :id 5))))))
 
 
 (defun run-all ()

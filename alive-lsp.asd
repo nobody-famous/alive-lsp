@@ -20,7 +20,6 @@
                                        (:file "range")
                                        (:file "text-edit")
 
-                                       (:file "context")
                                        (:file "deps")
 
                                        (:file "parse/token")
@@ -63,6 +62,7 @@
                                        (:file "lsp/definition")
                                        (:file "lsp/hover")
                                        (:file "lsp/references")
+                                       (:file "lsp/sig-help")
                                        (:file "lsp/symbol")
 
                                        (:file "lsp/sem-analysis")
@@ -78,6 +78,7 @@
 
                                        (:file "session/state")
                                        (:file "session/handlers")
+
                                        (:file "session/spawn")
                                        (:file "session/refresh")
                                        (:file "session/threads")
@@ -118,6 +119,7 @@
                                        (:file "lsp/completions")
                                        (:file "lsp/sem-analysis")
                                        (:file "lsp/sem-tokens")
+                                       (:file "lsp/sig-help")
                                        (:file "lsp/hover")
                                        (:file "lsp/packet")
 
@@ -148,7 +150,6 @@
 
                                        (:file "log")
                                        (:file "compile")
-                                       (:file "context")
                                        (:file "eval")
                                        (:file "file-utils")
                                        (:file "forms")

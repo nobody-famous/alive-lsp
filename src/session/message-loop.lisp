@@ -11,42 +11,42 @@
 (in-package :alive/session/message-loop)
 
 
-(declaim (ftype (function (cons) (values (or null hash-table) &optional)) process-msg))
-(defun process-msg (msg)
+(declaim (ftype (function (deps:dependencies state:state cons) (values (or null hash-table) &optional)) process-msg))
+(defun process-msg (deps state msg)
     (let ((id (cdr (assoc :id msg))))
-        (state:with-thread-msg (id)
+        (state:with-thread-msg (state deps id)
             (handler-case
-                    (funcall (deps:msg-handler) msg)
+                    (funcall (deps:msg-handler deps) deps msg)
                 (error (c)
-                    (logger:error-msg "Message Handler: ~A ~A" msg c)
+                    (logger:error-msg (state:get-log state) "Message Handler: ~A ~A" msg c)
                     (lsp-msg:create-error id
                                           :code errors:*internal-error*
                                           :message (princ-to-string c)))))))
 
 
-(declaim (ftype (function () null) stop))
-(defun stop ()
-    (logger:info-msg "Stopping message loop")
-    (state:set-running NIL)
+(declaim (ftype (function (state:state) null) stop))
+(defun stop (state)
+    (logger:info-msg (state:get-log state) "New Stopping message loop")
+    (state:set-running state NIL)
     nil)
 
 
-(declaim (ftype (function () (values (or null hash-table) &optional)) get-next-response))
-(defun get-next-response ()
+(declaim (ftype (function (deps:dependencies state:state) (values (or null hash-table) &optional)) get-next-response))
+(defun get-next-response (deps state)
     (handler-case
-            (let ((msg (deps:read-msg)))
+            (let ((msg (deps:read-msg deps)))
                 (when msg
-                      (process-msg msg)))
+                      (process-msg deps state msg)))
 
         (errors:unhandled-request (c)
-                                  (logger:error-msg "Unhandled Request: ~A" c)
+                                  (logger:error-msg (state:get-log state) "Unhandled Request: ~A" c)
                                   (when (errors:id c)
                                         (lsp-msg:create-error (errors:id c)
                                                               :code errors:*method-not-found*
                                                               :message (format nil "Unhandled request: ~A" (errors:method-name c)))))
 
         (errors:server-error (c)
-                             (logger:error-msg "Server Error: ~A" c)
+                             (logger:error-msg (state:get-log state) "Server Error: ~A" c)
                              (when (errors:id c)
                                    (lsp-msg:create-error (errors:id c)
                                                          :code errors:*internal-error*
@@ -56,17 +56,16 @@
 
         (end-of-file (c)
                      (declare (ignore c))
-                     (stop))
+                     (stop state))
 
         (T (c)
-           (logger:error-msg "Unknown Error: ~A" (type-of c))
-           (stop))))
+           (logger:error-msg (state:get-log state) "Unknown Error: ~A ~A" (type-of c) c)
+           (stop state))))
 
 
-(declaim (ftype (function () null) run))
-(defun run ()
-    (state:set-running T)
-    (loop :while (state:running)
-          :do (let ((resp (get-next-response)))
+(declaim (ftype (function (deps:dependencies state:state) null) run))
+(defun run (deps state)
+    (loop :while (state:running state)
+          :do (let ((resp (get-next-response deps state)))
                   (when resp
-                        (deps:send-msg resp)))))
+                        (deps:send-msg deps resp)))))

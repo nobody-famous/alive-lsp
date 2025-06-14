@@ -229,6 +229,16 @@ Breaking within the function `handle-list-pkgs` will halt processing of the pack
 the Alive extension startup will be delayed and (maybe) eventually fail.
 The **Locking Up the Alive Extension** section below addresses recovering from this sort of problem.
 
+#### Unit Tests
+
+Unit tests for the LSP use the clue package, which can be found at [Clue](https://github.com/nobody-famous/clue).
+
+* Load the `alive-lsp/test` ASDF package.
+* From the REPL, run `(alive/test/suite:run-all)`.
+* There are also shell scripts, `run-tests.sh` and `run-tests.ps1` that run the tests with code coverage.
+* Individual tests are functions and can be run separately in the REPL.
+* All tests are under the top level `test` folder.
+
 #### Debugging
 
 Debugging Lisp code, even with Alive, is different from most other languages.

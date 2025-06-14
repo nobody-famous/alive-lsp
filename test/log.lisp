@@ -9,81 +9,80 @@
 (defun test-create ()
     (clue:suite "Create"
         (clue:test "Create default"
-            (logger:with-logging (logger:create *standard-output*)
+            (let ((log (logger:create *standard-output*)))
                 (clue:check-equal :expected T
-                                  :actual (logger:has-level logger:*error*))
+                                  :actual (logger:has-level log logger:*error*))
                 (clue:check-equal :expected NIL
-                                  :actual (logger:has-level logger:*info*))
+                                  :actual (logger:has-level log logger:*info*))
                 (clue:check-equal :expected NIL
-                                  :actual (logger:has-level logger:*debug*))
+                                  :actual (logger:has-level log logger:*debug*))
                 (clue:check-equal :expected NIL
-                                  :actual (logger:has-level logger:*trace*))))
+                                  :actual (logger:has-level log logger:*trace*))))
 
         (clue:test "Create info"
-            (logger:with-logging (logger:create *standard-output* logger:*info*)
+            (let ((log (logger:create *standard-output* logger:*info*)))
                 (clue:check-equal :expected T
-                                  :actual (logger:has-level logger:*error*))
+                                  :actual (logger:has-level log logger:*error*))
                 (clue:check-equal :expected T
-                                  :actual (logger:has-level logger:*info*))
+                                  :actual (logger:has-level log logger:*info*))
                 (clue:check-equal :expected NIL
-                                  :actual (logger:has-level logger:*debug*))
+                                  :actual (logger:has-level log logger:*debug*))
                 (clue:check-equal :expected NIL
-                                  :actual (logger:has-level logger:*trace*))))
+                                  :actual (logger:has-level log logger:*trace*))))
 
         (clue:test "Create debug"
-            (logger:with-logging (logger:create *standard-output* logger:*debug*)
+            (let ((log (logger:create *standard-output* logger:*debug*)))
                 (clue:check-equal :expected T
-                                  :actual (logger:has-level logger:*error*))
+                                  :actual (logger:has-level log logger:*error*))
                 (clue:check-equal :expected T
-                                  :actual (logger:has-level logger:*info*))
+                                  :actual (logger:has-level log logger:*info*))
                 (clue:check-equal :expected T
-                                  :actual (logger:has-level logger:*debug*))
+                                  :actual (logger:has-level log logger:*debug*))
                 (clue:check-equal :expected NIL
-                                  :actual (logger:has-level logger:*trace*))))
+                                  :actual (logger:has-level log logger:*trace*))))
 
         (clue:test "Create trace"
-            (logger:with-logging (logger:create *standard-output* logger:*trace*)
+            (let ((log (logger:create *standard-output* logger:*trace*)))
                 (clue:check-equal :expected T
-                                  :actual (logger:has-level logger:*error*))
+                                  :actual (logger:has-level log logger:*error*))
                 (clue:check-equal :expected T
-                                  :actual (logger:has-level logger:*info*))
+                                  :actual (logger:has-level log logger:*info*))
                 (clue:check-equal :expected T
-                                  :actual (logger:has-level logger:*debug*))
+                                  :actual (logger:has-level log logger:*debug*))
                 (clue:check-equal :expected T
-                                  :actual (logger:has-level logger:*trace*))))))
+                                  :actual (logger:has-level log logger:*trace*))))))
 
 
 (defun write-log (level fn)
     (with-output-to-string (out)
-        (let ((logger (logger:create out level)))
-            (logger:with-logging logger
-                (funcall fn)))))
+        (let ((log (logger:create out level)))
+            (funcall fn log))))
 
 
 (defun test-write ()
     (clue:suite "Write"
         (clue:test "Write error"
             (let ((actual (write-log logger:*error*
-                                     (lambda ()
-                                         (logger:error-msg "Checking ~A" 5)))))
+                                     (lambda (log)
+                                         (logger:error-msg log "Checking ~A" 5)))))
                 (clue:check-exists (search "Checking 5" actual))))
 
         (clue:test "Write info"
             (let ((actual (write-log logger:*info*
-                                     (lambda ()
-                                         (logger:info-msg "Checking ~A" 5)))))
+                                     (lambda (log)
+                                         (logger:info-msg log "Checking ~A" 5)))))
                 (clue:check-exists (search "Checking 5" actual))))
 
         (clue:test "Write debug"
             (let ((actual (write-log logger:*debug*
-                                     (lambda ()
-                                         (logger:debug-msg "Checking ~A" 5)))))
+                                     (lambda (log)
+                                         (logger:debug-msg log "Checking ~A" 5)))))
                 (clue:check-exists (search "Checking 5" actual))))
 
         (clue:test "Write trace"
             (let ((actual (write-log logger:*trace*
-                                     (lambda ()
-                                         (logger:trace-msg "Checking ~A" 5)))))
+                                     (lambda (log)
+                                         (logger:trace-msg log "Checking ~A" 5)))))
                 (clue:check-exists (search "Checking 5" actual))))))
 
 
@@ -91,22 +90,22 @@
     (clue:suite "Write fail"
         (clue:test "Write error fail"
             (let ((actual (write-log logger:*error*
-                                     (lambda ()
-                                         (logger:info-msg "Checking ~A" 5)))))
+                                     (lambda (log)
+                                         (logger:info-msg log "Checking ~A" 5)))))
                 (clue:check-equal :expected nil
                                   :actual (search "Checking 5" actual))))
 
         (clue:test "Write info fail"
             (let ((actual (write-log logger:*info*
-                                     (lambda ()
-                                         (logger:debug-msg "Checking ~A" 5)))))
+                                     (lambda (log)
+                                         (logger:debug-msg log "Checking ~A" 5)))))
                 (clue:check-equal :expected nil
                                   :actual (search "Checking 5" actual))))
 
         (clue:test "Write info fail"
             (let ((actual (write-log logger:*debug*
-                                     (lambda ()
-                                         (logger:trace-msg "Checking ~A" 5)))))
+                                     (lambda (log)
+                                         (logger:trace-msg log "Checking ~A" 5)))))
                 (clue:check-equal :expected nil
                                   :actual (search "Checking 5" actual))))))
 

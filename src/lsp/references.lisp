@@ -10,6 +10,33 @@
 (in-package :alive/lsp/references)
 
 
+(defun setup-readtable (source-map)
+    (let* ((rt (copy-readtable *readtable*))
+           (orig-fn (get-dispatch-macro-character #\# #\. rt)))
+        (set-dispatch-macro-character #\# #\.
+                                      (lambda (input char n)
+                                          (format T "START ~A~%" (file-position input))
+                                          (ignore-errors (funcall orig-fn input char n))
+                                          (format T "END ~A~%" (file-position input)))
+                                      rt)
+        (loop :for ch :from 0 :to 128
+              :do (multiple-value-bind (fun non-terminal)
+                          (get-macro-character (code-char ch) rt)
+                      (when fun
+                            (set-macro-character (code-char ch)
+                                                 (lambda (input char)
+                                                     (format T "MACRO CHARACTER ~A ~A~%" char (file-position input))
+                                                     (let ((start (1- (file-position input)))
+                                                           (values (multiple-value-list (funcall fun input char)))
+                                                           (end (file-position input)))
+                                                         (push (cons start end) (gethash (car values) source-map))
+                                                         (format T "VALUES ~A ~A ~A ~A~%" start end values (values-list values))
+                                                         (values-list values)))
+                                                 non-terminal
+                                                 rt))))
+        rt))
+
+
 (declaim (ftype (function (string string) *) find-callers))
 (defun find-callers (name pkg-name)
     (let ((to-find (sym:lookup name pkg-name)))

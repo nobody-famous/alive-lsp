@@ -4,15 +4,14 @@
              *debug*
              *info*
              *error*
-             *logger*
 
              :create
-             :has-level
-             :error-msg
-             :info-msg
              :debug-msg
-             :trace-msg
-             :with-logging))
+             :error-msg
+             :has-level
+             :info-msg
+             :logger
+             :trace-msg))
 
 (in-package :alive/logger)
 
@@ -22,7 +21,6 @@
 (defparameter *info* 2)
 (defparameter *error* 3)
 
-(defparameter *logger* NIL)
 
 (defparameter *level-names* (make-hash-table))
 
@@ -49,43 +47,38 @@
     (gethash level *level-names* "??"))
 
 
-(defun msg-internal (level fmt &rest args)
-    (when *logger*
-          (bt:with-recursive-lock-held ((lock *logger*))
+(defun msg-internal (logger level fmt &rest args)
+    (when logger
+          (bt:with-recursive-lock-held ((lock logger))
               (let* ((new-fmt (format nil "~&[~A][~A] ~A~&" (alive/utils:get-timestamp) (level-name level) fmt))
-                     (params (concatenate 'list (list (out *logger*) new-fmt) args)))
+                     (params (concatenate 'list (list (out logger) new-fmt) args)))
                   (apply #'format params)))))
 
 
-(defmacro log-msg (level fmt args)
-    `(when (has-level ,level)
-           (msg-internal ,level (apply #'format (list nil ,fmt ,@args)))))
+(defun has-level (logger level)
+    (when logger
+          (<= (level logger) level)))
 
 
-(defun has-level (level)
-    (when *logger*
-          (<= (level *logger*) level)))
+(defmacro log-msg (logger level fmt args)
+    `(when (has-level ,logger ,level)
+           (msg-internal ,logger ,level (apply #'format (list nil ,fmt ,@args)))))
 
 
-(defmacro error-msg (fmt &rest args)
-    `(log-msg *error* ,fmt ,args))
+(defmacro error-msg (logger fmt &rest args)
+    `(log-msg ,logger *error* ,fmt ,args))
 
 
-(defmacro info-msg (fmt &rest args)
-    `(log-msg *info* ,fmt ,args))
+(defmacro info-msg (logger fmt &rest args)
+    `(log-msg ,logger *info* ,fmt ,args))
 
 
-(defmacro debug-msg (fmt &rest args)
-    `(log-msg *debug* ,fmt ,args))
+(defmacro debug-msg (logger fmt &rest args)
+    `(log-msg ,logger *debug* ,fmt ,args))
 
 
-(defmacro trace-msg (fmt &rest args)
-    `(log-msg *trace* ,fmt ,args))
-
-
-(defmacro with-logging (logger &body body)
-    `(let ((*logger* ,logger))
-         (progn ,@body)))
+(defmacro trace-msg (logger fmt &rest args)
+    `(log-msg ,logger *trace* ,fmt ,args))
 
 
 (defun create (out &optional lvl)
