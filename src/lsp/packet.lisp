@@ -26,7 +26,6 @@
     (flexi-streams:string-to-octets str :external-format :utf-8))
 
 
-
 ;;
 ;; Important safety tip: cannot use built-in commands to convert a number to a string
 ;; https://github.com/nobody-famous/alive-lsp/issues/79
