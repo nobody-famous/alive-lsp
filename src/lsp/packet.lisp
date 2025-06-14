@@ -26,8 +26,22 @@
     (flexi-streams:string-to-octets str :external-format :utf-8))
 
 
-(defun number-to-bytes (num)
-    (string-to-bytes (princ-to-string num)))
+
+;;
+;; Important safety tip: cannot use built-in commands to convert a number to a string
+;; https://github.com/nobody-famous/alive-lsp/issues/79
+;;
+;; This is only encoding the packet length, so no need to worry about negative numbers, decimals, etc
+;;
+(defun to-decimal-string (num)
+    (loop :with result := ()
+          :with char-0 := (char-code #\0)
+
+          :while (< 0 num)
+          :do (push (code-char (+ char-0 (mod num 10))) result)
+              (setf num (floor (/ num 10)))
+
+          :finally (return (coerce result 'string))))
 
 
 (defun to-wire (msg)
@@ -35,7 +49,7 @@
            (bytes (flexi-streams:string-to-octets payload :external-format :utf-8)))
         (concatenate 'vector
             (string-to-bytes "Content-Length: ")
-            (number-to-bytes (length bytes))
+            (string-to-bytes (to-decimal-string (length bytes)))
             #(13 10)
             #(13 10)
             bytes)))
