@@ -27,20 +27,21 @@
                                        (:file "parse/form")
                                        (:file "parse/forms")
 
-                                       (:file "packages")
-
                                        (:file "compat/sbcl/file")
                                        (:file "compat/sbcl/streams")
                                        (:file "compat/sbcl/symbols")
                                        (:file "compat/sbcl/threads")
 
+                                       (:file "packages")
+                                       (:file "symbols")
+
                                        (:file "sys/streams")
                                        (:file "sys/asdf")
                                        (:file "sys/eval")
                                        (:file "sys/threads")
+                                       (:file "sys/xref")
 
                                        (:file "file")
-                                       (:file "symbols")
                                        (:file "format")
                                        (:file "frames")
                                        (:file "debugger")
@@ -55,7 +56,6 @@
                                        (:file "lsp/types/restart-info")
 
                                        (:file "lsp/errors")
-                                       (:file "lsp/utils")
                                        (:file "lsp/completions")
                                        (:file "lsp/definition")
                                        (:file "lsp/hover")

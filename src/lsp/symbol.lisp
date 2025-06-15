@@ -6,8 +6,7 @@
                       (:packages :alive/packages)
                       (:token :alive/parse/token)
                       (:tokenizer :alive/parse/tokenizer)
-                      (:types :alive/types)
-                      (:utils :alive/lsp/utils)))
+                      (:types :alive/types)))
 
 (in-package :alive/lsp/symbol)
 
@@ -18,7 +17,7 @@
            (*package* (if pkg pkg *package*)))
 
         (multiple-value-bind (name pkg-name)
-                (utils:symbol-for-pos text pos)
+                (alive/symbols:for-pos text pos)
             (when (and name pkg-name)
                   (list name pkg-name)))))
 

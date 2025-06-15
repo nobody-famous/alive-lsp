@@ -2,8 +2,7 @@
     (:use :cl)
     (:export :get-locations)
     (:local-nicknames (:pos :alive/position)
-                      (:sym :alive/symbols)
-                      (:utils :alive/lsp/utils)))
+                      (:sym :alive/symbols)))
 
 (in-package :alive/sys/xref)
 
@@ -16,26 +15,17 @@
               (T (sb-introspect:who-references to-find)))))
 
 
-(declaim (ftype (function (cons) (values list &optional)) find-caller-location))
-(defun find-caller-location (caller)
-    (declare (ignore caller))
-    #+n (let ((src (cdr caller)))
-            (when src
-                  (alive/source-utils:get-source-form src))))
-
-
-#+n (declaim (ftype (function (string string) loc:list-of-location) find-references))
+(declaim (ftype (function (string string) (or null cons)) find-references))
 (defun find-references (name pkg-name)
-    (format T "***** FIND REFS ~A ~A ~A~%" name pkg-name (find-callers name pkg-name))
-    #+n (let ((callers (find-callers name pkg-name)))
-            (remove nil (mapcar #'find-caller-location callers))))
+    (mapcar (lambda (caller)
+                (list (cons :file (sb-introspect:definition-source-pathname (cdr caller)))
+                      (cons :offset (sb-introspect:definition-source-character-offset (cdr caller)))))
+            (find-callers name pkg-name)))
 
 
-#+n (declaim (ftype (function (string pos:text-position) loc:list-of-location) get-locations))
-(declaim (ftype (function (string pos:text-position) *) get-locations))
+(declaim (ftype (function (string pos:text-position) (or null cons)) get-locations))
 (defun get-locations (text pos)
-    #+n (declare (ignore text pos))
     (multiple-value-bind (name pkg-name)
-            (utils:symbol-for-pos text pos)
+            (sym:for-pos text pos)
         (when (and name pkg-name)
               (find-references name pkg-name))))
