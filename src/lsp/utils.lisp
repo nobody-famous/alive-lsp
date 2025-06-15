@@ -24,15 +24,14 @@
                                  ((= 1 (length found-tokens)) (list (first found-tokens) nil nil))))))
 
 
-(defun symbol-for-pos (&key text pos)
+(defun symbol-for-pos (text pos)
     (let* ((raw-tokens (tokenizer:from-stream (make-string-input-stream text)))
            (tokens (find-tokens raw-tokens pos))
            (pkg-name (packages:for-pos text pos))
            (pkg (packages:lookup pkg-name))
-           (*package* (if pkg pkg *package*)))
+           (*package* (or pkg *package*)))
 
-        (if (zerop (length tokens))
-            nil
+        (unless (zerop (length tokens))
             (destructuring-bind (token1 token2 token3) tokens
                 (cond ((and (eq (token:get-type-value token1) types:*symbol*)
                             (eq (token:get-type-value token2) types:*colons*)
