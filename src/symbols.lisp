@@ -17,7 +17,8 @@
                       (:pos :alive/position)
                       (:token :alive/parse/token)
                       (:tokenizer :alive/parse/tokenizer)
-                      (:types :alive/types)))
+                      (:types :alive/types)
+                      (:utils :alive/utils)))
 
 (in-package :alive/symbols)
 
@@ -88,33 +89,6 @@
             (push (string-downcase (string s)) syms))))
 
 
-(defun needs-encoding (char)
-    (eq char #\:))
-
-
-(defun encode-char (char)
-    (if (needs-encoding char)
-        (format nil "%~2,'0X" (char-code char))
-        (string char)))
-
-
-(defun url-encode (str)
-    (let ((chars (map 'list (lambda (char)
-                                (encode-char char))
-                     str)))
-        (apply #'concatenate 'string chars)))
-
-
-(defun url-encode-filename (name)
-    (let* ((raw-pieces (uiop:split-string name :separator "/\\"))
-           (pieces (mapcar (lambda (piece)
-                               (if (string= piece "")
-                                   ""
-                                   (format NIL "/~A" (url-encode piece))))
-                           raw-pieces)))
-        (apply #'concatenate 'string pieces)))
-
-
 (defun lookup-sources (sym)
     (let ((types (list :class
                        :compiler-macro
@@ -167,7 +141,7 @@
            (form-path (when src (sb-introspect:definition-source-form-path src))))
 
         (if file
-            (list (url-encode-filename (namestring file))
+            (list (utils:url-encode-filename (namestring file))
                   (get-range-from-file file form-path))
             (list nil nil))))
 
