@@ -50,6 +50,7 @@
           (cons "textDocument/hover" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/document:hover state msg)))
           (cons "textDocument/onTypeFormatting" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/document:on-type state msg)))
           (cons "textDocument/rangeFormatting" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/document:formatting state msg)))
+          (cons "textDocument/references" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/document:references state msg)))
           (cons "textDocument/selectionRange" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/document:selection state msg)))
           (cons "textDocument/semanticTokens/full" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/document:sem-tokens state msg)))
           (cons "textDocument/signatureHelp" (lambda (deps msg) (declare (ignore deps))

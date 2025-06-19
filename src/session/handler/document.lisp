@@ -8,6 +8,7 @@
              :formatting
              :hover
              :on-type
+             :references
              :selection
              :sem-tokens
              :sig-help)
@@ -242,3 +243,16 @@
                       (make-array 0))))
 
         (utils:result id "signatures" items)))
+
+
+(declaim (ftype (function (state:state cons) hash-table) references))
+(defun references (state msg)
+    (let* ((id (cdr (assoc :id msg)))
+           (params (cdr (assoc :params msg)))
+           (doc (cdr (assoc :text-document params)))
+           (uri (cdr (assoc :uri doc)))
+           (pos (cdr (assoc :position params)))
+           (text (or (state:get-file-text state uri) ""))
+           (refs (alive/sys/xref:get-locations text pos)))
+        (alive/logger:error-msg (state:get-log state) "***** REFERENCES ~A" refs)
+        (utils:result id "result" (make-array 0))))
