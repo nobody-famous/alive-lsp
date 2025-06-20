@@ -1,7 +1,9 @@
 (defpackage :alive/sys/xref
     (:use :cl)
     (:export :get-locations)
-    (:local-nicknames (:pos :alive/position)
+    (:local-nicknames (:loc :alive/location)
+                      (:pos :alive/position)
+                      (:range :alive/range)
                       (:sym :alive/symbols)
                       (:utils :alive/utils)))
 

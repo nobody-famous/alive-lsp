@@ -18,6 +18,7 @@
                                        (:file "compile-message")
                                        (:file "position")
                                        (:file "range")
+                                       (:file "location")
                                        (:file "text-edit")
 
                                        (:file "deps")

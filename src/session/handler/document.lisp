@@ -19,7 +19,9 @@
                       (:fmt-utils :alive/lsp/message/format-utils)
                       (:formatter :alive/format)
                       (:forms :alive/parse/forms)
+                      (:loc :alive/location)
                       (:lsp-msg :alive/lsp/message/abstract)
+                      (:range :alive/range)
                       (:selection :alive/selection)
                       (:sem-types :alive/lsp/types/sem-tokens)
                       (:sig-help :alive/lsp/sig-help)
@@ -245,6 +247,23 @@
         (utils:result id "signatures" items)))
 
 
+(declaim (ftype (function (string fixnum) range:text-range) offset-to-range))
+(defun offset-to-range (text offset)
+    (declare (ignore offset))
+    (let* ((tokens (alive/parse/tokenizer:from-stream (make-string-input-stream text))))
+        (format T "***** OFFSET TO RANGE ~A~%" tokens)))
+
+
+(declaim (ftype (function (state:state cons) (or null loc:text-location)) ref-to-loc))
+(defun ref-to-loc (state ref)
+    (let* ((file (cdr (assoc :file ref)))
+           (offset (cdr (assoc :offset ref)))
+           (text (state:get-file-text state (format NIL "file://~A" file))))
+        (format T "***** FILE ~A~%" (format NIL "file://~A" file))
+        (format T "***** TEXT ~A~%" (length text))
+        (format T "***** OFFSET ~A~%" offset)))
+
+
 (declaim (ftype (function (state:state cons) hash-table) references))
 (defun references (state msg)
     (let* ((id (cdr (assoc :id msg)))
@@ -253,6 +272,7 @@
            (uri (cdr (assoc :uri doc)))
            (pos (cdr (assoc :position params)))
            (text (or (state:get-file-text state uri) ""))
-           (refs (alive/sys/xref:get-locations text pos)))
+           (locs (alive/sys/xref:get-locations text pos))
+           (refs (mapcar (lambda (ref) (ref-to-loc state ref)) locs)))
         (alive/logger:error-msg (state:get-log state) "***** REFERENCES ~A" refs)
         (utils:result id "result" (make-array 0))))

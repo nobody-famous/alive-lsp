@@ -137,6 +137,7 @@
 
 (declaim (ftype (function (state string string)) set-file-text))
 (defun set-file-text (state uri text)
+    (alive/logger:info-msg (get-log state) "***** SET TEXT ~A" uri)
     (setf (gethash uri (state-files state)) text))
 
 
