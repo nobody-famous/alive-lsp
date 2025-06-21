@@ -259,7 +259,7 @@
     (let* ((file (cdr (assoc :file ref)))
            (offset (cdr (assoc :offset ref)))
            (text (state:get-file-text state (format NIL "file://~A" file))))
-        (format T "***** FILE ~A~%" (format NIL "file://~A" file))
+        (format T "***** FILE ~A~%" (format NIL "~A" file))
         (format T "***** TEXT ~A~%" (length text))
         (format T "***** OFFSET ~A~%" offset)))
 
@@ -273,6 +273,7 @@
            (pos (cdr (assoc :position params)))
            (text (or (state:get-file-text state uri) ""))
            (locs (alive/sys/xref:get-locations text pos))
-           (refs (mapcar (lambda (ref) (ref-to-loc state ref)) locs)))
+           (refs (remove-if (lambda (r) (not r))
+                  (mapcar (lambda (ref) (ref-to-loc state ref)) locs))))
         (alive/logger:error-msg (state:get-log state) "***** REFERENCES ~A" refs)
         (utils:result id "result" (make-array 0))))
