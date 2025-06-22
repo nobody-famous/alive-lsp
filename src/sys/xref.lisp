@@ -58,12 +58,11 @@
 (declaim (ftype (function (hash-table cons) (values loc:text-location &optional)) ref-to-location))
 (defun ref-to-location (file-forms ref)
     (let* ((file (cdr (assoc :file ref)))
-           (forms (gethash file file-forms))
            (form-path (cdr (assoc :form-path ref)))
-           (form (forms:get-nth-form forms (first form-path))))
+           (forms (gethash file file-forms))
+           (range (forms:get-range-for-path forms form-path)))
         (loc:create (utils:url-encode-filename file)
-                    (range:create (form:get-start form)
-                                  (form:get-end form)))))
+                    range)))
 
 
 (declaim (ftype (function (string string) (or null cons)) find-references))

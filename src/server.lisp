@@ -120,11 +120,6 @@
           (cons "$/alive/inspectMacro" (lambda (deps msg) (alive/session/handler/inspect:macro deps state msg)))))
 
 
-(declaim (ftype (function () state:state) create-session-state))
-(defun create-session-state ()
-    (state:create))
-
-
 (declaim (ftype (function (&key (:input-stream flexi-streams:flexi-io-stream) (:output-stream T) (:state state:state)) deps:dependencies) create-deps))
 (defun create-deps (&key input-stream output-stream state)
     (let ((handlers (get-message-handlers state)))
