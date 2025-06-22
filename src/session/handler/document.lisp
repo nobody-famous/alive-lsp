@@ -8,6 +8,7 @@
              :formatting
              :hover
              :on-type
+             :references
              :selection
              :sem-tokens
              :sig-help)
@@ -18,7 +19,9 @@
                       (:fmt-utils :alive/lsp/message/format-utils)
                       (:formatter :alive/format)
                       (:forms :alive/parse/forms)
+                      (:loc :alive/location)
                       (:lsp-msg :alive/lsp/message/abstract)
+                      (:range :alive/range)
                       (:selection :alive/selection)
                       (:sem-types :alive/lsp/types/sem-tokens)
                       (:sig-help :alive/lsp/sig-help)
@@ -105,7 +108,7 @@
            (forms (forms:from-stream-or-nil (make-string-input-stream text)))
            (symbols (alive/lsp/symbol:for-document text forms)))
 
-        (let ((result (if symbols symbols (make-hash-table))))
+        (let ((result (or symbols (make-hash-table))))
             (lsp-msg:create-response id
                                      :result-value result))))
 
@@ -242,3 +245,16 @@
                       (make-array 0))))
 
         (utils:result id "signatures" items)))
+
+
+(declaim (ftype (function (state:state cons) hash-table) references))
+(defun references (state msg)
+    (let* ((id (cdr (assoc :id msg)))
+           (params (cdr (assoc :params msg)))
+           (doc (cdr (assoc :text-document params)))
+           (uri (cdr (assoc :uri doc)))
+           (pos (cdr (assoc :position params)))
+           (text (or (state:get-file-text state uri) ""))
+           (locs (alive/sys/xref:get-locations text pos)))
+        (lsp-msg:create-response id
+                                 :result-value (or locs (make-array 0)))))

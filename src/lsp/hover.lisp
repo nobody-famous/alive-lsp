@@ -3,18 +3,18 @@
     (:export :get-text)
     (:local-nicknames (:tokenizer :alive/parse/tokenizer)
                       (:packages :alive/packages)
+                      (:symbols :alive/symbols)
                       (:token :alive/parse/token)
-                      (:types :alive/types)
-                      (:utils :alive/lsp/utils)))
+                      (:types :alive/types)))
 
 (in-package :alive/lsp/hover)
 
 
 (defun get-symbol-doc (name pkg-name)
-    (let* ((sym (alive/symbols:lookup name pkg-name)))
+    (let* ((sym (symbols:lookup name pkg-name)))
         (when sym
               (with-output-to-string (str)
-                  (cond ((alive/symbols:get-lambda-list name pkg-name)
+                  (cond ((symbols:get-lambda-list name pkg-name)
                             (describe sym str))
                         ((boundp sym)
                             (format str "~A~%" (symbol-value sym)))
@@ -27,8 +27,6 @@
            (*package* (if pkg pkg *package*)))
 
         (multiple-value-bind (name pkg-name)
-
-                (utils:symbol-for-pos :text text :pos pos)
-
+                (symbols:for-pos text pos)
             (when (and name pkg-name)
                   (get-symbol-doc name pkg-name)))))

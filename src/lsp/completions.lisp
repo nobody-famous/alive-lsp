@@ -222,7 +222,7 @@
         (if (zerop (length tokens))
             '()
             (destructuring-bind (token1 token2 token3)
-                    (alive/lsp/utils:find-tokens tokens pos)
+                    (symbols:find-tokens tokens pos)
                 (cond ((and (eq (token:get-type-value token1) types:*symbol*)
                             (eq (token:get-type-value token2) types:*colons*)
                             (eq (token:get-type-value token3) types:*symbol*))

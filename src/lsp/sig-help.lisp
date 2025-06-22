@@ -104,7 +104,7 @@
                              (get-active-parameter pos outer-form)
                              0))
            (name-tokens (when (hash-table-p name-form)
-                              (alive/lsp/utils:find-tokens tokens (gethash "end" name-form))))
+                              (symbols:find-tokens tokens (gethash "end" name-form))))
            (pkg-name (alive/packages:for-pos text pos))
            (pkg (pkgs:lookup pkg-name))
            (*package* (if pkg pkg *package*)))

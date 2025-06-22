@@ -49,6 +49,7 @@
         (setf (gethash "selectionRangeProvider" caps) T)
         (setf (gethash "definitionProvider" caps) T)
         (setf (gethash "documentSymbolProvider" caps) T)
+        (setf (gethash "referencesProvider" caps) T)
 
         (setf (gethash "capabilities" data) caps)
 

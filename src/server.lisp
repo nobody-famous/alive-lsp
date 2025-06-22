@@ -50,6 +50,7 @@
           (cons "textDocument/hover" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/document:hover state msg)))
           (cons "textDocument/onTypeFormatting" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/document:on-type state msg)))
           (cons "textDocument/rangeFormatting" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/document:formatting state msg)))
+          (cons "textDocument/references" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/document:references state msg)))
           (cons "textDocument/selectionRange" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/document:selection state msg)))
           (cons "textDocument/semanticTokens/full" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/document:sem-tokens state msg)))
           (cons "textDocument/signatureHelp" (lambda (deps msg) (declare (ignore deps))
@@ -117,11 +118,6 @@
                                                                                 (lambda ()
                                                                                     (alive/session/handler/inspect:do-inspect-eval deps state msg)))))
           (cons "$/alive/inspectMacro" (lambda (deps msg) (alive/session/handler/inspect:macro deps state msg)))))
-
-
-(declaim (ftype (function () state:state) create-session-state))
-(defun create-session-state ()
-    (state:create))
 
 
 (declaim (ftype (function (&key (:input-stream flexi-streams:flexi-io-stream) (:output-stream T) (:state state:state)) deps:dependencies) create-deps))
