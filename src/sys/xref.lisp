@@ -1,11 +1,12 @@
 (defpackage :alive/sys/xref
     (:use :cl)
     (:export :get-locations)
-    (:local-nicknames (:loc :alive/location)
+    (:local-nicknames (:form :alive/parse/form)
+                      (:forms :alive/parse/forms)
+                      (:loc :alive/location)
                       (:pos :alive/position)
                       (:range :alive/range)
                       (:sym :alive/symbols)
-                      (:token :alive/parse/token)
                       (:utils :alive/utils)))
 
 (in-package :alive/sys/xref)
@@ -26,7 +27,7 @@
                          (namestring (sb-introspect:definition-source-pathname (cdr caller)))
                          nil)))
         (list (cons :file path-str)
-              (cons :offset (sb-introspect:definition-source-character-offset (cdr caller))))))
+              (cons :form-path (sb-introspect:definition-source-form-path (cdr caller))))))
 
 
 (declaim (ftype (function (string string) (or null cons)) lookup-references))
@@ -37,43 +38,40 @@
                 locations)))
 
 
-(declaim (ftype (function (string) (values list &optional)) read-file-tokens))
-(defun read-file-tokens (file)
+(declaim (ftype (function (string) (values list &optional)) read-file-forms))
+(defun read-file-forms (file)
     (with-open-file (s file)
-        (alive/parse/tokenizer:from-stream s)))
+        (alive/parse/forms:from-stream s)))
 
 
-(declaim (ftype (function (cons) hash-table) get-file-tokens))
-(defun get-file-tokens (refs)
+(declaim (ftype (function ((or null cons)) hash-table) get-file-forms))
+(defun get-file-forms (refs)
     (loop :with file := nil
-          :with tokens := (make-hash-table :test #'equalp)
+          :with forms := (make-hash-table :test #'equalp)
           :for ref :in refs
           :do (setf file (cdr (assoc :file ref)))
-              (unless (gethash file tokens)
-                  (setf (gethash file tokens) (read-file-tokens file)))
-          :finally (return tokens)))
+              (unless (gethash file forms)
+                  (setf (gethash file forms) (read-file-forms file)))
+          :finally (return forms)))
 
 
 (declaim (ftype (function (hash-table cons) (values loc:text-location &optional)) ref-to-location))
-(defun ref-to-location (tokens ref)
-    (loop :with file := (cdr (assoc :file ref))
-          :with offset := (cdr (assoc :offset ref))
-          :for token :in (gethash file tokens)
-          :while (< (token:get-end-offset token) offset)
-          :finally (return (loc:create (utils:url-encode-filename file)
-                                       (range:create (token:get-start token)
-                                                     (token:get-end token))))))
+(defun ref-to-location (file-forms ref)
+    (let* ((file (cdr (assoc :file ref)))
+           (forms (gethash file file-forms))
+           (form-path (cdr (assoc :form-path ref)))
+           (form (forms:get-nth-form forms (first form-path))))
+        (loc:create (utils:url-encode-filename file)
+                    (range:create (form:get-start form)
+                                  (form:get-end form)))))
 
 
 (declaim (ftype (function (string string) (or null cons)) find-references))
 (defun find-references (name pkg-name)
     (let* ((refs (lookup-references name pkg-name))
-           (file-tokens (get-file-tokens refs)))
-        (format T "***** REFS ~A~%" (mapcar (lambda (ref)
-                                                (ref-to-location file-tokens ref))
-                                            refs))
+           (file-forms (get-file-forms refs)))
         (mapcar (lambda (ref)
-                    (ref-to-location file-tokens ref))
+                    (ref-to-location file-forms ref))
                 refs)))
 
 

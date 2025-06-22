@@ -108,7 +108,7 @@
            (forms (forms:from-stream-or-nil (make-string-input-stream text)))
            (symbols (alive/lsp/symbol:for-document text forms)))
 
-        (let ((result (if symbols symbols (make-hash-table))))
+        (let ((result (or symbols (make-hash-table))))
             (lsp-msg:create-response id
                                      :result-value result))))
 
@@ -247,23 +247,6 @@
         (utils:result id "signatures" items)))
 
 
-(declaim (ftype (function (string fixnum) range:text-range) offset-to-range))
-(defun offset-to-range (text offset)
-    (declare (ignore offset))
-    (let* ((tokens (alive/parse/tokenizer:from-stream (make-string-input-stream text))))
-        (format T "***** OFFSET TO RANGE ~A~%" tokens)))
-
-
-(declaim (ftype (function (state:state cons) (or null loc:text-location)) ref-to-loc))
-(defun ref-to-loc (state ref)
-    (let* ((file (cdr (assoc :file ref)))
-           (offset (cdr (assoc :offset ref)))
-           (text (state:get-file-text state (format NIL "file://~A" file))))
-        (format T "***** FILE ~A~%" (format NIL "~A" file))
-        (format T "***** TEXT ~A~%" (length text))
-        (format T "***** OFFSET ~A~%" offset)))
-
-
 (declaim (ftype (function (state:state cons) hash-table) references))
 (defun references (state msg)
     (let* ((id (cdr (assoc :id msg)))
@@ -272,8 +255,6 @@
            (uri (cdr (assoc :uri doc)))
            (pos (cdr (assoc :position params)))
            (text (or (state:get-file-text state uri) ""))
-           (locs (alive/sys/xref:get-locations text pos))
-           (refs (remove-if (lambda (r) (not r))
-                  (mapcar (lambda (ref) (ref-to-loc state ref)) locs))))
-        (alive/logger:error-msg (state:get-log state) "***** REFERENCES ~A" refs)
-        (utils:result id "result" (make-array 0))))
+           (locs (alive/sys/xref:get-locations text pos)))
+        (lsp-msg:create-response id
+                                 :result-value (or locs (make-array 0)))))
