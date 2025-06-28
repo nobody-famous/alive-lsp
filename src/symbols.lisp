@@ -10,7 +10,6 @@
              :get-lambda-list
              :get-location
              :get-source-file
-             :is-sharp-quote
              :lookup
              :macro-p)
     (:local-nicknames (:forms :alive/parse/forms)
