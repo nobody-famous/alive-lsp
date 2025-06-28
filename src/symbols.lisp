@@ -171,11 +171,6 @@
                                  ((= 1 (length found-tokens)) (list (first found-tokens) nil nil))))))
 
 
-(defun is-sharp-quote (text)
-    (and (<= 2 (length text))
-         (string= "#'" (subseq text 0 2))))
-
-
 (defun for-pos (text pos)
     (let* ((raw-tokens (tokenizer:from-stream (make-string-input-stream text)))
            (tokens (find-tokens raw-tokens pos))
@@ -197,11 +192,6 @@
 
                       ((eq (token:get-type-value token1) types:*symbol*)
                           (values (token:get-text token1)
-                              pkg-name))
-
-                      ((and (eq (token:get-type-value token1) types:*macro*)
-                            (is-sharp-quote (token:get-text token1)))
-                          (values (subseq (token:get-text token1) 2)
                               pkg-name))
 
                       (T nil))))))

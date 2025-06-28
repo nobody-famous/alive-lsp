@@ -193,27 +193,25 @@
                   *features*)))
 
 
-(defun pound (text)
-    (if (symbols:is-sharp-quote text)
-        (symbol-no-pkg :name (subseq text 2) :pkg-name (package-name *package*))
-        (mapcar (lambda (item)
-                    (create-item :label item
-                                 :insert-text item
-                                 :kind *kind-text*
-                                 :doc-string nil
-                                 :insert-format *insert-plain*))
-                '("#+"
-                  "#-"
-                  "#/"
-                  "#\\"
-                  "#\\backspace"
-                  "#\\linefeed"
-                  "#\\newline"
-                  "#\\page"
-                  "#\\return"
-                  "#\\rubout"
-                  "#\\space"
-                  "#\\tab"))))
+(defun pound ()
+    (mapcar (lambda (item)
+                (create-item :label item
+                             :insert-text item
+                             :kind *kind-text*
+                             :doc-string nil
+                             :insert-format *insert-plain*))
+            '("#+"
+              "#-"
+              "#/"
+              "#\\"
+              "#\\backspace"
+              "#\\linefeed"
+              "#\\newline"
+              "#\\page"
+              "#\\return"
+              "#\\rubout"
+              "#\\space"
+              "#\\tab")))
 
 
 (defun simple (&key text pos)
@@ -266,6 +264,6 @@
                           (feature (token:get-text token1)))
 
                       ((eq (token:get-type-value token1) types:*macro*)
-                          (pound (token:get-text token1)))
+                          (pound))
 
                       (T '()))))))
