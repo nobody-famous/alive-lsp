@@ -79,9 +79,16 @@
                                               :type-value alive/types:*macro*
                                               :start (pos:create 0 0)
                                               :start-offset 0
+                                              :end (pos:create 0 2)
+                                              :end-offset 2
+                                              :text "#'")
+                                          (token:create
+                                              :type-value alive/types:*symbol*
+                                              :start (pos:create 0 2)
+                                              :start-offset 2
                                               :end (pos:create 0 6)
                                               :end-offset 6
-                                              :text "#'abcd"))
+                                              :text "abcd"))
                           :actual (tokens-for-string "#'abcd"))))
 
 

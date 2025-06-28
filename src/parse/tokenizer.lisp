@@ -238,6 +238,11 @@
         (new-token state types:*macro*)))
 
 
+(defun read-sharp-quote (state)
+    (next-char state)
+    (new-token state types:*macro*))
+
+
 (defun read-macro-token (state)
     (next-char state)
 
@@ -247,6 +252,7 @@
                        (char= ch #\-)) (read-ifdef-token state ch))
                   ((char= ch #\|) (read-block-comment-token state))
                   ((char= ch #\\) (read-macro-char state))
+                  ((char= ch #\') (read-sharp-quote state))
                   (t (read-macro-generic-token state)))
             (new-token state types:*macro*))))
 
