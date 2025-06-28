@@ -1,15 +1,16 @@
 (defpackage :alive/symbols
     (:use :cl)
     (:export :callable-p
+             :external-p
+             :find-tokens
+             :for-pos
+             :function-p
              :get-all
              :get-all-names
              :get-lambda-list
              :get-location
              :get-source-file
-             :external-p
-             :find-tokens
-             :for-pos
-             :function-p
+             :is-sharp-quote
              :lookup
              :macro-p)
     (:local-nicknames (:forms :alive/parse/forms)
