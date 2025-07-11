@@ -266,6 +266,20 @@
         (new-token state types:*comma*)))
 
 
+(defun read-vertical-bar-token (state)
+    (next-char state)
+
+    (loop :with ch := (look-ahead state)
+
+          :while (and ch (not (char= ch #\|)))
+          :do (next-char state)
+              (setf ch (look-ahead state))
+
+          :finally (progn (when (and ch (char= ch #\|))
+                                (next-char state))
+                          (return (new-token state types:*symbol*)))))
+
+
 (defun next-token (state)
     (start-token state)
 
@@ -280,6 +294,7 @@
                     ((char= ch #\:) (read-colons-token state))
                     ((char= ch #\#) (read-macro-token state))
                     ((char= ch #\,) (read-comma-token state))
+                    ((char= ch #\|) (read-vertical-bar-token state))
                     ((is-ws ch) (read-ws-token state))
                     (T (read-symbol-token state))))))
 

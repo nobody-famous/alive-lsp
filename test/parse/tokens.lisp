@@ -170,6 +170,28 @@
                           :actual (tokens-for-string "foo::bar"))))
 
 
+(defun test-vertical-bars ()
+    (clue:test "Vertical bar name"
+        (clue:check-equal :expected (list (token:create
+                                              :type-value alive/types:*symbol*
+                                              :start (pos:create 0 0)
+                                              :start-offset 0
+                                              :end (pos:create 0 9)
+                                              :end-offset 9
+                                              :text "|foo:bar|"))
+                          :actual (tokens-for-string "|foo:bar|")))
+
+    (clue:test "Unterminated vertical bar name"
+        (clue:check-equal :expected (list (token:create
+                                              :type-value alive/types:*symbol*
+                                              :start (pos:create 0 0)
+                                              :start-offset 0
+                                              :end (pos:create 0 7)
+                                              :end-offset 7
+                                              :text "|foo:ba"))
+                          :actual (tokens-for-string "|foo:ba"))))
+
+
 (defun run-all ()
     (clue:suite "Parse tokens"
         (test-foo)
@@ -179,4 +201,5 @@
         (test-basic-macro)
         (test-ifdef-macro)
         (test-parens)
-        (test-sym-with-pkg)))
+        (test-sym-with-pkg)
+        (test-vertical-bars)))
