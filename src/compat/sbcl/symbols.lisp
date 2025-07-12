@@ -2,30 +2,19 @@
     (:use :cl)
     (:export :callable-p
              :get-lambda-list
-             :function-p))
+             :function-p)
+    (:local-nicknames (:utils :alive/utils)))
 
 (in-package :alive/sbcl/symbols)
 
 
 (defun get-lambda-list (fn-name &optional pkg-name)
-    (let* ((pkg (ignore-errors (if pkg-name
-                                   (find-package (string-upcase pkg-name))
-                                   *package*)))
-           (*package* (if pkg
-                          pkg
-                          *package*)))
-
-        (ignore-errors (sb-introspect:function-lambda-list
-                           (find-symbol (string-upcase fn-name))))))
+    (ignore-errors (sb-introspect:function-lambda-list
+                       (utils:lookup-symbol fn-name pkg-name))))
 
 
 (defun function-p (sym-name &optional pkg-name)
-    (let* ((pkg (if pkg-name
-                    (find-package (string-upcase pkg-name))
-                    *package*))
-           (sym (when pkg
-                      (find-symbol (string-upcase sym-name) pkg))))
-
+    (let ((sym (utils:lookup-symbol sym-name pkg-name)))
         (if (sb-introspect:function-type sym)
             T
             NIL)))

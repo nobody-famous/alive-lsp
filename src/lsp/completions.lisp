@@ -125,6 +125,14 @@
                         symbols))))
 
 
+(defun escape-name (name)
+    (if (some (lambda (ch)
+                  (and (alpha-char-p ch)
+                       (lower-case-p ch))) name)
+        (format nil "|~A|" name)
+        (string-downcase name)))
+
+
 (defun symbol-with-pkg (&key name num-colons pkg-name)
     (let* ((req-pkg (find-package (string-upcase pkg-name)))
            (pkg (if req-pkg req-pkg *package*)))
@@ -133,7 +141,7 @@
                           :pkg pkg
                           :symbols (if (eq 1 num-colons)
                                        (get-ext-symbols pkg)
-                                       (symbols:get-all-names pkg)))))
+                                       (mapcar #'escape-name (symbols:get-all-names pkg))))))
 
 
 (defun get-pkg-matches (&key name pkg-name)
