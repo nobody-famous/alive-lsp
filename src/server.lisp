@@ -74,6 +74,8 @@
           (cons "$/alive/listThreads" (lambda (deps msg) (alive/session/handler/threads:list-all deps state msg)))
           (cons "$/alive/killThread" (lambda (deps msg) (alive/session/handler/threads:kill deps state msg)))
 
+          (cons "$/alive/listTracedFunctions" (lambda (deps msg) (alive/session/handler/traced-fns:list-all deps msg)))
+
           (cons "$/alive/listAsdfSystems" (lambda (deps msg) (alive/session/handler/asdf:list-all deps msg)))
           (cons "$/alive/loadAsdfSystem" (lambda (deps msg)
                                              (threads:run-in-thread deps state (or (cdr (assoc :method msg)) "ASDF")
@@ -130,6 +132,7 @@
                      :list-all-threads (lambda () (alive/sys/threads:list-all))
                      :kill-thread (lambda (id) (alive/sys/threads:kill id))
                      :list-all-asdf (lambda () (alive/sys/asdf:list-all))
+                     :list-all-traced (lambda () (alive/sys/traced-fns:list-all))
                      :load-asdf-system (lambda (&rest args) (apply 'alive/sys/asdf:load-system args))
                      :get-thread-id (lambda (thread) (alive/sys/threads:get-id thread))
                      :eval-fn (lambda (arg) (alive/sys/eval:eval-fn arg))

@@ -9,6 +9,7 @@
              :kill-thread
              :list-all-asdf
              :list-all-threads
+             :list-all-traced
              :load-asdf-system
              :macro-expand
              :macro-expand-1
@@ -30,6 +31,7 @@
     (list-all-threads nil :type (or null (function () cons)))
     (kill-thread nil :type (or null (function (T) *)))
     (list-all-asdf nil :type (or null (function () cons)))
+    (list-all-traced nil :type (or null (function () (or null cons))))
     (load-asdf-system nil :type (or null (function (&key (:name string) (:stdin-fn function) (:stdout-fn function) (:stderr-fn function) (:force boolean)) boolean)))
     (get-thread-id nil :type (or null (function (bt:thread) *)))
     (macro-expand nil :type (or null (function (string string) list)))
@@ -46,6 +48,7 @@
                                 (:list-all-threads (function () cons))
                                 (:kill-thread (function (T) *))
                                 (:list-all-asdf (function () cons))
+                                (:list-all-traced (function () (or null cons)))
                                 (:load-asdf-system (function (&key (:name string) (:stdin-fn function) (:stdout-fn function) (:stderr-fn function) (:force boolean)) boolean))
                                 (:get-thread-id (function (bt:thread) *))
                                 (:eval-fn (function (stream) *))
@@ -65,6 +68,7 @@
                     (list-all-threads (lambda () (list)))
                     (kill-thread (lambda (id) (declare (ignore id))))
                     (list-all-asdf (lambda () (list)))
+                    (list-all-traced (lambda () (list)))
                     (load-asdf-system (lambda (&key name stdin-fn stdout-fn stderr-fn force)
                                           (declare (ignore name stdin-fn stdout-fn stderr-fn force))
                                           T))
@@ -88,6 +92,7 @@
                        :list-all-threads list-all-threads
                        :kill-thread kill-thread
                        :list-all-asdf list-all-asdf
+                       :list-all-traced list-all-traced
                        :load-asdf-system load-asdf-system
                        :get-thread-id get-thread-id
                        :eval-fn eval-fn
@@ -136,6 +141,11 @@
 (declaim (ftype (function (dependencies) (values cons &optional)) list-all-asdf))
 (defun list-all-asdf (deps)
     (funcall (dependencies-list-all-asdf deps)))
+
+
+(declaim (ftype (function (dependencies) (values (or null cons) &optional)) list-all-traced))
+(defun list-all-traced (deps)
+    (funcall (dependencies-list-all-traced deps)))
 
 
 (declaim (ftype (function (dependencies &key (:name string) (:stdin-fn function) (:stdout-fn function) (:stderr-fn function) (:force boolean)) (values boolean &optional)) load-asdf-system))
