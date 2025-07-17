@@ -10,5 +10,5 @@
 (declaim (ftype (function (deps:dependencies cons) hash-table) list-all))
 (defun list-all (deps msg)
     (utils:result (cdr (assoc :id msg))
-                  "names"
+                  "traced"
                   (deps:list-all-traced deps)))
