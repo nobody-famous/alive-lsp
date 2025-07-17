@@ -1,6 +1,7 @@
 (defpackage :alive/symbols
     (:use :cl)
     (:export :callable-p
+             :escape
              :external-p
              :find-tokens
              :for-pos
@@ -20,6 +21,14 @@
                       (:utils :alive/utils)))
 
 (in-package :alive/symbols)
+
+
+(defun escape (name)
+    (if (some (lambda (ch)
+                  (and (alpha-char-p ch)
+                       (lower-case-p ch))) name)
+        (format nil "|~A|" name)
+        (string-downcase name)))
 
 
 (defun function-p (name &optional pkg-name)
