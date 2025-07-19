@@ -136,6 +136,7 @@
                                        (:file "session/handler/packages")
                                        (:file "session/handler/symbol")
                                        (:file "session/handler/threads")
+                                       (:file "session/handler/traced-fns")
                                        (:file "session/handler/utils")
                                        (:file "session/message")
                                        (:file "session/message-loop")
