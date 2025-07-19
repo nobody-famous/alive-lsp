@@ -1,12 +1,21 @@
 (defpackage :alive/session/handler/traced-fns
     (:use :cl)
-    (:export :list-all)
+    (:export :list-all
+             :trace-fn)
     (:local-nicknames (:deps :alive/deps)
                       (:state :alive/session/state)
                       (:tokenizer :alive/parse/tokenizer)
                       (:utils :alive/session/handler/utils)))
 
 (in-package :alive/session/handler/traced-fns)
+
+
+(defun get-function-for-pos (text pos)
+    (declare (ignore pos))
+
+    (loop :for token :in (tokenizer:from-stream (make-string-input-stream text))
+          :do (alive/test/utils:print-hash-table "***** TOKEN" token)
+          :finally (return nil)))
 
 
 (declaim (ftype (function (deps:dependencies state:state cons) hash-table) trace-fn))
@@ -17,9 +26,12 @@
            (doc (cdr (assoc :text-document params)))
            (pos (cdr (assoc :position params)))
            (uri (cdr (assoc :uri doc)))
-           (text (or (state:get-file-text state uri) ""))
-           (tokens (tokenizer:from-stream (make-string-input-stream text))))
-        (declare (ignore pos tokens))
+           (text (or (state:get-file-text state uri) "")))
+
+        (multiple-value-bind (pkg-name fn-name)
+                (get-function-for-pos text pos)
+            (declare (ignore pkg-name fn-name))
+            nil)
 
         (utils:result id "traced" nil)))
 
