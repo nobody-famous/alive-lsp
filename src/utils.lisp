@@ -69,7 +69,7 @@
                              (char= #\| (char name (1- (length name)))))
                         (subseq name 1 (- (length name) 1))
                         name)))
-        (if pkg
+        (if (and sym-name pkg)
             (or (find-symbol sym-name pkg)
                 (find-symbol (string-upcase sym-name) pkg))
             (values nil nil))))
