@@ -3,6 +3,7 @@
     (:export :list-all
              :trace-fn)
     (:local-nicknames (:deps :alive/deps)
+                      (:lsp-msg :alive/lsp/message/abstract)
                       (:state :alive/session/state)
                       (:tokenizer :alive/parse/tokenizer)
                       (:utils :alive/session/handler/utils)))
@@ -31,9 +32,7 @@
         (multiple-value-bind (pkg-name fn-name)
                 (get-function-for-pos text pos)
             (declare (ignore pkg-name fn-name))
-            nil)
-
-        (utils:result id "traced" nil)))
+            (lsp-msg:create-response id :result-value T))))
 
 
 (declaim (ftype (function (deps:dependencies cons) hash-table) list-all))

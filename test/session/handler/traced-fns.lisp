@@ -23,12 +23,14 @@
 
 
 (defun test-trace-fn ()
-    (clue:test "Trace Function"
-        (let ((state (state:create))
-              (deps (deps:create))
-              (msg (create-msg 5 "some/uri" (pos:create 0 2))))
-            (state:set-file-text state "some/uri" "foo:bar")
-            (handler:trace-fn deps state msg))))
+    (clue:suite "Trace Function"
+        (clue:test "Simple package and function"
+            (let* ((state (state:create))
+                   (deps (deps:create))
+                   (msg (create-msg 5 "some/uri" (pos:create 0 2)))
+                   (resp (handler:trace-fn deps state msg)))
+                (state:set-file-text state "some/uri" "foo:bar")
+                (alive/test/utils:print-hash-table "***** RESP" resp)))))
 
 
 (defun run-all ()

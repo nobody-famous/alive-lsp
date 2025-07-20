@@ -70,6 +70,13 @@
                               :actual (deps:list-all-asdf deps)))))
 
 
+(defun test-list-all-traced ()
+    (clue:test "List all traced functions"
+        (let ((deps (deps:create :list-all-traced (lambda () (list 1 2)))))
+            (clue:check-equal :expected (list 1 2)
+                              :actual (deps:list-all-traced deps)))))
+
+
 (defun test-load-asdf ()
     (clue:test "Load ASDF system"
         (let ((deps (deps:create :list-all-asdf (lambda () (list 1 2)))))
