@@ -4,6 +4,7 @@
              :trace-fn)
     (:local-nicknames (:deps :alive/deps)
                       (:lsp-msg :alive/lsp/message/abstract)
+                      (:packages :alive/packages)
                       (:state :alive/session/state)
                       (:tokenizer :alive/parse/tokenizer)
                       (:utils :alive/session/handler/utils)))
@@ -11,12 +12,23 @@
 (in-package :alive/session/handler/traced-fns)
 
 
+(declaim (ftype (function (string cons) (values (or null string) (or null string))) get-function-for-pos))
 (defun get-function-for-pos (text pos)
-    (declare (ignore pos))
+    (declare (ignore text pos))
 
-    (loop :for token :in (tokenizer:from-stream (make-string-input-stream text))
-          :do (alive/test/utils:print-hash-table "***** TOKEN" token)
-          :finally (return nil)))
+    #+n (loop :for token :in (tokenizer:from-stream (make-string-input-stream text))
+              :do (alive/test/utils:print-hash-table "***** TOKEN" token)
+              :finally (return nil))
+
+    (values nil nil))
+
+
+(declaim (ftype (function (deps:dependencies(or null string) (or null string)) boolean) do-trace-fn))
+(defun do-trace-fn (deps pkg-name fn-name)
+    (let ((*package* (if pkg-name
+                         (packages:for-string pkg-name)
+                         *package*)))
+        (deps:trace-fn deps fn-name)))
 
 
 (declaim (ftype (function (deps:dependencies state:state cons) hash-table) trace-fn))

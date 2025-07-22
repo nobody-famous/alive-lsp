@@ -33,7 +33,7 @@
     (kill-thread nil :type (or null (function (T) *)))
     (list-all-asdf nil :type (or null (function () cons)))
     (list-all-traced nil :type (or null (function () (or null cons))))
-    (trace-fn nil :type (or null (function (string string) *)))
+    (trace-fn nil :type (or null (function (string) boolean)))
     (load-asdf-system nil :type (or null (function (&key (:name string) (:stdin-fn function) (:stdout-fn function) (:stderr-fn function) (:force boolean)) boolean)))
     (get-thread-id nil :type (or null (function (bt:thread) *)))
     (macro-expand nil :type (or null (function (string string) list)))
@@ -51,7 +51,7 @@
                                 (:kill-thread (function (T) *))
                                 (:list-all-asdf (function () cons))
                                 (:list-all-traced (function () (or null cons)))
-                                (:trace-fn (function (string string) *))
+                                (:trace-fn (function (string) boolean))
                                 (:load-asdf-system (function (&key (:name string) (:stdin-fn function) (:stdout-fn function) (:stderr-fn function) (:force boolean)) boolean))
                                 (:get-thread-id (function (bt:thread) *))
                                 (:eval-fn (function (stream) *))
@@ -72,7 +72,7 @@
                     (kill-thread (lambda (id) (declare (ignore id))))
                     (list-all-asdf (lambda () (list)))
                     (list-all-traced (lambda () (list)))
-                    (trace-fn (lambda (pkg-name fn-name) (declare (ignore pkg-name fn-name)) nil))
+                    (trace-fn (lambda (fn-name) (declare (ignore fn-name)) nil))
                     (load-asdf-system (lambda (&key name stdin-fn stdout-fn stderr-fn force)
                                           (declare (ignore name stdin-fn stdout-fn stderr-fn force))
                                           T))
@@ -153,9 +153,11 @@
     (funcall (dependencies-list-all-traced deps)))
 
 
-(declaim (ftype (function (dependencies string string) *) trace-fn))
-(defun trace-fn (deps pkg-name fn-name)
-    (funcall (dependencies-trace-fn deps) pkg-name fn-name))
+(declaim (ftype (function (dependencies string) boolean) trace-fn))
+(defun trace-fn (deps fn-name)
+    (if (funcall (dependencies-trace-fn deps) fn-name)
+        T
+        NIL))
 
 
 (declaim (ftype (function (dependencies &key (:name string) (:stdin-fn function) (:stdout-fn function) (:stderr-fn function) (:force boolean)) (values boolean &optional)) load-asdf-system))

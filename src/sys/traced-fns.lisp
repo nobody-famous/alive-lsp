@@ -7,15 +7,12 @@
 (in-package :alive/sys/traced-fns)
 
 
-(declaim (ftype (function (string string) *) trace-fn))
-(defun trace-fn (pkg-name fn-name)
-    (let ((pkg (packages:for-string pkg-name))
-          (to-eval (format NIL "(trace ~A)" fn-name)))
-        (when pkg
-              (let ((*package* pkg))
-                  (if (eval (read (make-string-input-stream to-eval)))
-                      T
-                      NIL)))))
+(declaim (ftype (function (string) boolean) trace-fn))
+(defun trace-fn (fn-name)
+    (let ((to-eval (format NIL "(trace ~A)" fn-name)))
+        (if (eval (read (make-string-input-stream to-eval)))
+            T
+            NIL)))
 
 
 (declaim (ftype (function () (values list &optional)) list-all))

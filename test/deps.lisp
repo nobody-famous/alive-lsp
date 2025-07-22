@@ -78,10 +78,15 @@
 
 
 (defun test-trace-fn ()
-    (clue:test "Trace function"
-        (let ((deps (deps:create :trace-fn (lambda (pkg-name fn-name) (declare (ignore pkg-name fn-name)) T))))
-            (clue:check-equal :expected T
-                              :actual (deps:trace-fn deps "foo" "bar")))))
+    (clue:suite "Trace function"
+        (clue:test "Success"
+            (let ((deps (deps:create :trace-fn (lambda (pkg-name fn-name) (declare (ignore pkg-name fn-name)) T))))
+                (clue:check-equal :expected T
+                                  :actual (deps:trace-fn deps "foo" "bar"))))
+        (clue:test "Fail"
+            (let ((deps (deps:create :trace-fn (lambda (pkg-name fn-name) (declare (ignore pkg-name fn-name)) NIL))))
+                (clue:check-equal :expected NIL
+                                  :actual (deps:trace-fn deps "foo" "bar"))))))
 
 
 (defun test-load-asdf ()

@@ -31,7 +31,8 @@
                    (resp (progn (state:set-file-text state "some/uri" "foo:bar")
                                 (handler:trace-fn deps state msg))))
 
-                (alive/test/utils:print-hash-table "***** RESP" resp)))))
+                (alive/test/utils:print-hash-table "***** RESP" resp)
+                (clue:check-exists (gethash "result" resp))))))
 
 
 (defun run-all ()
