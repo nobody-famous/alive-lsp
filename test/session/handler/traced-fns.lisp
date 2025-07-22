@@ -28,8 +28,9 @@
             (let* ((state (state:create))
                    (deps (deps:create))
                    (msg (create-msg 5 "some/uri" (pos:create 0 2)))
-                   (resp (handler:trace-fn deps state msg)))
-                (state:set-file-text state "some/uri" "foo:bar")
+                   (resp (progn (state:set-file-text state "some/uri" "foo:bar")
+                                (handler:trace-fn deps state msg))))
+
                 (alive/test/utils:print-hash-table "***** RESP" resp)))))
 
 
