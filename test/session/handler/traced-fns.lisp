@@ -30,8 +30,8 @@
                    (deps (deps:create :trace-fn (lambda (fn-name)
                                                     (setf to-trace fn-name)
                                                     T)))
-                   (msg (create-msg 5 "some/uri" (pos:create 0 5)))
-                   (resp (progn (state:set-file-text state "some/uri" "foo:bar")
+                   (msg (create-msg 5 "some/uri" (pos:create 0 8)))
+                   (resp (progn (state:set-file-text state "some/uri" "cl-user:bar")
                                 (handler:trace-fn deps state msg))))
 
                 (clue:check-exists (gethash "result" resp))

@@ -21,28 +21,34 @@
           :with fn-name := nil
           :with pkg-name := nil
           :with prev := nil
-          :with found-token := nil
+          :with next := nil
+          :with token := nil
+          :with tokens := (tokenizer:from-stream (make-string-input-stream text))
 
-          :for token :in (tokenizer:from-stream (make-string-input-stream text))
-          :do (alive/test/utils:print-hash-table "***** TOKEN" token)
+          :while (and tokens (not done))
+          :do (setf token (car tokens))
+              (setf tokens (cdr tokens))
+              (setf next (car tokens))
+
               (cond ((pos:less-than pos (token:get-end token))
-                        (if (eq types:*symbol* (token:get-type-value token))
-                            (if pkg-name
-                                (progn (setf fn-name (token:get-text token))
-                                       (setf done T))
-                                nil)
-                            (progn (setf pkg-name nil)
-                                   (setf done T)))
-
-                        (setf found-token T))
+                        (when (and (eq types:*symbol* (token:get-type-value token))
+                                   (not (eq types:*colons* (token:get-type-value next)))
+                                   (not (and (eq types:*colons* (token:get-type-value prev))
+                                             (not pkg-name))))
+                              (setf fn-name (token:get-text token)))
+                        (unless fn-name
+                            (setf pkg-name nil))
+                        (setf done T))
                     ((eq types:*colons* (token:get-type-value token))
                         (when (and prev (eq types:*symbol* (token:get-type-value prev)))
                               (setf pkg-name (token:get-text prev))))
                     (T (setf pkg-name nil)))
-              (setf prev token)
-          :until done
 
-          :finally (return (values pkg-name fn-name))))
+              (setf prev token)
+
+          :finally (return (if fn-name
+                               (values pkg-name fn-name)
+                               (values nil nil)))))
 
 
 (declaim (ftype (function (deps:dependencies(or null string) (or null string)) boolean) do-trace-fn))
