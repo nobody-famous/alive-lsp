@@ -22,6 +22,7 @@
           :with pkg-name := nil
           :with prev := nil
           :with next := nil
+          :with next-next := nil
           :with token := nil
           :with tokens := (tokenizer:from-stream (make-string-input-stream text))
 
@@ -29,15 +30,28 @@
           :do (setf token (car tokens))
               (setf tokens (cdr tokens))
               (setf next (car tokens))
+              (setf next-next (car (cdr tokens)))
 
               (cond ((pos:less-than pos (token:get-end token))
-                        (when (and (eq types:*symbol* (token:get-type-value token))
-                                   (not (eq types:*colons* (token:get-type-value next)))
-                                   (not (and (eq types:*colons* (token:get-type-value prev))
-                                             (not pkg-name))))
-                              (setf fn-name (token:get-text token)))
+                        (cond ((eq types:*symbol* (token:get-type-value token))
+                                  (cond ((and (not (eq types:*colons* (token:get-type-value next)))
+                                              (not (and (eq types:*colons* (token:get-type-value prev))
+                                                        (not pkg-name))))
+                                            (setf fn-name (token:get-text token)))
+                                        ((and (not pkg-name)
+                                              (eq types:*colons* (token:get-type-value next))
+                                              (eq types:*symbol* (token:get-type-value next-next)))
+                                            (setf pkg-name (token:get-text token))
+                                            (setf fn-name (token:get-text next-next)))))
+                              ((and (eq types:*colons* (token:get-type-value token))
+                                    (eq types:*symbol* (token:get-type-value prev))
+                                    (eq types:*symbol* (token:get-type-value next)))
+                                  (setf pkg-name (token:get-text prev))
+                                  (setf fn-name (token:get-text next))))
+
                         (unless fn-name
                             (setf pkg-name nil))
+
                         (setf done T))
                     ((eq types:*colons* (token:get-type-value token))
                         (when (and prev (eq types:*symbol* (token:get-type-value prev)))

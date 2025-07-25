@@ -22,21 +22,37 @@
             (clue:check-exists (gethash "traced" result)))))
 
 
+(defun run-trace-test (text pos expected-fn)
+    (let* ((state (state:create))
+           (to-trace nil)
+           (deps (deps:create :trace-fn (lambda (fn-name)
+                                            (setf to-trace fn-name)
+                                            T)))
+           (msg (create-msg 5 "some/uri" pos))
+           (resp (progn (state:set-file-text state "some/uri" text)
+                        (handler:trace-fn deps state msg))))
+
+        (clue:check-exists (gethash "result" resp))
+        (clue:check-equal :expected expected-fn
+                          :actual to-trace)))
+
+
 (defun test-trace-fn ()
     (clue:suite "Trace Function"
-        (clue:test "Simple package and function"
-            (let* ((state (state:create))
-                   (to-trace nil)
-                   (deps (deps:create :trace-fn (lambda (fn-name)
-                                                    (setf to-trace fn-name)
-                                                    T)))
-                   (msg (create-msg 5 "some/uri" (pos:create 0 8)))
-                   (resp (progn (state:set-file-text state "some/uri" "cl-user:bar")
-                                (handler:trace-fn deps state msg))))
-
-                (clue:check-exists (gethash "result" resp))
-                (clue:check-equal :expected "bar"
-                                  :actual to-trace)))))
+        (clue:test "Function only"
+            (run-trace-test "bar" (pos:create 0 2) "bar"))
+        (clue:test "Pos in function"
+            (run-trace-test "cl-user:bar" (pos:create 0 8) "bar"))
+        (clue:test "Pos in package"
+            (run-trace-test "cl-user:bar" (pos:create 0 2) "bar"))
+        (clue:test "Pos in colons"
+            (run-trace-test "cl-user::bar" (pos:create 0 8) "bar"))
+        (clue:test "Colon without package"
+            (run-trace-test ":bar" (pos:create 0 2) nil))
+        (clue:test "Unknown package"
+            (run-trace-test "foo:bar" (pos:create 0 5) nil))
+        (clue:test "Not symbol"
+            (run-trace-test "foo  bar" (pos:create 0 4) nil))))
 
 
 (defun run-all ()

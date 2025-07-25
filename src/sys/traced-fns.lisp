@@ -1,6 +1,7 @@
 (defpackage :alive/sys/traced-fns
     (:use :cl)
-    (:export :list-all)
+    (:export :list-all
+             :trace-fn)
     (:local-nicknames (:symbols :alive/symbols)
                       (:packages :alive/packages)))
 
