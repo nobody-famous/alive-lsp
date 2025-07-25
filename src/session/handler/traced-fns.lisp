@@ -19,8 +19,10 @@
 (declaim (ftype (function (string cons) (values (or null string) (or null string))) get-function-for-pos))
 (defun get-function-for-pos (text pos)
     (loop :with done := nil
+          :with to-trace := nil
           :with fn-name := nil
           :with pkg-name := nil
+          :with colons := nil
           :with prev := nil
           :with next := nil
           :with next-next := nil
@@ -43,11 +45,13 @@
                                               (eq types:*colons* (token:get-type-value next))
                                               (eq types:*symbol* (token:get-type-value next-next)))
                                             (setf pkg-name (token:get-text token))
+                                            (setf colons (token:get-text next))
                                             (setf fn-name (token:get-text next-next)))))
                               ((and (eq types:*colons* (token:get-type-value token))
                                     (eq types:*symbol* (token:get-type-value prev))
                                     (eq types:*symbol* (token:get-type-value next)))
                                   (setf pkg-name (token:get-text prev))
+                                  (setf colons (token:get-text token))
                                   (setf fn-name (token:get-text next))))
 
                         (unless fn-name
@@ -56,22 +60,16 @@
                         (setf done T))
                     ((eq types:*colons* (token:get-type-value token))
                         (when (and prev (eq types:*symbol* (token:get-type-value prev)))
+                              (setf colons (token:get-text token))
                               (setf pkg-name (token:get-text prev))))
-                    (T (setf pkg-name nil)))
+                    (T (setf pkg-name nil)
+                       (setf colons nil)))
 
               (setf prev token)
 
-          :finally (return (if fn-name
-                               (values pkg-name fn-name)
-                               (values nil nil)))))
-
-
-(declaim (ftype (function (deps:dependencies(or null string) (or null string)) boolean) do-trace-fn))
-(defun do-trace-fn (deps pkg-name fn-name)
-    (let ((pkg (packages:for-string pkg-name)))
-        (when pkg
-              (let ((*package* pkg))
-                  (deps:trace-fn deps fn-name)))))
+          :finally (return (cond ((and pkg-name colons fn-name) (format nil "~A~A~A" pkg-name colons fn-name))
+                                 (fn-name fn-name)
+                                 (T nil)))))
 
 
 (declaim (ftype (function (deps:dependencies state:state cons) null) trace-fn))
@@ -82,13 +80,13 @@
            (pos (cdr (assoc :position params)))
            (uri (cdr (assoc :uri doc)))
            (text (or (state:get-file-text state uri) ""))
-           (in-pkg-name (packages:for-pos text pos)))
+           (pkg (packages:for-pos text pos))
+           (*package* (or (packages:lookup pkg) *package*))
+           (to-trace (get-function-for-pos text pos)))
 
-        (multiple-value-bind (pkg-name fn-name)
-                (get-function-for-pos text pos)
-            (when fn-name
-                  (do-trace-fn deps (or pkg-name in-pkg-name) fn-name))
-            (deps:send-msg deps (lsp-msg:create-response id :result-value T)))))
+        (when to-trace
+              (deps:trace-fn deps to-trace))
+        (deps:send-msg deps (lsp-msg:create-response id :result-value T))))
 
 
 (declaim (ftype (function (deps:dependencies cons) hash-table) list-all))
