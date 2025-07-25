@@ -3,6 +3,7 @@
     (:export :list-all
              :trace-fn)
     (:local-nicknames (:deps :alive/deps)
+                      (:logger :alive/logger)
                       (:lsp-msg :alive/lsp/message/abstract)
                       (:packages :alive/packages)
                       (:pos :alive/position)
@@ -67,28 +68,27 @@
 
 (declaim (ftype (function (deps:dependencies(or null string) (or null string)) boolean) do-trace-fn))
 (defun do-trace-fn (deps pkg-name fn-name)
-    (let ((pkg (if pkg-name
-                   (packages:for-string pkg-name)
-                   *package*)))
+    (let ((pkg (packages:for-string pkg-name)))
         (when pkg
               (let ((*package* pkg))
                   (deps:trace-fn deps fn-name)))))
 
 
-(declaim (ftype (function (deps:dependencies state:state cons) hash-table) trace-fn))
+(declaim (ftype (function (deps:dependencies state:state cons) null) trace-fn))
 (defun trace-fn (deps state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
            (doc (cdr (assoc :text-document params)))
            (pos (cdr (assoc :position params)))
            (uri (cdr (assoc :uri doc)))
-           (text (or (state:get-file-text state uri) "")))
+           (text (or (state:get-file-text state uri) ""))
+           (in-pkg-name (packages:for-pos text pos)))
 
         (multiple-value-bind (pkg-name fn-name)
                 (get-function-for-pos text pos)
             (when fn-name
-                  (do-trace-fn deps pkg-name fn-name))
-            (lsp-msg:create-response id :result-value T))))
+                  (do-trace-fn deps (or pkg-name in-pkg-name) fn-name))
+            (deps:send-msg deps (lsp-msg:create-response id :result-value T)))))
 
 
 (declaim (ftype (function (deps:dependencies cons) hash-table) list-all))

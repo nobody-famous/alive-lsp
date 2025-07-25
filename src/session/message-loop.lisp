@@ -26,7 +26,7 @@
 
 (declaim (ftype (function (state:state) null) stop))
 (defun stop (state)
-    (logger:info-msg (state:get-log state) "New Stopping message loop")
+    (logger:info-msg (state:get-log state) "Stopping message loop")
     (state:set-running state NIL)
     nil)
 
