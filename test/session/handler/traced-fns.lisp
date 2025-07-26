@@ -62,4 +62,5 @@
 
 (defun run-all ()
     (clue:suite "Traced Functions Tests"
-        (test-list-all)))
+        (test-list-all)
+        (test-trace-fn)))
