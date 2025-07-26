@@ -1,7 +1,6 @@
 (defpackage :alive/symbols
     (:use :cl)
     (:export :callable-p
-             :escape
              :external-p
              :find-tokens
              :for-pos
@@ -11,7 +10,8 @@
              :get-location
              :get-source-file
              :lookup
-             :macro-p)
+             :macro-p
+             :normalize)
     (:local-nicknames (:forms :alive/parse/forms)
                       (:packages :alive/packages)
                       (:pos :alive/position)
@@ -23,11 +23,11 @@
 (in-package :alive/symbols)
 
 
-(defun escape (name)
+(defun normalize (name)
     (if (some (lambda (ch)
                   (and (alpha-char-p ch)
                        (lower-case-p ch))) name)
-        (format nil "|~A|" name)
+        name
         (string-downcase name)))
 
 
