@@ -144,6 +144,7 @@
                      :list-all-asdf (lambda () (alive/sys/asdf:list-all))
                      :list-all-traced (lambda () (alive/sys/traced-fns:list-all))
                      :trace-fn (lambda (fn-name) (alive/sys/traced-fns:trace-fn fn-name))
+                     :untrace-fn (lambda (fn-name) (alive/sys/traced-fns:untrace-fn fn-name))
                      :load-asdf-system (lambda (&rest args) (apply 'alive/sys/asdf:load-system args))
                      :get-thread-id (lambda (thread) (alive/sys/threads:get-id thread))
                      :eval-fn (lambda (arg) (alive/sys/eval:eval-fn arg))

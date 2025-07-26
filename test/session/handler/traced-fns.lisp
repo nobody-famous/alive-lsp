@@ -121,4 +121,5 @@
 (defun run-all ()
     (clue:suite "Traced Functions Tests"
         (test-list-all)
-        (test-trace-fn)))
+        (test-trace-fn)
+        (test-untrace-fn)))

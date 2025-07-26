@@ -1,7 +1,8 @@
 (defpackage :alive/sys/traced-fns
     (:use :cl)
     (:export :list-all
-             :trace-fn)
+             :trace-fn
+             :untrace-fn)
     (:local-nicknames (:symbols :alive/symbols)
                       (:packages :alive/packages)))
 
@@ -11,6 +12,14 @@
 (declaim (ftype (function (string) boolean) trace-fn))
 (defun trace-fn (fn-name)
     (let ((to-eval (format NIL "(trace ~A)" fn-name)))
+        (if (eval (read (make-string-input-stream to-eval)))
+            T
+            NIL)))
+
+
+(declaim (ftype (function (string) boolean) untrace-fn))
+(defun untrace-fn (fn-name)
+    (let ((to-eval (format NIL "(untrace ~A)" fn-name)))
         (if (eval (read (make-string-input-stream to-eval)))
             T
             NIL)))
