@@ -1,7 +1,8 @@
 (defpackage :alive/session/handler/traced-fns
     (:use :cl)
     (:export :list-all
-             :trace-fn)
+             :trace-fn
+             :untrace-fn)
     (:local-nicknames (:deps :alive/deps)
                       (:logger :alive/logger)
                       (:lsp-msg :alive/lsp/message/abstract)
@@ -86,6 +87,23 @@
 
         (when to-trace
               (deps:trace-fn deps to-trace))
+        (deps:send-msg deps (lsp-msg:create-response id :result-value T))))
+
+
+(declaim (ftype (function (deps:dependencies state:state cons) null) untrace-fn))
+(defun untrace-fn (deps state msg)
+    (let* ((id (cdr (assoc :id msg)))
+           (params (cdr (assoc :params msg)))
+           (doc (cdr (assoc :text-document params)))
+           (pos (cdr (assoc :position params)))
+           (uri (cdr (assoc :uri doc)))
+           (text (or (state:get-file-text state uri) ""))
+           (pkg (packages:for-pos text pos))
+           (*package* (or (packages:lookup pkg) *package*))
+           (to-trace (get-function-for-pos text pos)))
+
+        (when to-trace
+              (deps:untrace-fn deps to-trace))
         (deps:send-msg deps (lsp-msg:create-response id :result-value T))))
 
 

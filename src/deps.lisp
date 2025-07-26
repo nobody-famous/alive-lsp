@@ -18,7 +18,8 @@
              :send-msg
              :send-request
              :trace-fn
-             :try-compile))
+             :try-compile
+             :untrace-fn))
 
 (in-package :alive/deps)
 
@@ -34,6 +35,7 @@
     (list-all-asdf nil :type (or null (function () cons)))
     (list-all-traced nil :type (or null (function () (or null cons))))
     (trace-fn nil :type (or null (function (string) boolean)))
+    (untrace-fn nil :type (or null (function (string) boolean)))
     (load-asdf-system nil :type (or null (function (&key (:name string) (:stdin-fn function) (:stdout-fn function) (:stderr-fn function) (:force boolean)) boolean)))
     (get-thread-id nil :type (or null (function (bt:thread) *)))
     (macro-expand nil :type (or null (function (string string) list)))
@@ -52,6 +54,7 @@
                                 (:list-all-asdf (function () cons))
                                 (:list-all-traced (function () (or null cons)))
                                 (:trace-fn (function (string) boolean))
+                                (:untrace-fn (function (string) boolean))
                                 (:load-asdf-system (function (&key (:name string) (:stdin-fn function) (:stdout-fn function) (:stderr-fn function) (:force boolean)) boolean))
                                 (:get-thread-id (function (bt:thread) *))
                                 (:eval-fn (function (stream) *))
@@ -73,6 +76,7 @@
                     (list-all-asdf (lambda () (list)))
                     (list-all-traced (lambda () (list)))
                     (trace-fn (lambda (fn-name) (declare (ignore fn-name)) nil))
+                    (untrace-fn (lambda (fn-name) (declare (ignore fn-name)) nil))
                     (load-asdf-system (lambda (&key name stdin-fn stdout-fn stderr-fn force)
                                           (declare (ignore name stdin-fn stdout-fn stderr-fn force))
                                           T))
@@ -98,6 +102,7 @@
                        :list-all-asdf list-all-asdf
                        :list-all-traced list-all-traced
                        :trace-fn trace-fn
+                       :untrace-fn untrace-fn
                        :load-asdf-system load-asdf-system
                        :get-thread-id get-thread-id
                        :eval-fn eval-fn
@@ -156,6 +161,13 @@
 (declaim (ftype (function (dependencies string) boolean) trace-fn))
 (defun trace-fn (deps fn-name)
     (if (funcall (dependencies-trace-fn deps) fn-name)
+        T
+        NIL))
+
+
+(declaim (ftype (function (dependencies string) boolean) untrace-fn))
+(defun untrace-fn (deps fn-name)
+    (if (funcall (dependencies-untrace-fn deps) fn-name)
         T
         NIL))
 

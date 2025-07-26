@@ -22,6 +22,26 @@
             (clue:check-exists (gethash "traced" result)))))
 
 
+(defmacro run-test (fn text pos expected-fn)
+    `(let* ((state (state:create))
+            (to-trace nil)
+            (resp nil)
+            (deps (deps:create ,(intern (concatenate 'string ":" (symbol-name fn)) :keyword) (lambda (fn-name)
+                                                                                                 (setf to-trace fn-name)
+                                                                                                 T)
+                               :send-msg (lambda (msg)
+                                             (setf resp msg)
+                                             nil)))
+            (msg (create-msg 5 "some/uri" ,pos)))
+
+         (state:set-file-text state "some/uri" ,text)
+         (funcall (symbol-function (intern (string ,fn) "HANDLER")) deps state msg)
+
+         (clue:check-exists (gethash "result" resp))
+         (clue:check-equal :expected ,expected-fn
+                           :actual to-trace)))
+
+
 (defun run-trace-test (text pos expected-fn)
     (let* ((state (state:create))
            (to-trace nil)
@@ -36,6 +56,26 @@
 
         (state:set-file-text state "some/uri" text)
         (handler:trace-fn deps state msg)
+
+        (clue:check-exists (gethash "result" resp))
+        (clue:check-equal :expected expected-fn
+                          :actual to-trace)))
+
+
+(defun run-untrace-test (text pos expected-fn)
+    (let* ((state (state:create))
+           (to-trace nil)
+           (resp nil)
+           (deps (deps:create :untrace-fn (lambda (fn-name)
+                                              (setf to-trace fn-name)
+                                              T)
+                              :send-msg (lambda (msg)
+                                            (setf resp msg)
+                                            nil)))
+           (msg (create-msg 5 "some/uri" pos)))
+
+        (state:set-file-text state "some/uri" text)
+        (handler:untrace-fn deps state msg)
 
         (clue:check-exists (gethash "result" resp))
         (clue:check-equal :expected expected-fn
@@ -58,6 +98,24 @@
             (run-trace-test "foo:bar" (pos:create 0 5) "foo:bar"))
         (clue:test "Not symbol"
             (run-trace-test "foo  bar" (pos:create 0 4) nil))))
+
+
+(defun test-untrace-fn ()
+    (clue:suite "Untrace Function"
+        (clue:test "Function only"
+            (run-untrace-test "bar" (pos:create 0 2) "bar"))
+        (clue:test "Pos in function"
+            (run-untrace-test "cl-user:bar" (pos:create 0 8) "cl-user:bar"))
+        (clue:test "Pos in package"
+            (run-untrace-test "cl-user:bar" (pos:create 0 2) "cl-user:bar"))
+        (clue:test "Pos in colons"
+            (run-untrace-test "cl-user::bar" (pos:create 0 8) "cl-user::bar"))
+        (clue:test "Colon without package"
+            (run-untrace-test ":bar" (pos:create 0 2) nil))
+        (clue:test "Unknown package"
+            (run-untrace-test "foo:bar" (pos:create 0 5) "foo:bar"))
+        (clue:test "Not symbol"
+            (run-untrace-test "foo  bar" (pos:create 0 4) nil))))
 
 
 (defun run-all ()

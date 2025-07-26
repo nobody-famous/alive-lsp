@@ -80,6 +80,11 @@
                                                                    (cdr (assoc :id msg))
                                                                    (lambda ()
                                                                        (alive/session/handler/traced-fns:trace-fn deps state msg)))))
+          (cons "$/alive/untraceFunction" (lambda (deps msg)
+                                              (threads:run-in-thread deps state (or (cdr (assoc :method msg)) "untraceFunction")
+                                                                     (cdr (assoc :id msg))
+                                                                     (lambda ()
+                                                                         (alive/session/handler/traced-fns:untrace-fn deps state msg)))))
 
           (cons "$/alive/listAsdfSystems" (lambda (deps msg) (alive/session/handler/asdf:list-all deps msg)))
           (cons "$/alive/loadAsdfSystem" (lambda (deps msg)

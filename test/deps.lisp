@@ -89,6 +89,18 @@
                                   :actual (deps:trace-fn deps "bar"))))))
 
 
+(defun test-ununtrace-fn ()
+    (clue:suite "Untrace function"
+        (clue:test "Success"
+            (let ((deps (deps:create :untrace-fn (lambda (fn-name) (declare (ignore fn-name)) T))))
+                (clue:check-equal :expected T
+                                  :actual (deps:untrace-fn deps "bar"))))
+        (clue:test "Fail"
+            (let ((deps (deps:create :untrace-fn (lambda (fn-name) (declare (ignore fn-name)) NIL))))
+                (clue:check-equal :expected NIL
+                                  :actual (deps:untrace-fn deps "bar"))))))
+
+
 (defun test-load-asdf ()
     (clue:test "Load ASDF system"
         (let ((deps (deps:create :list-all-asdf (lambda () (list 1 2)))))
@@ -149,4 +161,6 @@
         (test-macro-expand-1)
         (test-try-compile)
         (test-do-compile)
-        (test-do-load)))
+        (test-do-load)
+        (test-trace-fn)
+        (test-ununtrace-fn)))
