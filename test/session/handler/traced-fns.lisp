@@ -9,10 +9,15 @@
 (in-package :alive/test/session/handler/traced-fns)
 
 
-(defun create-msg (id file pos)
+(defun create-trace-fn-msg (id file pos)
     (list (cons :id id)
           (cons :params (list (cons :position pos)
                               (cons :text-document (list (cons :uri file)))))))
+
+
+(defun create-trace-pkg-msg (id pkg-name)
+    (list (cons :id id)
+          (cons :params (list (cons :package pkg-name)))))
 
 
 (defun test-list-all ()
@@ -32,7 +37,7 @@
                                :send-msg (lambda (msg)
                                              (setf resp msg)
                                              nil)))
-            (msg (create-msg 5 "some/uri" ,pos)))
+            (msg (`create-trace-fn-msg 5 "some/uri" ,pos)))
 
          (state:set-file-text state "some/uri" ,text)
          (funcall (symbol-function (intern (string ,fn) "HANDLER")) deps state msg)
@@ -52,7 +57,7 @@
                               :send-msg (lambda (msg)
                                             (setf resp msg)
                                             nil)))
-           (msg (create-msg 5 "some/uri" pos)))
+           (msg (create-trace-fn-msg 5 "some/uri" pos)))
 
         (state:set-file-text state "some/uri" text)
         (handler:trace-fn deps state msg)
@@ -72,7 +77,7 @@
                               :send-msg (lambda (msg)
                                             (setf resp msg)
                                             nil)))
-           (msg (create-msg 5 "some/uri" pos)))
+           (msg (create-trace-fn-msg 5 "some/uri" pos)))
 
         (state:set-file-text state "some/uri" text)
         (handler:untrace-fn deps state msg)
@@ -118,8 +123,28 @@
             (run-untrace-test "foo  bar" (pos:create 0 4) nil))))
 
 
+(defun test-trace-pkg ()
+    (clue:suite "Trace Package"
+        (clue:test "Success"
+            (let* ((to-trace nil)
+                   (resp nil)
+                   (deps (deps:create :trace-pkg (lambda (pkg-name)
+                                                     (setf to-trace pkg-name)
+                                                     T)
+                                      :send-msg (lambda (msg)
+                                                    (setf resp msg)
+                                                    nil)))
+                   (msg (create-trace-pkg-msg 5 "foo")))
+
+                (handler:trace-pkg deps msg)
+                (clue:check-exists (gethash "result" resp))
+                (clue:check-equal :expected "foo"
+                                  :actual to-trace)))))
+
+
 (defun run-all ()
     (clue:suite "Traced Functions Tests"
         (test-list-all)
         (test-trace-fn)
-        (test-untrace-fn)))
+        (test-untrace-fn)
+        (test-trace-pkg)))

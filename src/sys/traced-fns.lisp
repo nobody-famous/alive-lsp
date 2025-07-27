@@ -2,6 +2,7 @@
     (:use :cl)
     (:export :list-all
              :trace-fn
+             :trace-pkg
              :untrace-fn)
     (:local-nicknames (:symbols :alive/symbols)
                       (:packages :alive/packages)))
@@ -23,6 +24,13 @@
         (if (eval (read (make-string-input-stream to-eval)))
             T
             NIL)))
+
+
+(declaim (ftype (function (string) boolean) trace-pkg))
+(defun trace-pkg (fn-name)
+    (if (eval `(trace ,fn-name))
+        T
+        NIL))
 
 
 (declaim (ftype (function () (values list &optional)) list-all))

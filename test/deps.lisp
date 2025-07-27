@@ -89,7 +89,7 @@
                                   :actual (deps:trace-fn deps "bar"))))))
 
 
-(defun test-ununtrace-fn ()
+(defun test-untrace-fn ()
     (clue:suite "Untrace function"
         (clue:test "Success"
             (let ((deps (deps:create :untrace-fn (lambda (fn-name) (declare (ignore fn-name)) T))))
@@ -99,6 +99,18 @@
             (let ((deps (deps:create :untrace-fn (lambda (fn-name) (declare (ignore fn-name)) NIL))))
                 (clue:check-equal :expected NIL
                                   :actual (deps:untrace-fn deps "bar"))))))
+
+
+(defun test-trace-pkg ()
+    (clue:suite "Trace package"
+        (clue:test "Success"
+            (let ((deps (deps:create :trace-pkg (lambda (pkg-name) (declare (ignore pkg-name)) T))))
+                (clue:check-equal :expected T
+                                  :actual (deps:trace-pkg deps "bar"))))
+        (clue:test "Fail"
+            (let ((deps (deps:create :trace-pkg (lambda (pkg-name) (declare (ignore pkg-name)) NIL))))
+                (clue:check-equal :expected NIL
+                                  :actual (deps:trace-pkg deps "bar"))))))
 
 
 (defun test-load-asdf ()
@@ -163,4 +175,5 @@
         (test-do-compile)
         (test-do-load)
         (test-trace-fn)
-        (test-ununtrace-fn)))
+        (test-untrace-fn)
+        (test-trace-pkg)))
