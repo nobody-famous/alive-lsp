@@ -11,7 +11,7 @@
         (let ((actual (comps:simple :text "some text alive/symbols:m"
                                     :pos (pos:create 0 27))))
 
-            (clue:check-equal :expected 3
+            (clue:check-equal :expected 4
                               :actual (length actual)))))
 
 

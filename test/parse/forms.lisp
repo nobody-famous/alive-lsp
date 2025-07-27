@@ -350,8 +350,8 @@
             (check-forms (format nil ")")
                          (list (form:create :start (pos:create 0 0)
                                             :start-offset 0
-                                            :end nil
-                                            :end-offset nil
+                                            :end (pos:create 0 1)
+                                            :end-offset 1
                                             :form-type types:*unmatched-close-paren*
                                             :in-pkg nil
                                             :kids nil))))))

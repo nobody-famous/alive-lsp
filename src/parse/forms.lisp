@@ -37,7 +37,8 @@
 (defun open-paren (state token)
     (push (form:create :start (token:get-start token)
                        :start-offset (token:get-start-offset token)
-                       :end nil
+                       :end (token:get-end token)
+                       :end-offset (token:get-end-offset token)
                        :form-type types:*open-paren*)
           (parse-state-opens state)))
 
@@ -108,7 +109,8 @@
 (defun unmatched-close-paren (state token)
     (push (form:create :start (token:get-start token)
                        :start-offset (token:get-start-offset token)
-                       :end nil
+                       :end (token:get-end token)
+                       :end-offset (token:get-end-offset token)
                        :form-type types:*unmatched-close-paren*)
           (parse-state-forms state)))
 
@@ -127,7 +129,8 @@
         (cond ((is-quote open-form) NIL)
               (T (push (form:create :start (token:get-start token)
                                     :start-offset (token:get-start-offset token)
-                                    :end nil
+                                    :end (token:get-end token)
+                                    :end-offset (token:get-end-offset token)
                                     :form-type (token:get-type-value token))
                        (parse-state-opens state))))))
 
@@ -137,7 +140,8 @@
         (cond ((is-comma open-form) NIL)
               (T (push (form:create :start (token:get-start token)
                                     :start-offset (token:get-start-offset token)
-                                    :end nil
+                                    :end (token:get-end token)
+                                    :end-offset (token:get-end-offset token)
                                     :form-type (token:get-type-value token))
                        (parse-state-opens state))))))
 
