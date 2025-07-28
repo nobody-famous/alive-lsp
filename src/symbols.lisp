@@ -11,7 +11,8 @@
              :get-source-file
              :lookup
              :macro-p
-             :normalize)
+             :normalize
+             :special-ch-p)
     (:local-nicknames (:forms :alive/parse/forms)
                       (:packages :alive/packages)
                       (:pos :alive/position)
@@ -23,10 +24,22 @@
 (in-package :alive/symbols)
 
 
+(defun special-ch-p (ch)
+    (or (and (alpha-char-p ch)
+             (lower-case-p ch))
+        (char= #\" ch)
+        (char= #\' ch)
+        (char= #\( ch)
+        (char= #\) ch)
+        (char= #\, ch)
+        (char= #\: ch)
+        (char= #\; ch)
+        (char= #\` ch)))
+
+
 (defun normalize (name)
     (if (some (lambda (ch)
-                  (and (alpha-char-p ch)
-                       (lower-case-p ch))) name)
+                  (special-ch-p ch)) name)
         name
         (string-downcase name)))
 

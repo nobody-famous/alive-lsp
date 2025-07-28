@@ -127,8 +127,7 @@
 
 (defun add-bars (name)
     (if (some (lambda (ch)
-                  (and (alpha-char-p ch)
-                       (lower-case-p ch))) name)
+                  (symbols:special-ch-p ch)) name)
         (format nil "|~A|" name)
         (string-downcase name)))
 
