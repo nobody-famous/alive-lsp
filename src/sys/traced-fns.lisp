@@ -28,7 +28,7 @@
 
 (declaim (ftype (function (string) boolean) trace-pkg))
 (defun trace-pkg (fn-name)
-    (if (eval `(trace ,fn-name))
+    (if (eval `(trace ,(string-upcase fn-name)))
         T
         NIL))
 
