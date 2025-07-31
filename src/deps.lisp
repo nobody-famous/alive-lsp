@@ -20,7 +20,8 @@
              :trace-fn
              :trace-pkg
              :try-compile
-             :untrace-fn))
+             :untrace-fn
+             :untrace-pkg))
 
 (in-package :alive/deps)
 
@@ -38,6 +39,7 @@
     (trace-fn nil :type (or null (function (string) boolean)))
     (untrace-fn nil :type (or null (function (string) boolean)))
     (trace-pkg nil :type (or null (function (string) boolean)))
+    (untrace-pkg nil :type (or null (function (string) boolean)))
     (load-asdf-system nil :type (or null (function (&key (:name string) (:stdin-fn function) (:stdout-fn function) (:stderr-fn function) (:force boolean)) boolean)))
     (get-thread-id nil :type (or null (function (bt:thread) *)))
     (macro-expand nil :type (or null (function (string string) list)))
@@ -58,6 +60,7 @@
                                 (:trace-fn (function (string) boolean))
                                 (:untrace-fn (function (string) boolean))
                                 (:trace-pkg (function (string) boolean))
+                                (:untrace-pkg (function (string) boolean))
                                 (:load-asdf-system (function (&key (:name string) (:stdin-fn function) (:stdout-fn function) (:stderr-fn function) (:force boolean)) boolean))
                                 (:get-thread-id (function (bt:thread) *))
                                 (:eval-fn (function (stream) *))
@@ -81,6 +84,7 @@
                     (trace-fn (lambda (fn-name) (declare (ignore fn-name)) nil))
                     (untrace-fn (lambda (fn-name) (declare (ignore fn-name)) nil))
                     (trace-pkg (lambda (pkg-name) (declare (ignore pkg-name)) nil))
+                    (untrace-pkg (lambda (pkg-name) (declare (ignore pkg-name)) nil))
                     (load-asdf-system (lambda (&key name stdin-fn stdout-fn stderr-fn force)
                                           (declare (ignore name stdin-fn stdout-fn stderr-fn force))
                                           T))
@@ -108,6 +112,7 @@
                        :trace-fn trace-fn
                        :untrace-fn untrace-fn
                        :trace-pkg trace-pkg
+                       :untrace-pkg untrace-pkg
                        :load-asdf-system load-asdf-system
                        :get-thread-id get-thread-id
                        :eval-fn eval-fn
@@ -180,6 +185,13 @@
 (declaim (ftype (function (dependencies string) boolean) trace-pkg))
 (defun trace-pkg (deps pkg-name)
     (if (funcall (dependencies-trace-pkg deps) pkg-name)
+        T
+        NIL))
+
+
+(declaim (ftype (function (dependencies string) boolean) untrace-pkg))
+(defun untrace-pkg (deps pkg-name)
+    (if (funcall (dependencies-untrace-pkg deps) pkg-name)
         T
         NIL))
 

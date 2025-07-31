@@ -3,7 +3,8 @@
     (:export :list-all
              :trace-fn
              :trace-pkg
-             :untrace-fn)
+             :untrace-fn
+             :untrace-pkg)
     (:local-nicknames (:symbols :alive/symbols)
                       (:packages :alive/packages)))
 
@@ -29,6 +30,13 @@
 (declaim (ftype (function (string) boolean) trace-pkg))
 (defun trace-pkg (fn-name)
     (if (eval `(trace ,(string-upcase fn-name)))
+        T
+        NIL))
+
+
+(declaim (ftype (function (string) boolean) untrace-pkg))
+(defun untrace-pkg (fn-name)
+    (if (eval `(untrace ,(string-upcase fn-name)))
         T
         NIL))
 

@@ -3,7 +3,8 @@
     (:export :list-all
              :trace-fn
              :trace-pkg
-             :untrace-fn)
+             :untrace-fn
+             :untrace-pkg)
     (:local-nicknames (:deps :alive/deps)
                       (:logger :alive/logger)
                       (:lsp-msg :alive/lsp/message/abstract)
@@ -116,6 +117,17 @@
 
         (when pkg-name
               (deps:trace-pkg deps pkg-name))
+        (deps:send-msg deps (lsp-msg:create-response id :result-value T))))
+
+
+(declaim (ftype (function (deps:dependencies cons) null) untrace-pkg))
+(defun untrace-pkg (deps msg)
+    (let* ((id (cdr (assoc :id msg)))
+           (params (cdr (assoc :params msg)))
+           (pkg-name (cdr (assoc :package params))))
+
+        (when pkg-name
+              (deps:untrace-pkg deps pkg-name))
         (deps:send-msg deps (lsp-msg:create-response id :result-value T))))
 
 

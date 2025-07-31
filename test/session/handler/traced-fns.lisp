@@ -142,9 +142,29 @@
                                   :actual to-trace)))))
 
 
+(defun test-untrace-pkg ()
+    (clue:suite "Untrace Package"
+        (clue:test "Success"
+            (let* ((to-trace nil)
+                   (resp nil)
+                   (deps (deps:create :untrace-pkg (lambda (pkg-name)
+                                                       (setf to-trace pkg-name)
+                                                       T)
+                                      :send-msg (lambda (msg)
+                                                    (setf resp msg)
+                                                    nil)))
+                   (msg (create-trace-pkg-msg 5 "foo")))
+
+                (handler:untrace-pkg deps msg)
+                (clue:check-exists (gethash "result" resp))
+                (clue:check-equal :expected "foo"
+                                  :actual to-trace)))))
+
+
 (defun run-all ()
     (clue:suite "Traced Functions Tests"
         (test-list-all)
         (test-trace-fn)
         (test-untrace-fn)
-        (test-trace-pkg)))
+        (test-trace-pkg)
+        (test-untrace-pkg)))
