@@ -125,13 +125,6 @@
                         symbols))))
 
 
-(defun add-bars (name)
-    (if (some (lambda (ch)
-                  (symbols:special-ch-p ch)) name)
-        (format nil "|~A|" name)
-        (string-downcase name)))
-
-
 (defun symbol-with-pkg (&key name num-colons pkg-name)
     (let* ((req-pkg (find-package (string-upcase pkg-name)))
            (pkg (if req-pkg req-pkg *package*)))
@@ -140,7 +133,7 @@
                           :pkg pkg
                           :symbols (if (eq 1 num-colons)
                                        (get-ext-symbols pkg)
-                                       (mapcar #'add-bars (symbols:get-all-names pkg))))))
+                                       (mapcar #'symbols:add-bars (symbols:get-all-names pkg))))))
 
 
 (defun get-pkg-matches (&key name pkg-name)

@@ -1,6 +1,7 @@
 (defpackage :alive/symbols
     (:use :cl)
-    (:export :callable-p
+    (:export :add-bars
+             :callable-p
              :external-p
              :find-tokens
              :for-pos
@@ -41,6 +42,13 @@
     (if (some (lambda (ch)
                   (special-ch-p ch)) name)
         name
+        (string-downcase name)))
+
+
+(defun add-bars (name)
+    (if (some (lambda (ch)
+                  (special-ch-p ch)) name)
+        (format nil "|~A|" name)
         (string-downcase name)))
 
 
