@@ -12,6 +12,7 @@
                       (:packages :alive/packages)
                       (:pos :alive/position)
                       (:state :alive/session/state)
+                      (:symbols :alive/symbols)
                       (:token :alive/parse/token)
                       (:tokenizer :alive/parse/tokenizer)
                       (:types :alive/types)
@@ -150,4 +151,6 @@
 (defun list-all (deps msg)
     (utils:result (cdr (assoc :id msg))
                   "traced"
-                  (deps:list-all-traced deps)))
+                  (mapcar (lambda (item) (list (cons :package (cdr (assoc :package item)))
+                                               (cons :name (symbols:add-bars (cdr (assoc :name item))))))
+                          (deps:list-all-traced deps))))
