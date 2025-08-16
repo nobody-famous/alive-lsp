@@ -11,11 +11,11 @@
 (in-package :alive/sys/traced-fns)
 
 
-(declaim (ftype (function (string) boolean) trace-fn))
+(declaim (ftype (function (string) (or boolean string)) trace-fn))
 (defun trace-fn (fn-name)
     (let ((to-eval (format NIL "(trace ~A)" fn-name)))
         (if (eval (read (make-string-input-stream to-eval)))
-            T
+            fn-name
             NIL)))
 
 
@@ -27,10 +27,10 @@
             NIL)))
 
 
-(declaim (ftype (function (string) boolean) trace-pkg))
-(defun trace-pkg (fn-name)
-    (if (eval `(trace ,(string-upcase fn-name)))
-        T
+(declaim (ftype (function (string) (or boolean string)) trace-pkg))
+(defun trace-pkg (pkg-name)
+    (if (eval `(trace ,(string-upcase pkg-name)))
+        pkg-name
         NIL))
 
 

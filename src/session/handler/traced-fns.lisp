@@ -87,11 +87,12 @@
            (text (or (state:get-file-text state uri) ""))
            (pkg (packages:for-pos text pos))
            (*package* (or (packages:lookup pkg) *package*))
-           (to-trace (get-function-for-pos text pos)))
+           (to-trace (get-function-for-pos text pos))
+           (result (if to-trace
+                       (deps:trace-fn deps to-trace)
+                       nil)))
 
-        (when to-trace
-              (deps:trace-fn deps to-trace))
-        (deps:send-msg deps (lsp-msg:create-response id :result-value T))))
+        (deps:send-msg deps (lsp-msg:create-response id :result-value result))))
 
 
 (declaim (ftype (function (deps:dependencies state:state cons) null) untrace-fn))
@@ -129,11 +130,12 @@
 (defun trace-pkg (deps msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
-           (pkg-name (cdr (assoc :package params))))
+           (pkg-name (cdr (assoc :package params)))
+           (result (if pkg-name
+                       (deps:trace-pkg deps pkg-name)
+                       nil)))
 
-        (when pkg-name
-              (deps:trace-pkg deps pkg-name))
-        (deps:send-msg deps (lsp-msg:create-response id :result-value T))))
+        (deps:send-msg deps (lsp-msg:create-response id :result-value result))))
 
 
 (declaim (ftype (function (deps:dependencies cons) null) untrace-pkg))

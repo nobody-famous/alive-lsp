@@ -168,32 +168,24 @@
     (funcall (dependencies-list-all-traced deps)))
 
 
-(declaim (ftype (function (dependencies string) boolean) trace-fn))
+(declaim (ftype (function (dependencies string) (values (or boolean string) &optional)) trace-fn))
 (defun trace-fn (deps fn-name)
-    (if (funcall (dependencies-trace-fn deps) fn-name)
-        T
-        NIL))
+    (funcall (dependencies-trace-fn deps) fn-name))
 
 
-(declaim (ftype (function (dependencies string) boolean) untrace-fn))
+(declaim (ftype (function (dependencies string) (values boolean &optional)) untrace-fn))
 (defun untrace-fn (deps fn-name)
-    (if (funcall (dependencies-untrace-fn deps) fn-name)
-        T
-        NIL))
+    (funcall (dependencies-untrace-fn deps) fn-name))
 
 
-(declaim (ftype (function (dependencies string) boolean) trace-pkg))
+(declaim (ftype (function (dependencies string) (values boolean &optional)) trace-pkg))
 (defun trace-pkg (deps pkg-name)
-    (if (funcall (dependencies-trace-pkg deps) pkg-name)
-        T
-        NIL))
+    (funcall (dependencies-trace-pkg deps) pkg-name))
 
 
-(declaim (ftype (function (dependencies string) boolean) untrace-pkg))
+(declaim (ftype (function (dependencies string) (values boolean &optional)) untrace-pkg))
 (defun untrace-pkg (deps pkg-name)
-    (if (funcall (dependencies-untrace-pkg deps) pkg-name)
-        T
-        NIL))
+    (funcall (dependencies-untrace-pkg deps) pkg-name))
 
 
 (declaim (ftype (function (dependencies &key (:name string) (:stdin-fn function) (:stdout-fn function) (:stderr-fn function) (:force boolean)) (values boolean &optional)) load-asdf-system))
