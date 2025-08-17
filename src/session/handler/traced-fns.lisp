@@ -92,7 +92,7 @@
                        (deps:trace-fn deps to-trace)
                        nil)))
 
-        (deps:send-msg deps (lsp-msg:create-response id :result-value result))))
+        (deps:send-msg deps (utils:result id "function" result))))
 
 
 (declaim (ftype (function (deps:dependencies state:state cons) null) untrace-fn))
@@ -105,11 +105,11 @@
            (text (or (state:get-file-text state uri) ""))
            (pkg (packages:for-pos text pos))
            (*package* (or (packages:lookup pkg) *package*))
-           (to-trace (get-function-for-pos text pos)))
+           (to-untrace (get-function-for-pos text pos)))
 
-        (when to-trace
-              (deps:untrace-fn deps to-trace))
-        (deps:send-msg deps (lsp-msg:create-response id :result-value T))))
+        (when to-untrace
+              (deps:untrace-fn deps to-untrace))
+        (deps:send-msg deps (deps:send-msg deps (utils:result id "function" to-untrace)))))
 
 
 (declaim (ftype (function (deps:dependencies cons) null) untrace-fn-by-name))
@@ -135,7 +135,7 @@
                        (deps:trace-pkg deps pkg-name)
                        nil)))
 
-        (deps:send-msg deps (lsp-msg:create-response id :result-value result))))
+        (deps:send-msg deps (utils:result id "function" result))))
 
 
 (declaim (ftype (function (deps:dependencies cons) null) untrace-pkg))
