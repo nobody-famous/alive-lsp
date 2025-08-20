@@ -25,9 +25,9 @@
     (clue:test "Send message"
         (let* ((sent nil)
                (deps (deps:create :send-msg (lambda (msg)
-                                                    (declare (ignore msg))
-                                                    (setf sent T)
-                                                    nil))))
+                                                (declare (ignore msg))
+                                                (setf sent T)
+                                                nil))))
             (deps:send-msg deps 5)
             (clue:check-equal :expected t :actual sent))))
 
@@ -35,8 +35,8 @@
 (defun test-send-request ()
     (clue:test "Send request"
         (let ((deps (deps:create :send-request (lambda (msg)
-                                                       (declare (ignore msg))
-                                                       (list (cons :result "foo"))))))
+                                                   (declare (ignore msg))
+                                                   (list (cons :result "foo"))))))
             (clue:check-equal :expected "foo"
                               :actual (cdr (assoc :result (deps:send-request deps (make-hash-table))))))))
 
@@ -57,8 +57,8 @@
 (defun test-get-thread-id ()
     (clue:test "Get thread id"
         (let ((deps (deps:create :get-thread-id (lambda (thread)
-                                                        (declare (ignore thread))
-                                                        5))))
+                                                    (declare (ignore thread))
+                                                    5))))
             (clue:check-equal :expected 5
                               :actual (deps:get-thread-id deps (bt:current-thread))))))
 
@@ -68,6 +68,49 @@
         (let ((deps (deps:create :list-all-asdf (lambda () (list 1 2)))))
             (clue:check-equal :expected (list 1 2)
                               :actual (deps:list-all-asdf deps)))))
+
+
+(defun test-list-all-traced ()
+    (clue:test "List all traced functions"
+        (let ((deps (deps:create :list-all-traced (lambda () (list 1 2)))))
+            (clue:check-equal :expected (list 1 2)
+                              :actual (deps:list-all-traced deps)))))
+
+
+(defun test-trace-fn ()
+    (clue:suite "Trace function"
+        (clue:test "Success"
+            (let ((deps (deps:create :trace-fn (lambda (fn-name) (declare (ignore fn-name)) T))))
+                (clue:check-equal :expected T
+                                  :actual (deps:trace-fn deps "bar"))))
+        (clue:test "Fail"
+            (let ((deps (deps:create :trace-fn (lambda (fn-name) (declare (ignore fn-name)) NIL))))
+                (clue:check-equal :expected NIL
+                                  :actual (deps:trace-fn deps "bar"))))))
+
+
+(defun test-untrace-fn ()
+    (clue:suite "Untrace function"
+        (clue:test "Success"
+            (let ((deps (deps:create :untrace-fn (lambda (fn-name) (declare (ignore fn-name)) T))))
+                (clue:check-equal :expected T
+                                  :actual (deps:untrace-fn deps "bar"))))
+        (clue:test "Fail"
+            (let ((deps (deps:create :untrace-fn (lambda (fn-name) (declare (ignore fn-name)) NIL))))
+                (clue:check-equal :expected NIL
+                                  :actual (deps:untrace-fn deps "bar"))))))
+
+
+(defun test-trace-pkg ()
+    (clue:suite "Trace package"
+        (clue:test "Success"
+            (let ((deps (deps:create :trace-pkg (lambda (pkg-name) (declare (ignore pkg-name)) T))))
+                (clue:check-equal :expected T
+                                  :actual (deps:trace-pkg deps "bar"))))
+        (clue:test "Fail"
+            (let ((deps (deps:create :trace-pkg (lambda (pkg-name) (declare (ignore pkg-name)) NIL))))
+                (clue:check-equal :expected NIL
+                                  :actual (deps:trace-pkg deps "bar"))))))
 
 
 (defun test-load-asdf ()
@@ -130,4 +173,7 @@
         (test-macro-expand-1)
         (test-try-compile)
         (test-do-compile)
-        (test-do-load)))
+        (test-do-load)
+        (test-trace-fn)
+        (test-untrace-fn)
+        (test-trace-pkg)))

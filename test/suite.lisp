@@ -40,6 +40,7 @@
         (alive/test/session/handler/packages:run-all)
         (alive/test/session/handler/symbol:run-all)
         (alive/test/session/handler/threads:run-all)
+        (alive/test/session/handler/traced-fns:run-all)
         (alive/test/session/handler/utils:run-all)
         (alive/test/session/message:run-all)
         (alive/test/session/message-loop:run-all)

@@ -133,7 +133,7 @@
                           :pkg pkg
                           :symbols (if (eq 1 num-colons)
                                        (get-ext-symbols pkg)
-                                       (symbols:get-all-names pkg)))))
+                                       (mapcar #'symbols:add-bars (symbols:get-all-names pkg))))))
 
 
 (defun get-pkg-matches (&key name pkg-name)

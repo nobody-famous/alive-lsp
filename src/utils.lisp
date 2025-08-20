@@ -2,6 +2,7 @@
     (:use :cl)
     (:export :fuzzy-match
              :get-timestamp
+             :lookup-symbol
              :url-encode-filename))
 
 (in-package :alive/utils)
@@ -57,3 +58,18 @@
                                    (format NIL "/~A" (url-encode piece))))
                            raw-pieces)))
         (apply #'concatenate 'string pieces)))
+
+
+(defun lookup-symbol (name &optional pkg-name)
+    (let ((pkg (if pkg-name
+                   (find-package (string-upcase pkg-name))
+                   *package*))
+          (sym-name (if (and name
+                             (char= #\| (char name 0))
+                             (char= #\| (char name (1- (length name)))))
+                        (subseq name 1 (- (length name) 1))
+                        name)))
+        (if (and sym-name pkg)
+            (or (find-symbol sym-name pkg)
+                (find-symbol (string-upcase sym-name) pkg))
+            (values nil nil))))

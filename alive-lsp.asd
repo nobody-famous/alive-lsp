@@ -40,6 +40,7 @@
                                        (:file "sys/asdf")
                                        (:file "sys/eval")
                                        (:file "sys/threads")
+                                       (:file "sys/traced-fns")
                                        (:file "sys/xref")
 
                                        (:file "file")
@@ -92,6 +93,7 @@
                                        (:file "session/handler/packages")
                                        (:file "session/handler/symbol")
                                        (:file "session/handler/threads")
+                                       (:file "session/handler/traced-fns")
                                        (:file "session/handler/asdf")
                                        (:file "session/handler/eval")
                                        (:file "session/message")
@@ -134,6 +136,7 @@
                                        (:file "session/handler/packages")
                                        (:file "session/handler/symbol")
                                        (:file "session/handler/threads")
+                                       (:file "session/handler/traced-fns")
                                        (:file "session/handler/utils")
                                        (:file "session/message")
                                        (:file "session/message-loop")

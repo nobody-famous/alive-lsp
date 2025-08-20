@@ -151,11 +151,8 @@
                (string-equal "T" sym)) sem-types:*keyword*)
 
           ((symbols:macro-p sym namespace) sem-types:*macro*)
-
           ((symbols:function-p sym namespace) sem-types:*function*)
-
           ((symbols:callable-p sym namespace) sem-types:*keyword*)
-
           ((symbols:external-p sym namespace) sem-types:*symbol*)))
 
 

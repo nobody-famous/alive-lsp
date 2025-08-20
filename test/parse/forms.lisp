@@ -14,6 +14,12 @@
     (let* ((input (make-string-input-stream text))
            (forms (p:from-stream input)))
 
+        #+n (loop :for form :in forms
+                  :do (alive/test/utils:print-hash-table "***** FORM" form)
+                      (loop :for kid :in (gethash "kids" form)
+                            :do (alive/test/utils:print-hash-table "***** KID" kid)
+                                (loop :for kid :in (gethash "kids" kid)
+                                      :do (alive/test/utils:print-hash-table "***** GRANDKID" kid))))
         (clue:check-equal :expected expected
                           :actual forms)))
 
@@ -344,8 +350,8 @@
             (check-forms (format nil ")")
                          (list (form:create :start (pos:create 0 0)
                                             :start-offset 0
-                                            :end nil
-                                            :end-offset nil
+                                            :end (pos:create 0 1)
+                                            :end-offset 1
                                             :form-type types:*unmatched-close-paren*
                                             :in-pkg nil
                                             :kids nil))))))
@@ -360,6 +366,29 @@
                                  :form-type types:*symbol*)))
             (clue:check-equal :expected 9
                               :actual (form:get-start-offset form)))))
+
+
+(defun test-commas ()
+    (clue:test "Commas"
+        (check-forms (format nil "`(, )")
+                     (list (form:create :start (pos:create 0 0)
+                                        :start-offset 0
+                                        :end (pos:create 0 5)
+                                        :end-offset 5
+                                        :form-type types:*back-quote*
+                                        :in-pkg nil
+                                        :kids (list (form:create :start (pos:create 0 1)
+                                                                 :start-offset 1
+                                                                 :end (pos:create 0 5)
+                                                                 :end-offset 5
+                                                                 :form-type types:*open-paren*
+                                                                 :kids (list (form:create :start (pos:create 0 2)
+                                                                                          :start-offset 2
+                                                                                          :end (pos:create 0 3)
+                                                                                          :end-offset 3
+                                                                                          :form-type types:*comma*
+                                                                                          :in-pkg nil
+                                                                                          :kids nil)))))))))
 
 
 (defun run-all ()
@@ -381,4 +410,5 @@
         (test-in-package)
         (test-sym-with-pkg-nl)
         (test-close-parens)
-        (test-getters)))
+        (test-getters)
+        (test-commas)))

@@ -1,17 +1,19 @@
 (defpackage :alive/symbols
     (:use :cl)
-    (:export :callable-p
+    (:export :add-bars
+             :callable-p
              :external-p
              :find-tokens
              :for-pos
              :function-p
-             :get-all
              :get-all-names
              :get-lambda-list
              :get-location
              :get-source-file
              :lookup
-             :macro-p)
+             :macro-p
+             :normalize
+             :special-ch-p)
     (:local-nicknames (:forms :alive/parse/forms)
                       (:packages :alive/packages)
                       (:pos :alive/position)
@@ -21,6 +23,33 @@
                       (:utils :alive/utils)))
 
 (in-package :alive/symbols)
+
+
+(defun special-ch-p (ch)
+    (or (and (alpha-char-p ch)
+             (lower-case-p ch))
+        (char= #\" ch)
+        (char= #\' ch)
+        (char= #\( ch)
+        (char= #\) ch)
+        (char= #\, ch)
+        (char= #\: ch)
+        (char= #\; ch)
+        (char= #\` ch)))
+
+
+(defun normalize (name)
+    (if (some (lambda (ch)
+                  (special-ch-p ch)) name)
+        name
+        (string-downcase name)))
+
+
+(defun add-bars (name)
+    (if (some (lambda (ch)
+                  (special-ch-p ch)) name)
+        (format nil "|~A|" name)
+        (string-downcase name)))
 
 
 (defun function-p (name &optional pkg-name)
@@ -38,12 +67,7 @@
 
 
 (defun macro-p (sym-name &optional pkg-name)
-    (let* ((pkg (if pkg-name
-                    (find-package (string-upcase pkg-name))
-                    *package*))
-           (sym (when pkg
-                      (find-symbol (string-upcase sym-name) pkg))))
-
+    (let ((sym (utils:lookup-symbol sym-name pkg-name)))
         (if (macro-function sym)
             T
             NIL)))
@@ -56,37 +80,24 @@
 
 
 (defun external-p (sym-name &optional pkg-name)
-    (let* ((pkg (if pkg-name
-                    (find-package (string-upcase pkg-name))
-                    *package*)))
+    (multiple-value-bind (sym status)
 
-        (when pkg
-              (multiple-value-bind (sym status)
+            (utils:lookup-symbol sym-name pkg-name)
 
-                      (find-symbol (string-upcase sym-name) pkg)
+        (declare (ignore sym))
 
-                  (declare (ignore sym))
-
-                  (or (eq status :external)
-                      (eq status :inherited))))))
+        (or (eq status :external)
+            (eq status :inherited))))
 
 
 (defun lookup (name pkg-name)
-    (let ((pkg (find-package (string-upcase pkg-name))))
-        (when pkg
-              (find-symbol (string-upcase name) pkg))))
-
-
-(defun get-all (pkg)
-    (let ((syms (list)))
-        (do-symbols (s pkg syms)
-            (push s syms))))
+    (utils:lookup-symbol name pkg-name))
 
 
 (defun get-all-names (pkg)
     (let ((syms (list)))
         (do-symbols (s pkg syms)
-            (push (string-downcase (string s)) syms))))
+            (push (string s) syms))))
 
 
 (defun lookup-sources (sym)
@@ -144,21 +155,6 @@
             (list (utils:url-encode-filename (namestring file))
                   (get-range-from-file file form-path))
             (list nil nil))))
-
-
-(defun find-syms (pkg pref)
-    (loop :with syms := ()
-          :for sym :in (alive/symbols:get-all pkg)
-
-          :do (let ((file (alive/symbols:get-source-file sym)))
-                  (when (and file
-                             (not (and (< 3 (length file))
-                                       (string= "sys" (string-downcase file) :end1 3 :end2 3)))
-                             (symbolp sym)
-                             (alive/utils:fuzzy-match pref (symbol-name sym)))
-                        (push (alive/symbols:get-location sym) syms)))
-
-          :finally (return syms)))
 
 
 (defun find-tokens (tokens pos)
