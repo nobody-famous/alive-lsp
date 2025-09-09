@@ -12,12 +12,17 @@
     #+sbcl (alive/sbcl/threads:get-thread-id thread))
 
 
-(declaim (ftype (function () cons) list=all))
+(declaim (ftype (function (sb-thread:thread) hash-table) thread-to-wire))
+(defun thread-to-wire (thread)
+    (let ((table (make-hash-table :test #'equalp)))
+        (setf (gethash "id" table) (get-id thread))
+        (setf (gethash "name" table) (get-id thread))
+        table))
+
+
+(declaim (ftype (function () cons) list-all))
 (defun list-all ()
-    (mapcar (lambda (thread)
-                (list (cons :id (get-id thread))
-                      (cons :name (bt:thread-name thread))))
-            (bt:all-threads)))
+    (mapcar #'thread-to-wire (bt:all-threads)))
 
 
 (declaim (ftype (function (T) bt:thread) find-by-id))
