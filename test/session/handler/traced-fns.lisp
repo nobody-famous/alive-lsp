@@ -22,7 +22,7 @@
 
 (defun test-list-all ()
     (clue:test "List All"
-        (let ((result (gethash "result" (handler:list-all (deps:create :list-all-traced (lambda () (list (cons :a "b"))))
+        (let ((result (gethash "result" (handler:list-all (deps:create :list-all-traced (lambda () (list (list (cons :a "b")))))
                                                           (list (cons :id 5))))))
             (clue:check-exists (gethash "traced" result)))))
 

@@ -16,11 +16,7 @@
 (declaim (ftype (function (deps:dependencies state:state cons) hash-table) list-all))
 (defun list-all (deps state msg)
     (state:lock (state mutex)
-        (let ((threads (remove-if (lambda (thread)
-                                      (eq (gethash "id" thread) (deps:get-thread-id deps (bt:current-thread))))
-                               (deps:list-all-threads deps))))
-
-            (utils:result (cdr (assoc :id msg)) "threads" threads))))
+        (utils:result (cdr (assoc :id msg)) "threads" (deps:list-all-threads deps))))
 
 
 (declaim (ftype (function (deps:dependencies state:state T)) cancel-thread))
