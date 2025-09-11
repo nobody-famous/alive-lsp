@@ -109,7 +109,7 @@
 
         (when to-untrace
               (deps:untrace-fn deps to-untrace))
-        (deps:send-msg deps (deps:send-msg deps (utils:result id "function" to-untrace)))))
+        (deps:send-msg deps (utils:result id "function" to-untrace))))
 
 
 (declaim (ftype (function (deps:dependencies cons) null) untrace-fn-by-name))

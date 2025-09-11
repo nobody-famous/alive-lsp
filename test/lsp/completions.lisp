@@ -28,7 +28,7 @@
     (clue:test "Symbols"
         (let ((actual (comps:simple :text "alive/symbols:"
                                     :pos (pos:create 0 14))))
-            (clue:check-equal :expected 13
+            (clue:check-equal :expected 14
                               :actual (length actual)))))
 
 
