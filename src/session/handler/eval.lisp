@@ -36,7 +36,7 @@
         (when (cdr (assoc :store-result params))
               (state:add-history state (car results)))
 
-        (let ((response-content (if (= (length results) 1)
-                                    (format nil "~A" (car results))
-                                    (mapcar (lambda (r) (format nil "~A" r)) results))))
+        (let ((response-content (if (consp results)
+                                    (mapcar (lambda (r) (format nil "~A" r)) results)
+                                    (format nil "~A" results))))
             (deps:send-msg deps (handler-utils:result id "text" response-content)))))
