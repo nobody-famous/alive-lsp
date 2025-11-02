@@ -202,7 +202,9 @@
 (defun do-eval (deps data)
     (let ((results (multiple-value-list (funcall (dependencies-eval-fn deps) data))))
         (finish-output)
-        results))
+        (if (cdr results)
+            results
+            (car results))))
 
 
 (declaim (ftype (function (dependencies string string) (values list &optional)) macro-expand))
