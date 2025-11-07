@@ -15,7 +15,7 @@
 (defun handle (deps state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
-           (pkg-name (cdr (assoc :package params)))
+           (pkg-name (or (cdr (assoc :package params)) "cl-user"))
            (text (cdr (assoc :text params)))
            (* (state:get-history-item state 0))
            (** (state:get-history-item state 1))
@@ -36,7 +36,7 @@
         (when (cdr (assoc :store-result params))
               (state:add-history state (car results)))
 
-        (let ((response-content (if (consp results)
+        (let ((response-content (if (cdr results)
                                     (mapcar (lambda (r) (format nil "~A" r)) results)
-                                    (format nil "~A" results))))
+                                    (format nil "~A" (car results)))))
             (deps:send-msg deps (handler-utils:result id "text" response-content)))))

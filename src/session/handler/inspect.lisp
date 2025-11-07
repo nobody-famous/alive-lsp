@@ -22,7 +22,7 @@
 (in-package :alive/session/handler/inspect)
 
 
-(declaim (ftype (function (integer &key (:insp-id integer) (:result *) (:result-type string)) hash-table) inspect-response))
+(declaim (ftype (function (integer &key (:insp-id (or integer null)) (:result *) (:result-type string)) hash-table) inspect-response))
 (defun inspect-response (id &key insp-id result result-type)
     (let ((data (make-hash-table :test #'equalp))
           (expr-type (if result-type result-type "expr")))
@@ -99,7 +99,8 @@
            (* (if (symbolp old-result)
                   (symbol-value old-result)
                   old-result))
-           (pkg-name (inspector:get-pkg inspector))
+           (pkg-name (or (inspector:get-pkg inspector)
+                         "cl-user"))
            (result (eval:from-string deps text
                                      :pkg-name pkg-name
                                      :stdin-fn (lambda ()
@@ -174,8 +175,8 @@
 (defun macro (deps state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
-           (pkg-name (cdr (assoc :package params)))
-           (text (cdr (assoc :text params)))
+           (pkg-name (or (cdr (assoc :package params)) "cl-user"))
+           (text (or (cdr (assoc :text params)) ""))
            (expanded (macros:expand-1 text pkg-name)))
 
         (send-inspect-result deps state
