@@ -7,6 +7,8 @@
 
 (defun do-compile (fn path)
     (let ((msgs (funcall fn path
+                    :stdin-fn (lambda (data)
+                                  (declare (ignore data)))
                     :stdout-fn (lambda (data)
                                    (declare (ignore data)))
                     :stderr-fn (lambda (data)
@@ -20,6 +22,8 @@
     (unwind-protect
             (handler-case
                     (let ((msgs (alive/file:do-load path
+                                                    :stdin-fn (lambda (data)
+                                                                  (declare (ignore data)))
                                                     :stdout-fn (lambda (data)
                                                                    (declare (ignore data)))
                                                     :stderr-fn (lambda (data)
@@ -38,14 +42,14 @@
 
 (defun test-try-compile ()
     (clue:suite "Try compile"
-        (clue:test "Try Compile"
+        (clue:test "Broken"
             (clue:check-equal :actual (do-compile 'alive/file:try-compile "test/files/compile/broken.lisp")
                               :expected (list alive/types:*sev-error*
                                               alive/types:*sev-info*
                                               alive/types:*sev-warn*
                                               alive/types:*sev-warn*)))
 
-        (clue:test "Try Compile"
+        (clue:test "Parens"
             (clue:check-equal :actual (do-compile 'alive/file:try-compile "test/files/compile/parens.lisp")
                               :expected (list alive/types:*sev-error*)))))
 

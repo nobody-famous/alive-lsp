@@ -32,8 +32,8 @@
             :stderr-fn stderr-fn))
 
 
-(declaim (ftype (function (string &key (:stdout-fn function) (:stderr-fn function)) *) try-compile))
-(defun try-compile (path &key stdout-fn stderr-fn)
+(declaim (ftype (function (string &key (:stdin-fn (or function null)) (:stdout-fn function) (:stderr-fn function)) *) try-compile))
+(defun try-compile (path &key stdin-fn stdout-fn stderr-fn)
     (do-cmd #+sbcl 'alive/sbcl/file:try-compile
             path
             :stdout-fn stdout-fn

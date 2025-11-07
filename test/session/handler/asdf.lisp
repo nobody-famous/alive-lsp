@@ -25,6 +25,6 @@
 
 
 (defun run-all ()
-    (clue:suite "ASDF Tests"
+    (clue:suite "ASDF Session Tests"
         (test-list-all)
         (test-load-system)))

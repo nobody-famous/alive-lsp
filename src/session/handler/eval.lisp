@@ -15,7 +15,7 @@
 (defun handle (deps state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
-           (pkg-name (cdr (assoc :package params)))
+           (pkg-name (or (cdr (assoc :package params)) "cl-user"))
            (text (cdr (assoc :text params)))
            (* (state:get-history-item state 0))
            (** (state:get-history-item state 1))
