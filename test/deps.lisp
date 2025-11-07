@@ -123,7 +123,7 @@
 (defun test-do-eval ()
     (clue:test "Eval"
         (let ((deps (deps:create :eval-fn (lambda (data) data))))
-            (clue:check-equal :expected "foo"
+            (clue:check-equal :expected (list "foo")
                               :actual (deps:do-eval deps "foo")))))
 
 
