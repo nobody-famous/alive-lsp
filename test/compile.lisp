@@ -6,14 +6,7 @@
 
 
 (defun do-compile (fn path)
-    (let ((msgs (funcall fn path
-                    :stdin-fn (lambda (data)
-                                  (declare (ignore data)))
-                    :stdout-fn (lambda (data)
-                                   (declare (ignore data)))
-                    :stderr-fn (lambda (data)
-                                   (declare (ignore data))))))
-
+    (let ((msgs (funcall fn path)))
         (mapcar (lambda (msg) (gethash "severity" msg))
                 msgs)))
 
@@ -21,14 +14,7 @@
 (defun do-load (path)
     (unwind-protect
             (handler-case
-                    (let ((msgs (alive/file:do-load path
-                                                    :stdin-fn (lambda (data)
-                                                                  (declare (ignore data)))
-                                                    :stdout-fn (lambda (data)
-                                                                   (declare (ignore data)))
-                                                    :stderr-fn (lambda (data)
-                                                                   (declare (ignore data))))))
-
+                    (let ((msgs (alive/file:do-load path)))
                         (mapcar (lambda (msg) (gethash "severity" msg))
                                 msgs))
                 (error (e)
