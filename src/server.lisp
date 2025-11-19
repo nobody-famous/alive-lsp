@@ -168,8 +168,8 @@
                      :macro-expand (lambda (txt pkg) (alive/macros:expand txt pkg))
                      :macro-expand-1 (lambda (txt pkg) (alive/macros:expand-1 txt pkg))
                      :try-compile (lambda (path) (alive/file:try-compile path))
-                     :do-compile (lambda (path) (alive/file:do-compile path))
-                     :do-load (lambda (path) (alive/file:do-load path)))))
+                     :do-compile (lambda (path &key stdin-fn stdout-fn stderr-fn) (alive/file:do-compile path :stdin-fn stdin-fn :stdout-fn stdout-fn :stderr-fn stderr-fn))
+                     :do-load (lambda (path &key stdin-fn stdout-fn stderr-fn) (alive/file:do-load path :stdin-fn stdin-fn :stdout-fn stdout-fn :stderr-fn stderr-fn)))))
 
 
 (defun accept-conn (server log)
