@@ -69,11 +69,14 @@
            (vars (get-frame-vars frame code-loc)))
 
         (setf (gethash "function" obj) (get-fun-name frame))
+        (setf (gethash "restartable" obj) (sb-debug::frame-has-debug-tag-p frame))
 
         (when src-name
               (setf (gethash "file" obj) src-name)
               (setf (gethash "topForm" obj) top-form)
-              (setf (gethash "formNumber" obj) form-num)
+              (setf (gethash "formNumber" obj) form-num))
+
+        (when vars
               (setf (gethash "vars" obj) vars))
 
         obj))
@@ -97,9 +100,7 @@
 
 
 (defun list-debug-frames (&optional (limit nil))
-    (let ((top-frame (or (sb-di::find-interrupted-frame)
-                         (sb-di::find-stepped-frame)
-                         (sb-di::find-caller-frame))))
+    (let ((top-frame (sb-debug::resolve-stack-top-hint)))
         (if limit
             (list-frames top-frame limit)
             (list-frames top-frame))))
