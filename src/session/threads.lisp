@@ -43,7 +43,7 @@
 (defun stringify-vars (vars)
     (mapcar (lambda (var)
                 (cons (car var)
-                      (format NIL "~A" (cdr var))))
+                      (princ-to-string (cdr var))))
             vars))
 
 
