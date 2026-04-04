@@ -41,8 +41,9 @@
 
 (declaim (ftype (function (cons) cons) stringify-vars))
 (defun stringify-vars (vars)
-    (mapcar (lambda (var) (cons (car var)
-                                (prin1-to-string (cdr var))))
+    (mapcar (lambda (var)
+                (cons (car var)
+                      (format NIL "~A" (cdr var))))
             vars))
 
 
@@ -72,7 +73,9 @@
     (let ((debug-resp (deps:send-request deps (req:debugger (state:next-send-id state)
                                                             :message (princ-to-string err)
                                                             :restarts restarts
-                                                            :stack-trace (mapcar (lambda (frame) (frame-to-wire state frame)) frames)))))
+                                                            :stack-trace (mapcar (lambda (frame)
+                                                                                     (frame-to-wire state frame))
+                                                                                 frames)))))
 
         (cond ((assoc :error debug-resp)
                   (logger:error-msg (state:get-log state) "Debugger Error ~A" debug-resp))
