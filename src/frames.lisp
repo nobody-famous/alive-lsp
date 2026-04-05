@@ -90,7 +90,7 @@
                       (or (not limit)
                           (< ndx limit)))
 
-          :collect (create-frame-obj frame)
+          :collect frame
           :do (setf frame (sb-di:frame-down frame))
               (incf ndx)))
 
@@ -100,7 +100,7 @@
 
 
 (defun list-debug-frames (&optional (limit nil))
-    (let ((top-frame (sb-debug::resolve-stack-top-hint)))
-        (if limit
-            (list-frames top-frame limit)
-            (list-frames top-frame))))
+    (let* ((top-frame (sb-debug::resolve-stack-top-hint))
+           (frames (list-frames top-frame limit)))
+        (mapcar (lambda (frame) (cons (create-frame-obj frame) frame))
+                frames)))

@@ -81,23 +81,45 @@
                   (logger:error-msg (state:get-log state) "Debugger Error ~A" debug-resp))
 
               ((assoc :result debug-resp)
-                  (let* ((result (cdr (assoc :result debug-resp))))
-                      (cdr (assoc :index result)))))))
+                  (cdr (assoc :result debug-resp))))))
+
+
+(declaim (ftype (function (cons fixnum) null) do-restart))
+(defun do-restart (restarts ndx)
+    (when (and ndx
+               (<= 0 ndx (- (length restarts) 1)))
+          (invoke-restart-interactively (elt restarts ndx))))
+
+
+(declaim (ftype (function (cons fixnum) null) do-restart-frame))
+(defun do-restart-frame (frames ndx)
+    (let ((frame (cdr (nth ndx frames))))
+        (when (sb-debug:frame-has-debug-tag-p frame)
+              (multiple-value-bind (fname args) (sb-debug::frame-call frame)
+                  (when (and (sb-int:legal-fun-name-p fname)
+                             (fboundp fname))
+                        (let ((fun (fdefinition fname)))
+                            (sb-debug:unwind-to-frame-and-call
+                                frame
+                                (lambda ()
+                                    (declare (optimize (debug 0)))
+                                    (apply fun args)))))))))
 
 
 (declaim (ftype (function (deps:dependencies state:state condition cons) null) start-debugger))
 (defun start-debugger (deps state err frames)
     (let* ((restarts (compute-restarts err))
-           (ndx (wait-for-debug deps state err
-                                (mapcar (lambda (item)
-                                            (restart-info:create-item :name (restart-name item)
-                                                                      :description (princ-to-string item)))
-                                        restarts)
-                                frames)))
+           (action (wait-for-debug deps state err
+                                   (mapcar (lambda (item)
+                                               (restart-info:create-item :name (restart-name item)
+                                                                         :description (princ-to-string item)))
+                                           restarts)
+                                   (mapcar (lambda (frame) (car frame)) frames))))
 
-        (when (and ndx
-                   (<= 0 ndx (- (length restarts) 1)))
-              (invoke-restart-interactively (elt restarts ndx)))
+        (cond ((assoc :restart action)
+                  (do-restart restarts (cdr (assoc :restart action))))
+              ((assoc :restart-frame action)
+                  (do-restart-frame frames (cdr (assoc :restart-frame action)))))
         nil))
 
 
