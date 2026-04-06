@@ -47,11 +47,11 @@
           :with vars := nil
 
           :for var :across dbg-vars
-          :do (push (cons (sb-di::debug-var-symbol var)
-                          (if (var-is-valid var code-loc)
-                              (sb-di:debug-var-value var frame)
-                              nil))
-                    vars)
+          :do (let ((item (make-hash-table :test #'equalp)))
+                  (setf (gethash "name" item) (sb-di::debug-var-symbol var))
+                  (setf (gethash "value" item) (when (var-is-valid var code-loc)
+                                                     (sb-di:debug-var-value var frame)))
+                  (push item vars))
 
           :finally (return vars)))
 
@@ -70,6 +70,7 @@
 
         (setf (gethash "function" obj) (get-fun-name frame))
         (setf (gethash "restartable" obj) (sb-debug::frame-has-debug-tag-p frame))
+        (setf (gethash "argsList" obj) (alive/utils:safe-print (sb-debug::frame-args-as-list frame 20)))
 
         (when src-name
               (setf (gethash "file" obj) src-name)

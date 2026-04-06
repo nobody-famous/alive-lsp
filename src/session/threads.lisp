@@ -41,10 +41,9 @@
 
 (declaim (ftype (function (cons) cons) stringify-vars))
 (defun stringify-vars (vars)
-    (mapcar (lambda (var)
-                (cons (car var)
-                      (princ-to-string (cdr var))))
-            vars))
+    (loop :for var :in vars
+          :do (setf (gethash "value" var) (alive/utils:safe-print (gethash"value"var))))
+    vars)
 
 
 (declaim (ftype (function (state:state hash-table) hash-table) frame-to-wire))
@@ -53,6 +52,7 @@
            (file (gethash "file" frame))
            (vars (gethash "vars" frame))
            (restartable (if (gethash "restartable" frame) T nil))
+           (args-list (gethash "argsList" frame))
            (fn-name (gethash "function" frame))
            (pos (debugger:get-frame-loc (get-frame-text-stream state file)
                                         frame)))
@@ -61,6 +61,7 @@
         (setf (gethash "file" obj) file)
         (setf (gethash "position" obj) pos)
         (setf (gethash "restartable" obj) restartable)
+        (setf (gethash "argsList" obj) args-list)
         (setf (gethash "vars" obj) (if (consp vars)
                                        (stringify-vars vars)
                                        vars))
