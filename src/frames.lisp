@@ -70,7 +70,7 @@
 
         (setf (gethash "function" obj) (get-fun-name frame))
         (setf (gethash "restartable" obj) (sb-debug::frame-has-debug-tag-p frame))
-        (setf (gethash "argsList" obj) (alive/utils:safe-print (sb-debug::frame-args-as-list frame 20)))
+        (setf (gethash "argsList" obj) (alive/utils:safe-print (sb-debug::frame-args-as-list frame (length vars))))
 
         (when src-name
               (setf (gethash "file" obj) src-name)

@@ -92,19 +92,22 @@
           (invoke-restart-interactively (elt restarts ndx))))
 
 
-(declaim (ftype (function (cons fixnum) null) do-restart-frame))
-(defun do-restart-frame (frames ndx)
+(declaim (ftype (function (cons fixnum string) null) do-restart-frame))
+(defun do-restart-frame (frames ndx args-list)
     (let ((frame (cdr (nth ndx frames))))
         (when (sb-debug:frame-has-debug-tag-p frame)
               (multiple-value-bind (fname args) (sb-debug::frame-call frame)
                   (when (and (sb-int:legal-fun-name-p fname)
                              (fboundp fname))
-                        (let ((fun (fdefinition fname)))
+                        (let ((fun (fdefinition fname))
+                              (fun-args (if (< 0 (length args-list))
+                                            (sb-di:eval-in-frame frame (read-from-string args-list))
+                                            args)))
                             (sb-debug:unwind-to-frame-and-call
                                 frame
                                 (lambda ()
                                     (declare (optimize (debug 0)))
-                                    (apply fun args)))))))))
+                                    (apply fun fun-args)))))))))
 
 
 (declaim (ftype (function (deps:dependencies state:state condition cons) null) start-debugger))
@@ -120,7 +123,9 @@
         (cond ((assoc :restart action)
                   (do-restart restarts (cdr (assoc :restart action))))
               ((assoc :restart-frame action)
-                  (do-restart-frame frames (cdr (assoc :restart-frame action)))))
+                  (do-restart-frame frames
+                                    (cdr (assoc :restart-frame action))
+                                    (cdr (assoc :restart-args-list action)))))
         nil))
 
 
