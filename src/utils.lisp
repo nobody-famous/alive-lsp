@@ -3,6 +3,7 @@
     (:export :fuzzy-match
              :get-timestamp
              :lookup-symbol
+             :safe-print
              :url-encode-filename))
 
 (in-package :alive/utils)
@@ -73,3 +74,10 @@
             (or (find-symbol sym-name pkg)
                 (find-symbol (string-upcase sym-name) pkg))
             (values nil nil))))
+
+
+(defun safe-print (arg)
+    (let ((*print-circle* T)
+          (*print-escape* T)
+          (*print-readably* NIL))
+        (if arg (prin1-to-string arg) "")))

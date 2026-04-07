@@ -47,11 +47,11 @@
           :with vars := nil
 
           :for var :across dbg-vars
-          :do (push (cons (sb-di::debug-var-symbol var)
-                          (if (var-is-valid var code-loc)
-                              (sb-di:debug-var-value var frame)
-                              nil))
-                    vars)
+          :do (let ((item (make-hash-table :test #'equalp)))
+                  (setf (gethash "name" item) (sb-di::debug-var-symbol var))
+                  (setf (gethash "value" item) (when (var-is-valid var code-loc)
+                                                     (sb-di:debug-var-value var frame)))
+                  (push item vars))
 
           :finally (return vars)))
 
@@ -69,11 +69,15 @@
            (vars (get-frame-vars frame code-loc)))
 
         (setf (gethash "function" obj) (get-fun-name frame))
+        (setf (gethash "restartable" obj) (sb-debug::frame-has-debug-tag-p frame))
+        (setf (gethash "argsList" obj) (alive/utils:safe-print (sb-debug::frame-args-as-list frame (length vars))))
 
         (when src-name
               (setf (gethash "file" obj) src-name)
               (setf (gethash "topForm" obj) top-form)
-              (setf (gethash "formNumber" obj) form-num)
+              (setf (gethash "formNumber" obj) form-num))
+
+        (when vars
               (setf (gethash "vars" obj) vars))
 
         obj))
@@ -87,7 +91,7 @@
                       (or (not limit)
                           (< ndx limit)))
 
-          :collect (create-frame-obj frame)
+          :collect frame
           :do (setf frame (sb-di:frame-down frame))
               (incf ndx)))
 
@@ -97,9 +101,7 @@
 
 
 (defun list-debug-frames (&optional (limit nil))
-    (let ((top-frame (or (sb-di::find-interrupted-frame)
-                         (sb-di::find-stepped-frame)
-                         (sb-di::find-caller-frame))))
-        (if limit
-            (list-frames top-frame limit)
-            (list-frames top-frame))))
+    (let* ((top-frame (sb-debug::resolve-stack-top-hint))
+           (frames (list-frames top-frame limit)))
+        (mapcar (lambda (frame) (cons (create-frame-obj frame) frame))
+                frames)))
