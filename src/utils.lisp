@@ -80,4 +80,5 @@
     (let ((*print-circle* T)
           (*print-escape* T)
           (*print-readably* NIL))
-        (if arg (prin1-to-string arg) "")))
+        #+n (prin1-to-string arg)
+        (if arg (prin1-to-string arg) "()")))

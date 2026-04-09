@@ -23,7 +23,8 @@
            (legend-opts (make-hash-table :test #'equalp))
            (comp-opts (make-hash-table :test #'equalp))
            (on-type-opts (make-hash-table :test #'equalp))
-           (sig-help-opts (make-hash-table :test #'equalp)))
+           (sig-help-opts (make-hash-table :test #'equalp))
+           (code-lens-opts (make-hash-table :test #'equalp)))
         (declare (type fixnum id))
 
         (setf (gethash "triggerCharacters" comp-opts) (list #\: #\+ #\- #\*))
@@ -50,6 +51,9 @@
         (setf (gethash "definitionProvider" caps) T)
         (setf (gethash "documentSymbolProvider" caps) T)
         (setf (gethash "referencesProvider" caps) T)
+
+        (setf (gethash "resolveProvider" code-lens-opts) T)
+        (setf (gethash "codeLensProvider" caps) code-lens-opts)
 
         (setf (gethash "capabilities" data) caps)
 

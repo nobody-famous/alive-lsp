@@ -1,6 +1,8 @@
 (defpackage :alive/session/handler/document
     (:use :cl)
-    (:export :completion
+    (:export :code-lens
+             :code-lens-resolve
+             :completion
              :definition
              :did-change
              :did-open
@@ -13,6 +15,7 @@
              :sem-tokens
              :sig-help)
     (:local-nicknames (:analysis :alive/lsp/sem-analysis)
+                      (:code-lens :alive/lsp/code-lens)
                       (:comps :alive/lsp/completions)
                       (:config-item :alive/lsp/types/config-item)
                       (:fmt-opts :alive/lsp/types/format-options)
@@ -30,6 +33,41 @@
                       (:utils :alive/session/handler/utils)))
 
 (in-package :alive/session/handler/document)
+
+
+(declaim (ftype (function (state:state cons) hash-table) code-lens))
+(defun code-lens (state msg)
+    (let* ((id (cdr (assoc :id msg)))
+           (params (cdr (assoc :params msg)))
+           (doc (cdr (assoc :text-document params)))
+           (uri (cdr (assoc :uri doc)))
+           (text (or (state:get-file-text state uri) ""))
+           (items (or (code-lens:get-unresolved text)
+                      (make-array 0))))
+        
+        (format T "***** ITEMS ~A~%" items)
+        (lsp-msg:create-response id :result-value items)))
+
+
+(declaim (ftype (function (state:state cons) hash-table) code-lens-resolve))
+(defun code-lens-resolve (state msg)
+    (declare (ignore state))
+    (let* ((id (cdr (assoc :id msg)))
+           (params (cdr (assoc :params msg)))
+           (doc (cdr (assoc :text-document params)))
+           (uri (cdr (assoc :uri doc)))
+           (items (make-array 0)))
+        #+n (let ((item (make-hash-table :test #'equalp))
+                  (cmd (make-hash-table :test #'equalp)))
+                (setf (gethash "title" cmd) "0 references")
+                (setf (gethash "command" cmd) "editor.action.showReferences")
+                (setf (gethash "arguments" cmd) (list uri
+                                                      (alive/position:create 36 7)))
+                (setf (gethash "range" item) (alive/range:create (alive/position:create 36 7) (alive/position:create 36 16)))
+                (setf (gethash "command" item) cmd)
+
+                (push item items))
+        (lsp-msg:create-response id :result-value items)))
 
 
 (declaim (ftype (function (state:state cons) hash-table) completion))

@@ -12,8 +12,7 @@
              :is-in-pkg
              :set-end
              :set-end-offset
-             :set-is-in-pkg
-             :to-string))
+             :set-is-in-pkg))
 
 (in-package :alive/parse/form)
 
