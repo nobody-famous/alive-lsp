@@ -41,7 +41,6 @@
           (cons "initialized" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/init:initialized state msg)))
 
           (cons "textDocument/codeLens" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/document:code-lens state msg)))
-          (cons "codeLens/resolve" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/document:code-lens-resolve state msg)))
           (cons "textDocument/completion" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/document:completion state msg)))
           (cons "textDocument/definition" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/document:definition state msg)))
           (cons "textDocument/didChange" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/document:did-change state msg)))

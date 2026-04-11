@@ -1,6 +1,7 @@
 (defpackage :alive/sys/xref
     (:use :cl)
-    (:export :get-locations)
+    (:export :find-references
+             :get-locations)
     (:local-nicknames (:form :alive/parse/form)
                       (:forms :alive/parse/forms)
                       (:loc :alive/location)
