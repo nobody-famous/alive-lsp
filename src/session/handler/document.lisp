@@ -1,6 +1,8 @@
 (defpackage :alive/session/handler/document
     (:use :cl)
-    (:export :completion
+    (:export :code-lens
+             :code-lens-resolve
+             :completion
              :definition
              :did-change
              :did-open
@@ -13,6 +15,7 @@
              :sem-tokens
              :sig-help)
     (:local-nicknames (:analysis :alive/lsp/sem-analysis)
+                      (:code-lens :alive/lsp/code-lens)
                       (:comps :alive/lsp/completions)
                       (:config-item :alive/lsp/types/config-item)
                       (:fmt-opts :alive/lsp/types/format-options)
@@ -30,6 +33,19 @@
                       (:utils :alive/session/handler/utils)))
 
 (in-package :alive/session/handler/document)
+
+
+(declaim (ftype (function (state:state cons) hash-table) code-lens))
+(defun code-lens (state msg)
+    (let* ((id (cdr (assoc :id msg)))
+           (params (cdr (assoc :params msg)))
+           (doc (cdr (assoc :text-document params)))
+           (uri (cdr (assoc :uri doc)))
+           (text (or (state:get-file-text state uri) ""))
+           (items (or (code-lens:get uri text)
+                      (make-array 0))))
+
+        (lsp-msg:create-response id :result-value items)))
 
 
 (declaim (ftype (function (state:state cons) hash-table) completion))

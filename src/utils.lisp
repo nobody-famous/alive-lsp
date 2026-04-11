@@ -2,6 +2,7 @@
     (:use :cl)
     (:export :fuzzy-match
              :get-timestamp
+             :has-prefix
              :lookup-symbol
              :safe-print
              :url-encode-filename))
@@ -50,6 +51,12 @@
         (apply #'concatenate 'string chars)))
 
 
+(defun has-prefix (str prefix)
+    (and (<= (length prefix) (length str))
+         (string= prefix
+                  (subseq str 0 (length prefix)))))
+
+
 (declaim (ftype (function (string) string) url-encode-filename))
 (defun url-encode-filename (name)
     (let* ((raw-pieces (uiop:split-string name :separator "/\\"))
@@ -57,8 +64,12 @@
                                (if (string= piece "")
                                    ""
                                    (format NIL "/~A" (url-encode piece))))
-                           raw-pieces)))
-        (apply #'concatenate 'string pieces)))
+                           raw-pieces))
+           (filename (apply #'concatenate 'string pieces))
+           (encoded (if (has-prefix filename "file://")
+                        filename
+                        (format nil "file://~A" filename))))
+        encoded))
 
 
 (defun lookup-symbol (name &optional pkg-name)
@@ -80,4 +91,4 @@
     (let ((*print-circle* T)
           (*print-escape* T)
           (*print-readably* NIL))
-        (if arg (prin1-to-string arg) "")))
+        (if arg (prin1-to-string arg) "()")))

@@ -37,9 +37,7 @@
 
 
 (defun var-is-valid (var loc)
-    (ecase (sb-di:debug-var-validity var loc)
-        (:valid T)
-        ((:invalid :unknown) nil)))
+    (eq (sb-di:debug-var-validity var loc) :valid))
 
 
 (defun get-frame-vars (frame code-loc)
@@ -48,10 +46,10 @@
 
           :for var :across dbg-vars
           :do (let ((item (make-hash-table :test #'equalp)))
-                  (setf (gethash "name" item) (sb-di::debug-var-symbol var))
-                  (setf (gethash "value" item) (when (var-is-valid var code-loc)
-                                                     (sb-di:debug-var-value var frame)))
-                  (push item vars))
+                  (when (var-is-valid var code-loc)
+                        (setf (gethash "name" item) (sb-di::debug-var-symbol var))
+                        (setf (gethash "value" item) (sb-di:debug-var-value var frame))
+                        (push item vars)))
 
           :finally (return vars)))
 
