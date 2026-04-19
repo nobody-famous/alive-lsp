@@ -72,6 +72,24 @@
         lens))
 
 
+(defun create-inspect-macro-lens (pos name pkg)
+    (let ((lens (make-hash-table :test #'equalp))
+          (cmd (make-hash-table :test #'equalp))
+          (args (make-hash-table :test #'equalp)))
+
+        (setf (gethash "title" cmd) "Inspect")
+        (setf (gethash "command" cmd) "alive.queryInspectMacro")
+
+        (setf (gethash "package" args) pkg)
+        (setf (gethash "query" args) (format NIL "(~A)" name))
+        (setf (gethash "arguments" cmd) (list args))
+
+        (setf (gethash "range" lens) (alive/range:create pos pos))
+        (setf (gethash "command" lens) cmd)
+
+        lens))
+
+
 (declaim (ftype (function (string (or null string)) (or cons null)) get))
 (defun get (uri text)
     (loop :with forms := (forms:from-stream-or-nil (make-string-input-stream text))
@@ -80,8 +98,10 @@
           :for form :in forms
           :do (multiple-value-bind (pos key name pkg)
                       (get-values text form)
-                  (when (has-code-lens key)
-                        (push (create-inspect-lens pos name pkg) lenses)
-                        (push (create-refs-lens uri pos name pkg) lenses)))
+                  (if (string= key "defmacro")
+                      (push (create-inspect-macro-lens pos name pkg) lenses)
+                      (when (has-code-lens key)
+                            (push (create-inspect-lens pos name pkg) lenses)
+                            (push (create-refs-lens uri pos name pkg) lenses))))
 
           :finally (return lenses)))
