@@ -133,6 +133,7 @@
 (defun run-with-debugger (deps state fn)
     (let ((sb-ext:*invoke-debugger-hook* (lambda (c h)
                                              (declare (ignore h))
+                                             (format T "DEBUGGER CALLED ~A~%" c)
                                              (start-debugger deps state c (alive/frames:list-debug-frames))
                                              (return-from run-with-debugger)))
           (*debugger-hook* (lambda (c h)

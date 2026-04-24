@@ -65,6 +65,11 @@
                                                           (cdr (assoc :id msg))
                                                           (lambda ()
                                                               (alive/session/handler/eval:handle deps state msg)))))
+          (cons "$/alive/evalInFrame" (lambda (deps msg)
+                                          (threads:run-in-thread deps state (or (cdr (assoc :method msg)) "eval-in-frame")
+                                                                 (cdr (assoc :id msg))
+                                                                 (lambda ()
+                                                                     (alive/session/handler/eval:handle deps state msg)))))
           (cons "$/alive/topFormBounds" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/form-bounds:top-form state msg)))
           (cons "$/alive/surroundingFormBounds" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/form-bounds:surrounding-form state msg)))
 
