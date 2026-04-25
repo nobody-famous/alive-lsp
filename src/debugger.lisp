@@ -1,6 +1,7 @@
 (defpackage :alive/debugger
     (:use :cl)
-    (:export :get-frame-loc)
+    (:export :eval-in-frame
+             :get-frame-loc)
     (:local-nicknames (:forms :alive/parse/forms)
                       (:form :alive/parse/form)
                       (:types :alive/types)))
@@ -46,3 +47,8 @@
 
                   (when found
                         (gethash "start" found))))))
+
+
+(defun eval-in-frame (frame text)
+    (format T "eval-in-frame ~A ~A~%" frame text)
+    (sb-di:eval-in-frame frame (read-from-string text)))

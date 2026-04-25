@@ -92,16 +92,17 @@
 
 (declaim (ftype (function (string (or null string)) (or cons null)) get))
 (defun get (uri text)
-    (loop :with forms := (forms:from-stream-or-nil (make-string-input-stream text))
-          :with lenses := nil
+    (ignore-errors
+        (loop :with forms := (forms:from-stream-or-nil (make-string-input-stream text))
+              :with lenses := nil
 
-          :for form :in forms
-          :do (multiple-value-bind (pos key name pkg)
-                      (get-values text form)
-                  (if (string= key "defmacro")
-                      (push (create-inspect-macro-lens pos name pkg) lenses)
-                      (when (has-code-lens key)
-                            (push (create-inspect-lens pos name pkg) lenses)
-                            (push (create-refs-lens uri pos name pkg) lenses))))
+              :for form :in forms
+              :do (multiple-value-bind (pos key name pkg)
+                          (get-values text form)
+                      (if (string= key "defmacro")
+                          (push (create-inspect-macro-lens pos name pkg) lenses)
+                          (when (has-code-lens key)
+                                (push (create-inspect-lens pos name pkg) lenses)
+                                (push (create-refs-lens uri pos name pkg) lenses))))
 
-          :finally (return lenses)))
+              :finally (return lenses))))

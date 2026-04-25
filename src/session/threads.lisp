@@ -71,18 +71,24 @@
 
 (declaim (ftype (function (deps:dependencies state:state condition cons cons)) wait-for-debug))
 (defun wait-for-debug (deps state err restarts frames)
-    (let ((debug-resp (deps:send-request deps (req:debugger (state:next-send-id state)
-                                                            :message (princ-to-string err)
-                                                            :restarts restarts
-                                                            :stack-trace (mapcar (lambda (frame)
-                                                                                     (frame-to-wire state frame))
-                                                                                 frames)))))
+    (alive/logger:info-msg (state:get-log state) "WAIT-FOR-DEBUG")
+    (let* ((debugger-id (state:next-send-id state))
+           (request (req:debugger debugger-id
+                                  :debugger-id debugger-id
+                                  :message (princ-to-string err)
+                                  :restarts restarts
+                                  :stack-trace (mapcar (lambda (frame)
+                                                           (frame-to-wire state frame))
+                                                       frames))))
+        (alive/logger:info-msg (state:get-log state) "SET DEBUGGER ~A ~A~%" debugger-id (length frames))
+        (state:set-debugger state debugger-id frames)
 
-        (cond ((assoc :error debug-resp)
-                  (logger:error-msg (state:get-log state) "Debugger Error ~A" debug-resp))
+        (let ((debug-resp (deps:send-request deps request)))
+            (cond ((assoc :error debug-resp)
+                      (logger:error-msg (state:get-log state) "Debugger Error ~A" debug-resp))
 
-              ((assoc :result debug-resp)
-                  (cdr (assoc :result debug-resp))))))
+                  ((assoc :result debug-resp)
+                      (cdr (assoc :result debug-resp)))))))
 
 
 (declaim (ftype (function (cons fixnum) null) do-restart))
@@ -133,7 +139,6 @@
 (defun run-with-debugger (deps state fn)
     (let ((sb-ext:*invoke-debugger-hook* (lambda (c h)
                                              (declare (ignore h))
-                                             (format T "DEBUGGER CALLED ~A~%" c)
                                              (start-debugger deps state c (alive/frames:list-debug-frames))
                                              (return-from run-with-debugger)))
           (*debugger-hook* (lambda (c h)
