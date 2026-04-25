@@ -44,17 +44,18 @@
             (deps:send-msg deps (handler-utils:result id "text" response-content)))))
 
 
-(declaim (ftype (function (state:state cons) null) handle-in-frame))
-(defun handle-in-frame (state msg)
+(declaim (ftype (function (deps:dependencies state:state cons) null) handle-in-frame))
+(defun handle-in-frame (deps state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
            (debugger-id (cdr (assoc :id params)))
            (frame (cdr (assoc :frame params)))
            (text (cdr (assoc :text params)))
-           (frames (state:get-debugger state debugger-id)))
+           (frames (state:get-debugger state debugger-id))
+           (results (when (and frames
+                               (numberp frame)
+                               (stringp text))
+                          (debugger:eval-in-frame (nth frame frames) text))))
 
-        (format T "HANDLE-IN-FRAME ~A~%" msg)
-        (when (and frames
-                   (numberp frame)
-                   (stringp text))
-              (debugger:eval-in-frame (nth frame frames) text))))
+        (let ((response-content (format nil "~A" results)))
+            (deps:send-msg deps (handler-utils:result id "text" response-content)))))
