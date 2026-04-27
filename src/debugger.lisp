@@ -50,4 +50,6 @@
 
 
 (defun eval-in-frame (frame text)
-    (sb-di:eval-in-frame frame (read-from-string text)))
+    (funcall (sb-di:preprocess-for-eval (read-from-string text)
+                                        (sb-di:frame-code-location frame))
+        frame))
