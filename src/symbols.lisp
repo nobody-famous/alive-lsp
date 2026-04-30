@@ -143,7 +143,7 @@
     (let* ((src (when sym (lookup-sources sym)))
            (file (when src (sb-introspect:definition-source-pathname src))))
 
-        (when file (namestring file))))
+        (when file (namestring (translate-logical-pathname file)))))
 
 
 (defun get-location (sym)
@@ -152,7 +152,7 @@
            (form-path (when src (sb-introspect:definition-source-form-path src))))
 
         (if file
-            (list (utils:url-encode-filename (namestring file))
+            (list (utils:url-encode-filename (namestring (translate-logical-pathname file)))
                   (get-range-from-file file form-path))
             (list nil nil))))
 
