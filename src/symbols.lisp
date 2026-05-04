@@ -9,10 +9,8 @@
              :get-all-names
              :get-lambda-list
              :get-location
-             :get-source-file
              :lookup
              :macro-p
-             :normalize
              :special-ch-p)
     (:local-nicknames (:forms :alive/parse/forms)
                       (:packages :alive/packages)
@@ -36,13 +34,6 @@
         (char= #\: ch)
         (char= #\; ch)
         (char= #\` ch)))
-
-
-(defun normalize (name)
-    (if (some (lambda (ch)
-                  (special-ch-p ch)) name)
-        name
-        (string-downcase name)))
 
 
 (defun add-bars (name)
@@ -137,13 +128,6 @@
                 (let ((forms (forms:from-stream in-stream)))
                     (forms:get-range-for-path forms source-path)))
         (T nil)))
-
-
-(defun get-source-file (sym)
-    (let* ((src (when sym (lookup-sources sym)))
-           (file (when src (sb-introspect:definition-source-pathname src))))
-
-        (when file (namestring (translate-logical-pathname file)))))
 
 
 (defun get-location (sym)

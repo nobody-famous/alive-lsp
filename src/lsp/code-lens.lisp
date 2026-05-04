@@ -39,7 +39,7 @@
 (defun create-refs-lens (uri pos name pkg)
     (let ((lens (make-hash-table :test #'equalp))
           (cmd (make-hash-table :test #'equalp))
-          (xrefs (alive/sys/xref:find-references name pkg))
+          (xrefs (ignore-errors (alive/sys/xref:find-references name pkg)))
           (path (if (alive/utils:has-prefix uri "file://")
                     uri
                     (format nil "file://~A" uri))))
