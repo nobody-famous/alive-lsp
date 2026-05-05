@@ -1,8 +1,10 @@
 (defpackage :alive/session/handler/eval
     (:use :cl)
-    (:export :handle)
+    (:export :handle
+             :handle-in-frame)
     (:local-nicknames (:deps :alive/deps)
                       (:eval :alive/sys/eval)
+                      (:debugger :alive/debugger)
                       (:handler-utils :alive/session/handler/utils)
                       (:notification :alive/lsp/message/notification)
                       (:state :alive/session/state)
@@ -39,4 +41,21 @@
         (let ((response-content (if (cdr results)
                                     (mapcar (lambda (r) (format nil "~A" r)) results)
                                     (format nil "~A" (car results)))))
+            (deps:send-msg deps (handler-utils:result id "text" response-content)))))
+
+
+(declaim (ftype (function (deps:dependencies state:state cons) null) handle-in-frame))
+(defun handle-in-frame (deps state msg)
+    (let* ((id (cdr (assoc :id msg)))
+           (params (cdr (assoc :params msg)))
+           (debugger-id (cdr (assoc :id params)))
+           (frame (cdr (assoc :frame params)))
+           (text (cdr (assoc :text params)))
+           (frames (state:get-debugger state debugger-id))
+           (results (when (and frames
+                               (numberp frame)
+                               (stringp text))
+                          (debugger:eval-in-frame (nth frame frames) text))))
+
+        (let ((response-content (format nil "~A" results)))
             (deps:send-msg deps (handler-utils:result id "text" response-content)))))

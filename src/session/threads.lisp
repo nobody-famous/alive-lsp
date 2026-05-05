@@ -71,18 +71,24 @@
 
 (declaim (ftype (function (deps:dependencies state:state condition cons cons)) wait-for-debug))
 (defun wait-for-debug (deps state err restarts frames)
-    (let ((debug-resp (deps:send-request deps (req:debugger (state:next-send-id state)
-                                                            :message (princ-to-string err)
-                                                            :restarts restarts
-                                                            :stack-trace (mapcar (lambda (frame)
-                                                                                     (frame-to-wire state frame))
-                                                                                 frames)))))
+    (let* ((debugger-id (state:next-send-id state))
+           (request (req:debugger debugger-id
+                                  :debugger-id debugger-id
+                                  :message (princ-to-string err)
+                                  :restarts restarts
+                                  :stack-trace (mapcar (lambda (frame)
+                                                           (frame-to-wire state frame))
+                                                       (mapcar (lambda (frame) (car frame)) frames)))))
+        (state:set-debugger state debugger-id (mapcar (lambda (frame) (cdr frame)) frames))
 
-        (cond ((assoc :error debug-resp)
-                  (logger:error-msg (state:get-log state) "Debugger Error ~A" debug-resp))
+        (let ((debug-resp (deps:send-request deps request)))
+            (state:remove-debugger state debugger-id)
 
-              ((assoc :result debug-resp)
-                  (cdr (assoc :result debug-resp))))))
+            (cond ((assoc :error debug-resp)
+                      (logger:error-msg (state:get-log state) "Debugger Error ~A" debug-resp))
+
+                  ((assoc :result debug-resp)
+                      (cdr (assoc :result debug-resp)))))))
 
 
 (declaim (ftype (function (cons fixnum) null) do-restart))
@@ -118,7 +124,7 @@
                                                (restart-info:create-item :name (restart-name item)
                                                                          :description (princ-to-string item)))
                                            restarts)
-                                   (mapcar (lambda (frame) (car frame)) frames))))
+                                   frames)))
 
         (cond ((assoc :restart action)
                   (do-restart restarts (cdr (assoc :restart action))))

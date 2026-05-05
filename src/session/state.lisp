@@ -6,6 +6,7 @@
              :add-history
              :add-inspector
              :add-listener
+             :get-debugger
              :get-file-text
              :get-history-item
              :get-inspector
@@ -19,8 +20,10 @@
              :next-send-id
              :next-thread-id
              :rem-inspector
+             :remove-debugger
              :rem-thread-msg
              :running
+             :set-debugger
              :set-file-text
              :set-initialized
              :set-running
@@ -52,6 +55,7 @@
     (thread-msgs (make-hash-table :test 'equalp) :type hash-table)
     (sent-msg-callbacks (make-hash-table :test 'equalp) :type hash-table)
     (inspectors (make-hash-table :test 'equalp) :type hash-table)
+    (debuggers (make-hash-table :test 'equalp) :type hash-table)
 
     (thread-name-id 1 :type integer)
     (send-msg-id 1 :type integer)
@@ -93,6 +97,23 @@
     `(progn (let ((,mutex (state-lock ,state)))
                 (bt:with-recursive-lock-held (,mutex)
                     (progn ,@body)))))
+
+
+(defun get-debugger (state id)
+    (when (and state (numberp id))
+          (gethash id (state-debuggers state))))
+
+
+(defun remove-debugger (state id)
+    (when (and state (numberp id))
+          (remhash id (state-debuggers state))))
+
+
+(defun set-debugger (state id frames)
+    (when (and state
+               (numberp id)
+               (consp frames))
+          (setf (gethash id (state-debuggers state)) frames)))
 
 
 (declaim (ftype (function (state) (or null logger:logger)) get-log))

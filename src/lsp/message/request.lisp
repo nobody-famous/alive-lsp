@@ -15,9 +15,10 @@
         (message:create-request id "workspace/configuration" :params params)))
 
 
-(defun debugger (id &key message restarts stack-trace)
+(defun debugger (id &key debugger-id message restarts stack-trace)
     (let ((params (make-hash-table :test #'equalp)))
 
+        (setf (gethash "id" params) debugger-id)
         (setf (gethash "message" params) message)
         (setf (gethash "restarts" params) restarts)
         (setf (gethash "stackTrace" params) stack-trace)
