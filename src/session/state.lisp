@@ -20,6 +20,7 @@
              :next-send-id
              :next-thread-id
              :rem-inspector
+             :remove-debugger
              :rem-thread-msg
              :running
              :set-debugger
@@ -101,6 +102,11 @@
 (defun get-debugger (state id)
     (when (and state (numberp id))
           (gethash id (state-debuggers state))))
+
+
+(defun remove-debugger (state id)
+    (when (and state (numberp id))
+          (remhash id (state-debuggers state))))
 
 
 (defun set-debugger (state id frames)

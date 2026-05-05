@@ -82,6 +82,8 @@
         (state:set-debugger state debugger-id (mapcar (lambda (frame) (cdr frame)) frames))
 
         (let ((debug-resp (deps:send-request deps request)))
+            (state:remove-debugger state debugger-id)
+
             (cond ((assoc :error debug-resp)
                       (logger:error-msg (state:get-log state) "Debugger Error ~A" debug-resp))
 
