@@ -24,7 +24,7 @@
               (force-output out-stream))))
 
 
-(declaim (ftype (function (state:state T hash-table) cons) send-request))
+(declaim (ftype (function (state:state T hash-table) (or cons null)) send-request))
 (defun send-request (state out-stream req)
     (state:lock (state mutex)
         (let ((cond-var (bt:make-condition-variable))
