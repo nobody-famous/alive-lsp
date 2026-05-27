@@ -6,8 +6,9 @@
              :get-result
              :inspector
              :to-result)
-    (:local-nicknames (:eval :alive/sys/eval)
-                      (:astreams :alive/sys/streams)))
+    (:local-nicknames (:astreams :alive/sys/streams)
+                      (:eval :alive/sys/eval)
+                      (:utils :alive/utils)))
 
 (in-package :alive/inspector)
 
@@ -80,14 +81,20 @@
             value-map)))
 
 
+(defun list-to-strings (node)
+    (loop :with seen := (make-hash-table :test 'eq)
+          :while (and node
+                      (not (gethash node seen)))
+          :collect (utils:safe-print (car node))
+          :do (setf (gethash node seen) t)
+              (setf node (cdr node))))
+
+
 (defun list-to-result (result obj)
     (if (consp (cdr obj))
-        (progn (setf (gethash "length" result)
-                   (length obj))
-               (setf (gethash "value" result)
-                   (mapcar #'princ-to-string obj)))
-        (progn (setf (gethash "value" result)
-                   (princ-to-string obj)))))
+        (progn (setf (gethash "length" result) (or (list-length obj) "CIRCULAR"))
+               (setf (gethash "value" result) (list-to-strings obj)))
+        (setf (gethash "value" result) (utils:safe-print obj))))
 
 
 (defun vector-to-result (result obj)
