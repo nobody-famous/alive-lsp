@@ -39,7 +39,8 @@
                        :start-offset (token:get-start-offset token)
                        :end (token:get-end token)
                        :end-offset (token:get-end-offset token)
-                       :form-type types:*open-paren*)
+                       :form-type types:*open-paren*
+                       :tokens (list token))
           (parse-state-opens state)))
 
 
@@ -90,6 +91,8 @@
 (defun matched-close-paren (state token open-form)
     (form:set-end open-form (token:get-end token))
     (form:set-end-offset open-form (token:get-end-offset token))
+    (form:add-token open-form token)
+
     (let ((next-open (car (parse-state-opens state))))
         (cond ((or (is-comma next-open)
                    (is-quote next-open))
@@ -131,7 +134,8 @@
                                     :start-offset (token:get-start-offset token)
                                     :end (token:get-end token)
                                     :end-offset (token:get-end-offset token)
-                                    :form-type (token:get-type-value token))
+                                    :form-type (token:get-type-value token)
+                                    :tokens (list token))
                        (parse-state-opens state))))))
 
 
@@ -142,7 +146,8 @@
                                     :start-offset (token:get-start-offset token)
                                     :end (token:get-end token)
                                     :end-offset (token:get-end-offset token)
-                                    :form-type (token:get-type-value token))
+                                    :form-type (token:get-type-value token)
+                                    :tokens (list token))
                        (parse-state-opens state))))))
 
 
@@ -160,18 +165,21 @@
                                      :end (token:get-end token)
                                      :end-offset (token:get-end-offset token)
                                      :form-type types:*symbol*
+                                     :tokens (list token)
                                      :in-pkg (form:is-in-pkg open-form))
                         (parse-state-opens state)))
 
               ((is-symbol open-form)
                   (form:set-end open-form (token:get-end token))
-                  (form:set-end-offset open-form (token:get-end-offset token)))
+                  (form:set-end-offset open-form (token:get-end-offset token))
+                  (form:add-token open-form token))
 
               (T (push (form:create :start (token:get-start token)
                                     :start-offset (token:get-start-offset token)
                                     :end (token:get-end token)
                                     :end-offset (token:get-end-offset token)
-                                    :form-type types:*symbol*)
+                                    :form-type types:*symbol*
+                                    :tokens (list token))
                        (parse-state-opens state))))))
 
 
@@ -209,12 +217,14 @@
                                                        :start-offset (token:get-start-offset token)
                                                        :end (token:get-end token)
                                                        :end-offset (token:get-end-offset token)
-                                                       :form-type types:*ifdef-false*))
+                                                       :form-type types:*ifdef-false*
+                                                       :tokens (list token)))
                             (push (form:create :start (token:get-start token)
                                                :start-offset (token:get-start-offset token)
                                                :end (token:get-end token)
                                                :end-offset (token:get-end-offset token)
-                                               :form-type types:*ifdef-false*)
+                                               :form-type types:*ifdef-false*
+                                               :tokens (list token))
                                   (parse-state-forms state))))
 
                     (T (symbol-token state token)))
