@@ -5,7 +5,8 @@
              :get-outer-form
              :get-nth-form
              :get-range-for-path
-             :get-top-form)
+             :get-top-form
+             :xyz-from-stream)
     (:local-nicknames (:errors :alive/errors)
                       (:range :alive/range)
                       (:types :alive/types)
@@ -31,7 +32,9 @@
 
 (defstruct parse-state
     forms
-    opens)
+    opens
+    xyz-forms
+    xyz-opens)
 
 
 (defun open-paren (state token)
@@ -41,7 +44,17 @@
                        :end-offset (token:get-end-offset token)
                        :form-type types:*open-paren*
                        :tokens (list token))
-          (parse-state-opens state)))
+          (parse-state-opens state))
+
+    (push (form:xyz-create :form-type types:*open-paren*
+                           :tokens (list token))
+          (parse-state-xyz-opens state)))
+
+
+(defun xyz-open-paren (state token)
+    (push (form:xyz-create :form-type types:*open-paren*
+                           :tokens (list token))
+          (parse-state-xyz-opens state)))
 
 
 (defun is-open-paren (open-form)
@@ -49,9 +62,19 @@
          (= types:*open-paren* (the fixnum (form:get-form-type open-form)))))
 
 
+(defun xyz-is-open-paren (open-form)
+    (and open-form
+         (= types:*open-paren* (the fixnum (form:xyz-get-form-type open-form)))))
+
+
 (defun is-symbol (open-form)
     (and open-form
          (= types:*symbol* (the fixnum (form:get-form-type open-form)))))
+
+
+(defun xyz-is-symbol (open-form)
+    (and open-form
+         (= types:*symbol* (the fixnum (form:xyz-get-form-type open-form)))))
 
 
 (defun is-quote (open-form)
@@ -60,10 +83,22 @@
              (= types:*back-quote* (the fixnum (form:get-form-type open-form))))))
 
 
+(defun xyz-is-quote (open-form)
+    (and open-form
+         (or (= types:*quote* (the fixnum (form:xyz-get-form-type open-form)))
+             (= types:*back-quote* (the fixnum (form:xyz-get-form-type open-form))))))
+
+
 (defun is-comma (open-form)
     (and open-form
          (or (= (the fixnum types:*comma*) (the fixnum (form:get-form-type open-form)))
              (= (the fixnum types:*comma-at*) (the fixnum (form:get-form-type open-form))))))
+
+
+(defun xyz-is-comma (open-form)
+    (and open-form
+         (or (= (the fixnum types:*comma*) (the fixnum (form:xyz-get-form-type open-form)))
+             (= (the fixnum types:*comma-at*) (the fixnum (form:xyz-get-form-type open-form))))))
 
 
 (defun collapse-opens (state &optional target)
@@ -88,6 +123,26 @@
                          (push prev (parse-state-forms state)))))
 
 
+(defun xyz-collapse-opens (state &optional target)
+    (loop :with prev := nil
+
+          :for cur := (car (parse-state-xyz-opens state)) :do
+              (when cur
+                    (when prev
+                          (form:xyz-add-kid cur prev))
+
+                    (unless (eq (form:xyz-get-form-type cur) target)
+                        (pop (parse-state-xyz-opens state))
+                        (setf prev cur)))
+
+          :while (and cur
+                      (not (eq (form:xyz-get-form-type cur) target)))
+
+          :finally (when (and prev
+                              (not (parse-state-xyz-opens state)))
+                         (push prev (parse-state-xyz-forms state)))))
+
+
 (defun matched-close-paren (state token open-form)
     (form:set-end open-form (token:get-end token))
     (form:set-end-offset open-form (token:get-end-offset token))
@@ -109,13 +164,33 @@
               (T (push open-form (parse-state-forms state))))))
 
 
+(defun xyz-matched-close-paren (state token open-form)
+    (form:xyz-add-token open-form token)
+
+    (let ((next-open (car (parse-state-xyz-opens state))))
+        (cond ((or (xyz-is-comma next-open)
+                   (xyz-is-quote next-open))
+                  (form:xyz-add-kid next-open open-form)
+                  (xyz-collapse-opens state types:*open-paren*))
+
+              ((xyz-is-open-paren next-open)
+                  (form:xyz-add-kid (car (parse-state-xyz-opens state)) open-form))
+
+              ((xyz-is-symbol next-open) nil)
+
+              (T (push open-form (parse-state-xyz-forms state))))))
+
+
 (defun unmatched-close-paren (state token)
     (push (form:create :start (token:get-start token)
                        :start-offset (token:get-start-offset token)
                        :end (token:get-end token)
                        :end-offset (token:get-end-offset token)
                        :form-type types:*unmatched-close-paren*)
-          (parse-state-forms state)))
+          (parse-state-forms state))
+
+    (push (form:xyz-create :form-type types:*unmatched-close-paren*)
+          (parse-state-xyz-forms state)))
 
 
 (defun close-paren (state token)
@@ -124,6 +199,15 @@
     (let ((open-form (pop (parse-state-opens state))))
         (if (is-open-paren open-form)
             (matched-close-paren state token open-form)
+            (unmatched-close-paren state token))))
+
+
+(defun xyz-close-paren (state token)
+    (xyz-collapse-opens state types:*open-paren*)
+
+    (let ((open-form (pop (parse-state-xyz-opens state))))
+        (if (xyz-is-open-paren open-form)
+            (xyz-matched-close-paren state token open-form)
             (unmatched-close-paren state token))))
 
 
@@ -139,6 +223,14 @@
                        (parse-state-opens state))))))
 
 
+(defun xyz-start-quote (state token)
+    (let ((open-form (car (parse-state-xyz-opens state))))
+        (cond ((xyz-is-quote open-form) NIL)
+              (T (push (form:xyz-create :form-type (token:get-type-value token)
+                                        :tokens (list token))
+                       (parse-state-xyz-opens state))))))
+
+
 (defun start-comma (state token)
     (let ((open-form (car (parse-state-opens state))))
         (cond ((is-comma open-form) NIL)
@@ -149,6 +241,14 @@
                                     :form-type (token:get-type-value token)
                                     :tokens (list token))
                        (parse-state-opens state))))))
+
+
+(defun xyz-start-comma (state token)
+    (let ((open-form (car (parse-state-xyz-opens state))))
+        (cond ((xyz-is-comma open-form) NIL)
+              (T (push (form:xyz-create :form-type (token:get-type-value token)
+                                        :tokens (list token))
+                       (parse-state-xyz-opens state))))))
 
 
 (defun symbol-token (state token)
@@ -183,8 +283,29 @@
                        (parse-state-opens state))))))
 
 
+(defun xyz-symbol-token (state token)
+    (let ((open-form (car (parse-state-xyz-opens state))))
+
+        (cond ((or (xyz-is-open-paren open-form)
+                   (xyz-is-quote open-form))
+                  (push (form:xyz-create :form-type types:*symbol*
+                                         :tokens (list token))
+                        (parse-state-xyz-opens state)))
+
+              ((xyz-is-symbol open-form)
+                  (form:xyz-add-token open-form token))
+
+              (T (push (form:xyz-create :form-type types:*symbol*
+                                        :tokens (list token))
+                       (parse-state-xyz-opens state))))))
+
+
 (defun white-space (state)
     (collapse-opens state types:*open-paren*))
+
+
+(defun xyz-white-space (state)
+    (xyz-collapse-opens state types:*open-paren*))
 
 
 (declaim (ftype (function (T) (or null cons)) from-stream))
@@ -231,6 +352,43 @@
 
           :finally (progn (collapse-opens state)
                           (return (reverse (parse-state-forms state))))))
+
+
+(defun xyz-from-stream (input)
+    (loop :with state := (make-parse-state)
+
+          :for token :in (tokenizer:from-stream input) :do
+
+              (cond ((token:is-type types:*open-paren* token) (xyz-open-paren state token))
+
+                    ((token:is-type types:*close-paren* token) (xyz-close-paren state token))
+
+                    ((or (token:is-type types:*quote* token)
+                         (token:is-type types:*back-quote* token)) (xyz-start-quote state token))
+
+                    ((or (token:is-type types:*comma* token)
+                         (token:is-type types:*comma-at* token)) (xyz-start-comma state token))
+
+                    ((token:is-type types:*ws* token) (xyz-white-space state))
+
+                    ((or (token:is-type types:*line-comment* token)
+                         (token:is-type types:*block-comment* token)
+                         (token:is-type types:*ifdef-true* token))
+                        NIL)
+
+                    ((token:is-type types:*ifdef-false* token)
+                        (if (parse-state-xyz-opens state)
+                            (form:xyz-add-kid (car (parse-state-opens state))
+                                              (form:xyz-create :form-type types:*ifdef-false*
+                                                               :tokens (list token)))
+                            (push (form:xyz-create :form-type types:*ifdef-false*
+                                                   :tokens (list token))
+                                  (parse-state-xyz-forms state))))
+
+                    (T (xyz-symbol-token state token)))
+
+          :finally (progn (xyz-collapse-opens state)
+                          (return (reverse (parse-state-xyz-forms state))))))
 
 
 (declaim (ftype (function (stream) (or null cons)) from-stream-or-nil))

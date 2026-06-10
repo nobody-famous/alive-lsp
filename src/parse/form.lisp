@@ -1,16 +1,22 @@
 (defpackage :alive/parse/form
     (:use :cl)
     (:export :add-kid
+             :xyz-add-kid
              :add-token
+             :xyz-add-token
              :create
+             :xyz-create
              :get-end
              :get-end-offset
              :get-kids
+             :xyz-get-kids
              :get-start
              :get-start-offset
              :get-form-type
+             :xyz-get-form-type
              :get-in-pkg
              :get-tokens
+             :xyz-get-tokens
              :is-in-pkg
              :set-end
              :set-end-offset
@@ -19,16 +25,30 @@
 (in-package :alive/parse/form)
 
 
+(defstruct form
+    form-type
+    kids
+    tokens)
+
+
 (defun add-kid (form kid)
     (let* ((rev-kids (reverse (gethash "kids" form))))
         (setf (gethash "kids" form) (reverse (push kid rev-kids)))))
 
 
+(defun xyz-add-kid (form kid)
+    (let* ((rev-kids (reverse (form-kids form))))
+        (setf (form-kids form) (reverse (push kid rev-kids)))))
+
+
 (defun add-token (form token)
     (let* ((rev-tokens (reverse (gethash "tokens" form))))
-        (setf (gethash "tokens" form) (reverse (push token rev-tokens))))
-    #+n (let* ((tokens (gethash "tokens" form)))
-            (setf (gethash "tokens" form) (push token tokens))))
+        (setf (gethash "tokens" form) (reverse (push token rev-tokens)))))
+
+
+(defun xyz-add-token (form token)
+    (let* ((rev-tokens (reverse (form-tokens form))))
+        (setf (form-tokens form) (reverse (push token rev-tokens)))))
 
 
 (defun set-end (form pos)
@@ -66,9 +86,19 @@
           (gethash "kids" form)))
 
 
+(defun xyz-get-kids (form)
+    (when form
+          (form-kids form)))
+
+
 (defun get-tokens (form)
     (when form
           (gethash "tokens" form)))
+
+
+(defun xyz-get-tokens (form)
+    (when form
+          (form-tokens form)))
 
 
 (defun get-start (form)
@@ -86,6 +116,11 @@
           (gethash "formType" form)))
 
 
+(defun xyz-get-form-type (form)
+    (when form
+          (form-form-type form)))
+
+
 (defun create (&key start start-offset end end-offset form-type in-pkg kids tokens)
     (let ((form (make-hash-table :test #'equalp)))
 
@@ -99,3 +134,9 @@
         (setf (gethash "tokens" form) tokens)
 
         form))
+
+
+(defun xyz-create (&key form-type kids tokens)
+    (make-form :form-type form-type
+               :kids kids
+               :tokens tokens))
