@@ -543,105 +543,157 @@
                                                                             :end-offset 12
                                                                             :text "fff")))))))
 
+
 (defun test-close-parens ()
     (clue:suite "Close parens"
         (clue:test "Close parens"
-            (check-forms (format nil "(foo())")
-                         (list (form:create :start (pos:create 0 0)
-                                            :start-offset 0
-                                            :end (pos:create 0 7)
-                                            :end-offset 7
-                                            :form-type types:*open-paren*
-                                            :in-pkg nil
-                                            :tokens (list (token:create :type-value types:*open-paren*
-                                                                        :start (pos:create 0 0)
-                                                                        :start-offset 0
-                                                                        :end (pos:create 0 1)
-                                                                        :end-offset 1
-                                                                        :text "(")
-                                                          (token:create :type-value types:*close-paren*
-                                                                        :start (pos:create 0 6)
-                                                                        :start-offset 6
-                                                                        :end (pos:create 0 7)
-                                                                        :end-offset 7
-                                                                        :text ")"))
-                                            :kids (list (form:create :start (pos:create 0 1)
-                                                                     :start-offset 1
-                                                                     :end (pos:create 0 4)
-                                                                     :end-offset 4
-                                                                     :form-type types:*symbol*
-                                                                     :tokens (list (token:create :type-value types:*symbol*
-                                                                                                 :start (pos:create 0 1)
-                                                                                                 :start-offset 1
-                                                                                                 :end (pos:create 0 4)
-                                                                                                 :end-offset 4
-                                                                                                 :text "foo"))))))))
+            (xyz-check-forms (format nil "(foo())")
+                             (list (form:xyz-create :form-type types:*open-paren*
+                                                    :tokens (list (token:create :type-value types:*open-paren*
+                                                                                :start (pos:create 0 0)
+                                                                                :start-offset 0
+                                                                                :end (pos:create 0 1)
+                                                                                :end-offset 1
+                                                                                :text "(")
+                                                                  (token:create :type-value types:*close-paren*
+                                                                                :start (pos:create 0 6)
+                                                                                :start-offset 6
+                                                                                :end (pos:create 0 7)
+                                                                                :end-offset 7
+                                                                                :text ")"))
+                                                    :kids (list (form:xyz-create :form-type types:*symbol*
+                                                                                 :tokens (list (token:create :type-value types:*symbol*
+                                                                                                             :start (pos:create 0 1)
+                                                                                                             :start-offset 1
+                                                                                                             :end (pos:create 0 4)
+                                                                                                             :end-offset 4
+                                                                                                             :text "foo"))))))))
 
         (clue:test "Unmatched close paren"
-            (check-forms (format nil ")")
-                         (list (form:create :start (pos:create 0 0)
-                                            :start-offset 0
-                                            :end (pos:create 0 1)
-                                            :end-offset 1
-                                            :form-type types:*unmatched-close-paren*
-                                            :in-pkg nil
-                                            :kids nil))))))
+            (xyz-check-forms (format nil ")")
+                             (list (form:xyz-create :form-type types:*unmatched-close-paren*
+                                                    :kids nil))))))
+
 
 (defun test-getters ()
-    (clue:test "Getters"
-        (let ((form (form:create :start (pos:create 1 0)
-                                 :start-offset 9
-                                 :end (pos:create 1 3)
-                                 :end-offset 12
-                                 :form-type types:*symbol*)))
+    (clue:test "Getters for symbol form"
+        (let ((sym-form (form:xyz-create :form-type types:*symbol*
+                                         :tokens (list (token:create :type-value types:*symbol*
+                                                                     :start (pos:create 0 9)
+                                                                     :start-offset 9
+                                                                     :end (pos:create 0 11)
+                                                                     :end-offset 11
+                                                                     :text "aa")))))
             (clue:check-equal :expected 9
-                              :actual (form:get-start-offset form)))))
+                              :actual (form:xyz-get-start-offset sym-form))
+            (clue:check-equal :expected (pos:create 0 9)
+                              :actual (form:xyz-get-start sym-form))
+            (clue:check-equal :expected 11
+                              :actual (form:xyz-get-end-offset sym-form))
+            (clue:check-equal :expected (pos:create 0 11)
+                              :actual (form:xyz-get-end sym-form))))
+
+    (clue:test "Getters for parens form"
+        (let ((paren-form (form:xyz-create :form-type types:*open-paren*
+                                           :tokens (list (token:create :type-value types:*open-paren*
+                                                                       :start (pos:create 0 1)
+                                                                       :start-offset 1
+                                                                       :end (pos:create 0 2)
+                                                                       :end-offset 2
+                                                                       :text "(")
+                                                         (token:create :type-value types:*close-paren*
+                                                                       :start (pos:create 0 5)
+                                                                       :start-offset 5
+                                                                       :end (pos:create 0 6)
+                                                                       :end-offset 6
+                                                                       :text ")"))
+                                           :kids (list (form:xyz-create :form-type types:*symbol*
+                                                                        :tokens (list (token:create :type-value types:*symbol*
+                                                                                                    :start (pos:create 0 2)
+                                                                                                    :start-offset 2
+                                                                                                    :end (pos:create 0 5)
+                                                                                                    :end-offset 5
+                                                                                                    :text "foo")))))))
+            (clue:check-equal :expected 1
+                              :actual (form:xyz-get-start-offset paren-form))
+            (clue:check-equal :expected (pos:create 0 1)
+                              :actual (form:xyz-get-start paren-form))
+            (clue:check-equal :expected 6
+                              :actual (form:xyz-get-end-offset paren-form))
+            (clue:check-equal :expected (pos:create 0 6)
+                              :actual (form:xyz-get-end paren-form))))
+
+    (clue:test "Getters for quoted form"
+        (let ((quoted-form (form:xyz-create :form-type types:*quote*
+                                            :tokens (list (token:create :type-value types:*quote*
+                                                                        :start (pos:create 0 1)
+                                                                        :start-offset 1
+                                                                        :end (pos:create 0 2)
+                                                                        :end-offset 2
+                                                                        :text "'"))
+                                            :kids (list (form:xyz-create :form-type types:*open-paren*
+                                                                         :tokens (list (token:create :type-value types:*open-paren*
+                                                                                                     :start (pos:create 0 2)
+                                                                                                     :start-offset 2
+                                                                                                     :end (pos:create 0 3)
+                                                                                                     :end-offset 3
+                                                                                                     :text "(")
+                                                                                       (token:create :type-value types:*close-paren*
+                                                                                                     :start (pos:create 0 4)
+                                                                                                     :start-offset 4
+                                                                                                     :end (pos:create 0 5)
+                                                                                                     :end-offset 5
+                                                                                                     :text ")"))
+                                                                         :kids (list (form:xyz-create :form-type types:*symbol*
+                                                                                                      :tokens (list (token:create :type-value types:*symbol*
+                                                                                                                                  :start (pos:create 0 3)
+                                                                                                                                  :start-offset 3
+                                                                                                                                  :end (pos:create 0 4)
+                                                                                                                                  :end-offset 4
+                                                                                                                                  :text "1"))
+                                                                                                      :kids (list))))))))
+            (clue:check-equal :expected 1
+                              :actual (form:xyz-get-start-offset quoted-form))
+            (clue:check-equal :expected (pos:create 0 1)
+                              :actual (form:xyz-get-start quoted-form))
+            (clue:check-equal :expected 5
+                              :actual (form:xyz-get-end-offset quoted-form))
+            (clue:check-equal :expected (pos:create 0 5)
+                              :actual (form:xyz-get-end quoted-form)))))
+
 
 (defun test-commas ()
     (clue:test "Commas"
-        (check-forms (format nil "`(, )")
-                     (list (form:create :start (pos:create 0 0)
-                                        :start-offset 0
-                                        :end (pos:create 0 5)
-                                        :end-offset 5
-                                        :form-type types:*back-quote*
-                                        :in-pkg nil
-                                        :tokens (list (token:create :type-value types:*back-quote*
-                                                                    :start (pos:create 0 0)
-                                                                    :start-offset 0
-                                                                    :end (pos:create 0 1)
-                                                                    :end-offset 1
-                                                                    :text "`"))
-                                        :kids (list (form:create :start (pos:create 0 1)
-                                                                 :start-offset 1
-                                                                 :end (pos:create 0 5)
-                                                                 :end-offset 5
-                                                                 :form-type types:*open-paren*
-                                                                 :tokens (list (token:create :type-value types:*open-paren*
-                                                                                             :start (pos:create 0 1)
-                                                                                             :start-offset 1
-                                                                                             :end (pos:create 0 2)
-                                                                                             :end-offset 2
-                                                                                             :text "(")
-                                                                               (token:create :type-value types:*close-paren*
-                                                                                             :start (pos:create 0 4)
-                                                                                             :start-offset 4
-                                                                                             :end (pos:create 0 5)
-                                                                                             :end-offset 5
-                                                                                             :text ")"))
-                                                                 :kids (list (form:create :start (pos:create 0 2)
-                                                                                          :start-offset 2
-                                                                                          :end (pos:create 0 3)
-                                                                                          :end-offset 3
-                                                                                          :form-type types:*comma*
-                                                                                          :in-pkg nil
-                                                                                          :tokens (list (token:create :type-value types:*comma*
-                                                                                                                      :start (pos:create 0 2)
-                                                                                                                      :start-offset 2
-                                                                                                                      :end (pos:create 0 3)
-                                                                                                                      :end-offset 3
-                                                                                                                      :text ","))
-                                                                                          :kids nil)))))))))
+        (xyz-check-forms (format nil "`(, )")
+                         (list (form:xyz-create :form-type types:*back-quote*
+                                                :tokens (list (token:create :type-value types:*back-quote*
+                                                                            :start (pos:create 0 0)
+                                                                            :start-offset 0
+                                                                            :end (pos:create 0 1)
+                                                                            :end-offset 1
+                                                                            :text "`"))
+                                                :kids (list (form:xyz-create :form-type types:*open-paren*
+                                                                             :tokens (list (token:create :type-value types:*open-paren*
+                                                                                                         :start (pos:create 0 1)
+                                                                                                         :start-offset 1
+                                                                                                         :end (pos:create 0 2)
+                                                                                                         :end-offset 2
+                                                                                                         :text "(")
+                                                                                           (token:create :type-value types:*close-paren*
+                                                                                                         :start (pos:create 0 4)
+                                                                                                         :start-offset 4
+                                                                                                         :end (pos:create 0 5)
+                                                                                                         :end-offset 5
+                                                                                                         :text ")"))
+                                                                             :kids (list (form:xyz-create :form-type types:*comma*
+                                                                                                          :tokens (list (token:create :type-value types:*comma*
+                                                                                                                                      :start (pos:create 0 2)
+                                                                                                                                      :start-offset 2
+                                                                                                                                      :end (pos:create 0 3)
+                                                                                                                                      :end-offset 3
+                                                                                                                                      :text ","))
+                                                                                                          :kids nil)))))))))
+
 
 (defun run-all ()
     (clue:suite "Parse forms"

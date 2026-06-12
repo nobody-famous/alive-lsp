@@ -7,11 +7,15 @@
              :create
              :xyz-create
              :get-end
+             :xyz-get-end
              :get-end-offset
+             :xyz-get-end-offset
              :get-kids
              :xyz-get-kids
              :get-start
+             :xyz-get-start
              :get-start-offset
+             :xyz-get-start-offset
              :get-form-type
              :xyz-get-form-type
              :get-in-pkg
@@ -20,7 +24,8 @@
              :is-in-pkg
              :set-end
              :set-end-offset
-             :set-is-in-pkg))
+             :set-is-in-pkg)
+    (:local-nicknames (:token :alive/parse/token)))
 
 (in-package :alive/parse/form)
 
@@ -76,9 +81,24 @@
           (gethash "end" form)))
 
 
+(defun xyz-get-end (form)
+    (when form
+          (let ((token (car (reverse (form-tokens form)))))
+              (token:get-end token))))
+
+
 (defun get-end-offset (form)
     (when form
           (gethash "endOffset" form)))
+
+
+(defun xyz-get-end-offset (form)
+    (when form
+          (let* ((token (car (reverse (form-tokens form))))
+                 (token-end (or (token:get-end-offset token) 0))
+                 (kid (car (reverse (form-kids form))))
+                 (kid-end (or (xyz-get-end-offset kid) 0)))
+              (max token-end kid-end))))
 
 
 (defun get-kids (form)
@@ -106,9 +126,21 @@
           (gethash "start" form)))
 
 
+(defun xyz-get-start (form)
+    (when form
+          (let ((token (car (form-tokens form))))
+              (token:get-start token))))
+
+
 (defun get-start-offset (form)
     (when form
           (gethash "startOffset" form)))
+
+
+(defun xyz-get-start-offset (form)
+    (when form
+          (let ((token (car (form-tokens form))))
+              (token:get-start-offset token))))
 
 
 (defun get-form-type (form)
