@@ -25,7 +25,8 @@
              :set-end
              :set-end-offset
              :set-is-in-pkg)
-    (:local-nicknames (:token :alive/parse/token)))
+    (:local-nicknames (:pos :alive/position)
+                      (:token :alive/parse/token)))
 
 (in-package :alive/parse/form)
 
@@ -83,8 +84,13 @@
 
 (defun xyz-get-end (form)
     (when form
-          (let ((token (car (reverse (form-tokens form)))))
-              (token:get-end token))))
+          (let* ((token (car (reverse (form-tokens form))))
+                 (token-end (or (token:get-end token) (pos:create 0 0)))
+                 (kid (car (reverse (form-kids form))))
+                 (kid-end (or (xyz-get-end kid) (pos:create 0 0))))
+              (if (pos:less-than token-end kid-end)
+                  kid-end
+                  token-end))))
 
 
 (defun get-end-offset (form)
