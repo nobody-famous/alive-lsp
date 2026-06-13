@@ -2,7 +2,8 @@
     (:use :cl)
     (:export :do-compile
              :do-load
-             :try-compile)
+             :try-compile
+             :xyz-try-compile)
     (:local-nicknames (:astreams :alive/sys/streams)))
 
 (in-package :alive/file)
@@ -27,4 +28,10 @@
 (declaim (ftype (function (string) *) try-compile))
 (defun try-compile (path)
     (do-cmd #+sbcl 'alive/sbcl/file:try-compile
+            path))
+
+
+(declaim (ftype (function (string) *) xyz-try-compile))
+(defun xyz-try-compile (path)
+    (do-cmd #+sbcl 'alive/sbcl/file:xyz-try-compile
             path))

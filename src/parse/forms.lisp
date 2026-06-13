@@ -1,12 +1,14 @@
 (defpackage :alive/parse/forms
     (:use :cl)
     (:export :from-stream
+             :xyz-from-stream
              :from-stream-or-nil
              :get-outer-form
              :get-nth-form
+             :xyz-get-nth-form
              :get-range-for-path
-             :get-top-form
-             :xyz-from-stream)
+             :xyz-get-range-for-path
+             :get-top-form)
     (:local-nicknames (:errors :alive/errors)
                       (:range :alive/range)
                       (:types :alive/types)
@@ -422,6 +424,28 @@
           :finally (return cur-form)))
 
 
+(defun xyz-get-nth-form (forms n)
+    (declare (type fixnum n))
+
+    (loop :with counted := 0
+          :with cur-form := nil
+
+          :while (<= (the fixnum counted) n)
+
+          :do (setf cur-form (pop forms))
+
+              (cond ((or (eq types:*line-comment* (form:xyz-get-form-type cur-form))
+                         (eq types:*block-comment* (form:xyz-get-form-type cur-form)))
+                        NIL)
+
+                    ((eq types:*ifdef-false* (form:xyz-get-form-type cur-form))
+                        (pop forms))
+
+                    (T (incf counted)))
+
+          :finally (return cur-form)))
+
+
 (defun get-top-form (forms pos)
     (loop :with top-form := nil
 
@@ -472,6 +496,25 @@
                   (error (format nil "Source ndx ~A, path ~A, form ~A" ndx source-path form)))
 
               (setf forms (form:get-kids form))
+
+          :finally (return (range:create (form:get-start form)
+                                         (form:get-end form)))))
+
+
+(defun xyz-get-range-for-path (forms source-path)
+    (loop :with indicies := source-path
+          :with ndx := nil
+          :with form := nil
+
+          :while indicies
+          :do (setf ndx (pop indicies))
+
+              (setf form (xyz-get-nth-form forms ndx))
+
+              (unless form
+                  (error (format nil "Source ndx ~A, path ~A, form ~A" ndx source-path form)))
+
+              (setf forms (form:xyz-get-kids form))
 
           :finally (return (range:create (form:get-start form)
                                          (form:get-end form)))))
