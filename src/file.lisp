@@ -1,7 +1,9 @@
 (defpackage :alive/file
     (:use :cl)
     (:export :do-compile
+             :xyz-do-compile
              :do-load
+             :xyz-do-load
              :try-compile
              :xyz-try-compile)
     (:local-nicknames (:astreams :alive/sys/streams)))
@@ -20,9 +22,19 @@
     (do-cmd #+sbcl 'alive/sbcl/file:do-compile path :stdin-fn stdin-fn :stdout-fn stdout-fn :stderr-fn stderr-fn))
 
 
+(declaim (ftype (function (string &key (:stdin-fn function) (:stdout-fn function) (:stderr-fn function)) *) xyz-do-compile))
+(defun xyz-do-compile (path &key stdin-fn stdout-fn stderr-fn)
+    (do-cmd #+sbcl 'alive/sbcl/file:xyz-do-compile path :stdin-fn stdin-fn :stdout-fn stdout-fn :stderr-fn stderr-fn))
+
+
 (declaim (ftype (function (string &key (:stdin-fn function) (:stdout-fn function) (:stderr-fn function)) *) do-load))
 (defun do-load (path &key stdin-fn stdout-fn stderr-fn)
     (do-cmd #+sbcl 'alive/sbcl/file:do-load path :stdin-fn stdin-fn :stdout-fn stdout-fn :stderr-fn stderr-fn))
+
+
+(declaim (ftype (function (string &key (:stdin-fn function) (:stdout-fn function) (:stderr-fn function)) *) xyz-do-load))
+(defun xyz-do-load (path &key stdin-fn stdout-fn stderr-fn)
+    (do-cmd #+sbcl 'alive/sbcl/file:xyz-do-load path :stdin-fn stdin-fn :stdout-fn stdout-fn :stderr-fn stderr-fn))
 
 
 (declaim (ftype (function (string) *) try-compile))

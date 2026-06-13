@@ -1,7 +1,9 @@
 (defpackage :alive/sbcl/file
     (:use :cl)
     (:export :do-compile
+             :xyz-do-compile
              :do-load
+             :xyz-do-load
              :try-compile
              :xyz-try-compile)
     (:local-nicknames (:form :alive/parse/form)
@@ -196,9 +198,20 @@
 (defun do-compile (path)
     (do-cmd path 'compile-file))
 
+
+(defun xyz-do-compile (path)
+    (xyz-do-cmd path 'compile-file))
+
+
 (defun do-load (path)
     (do-compile path)
     (do-cmd path 'load))
+
+
+(defun xyz-do-load (path)
+    (xyz-do-compile path)
+    (xyz-do-cmd path 'load))
+
 
 (defun try-compile (path)
     (do-cmd path 'compile-file T))
