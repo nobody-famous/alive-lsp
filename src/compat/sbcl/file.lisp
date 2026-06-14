@@ -1,10 +1,7 @@
 (defpackage :alive/sbcl/file
     (:use :cl)
-    (:export :do-compile
-             :xyz-do-compile
-             :do-load
+    (:export :xyz-do-compile
              :xyz-do-load
-             :try-compile
              :xyz-try-compile)
     (:local-nicknames (:form :alive/parse/form)
                       (:forms :alive/parse/forms)
@@ -17,13 +14,6 @@
                       (:comp-msg :alive/compile-message)))
 
 (in-package :alive/sbcl/file)
-
-
-(defmacro with-forms ((path) &body body)
-    (let ((file-id (gensym)))
-        `(with-open-file (,file-id ,path)
-             (let ((forms (forms:from-stream ,file-id)))
-                 ,@body))))
 
 
 (defmacro xyz-with-forms ((path) &body body)
@@ -49,15 +39,6 @@
                             (pos:create (- line 1) #xFFFF)))))
 
 
-(defun get-err-location (err forms)
-    (let* ((context (sb-c::find-error-context nil))
-           (source-path (when context (reverse (sb-c::compiler-error-context-original-source-path context)))))
-
-        (if (not source-path)
-            (parse-err-loc (string-downcase (princ-to-string err)))
-            (forms:get-range-for-path forms source-path))))
-
-
 (defun xyz-get-err-location (err forms)
     (let* ((context (sb-c::find-error-context nil))
            (source-path (when context (reverse (sb-c::compiler-error-context-original-source-path context)))))
@@ -65,16 +46,6 @@
         (if (not source-path)
             (parse-err-loc (string-downcase (princ-to-string err)))
             (forms:xyz-get-range-for-path forms source-path))))
-
-
-(defun send-message (out-fn forms sev err)
-    (let* ((loc (get-err-location err forms))
-           (msg (comp-msg:create :severity sev
-                                 :location loc
-                                 :message (format nil "~A" err))))
-
-        (when loc
-              (funcall out-fn msg))))
 
 
 (defun xyz-send-message (out-fn forms sev err)
@@ -107,63 +78,19 @@
         (cons msg msgs)))
 
 
-(defun do-cmd (path cmd &optional (stop-on-error nil))
-    (with-forms (path)
-        (let* ((msgs nil)
-               (capture-msg (lambda (msg)
-                                (setf msgs (add-message msgs msg))))
-               (do-abort (lambda (err)
-                             (send-message capture-msg forms types:*sev-error* err)
-                             (let ((to-call (find-restart 'abort err)))
-                                 (if to-call
-                                     (invoke-restart to-call)
-                                     (return-from do-cmd msgs)))))
-               (handle-error (lambda (err)
-                                 (send-message capture-msg forms types:*sev-error* err)
-                                 (when (and (not (should-filter-p (format NIL "~A" err)))
-                                            stop-on-error)
-                                       (return-from do-cmd msgs))))
-               (handle-defconstant (lambda (err)
-                                       (when stop-on-error
-                                             ; Redefining a constant is an error, not a warning. If we ignore it, it'll
-                                             ; trigger the debugger. One of the restarts is to keep the old value, so
-                                             ; find and invoke it.
-                                             (progn (loop :for item :in (compute-restarts err)
-                                                          :do (when (search "old value" (format nil "~A" item))
-                                                                    (invoke-restart item)))
-                                                    ; Didn't find the restart, so just bail
-                                                    (return-from do-cmd msgs))))))
-            (labels ((handle-skippable (sev)
-                                       (lambda (err)
-                                           (send-message capture-msg forms sev err)
-                                           (let ((skip (find-restart 'muffle-warning err)))
-                                               (if skip
-                                                   (invoke-restart skip)
-                                                   (return-from do-cmd msgs))))))
-                (handler-bind ((sb-ext:compiler-note (handle-skippable types:*sev-info*))
-                               (sb-ext:defconstant-uneql handle-defconstant)
-                               (warning (handle-skippable types:*sev-warn*))
-                               (sb-c:fatal-compiler-error handle-error)
-                               (sb-c:compiler-error handle-error)
-                               (error handle-error)
-                               (sb-kernel::control-stack-exhausted do-abort))
-                    (funcall cmd path)
-                    msgs)))))
-
-
 (defun xyz-do-cmd (path cmd &optional (stop-on-error nil))
     (xyz-with-forms (path)
         (let* ((msgs nil)
                (capture-msg (lambda (msg)
                                 (setf msgs (add-message msgs msg))))
                (do-abort (lambda (err)
-                             (send-message capture-msg forms types:*sev-error* err)
+                             (xyz-send-message capture-msg forms types:*sev-error* err)
                              (let ((to-call (find-restart 'abort err)))
                                  (if to-call
                                      (invoke-restart to-call)
                                      (return-from xyz-do-cmd msgs)))))
                (handle-error (lambda (err)
-                                 (send-message capture-msg forms types:*sev-error* err)
+                                 (xyz-send-message capture-msg forms types:*sev-error* err)
                                  (when (and (not (should-filter-p (format NIL "~A" err)))
                                             stop-on-error)
                                        (return-from xyz-do-cmd msgs))))
@@ -179,7 +106,7 @@
                                                     (return-from xyz-do-cmd msgs))))))
             (labels ((handle-skippable (sev)
                                        (lambda (err)
-                                           (send-message capture-msg forms sev err)
+                                           (xyz-send-message capture-msg forms sev err)
                                            (let ((skip (find-restart 'muffle-warning err)))
                                                (if skip
                                                    (invoke-restart skip)
@@ -195,26 +122,13 @@
                     msgs)))))
 
 
-(defun do-compile (path)
-    (do-cmd path 'compile-file))
-
-
 (defun xyz-do-compile (path)
     (xyz-do-cmd path 'compile-file))
-
-
-(defun do-load (path)
-    (do-compile path)
-    (do-cmd path 'load))
 
 
 (defun xyz-do-load (path)
     (xyz-do-compile path)
     (xyz-do-cmd path 'load))
-
-
-(defun try-compile (path)
-    (do-cmd path 'compile-file T))
 
 
 (defun xyz-try-compile (path)

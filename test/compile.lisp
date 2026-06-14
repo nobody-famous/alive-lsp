@@ -14,7 +14,7 @@
 (defun do-load (path)
     (unwind-protect
             (handler-case
-                    (let ((msgs (alive/file:do-load path)))
+                    (let ((msgs (alive/file:xyz-do-load path)))
                         (mapcar (lambda (msg) (gethash "severity" msg))
                                 msgs))
                 (error (e)
@@ -29,20 +29,20 @@
 (defun test-try-compile ()
     (clue:suite "Try compile"
         (clue:test "Broken"
-            (clue:check-equal :actual (do-compile 'alive/file:try-compile "test/files/compile/broken.lisp")
+            (clue:check-equal :actual (do-compile 'alive/file:xyz-try-compile "test/files/compile/broken.lisp")
                               :expected (list alive/types:*sev-error*
                                               alive/types:*sev-info*
                                               alive/types:*sev-warn*
                                               alive/types:*sev-warn*)))
 
         (clue:test "Parens"
-            (clue:check-equal :actual (do-compile 'alive/file:try-compile "test/files/compile/parens.lisp")
+            (clue:check-equal :actual (do-compile 'alive/file:xyz-try-compile "test/files/compile/parens.lisp")
                               :expected (list alive/types:*sev-error*)))))
 
 
 (defun test-compile ()
     (clue:test "Compile"
-        (clue:check-equal :actual (do-compile 'alive/file:do-compile "test/files/compile/broken.lisp")
+        (clue:check-equal :actual (do-compile 'alive/file:xyz-do-compile "test/files/compile/broken.lisp")
                           :expected (list alive/types:*sev-error*
                                           alive/types:*sev-info*
                                           alive/types:*sev-warn*

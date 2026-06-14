@@ -516,5 +516,5 @@
 
               (setf forms (form:xyz-get-kids form))
 
-          :finally (return (range:create (form:get-start form)
-                                         (form:get-end form)))))
+          :finally (return (range:create (form:xyz-get-start form)
+                                         (form:xyz-get-end form)))))
