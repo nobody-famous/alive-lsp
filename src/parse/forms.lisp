@@ -3,6 +3,7 @@
     (:export :from-stream
              :xyz-from-stream
              :from-stream-or-nil
+             :xyz-from-stream-or-nil
              :get-outer-form
              :get-nth-form
              :xyz-get-nth-form
@@ -397,6 +398,15 @@
 (defun from-stream-or-nil (input)
     (handler-case
             (from-stream input)
+        (T (c)
+           (declare (ignore c))
+           nil)))
+
+
+(declaim (ftype (function (stream) (or null cons)) xyz-from-stream-or-nil))
+(defun xyz-from-stream-or-nil (input)
+    (handler-case
+            (xyz-from-stream input)
         (T (c)
            (declare (ignore c))
            nil)))

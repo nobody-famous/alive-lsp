@@ -9,30 +9,27 @@
 (in-package :alive/lsp/code-lens)
 
 
-(declaim (ftype (function ((or null string)) T) has-code-lens))
 (defun has-code-lens (key)
     (or (string= key "defun")
         (string= key "defparameter")
         (string= key "defconstant")))
 
 
-(declaim (ftype (function (string hash-table) string) get-text))
 (defun get-text (text form)
     (string-downcase (subseq text
-                             (form:get-start-offset form)
-                             (form:get-end-offset form))))
+                             (form:xyz-get-start-offset form)
+                             (form:xyz-get-end-offset form))))
 
 
-(declaim (ftype (function (string hash-table) (values alive/position:text-position (or null string) (or null string) (or null string))) get-values))
 (defun get-values (text form)
-    (let* ((keyword-form (first (gethash "kids" form)))
-           (name-form (second (gethash "kids" form))))
+    (let* ((keyword-form (first (form:xyz-get-kids form)))
+           (name-form (second (form:xyz-get-kids form))))
         (if (and keyword-form name-form)
             (values
-                (form:get-end name-form)
+                (form:xyz-get-end name-form)
                 (get-text text keyword-form)
                 (get-text text name-form)
-                (alive/packages:for-pos text (form:get-start keyword-form)))
+                (alive/packages:for-pos text (form:xyz-get-start keyword-form)))
             (values (alive/position:create 0 0) nil nil nil))))
 
 
@@ -90,10 +87,9 @@
         lens))
 
 
-(declaim (ftype (function (string (or null string)) (or cons null)) get))
 (defun get (uri text)
     (ignore-errors
-        (loop :with forms := (forms:from-stream-or-nil (make-string-input-stream text))
+        (loop :with forms := (forms:xyz-from-stream-or-nil (make-string-input-stream text))
               :with lenses := nil
 
               :for form :in forms
