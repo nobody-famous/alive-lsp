@@ -3,7 +3,7 @@
     (:export :code-lens
              :code-lens-resolve
              :completion
-             :definition
+             :xyz-definition
              :did-change
              :did-open
              :doc-symbols
@@ -67,15 +67,15 @@
             (lsp-msg:create-response id :result-value data))))
 
 
-(declaim (ftype (function (state:state cons) hash-table) definition))
-(defun definition (state msg)
+(declaim (ftype (function (state:state cons) hash-table) xyz-definition))
+(defun xyz-definition (state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
            (doc (cdr (assoc :text-document params)))
            (pos (cdr (assoc :position params)))
            (uri (cdr (assoc :uri doc)))
            (text (or (state:get-file-text state uri) ""))
-           (location (alive/lsp/definition:get-location :text text :pos pos))
+           (location (alive/lsp/definition:xyz-get-location :text text :pos pos))
            (uri (first location))
            (range (second location)))
 
@@ -271,6 +271,6 @@
            (uri (cdr (assoc :uri doc)))
            (pos (cdr (assoc :position params)))
            (text (or (state:get-file-text state uri) ""))
-           (locs (alive/sys/xref:get-locations text pos)))
+           (locs (alive/sys/xref:xyz-get-locations text pos)))
         (lsp-msg:create-response id
                                  :result-value (or locs (make-array 0)))))

@@ -29,12 +29,12 @@
     (clue:suite "Definition Tests"
         (clue:test "Request"
             (let* ((state (state:create))
-                   (resp (doc:definition state *msg-with-position*)))
+                   (resp (doc:xyz-definition state *msg-with-position*)))
                 (clue:check-exists (gethash "result" resp))))
 
         (clue:test "Failure"
             (let ((state (state:create)))
-                (clue:expect-fail (lambda () (doc:definition state (list (cons :id 5)))))))))
+                (clue:expect-fail (lambda () (doc:xyz-definition state (list (cons :id 5)))))))))
 
 
 (defun test-did-change ()

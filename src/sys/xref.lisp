@@ -1,7 +1,7 @@
 (defpackage :alive/sys/xref
     (:use :cl)
-    (:export :find-references
-             :get-locations)
+    (:export :xyz-find-references
+             :xyz-get-locations)
     (:local-nicknames (:form :alive/parse/form)
                       (:forms :alive/parse/forms)
                       (:loc :alive/location)
@@ -39,45 +39,45 @@
                 locations)))
 
 
-(declaim (ftype (function (string) (values list &optional)) read-file-forms))
-(defun read-file-forms (file)
+(declaim (ftype (function (string) (values list &optional)) xyz-read-file-forms))
+(defun xyz-read-file-forms (file)
     (with-open-file (s file)
-        (alive/parse/forms:from-stream s)))
+        (alive/parse/forms:xyz-from-stream s)))
 
 
-(declaim (ftype (function ((or null cons)) hash-table) get-file-forms))
-(defun get-file-forms (refs)
+(declaim (ftype (function ((or null cons)) hash-table) xyz-get-file-forms))
+(defun xyz-get-file-forms (refs)
     (loop :with file := nil
           :with forms := (make-hash-table :test #'equalp)
           :for ref :in refs
           :do (setf file (cdr (assoc :file ref)))
               (unless (gethash file forms)
-                  (setf (gethash file forms) (read-file-forms file)))
+                  (setf (gethash file forms) (xyz-read-file-forms file)))
           :finally (return forms)))
 
 
-(declaim (ftype (function (hash-table cons) (values loc:text-location &optional)) ref-to-location))
-(defun ref-to-location (file-forms ref)
+(declaim (ftype (function (hash-table cons) (values loc:text-location &optional)) xyz-ref-to-location))
+(defun xyz-ref-to-location (file-forms ref)
     (let* ((file (cdr (assoc :file ref)))
            (form-path (cdr (assoc :form-path ref)))
            (forms (gethash file file-forms))
-           (range (forms:get-range-for-path forms form-path)))
+           (range (forms:xyz-get-range-for-path forms form-path)))
         (loc:create (utils:url-encode-filename file)
                     range)))
 
 
-(declaim (ftype (function (string string) (or null cons)) find-references))
-(defun find-references (name pkg-name)
+(declaim (ftype (function (string string) (or null cons)) xyz-find-references))
+(defun xyz-find-references (name pkg-name)
     (let* ((refs (lookup-references name pkg-name))
-           (file-forms (get-file-forms refs)))
+           (file-forms (xyz-get-file-forms refs)))
         (mapcar (lambda (ref)
-                    (ref-to-location file-forms ref))
+                    (xyz-ref-to-location file-forms ref))
                 refs)))
 
 
-(declaim (ftype (function (string pos:text-position) (or null cons)) get-locations))
-(defun get-locations (text pos)
+(declaim (ftype (function (string pos:text-position) (or null cons)) xyz-get-locations))
+(defun xyz-get-locations (text pos)
     (multiple-value-bind (name pkg-name)
             (sym:for-pos text pos)
         (when (and name pkg-name)
-              (find-references name pkg-name))))
+              (xyz-find-references name pkg-name))))

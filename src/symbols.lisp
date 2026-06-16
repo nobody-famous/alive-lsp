@@ -8,7 +8,7 @@
              :function-p
              :get-all-names
              :get-lambda-list
-             :get-location
+             :xyz-get-location
              :lookup
              :macro-p
              :special-ch-p)
@@ -122,22 +122,22 @@
             :initial-value nil)))
 
 
-(defun get-range-from-file (file source-path)
+(defun xyz-get-range-from-file (file source-path)
     (handler-case
             (with-open-file (in-stream file)
-                (let ((forms (forms:from-stream in-stream)))
-                    (forms:get-range-for-path forms source-path)))
+                (let ((forms (forms:xyz-from-stream in-stream)))
+                    (forms:xyz-get-range-for-path forms source-path)))
         (T nil)))
 
 
-(defun get-location (sym)
+(defun xyz-get-location (sym)
     (let* ((src (when sym (lookup-sources sym)))
            (file (when src (sb-introspect:definition-source-pathname src)))
            (form-path (when src (sb-introspect:definition-source-form-path src))))
 
         (if file
             (list (utils:url-encode-filename (namestring (translate-logical-pathname file)))
-                  (get-range-from-file file form-path))
+                  (xyz-get-range-from-file file form-path))
             (list nil nil))))
 
 
@@ -153,24 +153,7 @@
 (defun for-pos (text pos)
     (let* ((raw-tokens (tokenizer:from-stream (make-string-input-stream text)))
            (tokens (find-tokens raw-tokens pos))
-           (pkg-name (packages:for-pos text pos))
-           (pkg (packages:lookup pkg-name))
-           (*package* (or pkg *package*)))
+           (pkg-name (packages:for-pos text pos)))
 
         (unless (zerop (length tokens))
-            (destructuring-bind (token1 token2 token3) tokens
-                (cond ((and (eq (token:get-type-value token1) types:*symbol*)
-                            (eq (token:get-type-value token2) types:*colons*)
-                            (eq (token:get-type-value token3) types:*symbol*))
-                          (let* ((real-pkg (packages:lookup (token:get-text token3)))
-                                 (real-pkg-name (if real-pkg
-                                                    (package-name real-pkg)
-                                                    (token:get-text token3))))
-                              (values (token:get-text token1)
-                                  real-pkg-name)))
-
-                      ((eq (token:get-type-value token1) types:*symbol*)
-                          (values (token:get-text token1)
-                              pkg-name))
-
-                      (T nil))))))
+            (packages:for-tokens tokens pkg-name))))

@@ -380,7 +380,7 @@
 
                     ((token:is-type types:*ifdef-false* token)
                         (if (parse-state-xyz-opens state)
-                            (form:xyz-add-kid (car (parse-state-opens state))
+                            (form:xyz-add-kid (car (parse-state-xyz-opens state))
                                               (form:xyz-create :form-type types:*ifdef-false*
                                                                :tokens (list token)))
                             (push (form:xyz-create :form-type types:*ifdef-false*

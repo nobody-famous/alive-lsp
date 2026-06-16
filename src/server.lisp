@@ -42,7 +42,7 @@
 
           (cons "textDocument/codeLens" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/document:code-lens state msg)))
           (cons "textDocument/completion" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/document:completion state msg)))
-          (cons "textDocument/definition" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/document:definition state msg)))
+          (cons "textDocument/definition" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/document:xyz-definition state msg)))
           (cons "textDocument/didChange" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/document:did-change state msg)))
           (cons "textDocument/didClose" (lambda (deps msg) (declare (ignore deps)) (ignore-msg msg)))
           (cons "textDocument/didOpen" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/document:did-open state msg)))
