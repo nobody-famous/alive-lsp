@@ -11,17 +11,6 @@
 (in-package :alive/lsp/symbol)
 
 
-(defun for-pos (&key text pos)
-    (let* ((pkg-name (packages:for-pos text pos))
-           (pkg (packages:lookup pkg-name))
-           (*package* (if pkg pkg *package*)))
-
-        (multiple-value-bind (name pkg-name)
-                (alive/symbols:for-pos text pos)
-            (when (and name pkg-name)
-                  (list name pkg-name)))))
-
-
 (defparameter *kind-file* 1)
 (defparameter *kind-module* 2)
 (defparameter *kind-namespace* 3)
@@ -48,6 +37,17 @@
 (defparameter *kind-event* 24)
 (defparameter *kind-operator* 25)
 (defparameter *kind-typeparameter* 26)
+
+
+(defun for-pos (&key text pos)
+    (let* ((pkg-name (packages:for-pos text pos))
+           (pkg (packages:lookup pkg-name))
+           (*package* (if pkg pkg *package*)))
+
+        (multiple-value-bind (name pkg-name)
+                (alive/symbols:for-pos text pos)
+            (when (and name pkg-name)
+                  (list name pkg-name)))))
 
 
 (defun form-text (text form)

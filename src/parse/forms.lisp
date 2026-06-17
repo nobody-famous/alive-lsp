@@ -5,11 +5,13 @@
              :from-stream-or-nil
              :xyz-from-stream-or-nil
              :get-outer-form
+             :xyz-get-outer-form
              :get-nth-form
              :xyz-get-nth-form
              :get-range-for-path
              :xyz-get-range-for-path
-             :get-top-form)
+             :get-top-form
+             :xyz-get-top-form)
     (:local-nicknames (:errors :alive/errors)
                       (:range :alive/range)
                       (:types :alive/types)
@@ -467,6 +469,17 @@
           :finally (return top-form)))
 
 
+(defun xyz-get-top-form (forms pos)
+    (loop :with top-form := nil
+
+          :for form :in forms :do
+              (when (and (pos:less-or-equal (form:xyz-get-start form) pos)
+                         (pos:less-or-equal pos (form:xyz-get-end form)))
+                    (setf top-form form))
+
+          :finally (return top-form)))
+
+
 (defun find-inner-form (form pos)
     (let ((start (gethash "start" form))
           (end (gethash "end" form))
@@ -486,10 +499,35 @@
             nil)))
 
 
+(defun xyz-find-inner-form (form pos)
+    (let ((start (form:xyz-get-start form))
+          (end (form:xyz-get-end form))
+          (kids (form:xyz-get-kids form)))
+
+        (if (and kids
+                 (pos:less-or-equal start pos)
+                 (pos:less-than pos end))
+
+            (loop :with target := form
+                  :for kid :in kids
+                  :do (let ((inner (xyz-find-inner-form kid pos)))
+                          (when inner
+                                (setf target inner)))
+                  :finally (return target))
+
+            nil)))
+
+
 (defun get-outer-form (form pos)
     (when (and (hash-table-p form)
                (car (gethash "kids" form)))
           (find-inner-form form pos)))
+
+
+(defun xyz-get-outer-form (form pos)
+    (when (and form
+               (car (form:xyz-get-kids form)))
+          (xyz-find-inner-form form pos)))
 
 
 (defun get-range-for-path (forms source-path)

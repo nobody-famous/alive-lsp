@@ -1,7 +1,8 @@
 (defpackage :alive/lsp/sig-help
     (:use :cl)
     (:export :signatures)
-    (:local-nicknames (:forms :alive/parse/forms)
+    (:local-nicknames (:form :alive/parse/form)
+                      (:forms :alive/parse/forms)
                       (:pkgs :alive/packages)
                       (:pos :alive/position)
                       (:symbols :alive/symbols)
@@ -92,19 +93,28 @@
           :finally (return param)))
 
 
+(defun xyz-get-active-parameter (pos form)
+    (loop :with param := 0
+          :for kid :in (cdr (form:xyz-get-kids form))
+          :do (when (and (form:xyz-get-end kid)
+                         (pos:less-than (form:xyz-get-end kid) pos))
+                    (incf param))
+          :finally (return param)))
+
+
 (declaim (ftype (function (&key (:text string) (:pos pos:text-position)) (values (or null cons) &optional)) signatures))
 (defun signatures (&key text pos)
-    (let* ((forms (forms:from-stream-or-nil (make-string-input-stream text)))
+    (let* ((forms (forms:xyz-from-stream-or-nil (make-string-input-stream text)))
            (tokens (tokenizer:from-stream (make-string-input-stream text)))
-           (top-form (forms:get-top-form forms pos))
-           (outer-form (forms:get-outer-form top-form pos))
-           (name-form (when (hash-table-p outer-form)
-                            (first (gethash "kids" outer-form))))
-           (active-param (if (hash-table-p outer-form)
-                             (get-active-parameter pos outer-form)
+           (top-form (forms:xyz-get-top-form forms pos))
+           (outer-form (forms:xyz-get-outer-form top-form pos))
+           (name-form (when outer-form
+                            (first (form:xyz-get-kids outer-form))))
+           (active-param (if outer-form
+                             (xyz-get-active-parameter pos outer-form)
                              0))
-           (name-tokens (when (hash-table-p name-form)
-                              (symbols:find-tokens tokens (gethash "end" name-form))))
+           (name-tokens (when name-form
+                              (symbols:find-tokens tokens (form:xyz-get-end name-form))))
            (pkg-name (alive/packages:for-pos text pos))
            (pkg (pkgs:lookup pkg-name))
            (*package* (if pkg pkg *package*)))
