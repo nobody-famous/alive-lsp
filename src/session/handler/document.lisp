@@ -121,7 +121,7 @@
            (doc (cdr (assoc :text-document params)))
            (uri (cdr (assoc :uri doc)))
            (text (or (state:get-file-text state uri) ""))
-           (forms (forms:from-stream-or-nil (make-string-input-stream text)))
+           (forms (forms:xyz-from-stream-or-nil (make-string-input-stream text)))
            (symbols (alive/lsp/symbol:for-document text forms)))
 
         (let ((result (or symbols (make-hash-table))))
@@ -200,7 +200,7 @@
            (doc (cdr (assoc :text-document params)))
            (uri (cdr (assoc :uri doc)))
            (text (or (state:get-file-text state uri) ""))
-           (forms (forms:from-stream-or-nil (make-string-input-stream text)))
+           (forms (forms:xyz-from-stream-or-nil (make-string-input-stream text)))
            (pos-list (cdr (assoc :positions params)))
            (ranges (when (and forms pos-list)
                          (selection:ranges forms pos-list))))

@@ -1,16 +1,17 @@
 (defpackage :alive/test/forms
     (:use :cl)
     (:export :run-all)
-    (:local-nicknames (:forms :alive/parse/forms)
+    (:local-nicknames (:form :alive/parse/form)
+                      (:forms :alive/parse/forms)
                       (:pos :alive/position)))
 
 (in-package :alive/test/forms)
 
 
 (defun get-child-form (text pos)
-    (let* ((forms (forms:from-stream (make-string-input-stream text)))
-           (top-form (forms:get-top-form forms pos)))
-        (forms:get-outer-form top-form pos)))
+    (let* ((forms (forms:xyz-from-stream (make-string-input-stream text)))
+           (top-form (forms:xyz-get-top-form forms pos)))
+        (forms:xyz-get-outer-form top-form pos)))
 
 
 (defun test-child-form ()
@@ -21,13 +22,13 @@
                (child-2 (get-child-form text (pos:create 0 12)))
                (child-3 (get-child-form text (pos:create 0 17))))
             (clue:check-equal :expected (pos:create 0 0)
-                              :actual (gethash "start" all))
+                              :actual (form:xyz-get-start all))
             (clue:check-equal :expected (pos:create 0 4)
-                              :actual (gethash "start" child-1))
+                              :actual (form:xyz-get-start child-1))
             (clue:check-equal :expected (pos:create 0 10)
-                              :actual (gethash "start" child-2))
+                              :actual (form:xyz-get-start child-2))
             (clue:check-equal :expected (pos:create 0 15)
-                              :actual (gethash "start" child-3)))))
+                              :actual (form:xyz-get-start child-3)))))
 
 
 (defun run-all ()

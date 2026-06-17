@@ -10,47 +10,9 @@
 (in-package :alive/test/parse/forms)
 
 
-(defun check-forms (text expected)
-    (let* ((input (make-string-input-stream text))
-           (forms (p:from-stream input)))
-
-        #+n (loop :for form :in forms
-                  :do (alive/test/utils:print-hash-table "***** FORM" form)
-                      (loop :for token :in (gethash "tokens" form)
-                            :do (alive/test/utils:print-hash-table "***** TOKEN" token))
-                      (loop :for kid :in (gethash "kids" form)
-                            :do (alive/test/utils:print-hash-table "***** KID" kid)
-                                (loop :for token :in (gethash "tokens" kid)
-                                      :do (alive/test/utils:print-hash-table "***** KID TOKEN" token))
-                                (loop :for kid :in (gethash "kids" kid)
-                                      :do (alive/test/utils:print-hash-table "***** GRANDKID" kid)
-                                          (loop :for token :in (gethash "tokens" kid)
-                                                :do (alive/test/utils:print-hash-table "***** GRANDKID TOKEN" token)))))
-        (clue:check-equal :expected expected
-                          :actual forms)))
-
-
 (defun xyz-check-forms (text expected)
     (let* ((input (make-string-input-stream text))
            (forms (p:xyz-from-stream input)))
-
-        #+n (loop :for form :in forms
-                  :do (format T "***** FORM ~A~%" form)
-
-                      (loop :for token :in (form:xyz-get-tokens form)
-                            :do (alive/test/utils:print-hash-table "***** TOKEN" token))
-                      (loop :for kid :in (form:xyz-get-kids form)
-                            :do (format T "***** KID ~A~%" kid)
-                                (loop :for token :in (form:xyz-get-tokens kid)
-                                      :do (alive/test/utils:print-hash-table "***** KID TOKEN" token))
-                                (loop :for kid :in (form:xyz-get-kids kid)
-                                      :do (format T "***** GRAND KID ~A~%" kid)
-                                          (loop :for token :in (form:xyz-get-tokens kid)
-                                                :do (alive/test/utils:print-hash-table "***** GRAND KID TOKEN" token))
-                                          (loop :for kid :in (form:xyz-get-kids kid)
-                                                :do (format T "***** GREAT GRAND KID ~A~%" kid)
-                                                    (loop :for token :in (form:xyz-get-tokens kid)
-                                                          :do (alive/test/utils:print-hash-table "***** GREAT GRAND KID TOKEN" token))))))
 
         (clue:check-equal :expected expected
                           :actual forms)))
