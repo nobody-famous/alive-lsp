@@ -8,7 +8,6 @@
 
 
 (defun check-sig (item label)
-    (format T "***** CHECK SIG ~A ~A~%" item label)
     (clue:check-equal :expected T
                       :actual (hash-table-p item))
     (clue:check-equal :expected label
@@ -38,7 +37,7 @@
         (check-sig (first (sig:signatures :text "(cl:defun foo () nil)" :pos (pos:create 0 12)))
                    "DEFUN NAME LAMBDA-LIST &BODY BODY")
 
-        (check-sig (first (sig:signatures :text "(cl:defun foo () nil)" :pos (pos:create 0 16)))
+        (check-sig (first (sig:signatures :text "(cl:defun foo () nil)" :pos (pos:create 0 15)))
                    "DEFUN NAME LAMBDA-LIST &BODY BODY")))
 
 
