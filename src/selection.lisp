@@ -37,16 +37,6 @@
           :finally (return node)))
 
 
-(defun list-of-position-p (data)
-    (and (consp data)
-         (every #'pos:position-p data)))
-
-
-(deftype list-of-position ()
-    `(satisfies list-of-position-p))
-
-
-(declaim (ftype (function (cons list-of-position) cons) ranges))
 (defun ranges (forms pos-list)
     (mapcar (lambda (pos)
                 (get-range-tree forms pos))

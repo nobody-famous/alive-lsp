@@ -13,7 +13,6 @@
 (in-package :alive/sys/xref)
 
 
-(declaim (ftype (function (string string) *) find-callers))
 (defun find-callers (name pkg-name)
     (let ((to-find (sym:lookup name pkg-name)))
         (cond ((sym:function-p name pkg-name) (sb-introspect:who-calls to-find))
@@ -21,7 +20,6 @@
               (T (sb-introspect:who-references to-find)))))
 
 
-(declaim (ftype (function (cons) (or null cons)) caller-to-location))
 (defun caller-to-location (caller)
     (let* ((path (sb-introspect:definition-source-pathname (cdr caller)))
            (path-str (if path
@@ -31,7 +29,6 @@
               (cons :form-path (sb-introspect:definition-source-form-path (cdr caller))))))
 
 
-(declaim (ftype (function (string string) (or null cons)) lookup-references))
 (defun lookup-references (name pkg-name)
     (let* ((locations (mapcar #'caller-to-location (find-callers name pkg-name))))
         (remove-if-not (lambda (caller)
@@ -39,13 +36,11 @@
                 locations)))
 
 
-(declaim (ftype (function (string) (values list &optional)) xyz-read-file-forms))
 (defun xyz-read-file-forms (file)
     (with-open-file (s file)
         (alive/parse/forms:xyz-from-stream s)))
 
 
-(declaim (ftype (function ((or null cons)) hash-table) xyz-get-file-forms))
 (defun xyz-get-file-forms (refs)
     (loop :with file := nil
           :with forms := (make-hash-table :test #'equalp)
@@ -56,7 +51,6 @@
           :finally (return forms)))
 
 
-(declaim (ftype (function (hash-table cons) (values loc:text-location &optional)) xyz-ref-to-location))
 (defun xyz-ref-to-location (file-forms ref)
     (let* ((file (cdr (assoc :file ref)))
            (form-path (cdr (assoc :form-path ref)))
@@ -66,7 +60,6 @@
                     range)))
 
 
-(declaim (ftype (function (string string) (or null cons)) xyz-find-references))
 (defun xyz-find-references (name pkg-name)
     (let* ((refs (lookup-references name pkg-name))
            (file-forms (xyz-get-file-forms refs)))
@@ -75,7 +68,6 @@
                 refs)))
 
 
-(declaim (ftype (function (string pos:text-position) (or null cons)) xyz-get-locations))
 (defun xyz-get-locations (text pos)
     (multiple-value-bind (name pkg-name)
             (sym:for-pos text pos)

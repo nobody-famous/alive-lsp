@@ -35,7 +35,6 @@
 (in-package :alive/session/handler/document)
 
 
-(declaim (ftype (function (state:state cons) hash-table) code-lens))
 (defun code-lens (state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
@@ -48,7 +47,6 @@
         (lsp-msg:create-response id :result-value items)))
 
 
-(declaim (ftype (function (state:state cons) hash-table) completion))
 (defun completion (state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
@@ -67,7 +65,6 @@
             (lsp-msg:create-response id :result-value data))))
 
 
-(declaim (ftype (function (state:state cons) hash-table) xyz-definition))
 (defun xyz-definition (state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
@@ -87,7 +84,6 @@
             (lsp-msg:create-response id :result-value data))))
 
 
-(declaim (ftype (function (state:state cons) null) did-change))
 (defun did-change (state msg)
     (let* ((params (cdr (assoc :params msg)))
            (doc (cdr (assoc :text-document params)))
@@ -101,7 +97,6 @@
                   nil))))
 
 
-(declaim (ftype (function (state:state cons) null) did-open))
 (defun did-open (state msg)
     (let* ((params (cdr (assoc :params msg)))
            (doc (cdr (assoc :text-document params)))
@@ -114,7 +109,6 @@
                   nil))))
 
 
-(declaim (ftype (function (state:state cons) hash-table) doc-symbols))
 (defun doc-symbols (state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
@@ -129,7 +123,6 @@
                                      :result-value result))))
 
 
-(declaim (ftype (function (state:state cons) hash-table) hover))
 (defun hover (state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
@@ -143,7 +136,6 @@
         (utils:result id "value" result)))
 
 
-(declaim (ftype (function (state:state cons) hash-table) on-type))
 (defun on-type (state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
@@ -162,7 +154,6 @@
         (lsp-msg:create-response id :result-value value)))
 
 
-(declaim (ftype (function (state:state cons cons) hash-table) format-msg))
 (defun format-msg (state options msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
@@ -178,7 +169,6 @@
                                  :result-value (fmt-utils:to-text-edits edits))))
 
 
-(declaim (ftype (function (state:state cons) hash-table) formatting))
 (defun formatting (state msg)
     (let ((id (state:next-send-id state)))
 
@@ -193,7 +183,6 @@
             (lsp-msg:create-request id "workspace/configuration" :params params))))
 
 
-(declaim (ftype (function (state:state cons) hash-table) selection))
 (defun selection (state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
@@ -209,7 +198,6 @@
                                                       (make-hash-table :test #'equalp)))))
 
 
-(declaim (ftype (function (cons) cons) to-sem-array))
 (defun to-sem-array (sem-tokens)
     (loop :with line := 0
           :with col := 0
@@ -233,7 +221,6 @@
           :finally (return (reverse out-list))))
 
 
-(declaim (ftype (function (state:state cons) hash-table) sem-tokens))
 (defun sem-tokens (state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
@@ -249,7 +236,6 @@
                                     nil))))
 
 
-(declaim (ftype (function (state:state cons) hash-table) sig-help))
 (defun sig-help (state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
@@ -263,7 +249,6 @@
         (utils:result id "signatures" items)))
 
 
-(declaim (ftype (function (state:state cons) hash-table) references))
 (defun references (state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
