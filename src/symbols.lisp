@@ -8,7 +8,7 @@
              :function-p
              :get-all-names
              :get-lambda-list
-             :xyz-get-location
+             :get-location
              :lookup
              :macro-p
              :special-ch-p)
@@ -123,22 +123,22 @@
             :initial-value nil)))
 
 
-(defun xyz-get-range-from-file (file source-path)
+(defun get-range-from-file (file source-path)
     (handler-case
             (with-open-file (in-stream file)
-                (let ((forms (forms:xyz-from-stream in-stream)))
-                    (forms:xyz-get-range-for-path forms source-path)))
+                (let ((forms (forms:from-stream in-stream)))
+                    (forms:get-range-for-path forms source-path)))
         (T nil)))
 
 
-(defun xyz-get-location (sym)
+(defun get-location (sym)
     (let* ((src (when sym (lookup-sources sym)))
            (file (when src (sb-introspect:definition-source-pathname src)))
            (form-path (when src (sb-introspect:definition-source-form-path src))))
 
         (if file
             (list (utils:url-encode-filename (namestring (translate-logical-pathname file)))
-                  (xyz-get-range-from-file file form-path))
+                  (get-range-from-file file form-path))
             (list nil nil))))
 
 
@@ -152,10 +152,10 @@
 
 
 (defun for-pos (text pos)
-    (let* ((forms (forms:xyz-from-stream (make-string-input-stream text)))
-           (top-form (forms:xyz-get-top-form forms pos))
-           (expr (forms:xyz-find-expr top-form pos))
+    (let* ((forms (forms:from-stream (make-string-input-stream text)))
+           (top-form (forms:get-top-form forms pos))
+           (expr (forms:find-expr top-form pos))
            (pkg-name (packages:for-pos text pos)))
 
         (when expr
-              (packages:for-tokens (form:xyz-get-tokens expr) pkg-name))))
+              (packages:for-tokens (form:get-tokens expr) pkg-name))))

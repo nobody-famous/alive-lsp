@@ -1,6 +1,6 @@
 (defpackage :alive/session/threads
     (:use :cl)
-    (:export :xyz-run-in-thread
+    (:export :run-in-thread
              :wait-for-input)
     (:local-nicknames (:debugger :alive/debugger)
                       (:deps :alive/deps)
@@ -43,15 +43,15 @@
     vars)
 
 
-(defun xyz-frame-to-wire (state frame)
+(defun frame-to-wire (state frame)
     (let* ((obj (make-hash-table :test #'equalp))
            (file (gethash "file" frame))
            (vars (gethash "vars" frame))
            (restartable (if (gethash "restartable" frame) T nil))
            (args-list (gethash "argsList" frame))
            (fn-name (gethash "function" frame))
-           (pos (debugger:xyz-get-frame-loc (get-frame-text-stream state file)
-                                            frame)))
+           (pos (debugger:get-frame-loc (get-frame-text-stream state file)
+                                        frame)))
 
         (setf (gethash "function" obj) fn-name)
         (setf (gethash "file" obj) file)
@@ -65,14 +65,14 @@
         obj))
 
 
-(defun xyz-wait-for-debug (deps state err restarts frames)
+(defun wait-for-debug (deps state err restarts frames)
     (let* ((debugger-id (state:next-send-id state))
            (request (req:debugger debugger-id
                                   :debugger-id debugger-id
                                   :message (princ-to-string err)
                                   :restarts restarts
                                   :stack-trace (mapcar (lambda (frame)
-                                                           (xyz-frame-to-wire state frame))
+                                                           (frame-to-wire state frame))
                                                        (mapcar (lambda (frame) (car frame)) frames)))))
         (state:set-debugger state debugger-id (mapcar (lambda (frame) (cdr frame)) frames))
 
@@ -109,14 +109,14 @@
                                     (apply fun fun-args)))))))))
 
 
-(defun xyz-start-debugger (deps state err frames)
+(defun start-debugger (deps state err frames)
     (let* ((restarts (compute-restarts err))
-           (action (xyz-wait-for-debug deps state err
-                                       (mapcar (lambda (item)
-                                                   (restart-info:create-item :name (restart-name item)
-                                                                             :description (princ-to-string item)))
-                                               restarts)
-                                       frames)))
+           (action (wait-for-debug deps state err
+                                   (mapcar (lambda (item)
+                                               (restart-info:create-item :name (restart-name item)
+                                                                         :description (princ-to-string item)))
+                                           restarts)
+                                   frames)))
 
         (cond ((assoc :restart action)
                   (do-restart restarts (cdr (assoc :restart action))))
@@ -127,15 +127,15 @@
         nil))
 
 
-(defun xyz-run-with-debugger (deps state fn)
+(defun run-with-debugger (deps state fn)
     (let ((sb-ext:*invoke-debugger-hook* (lambda (c h)
                                              (declare (ignore h))
-                                             (xyz-start-debugger deps state c (alive/frames:list-debug-frames))
-                                             (return-from xyz-run-with-debugger)))
+                                             (start-debugger deps state c (alive/frames:list-debug-frames))
+                                             (return-from run-with-debugger)))
           (*debugger-hook* (lambda (c h)
                                (declare (ignore h))
-                               (xyz-start-debugger deps state c (alive/frames:list-debug-frames))
-                               (return-from xyz-run-with-debugger))))
+                               (start-debugger deps state c (alive/frames:list-debug-frames))
+                               (return-from run-with-debugger))))
         (funcall fn)))
 
 
@@ -143,10 +143,10 @@
     (format nil "~A - ~A" (state:next-thread-id state) method-name))
 
 
-(defun xyz-run-in-thread (deps state method-name msg-id fn)
+(defun run-in-thread (deps state method-name msg-id fn)
     (spawn:new-thread (next-thread-name state method-name)
         (state:with-thread-msg (state deps msg-id)
             (unwind-protect
                     (progn (refresh:send deps state)
-                           (xyz-run-with-debugger deps state fn))
+                           (run-with-debugger deps state fn))
                 (refresh:send deps state)))))

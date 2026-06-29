@@ -51,8 +51,8 @@
 
 
 (defun form-text (text form)
-    (let* ((start (form:xyz-get-start-offset form))
-           (end (form:xyz-get-end-offset form)))
+    (let* ((start (form:get-start-offset form))
+           (end (form:get-end-offset form)))
         (subseq text start end)))
 
 
@@ -83,7 +83,7 @@
     (loop :with syms := nil
 
           :for form :in forms :do
-              (let* ((kids (form:xyz-get-kids form))
+              (let* ((kids (form:get-kids form))
                      (fn (when (first kids)
                                (form-text text (first kids))))
                      (name (when (second kids)
@@ -91,7 +91,7 @@
                      (kind (when fn (form-kind fn))))
 
                   (when (and fn name kind)
-                        (push (to-doc-sym name kind (form:xyz-get-start form) (form:xyz-get-end form))
+                        (push (to-doc-sym name kind (form:get-start form) (form:get-end form))
                               syms)))
 
           :finally (return syms)))

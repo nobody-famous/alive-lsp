@@ -1,8 +1,8 @@
 (defpackage :alive/file
     (:use :cl)
-    (:export :xyz-do-compile
-             :xyz-do-load
-             :xyz-try-compile)
+    (:export :do-compile
+             :do-load
+             :try-compile)
     (:local-nicknames (:astreams :alive/sys/streams)))
 
 (in-package :alive/file)
@@ -13,14 +13,14 @@
         (funcall cmd path)))
 
 
-(defun xyz-do-compile (path &key stdin-fn stdout-fn stderr-fn)
-    (do-cmd #+sbcl 'alive/sbcl/file:xyz-do-compile path :stdin-fn stdin-fn :stdout-fn stdout-fn :stderr-fn stderr-fn))
+(defun do-compile (path &key stdin-fn stdout-fn stderr-fn)
+    (do-cmd #+sbcl 'alive/sbcl/file:do-compile path :stdin-fn stdin-fn :stdout-fn stdout-fn :stderr-fn stderr-fn))
 
 
-(defun xyz-do-load (path &key stdin-fn stdout-fn stderr-fn)
-    (do-cmd #+sbcl 'alive/sbcl/file:xyz-do-load path :stdin-fn stdin-fn :stdout-fn stdout-fn :stderr-fn stderr-fn))
+(defun do-load (path &key stdin-fn stdout-fn stderr-fn)
+    (do-cmd #+sbcl 'alive/sbcl/file:do-load path :stdin-fn stdin-fn :stdout-fn stdout-fn :stderr-fn stderr-fn))
 
 
-(defun xyz-try-compile (path)
-    (do-cmd #+sbcl 'alive/sbcl/file:xyz-try-compile
+(defun try-compile (path)
+    (do-cmd #+sbcl 'alive/sbcl/file:try-compile
             path))

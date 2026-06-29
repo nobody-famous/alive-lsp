@@ -100,29 +100,29 @@
 
 
 (defun in-package-p (form pkg)
-    (let* ((kids (form:xyz-get-kids form))
+    (let* ((kids (form:get-kids form))
            (kid (first kids))
            (in-pkg-sym (find-symbol "IN-PACKAGE" "CL-USER")))
-        (when (and (eq alive/types:*open-paren* (form:xyz-get-form-type form))
+        (when (and (eq alive/types:*open-paren* (form:get-form-type form))
                    kid)
               (multiple-value-bind (name pkg-name)
-                      (for-tokens (form:xyz-get-tokens kid) pkg)
+                      (for-tokens (form:get-tokens kid) pkg)
                   (eq (utils:lookup-symbol name pkg-name) in-pkg-sym)))))
 
 
 (defun for-pos (text pos)
-    (loop :with forms := (forms:xyz-from-stream (make-string-input-stream text))
+    (loop :with forms := (forms:from-stream (make-string-input-stream text))
           :with prev-form := nil
           :with pkg := "cl-user"
 
           :for form :in forms
-          :until (pos:less-or-equal pos (form:xyz-get-start form))
-          :do (when (and (not (eq alive/types:*ifdef-false* (form:xyz-get-form-type prev-form)))
+          :until (pos:less-or-equal pos (form:get-start form))
+          :do (when (and (not (eq alive/types:*ifdef-false* (form:get-form-type prev-form)))
                          (in-package-p form pkg)
-                         (= 2 (length (form:xyz-get-kids form))))
+                         (= 2 (length (form:get-kids form))))
                     (setf pkg (name-from-string (subseq text
-                                                        (form:xyz-get-start-offset (elt (form:xyz-get-kids form) 1))
-                                                        (form:xyz-get-end-offset (elt (form:xyz-get-kids form) 1))))))
+                                                        (form:get-start-offset (elt (form:get-kids form) 1))
+                                                        (form:get-end-offset (elt (form:get-kids form) 1))))))
               (setf prev-form form)
           :finally (return pkg)))
 

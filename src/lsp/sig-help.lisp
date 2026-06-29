@@ -54,29 +54,29 @@
                   info))))
 
 
-(defun xyz-get-active-parameter (pos form)
-    (let* ((start (car (form:xyz-get-kids form)))
-           (start-end (form:xyz-get-end start)))
+(defun get-active-parameter (pos form)
+    (let* ((start (car (form:get-kids form)))
+           (start-end (form:get-end start)))
         (if (pos:less-than pos start-end)
             -1
             (loop :with param := 0
-                  :for kid :in (cdr (form:xyz-get-kids form))
-                  :until (and (form:xyz-get-end kid)
-                              (pos:less-than pos (form:xyz-get-end kid)))
+                  :for kid :in (cdr (form:get-kids form))
+                  :until (and (form:get-end kid)
+                              (pos:less-than pos (form:get-end kid)))
                   :do (incf param)
                   :finally (return param)))))
 
 
 (defun signatures (&key text pos)
-    (let* ((forms (forms:xyz-from-stream-or-nil (make-string-input-stream text)))
-           (top-form (forms:xyz-get-top-form forms pos))
-           (outer-form (forms:xyz-get-outer-form top-form pos))
+    (let* ((forms (forms:from-stream-or-nil (make-string-input-stream text)))
+           (top-form (forms:get-top-form forms pos))
+           (outer-form (forms:get-outer-form top-form pos))
            (name-form (when outer-form
-                            (first (form:xyz-get-kids outer-form))))
+                            (first (form:get-kids outer-form))))
            (active-param (if outer-form
-                             (xyz-get-active-parameter pos outer-form)
+                             (get-active-parameter pos outer-form)
                              0))
-           (name-tokens (when name-form (form:xyz-get-tokens name-form)))
+           (name-tokens (when name-form (form:get-tokens name-form)))
            (pkg-name (alive/packages:for-pos text pos)))
 
         (when (and name-tokens

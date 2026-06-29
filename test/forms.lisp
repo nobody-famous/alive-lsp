@@ -9,9 +9,9 @@
 
 
 (defun get-child-form (text pos)
-    (let* ((forms (forms:xyz-from-stream (make-string-input-stream text)))
-           (top-form (forms:xyz-get-top-form forms pos)))
-        (forms:xyz-get-outer-form top-form pos)))
+    (let* ((forms (forms:from-stream (make-string-input-stream text)))
+           (top-form (forms:get-top-form forms pos)))
+        (forms:get-outer-form top-form pos)))
 
 
 (defun test-child-form ()
@@ -22,13 +22,13 @@
                (child-2 (get-child-form text (pos:create 0 12)))
                (child-3 (get-child-form text (pos:create 0 17))))
             (clue:check-equal :expected (pos:create 0 0)
-                              :actual (form:xyz-get-start all))
+                              :actual (form:get-start all))
             (clue:check-equal :expected (pos:create 0 4)
-                              :actual (form:xyz-get-start child-1))
+                              :actual (form:get-start child-1))
             (clue:check-equal :expected (pos:create 0 10)
-                              :actual (form:xyz-get-start child-2))
+                              :actual (form:get-start child-2))
             (clue:check-equal :expected (pos:create 0 15)
-                              :actual (form:xyz-get-start child-3)))))
+                              :actual (form:get-start child-3)))))
 
 
 (defun run-all ()

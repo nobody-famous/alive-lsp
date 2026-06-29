@@ -17,26 +17,26 @@
 
 (defun get-text (text form)
     (string-downcase (subseq text
-                             (form:xyz-get-start-offset form)
-                             (form:xyz-get-end-offset form))))
+                             (form:get-start-offset form)
+                             (form:get-end-offset form))))
 
 
 (defun get-values (text form)
-    (let* ((keyword-form (first (form:xyz-get-kids form)))
-           (name-form (second (form:xyz-get-kids form))))
+    (let* ((keyword-form (first (form:get-kids form)))
+           (name-form (second (form:get-kids form))))
         (if (and keyword-form name-form)
             (values
-                (form:xyz-get-end name-form)
+                (form:get-end name-form)
                 (get-text text keyword-form)
                 (get-text text name-form)
-                (alive/packages:for-pos text (form:xyz-get-start keyword-form)))
+                (alive/packages:for-pos text (form:get-start keyword-form)))
             (values (alive/position:create 0 0) nil nil nil))))
 
 
 (defun create-refs-lens (uri pos name pkg)
     (let ((lens (make-hash-table :test #'equalp))
           (cmd (make-hash-table :test #'equalp))
-          (xrefs (ignore-errors (alive/sys/xref:xyz-find-references name pkg)))
+          (xrefs (ignore-errors (alive/sys/xref:find-references name pkg)))
           (path (if (alive/utils:has-prefix uri "file://")
                     uri
                     (format nil "file://~A" uri))))
@@ -89,7 +89,7 @@
 
 (defun get (uri text)
     (ignore-errors
-        (loop :with forms := (forms:xyz-from-stream-or-nil (make-string-input-stream text))
+        (loop :with forms := (forms:from-stream-or-nil (make-string-input-stream text))
               :with lenses := nil
 
               :for form :in forms

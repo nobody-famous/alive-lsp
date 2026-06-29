@@ -3,7 +3,7 @@
     (:export :code-lens
              :code-lens-resolve
              :completion
-             :xyz-definition
+             :definition
              :did-change
              :did-open
              :doc-symbols
@@ -65,14 +65,14 @@
             (lsp-msg:create-response id :result-value data))))
 
 
-(defun xyz-definition (state msg)
+(defun definition (state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
            (doc (cdr (assoc :text-document params)))
            (pos (cdr (assoc :position params)))
            (uri (cdr (assoc :uri doc)))
            (text (or (state:get-file-text state uri) ""))
-           (location (alive/lsp/definition:xyz-get-location :text text :pos pos))
+           (location (alive/lsp/definition:get-location :text text :pos pos))
            (uri (first location))
            (range (second location)))
 
@@ -115,7 +115,7 @@
            (doc (cdr (assoc :text-document params)))
            (uri (cdr (assoc :uri doc)))
            (text (or (state:get-file-text state uri) ""))
-           (forms (forms:xyz-from-stream-or-nil (make-string-input-stream text)))
+           (forms (forms:from-stream-or-nil (make-string-input-stream text)))
            (symbols (alive/lsp/symbol:for-document text forms)))
 
         (let ((result (or symbols (make-hash-table))))
@@ -189,7 +189,7 @@
            (doc (cdr (assoc :text-document params)))
            (uri (cdr (assoc :uri doc)))
            (text (or (state:get-file-text state uri) ""))
-           (forms (forms:xyz-from-stream-or-nil (make-string-input-stream text)))
+           (forms (forms:from-stream-or-nil (make-string-input-stream text)))
            (pos-list (cdr (assoc :positions params)))
            (ranges (when (and forms pos-list)
                          (selection:ranges forms pos-list))))
@@ -256,6 +256,6 @@
            (uri (cdr (assoc :uri doc)))
            (pos (cdr (assoc :position params)))
            (text (or (state:get-file-text state uri) ""))
-           (locs (alive/sys/xref:xyz-get-locations text pos)))
+           (locs (alive/sys/xref:get-locations text pos)))
         (lsp-msg:create-response id
                                  :result-value (or locs (make-array 0)))))

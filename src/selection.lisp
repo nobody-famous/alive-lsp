@@ -15,11 +15,11 @@
 
 (defun find-form-for-pos (forms pos)
     (find-if (lambda (form)
-                 (in-range pos (form:xyz-get-start form) (form:xyz-get-end form))) forms))
+                 (in-range pos (form:get-start form) (form:get-end form))) forms))
 
 
 (defun create-node (parent form)
-    (list (cons :range (range:create (form:xyz-get-start form) (form:xyz-get-end form)))
+    (list (cons :range (range:create (form:get-start form) (form:get-end form)))
           (cons :parent parent)))
 
 
@@ -30,8 +30,8 @@
           :while form
 
           :do (setf node (create-node node form))
-              (setf form (if (form:xyz-get-kids form)
-                             (find-form-for-pos (form:xyz-get-kids form) pos)
+              (setf form (if (form:get-kids form)
+                             (find-form-for-pos (form:get-kids form) pos)
                              nil))
 
           :finally (return node)))

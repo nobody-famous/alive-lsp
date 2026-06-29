@@ -218,9 +218,9 @@
 
 (defun simple (&key text pos)
     (let* ((tokens (tokenizer:from-stream (make-string-input-stream text)))
-           ;    (forms (forms:xyz-from-stream (make-string-input-stream text)))
-           ;    (top-form (forms:xyz-get-top-form forms pos))
-           ;    (expr (forms:xyz-find-expr top-form pos))
+           ;    (forms (forms:from-stream (make-string-input-stream text)))
+           ;    (top-form (forms:get-top-form forms pos))
+           ;    (expr (forms:find-expr top-form pos))
            (pkg (packages:lookup (packages:for-pos text pos)))
            (*package* (if pkg pkg *package*)))
 

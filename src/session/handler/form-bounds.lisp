@@ -16,7 +16,7 @@
            (uri (cdr (assoc :uri doc)))
            (text (or (state:get-file-text state uri) "")))
 
-        (forms:xyz-from-stream-or-nil (make-string-input-stream text))))
+        (forms:from-stream-or-nil (make-string-input-stream text))))
 
 
 (defun create-response (id start end)
@@ -33,9 +33,9 @@
            (params (cdr (assoc :params msg)))
            (pos (cdr (assoc :position params)))
            (forms (get-forms state msg))
-           (form (forms:xyz-get-top-form forms pos))
-           (start (when form (form:xyz-get-start form)))
-           (end (when form (form:xyz-get-end form))))
+           (form (forms:get-top-form forms pos))
+           (start (when form (form:get-start form)))
+           (end (when form (form:get-end form))))
         (create-response id start end)))
 
 
@@ -44,8 +44,8 @@
            (params (cdr (assoc :params msg)))
            (pos (cdr (assoc :position params)))
            (forms (get-forms state msg))
-           (top-form (forms:xyz-get-top-form forms pos))
-           (form (forms:xyz-get-outer-form top-form pos))
-           (start (when form (form:xyz-get-start form)))
-           (end (when form (form:xyz-get-end form))))
+           (top-form (forms:get-top-form forms pos))
+           (form (forms:get-outer-form top-form pos))
+           (start (when form (form:get-start form)))
+           (end (when form (form:get-end form))))
         (create-response id start end)))
