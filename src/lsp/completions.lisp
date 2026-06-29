@@ -27,8 +27,10 @@
              :*kind-event*
              :*kind-operator*
              :*kind-type-parameter*)
-    (:local-nicknames (:pos :alive/position)
+    (:local-nicknames (:form :alive/parse/form)
+                      (:forms :alive/parse/forms)
                       (:packages :alive/packages)
+                      (:pos :alive/position)
                       (:symbols :alive/symbols)
                       (:token :alive/parse/token)
                       (:tokenizer :alive/parse/tokenizer)
@@ -216,6 +218,9 @@
 
 (defun simple (&key text pos)
     (let* ((tokens (tokenizer:from-stream (make-string-input-stream text)))
+           (forms (forms:xyz-from-stream (make-string-input-stream text)))
+           (top-form (forms:xyz-get-top-form forms pos))
+           (expr (forms:xyz-find-expr top-form pos))
            (pkg (packages:lookup (packages:for-pos text pos)))
            (*package* (if pkg pkg *package*)))
 

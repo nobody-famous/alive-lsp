@@ -1,6 +1,7 @@
 (defpackage :alive/parse/forms
     (:use :cl)
-    (:export :xyz-from-stream
+    (:export :xyz-find-expr
+             :xyz-from-stream
              :xyz-from-stream-or-nil
              :xyz-get-outer-form
              :xyz-get-nth-form
@@ -30,8 +31,6 @@
 
 
 (defstruct parse-state
-    forms
-    opens
     xyz-forms
     xyz-opens)
 
@@ -247,6 +246,20 @@
                   :finally (return target))
 
             nil)))
+
+
+(defun xyz-find-expr (form pos)
+    (let ((start (form:xyz-get-start form))
+          (end (form:xyz-get-end form))
+          (kid (find-if (lambda (kid)
+                            (and (pos:less-or-equal (form:xyz-get-start kid) pos)
+                                 (pos:less-or-equal pos (form:xyz-get-end kid))))
+                       (the list (form:xyz-get-kids form)))))
+        (when (and (pos:less-or-equal start pos)
+                   (pos:less-or-equal pos end))
+              (if kid
+                  (xyz-find-expr kid pos)
+                  form))))
 
 
 (defun xyz-get-outer-form (form pos)

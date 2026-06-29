@@ -12,7 +12,8 @@
              :lookup
              :macro-p
              :special-ch-p)
-    (:local-nicknames (:forms :alive/parse/forms)
+    (:local-nicknames (:form :alive/parse/form)
+                      (:forms :alive/parse/forms)
                       (:packages :alive/packages)
                       (:pos :alive/position)
                       (:token :alive/parse/token)
@@ -145,15 +146,16 @@
     (loop :for token :in tokens
           :collect token :into found-tokens
           :while (pos:less-than (token:get-end token) pos)
-          :finally (return (cond ((<= 3 (length found-tokens)) (subseq (reverse found-tokens) 0 3))
+          :finally (return (cond ((<= 3 (length found-tokens)) (reverse (subseq (reverse found-tokens) 0 3)))
                                  ((= 2 (length found-tokens)) (reverse (cons nil found-tokens)))
                                  ((= 1 (length found-tokens)) (list (first found-tokens) nil nil))))))
 
 
 (defun for-pos (text pos)
-    (let* ((raw-tokens (tokenizer:from-stream (make-string-input-stream text)))
-           (tokens (find-tokens raw-tokens pos))
+    (let* ((forms (forms:xyz-from-stream (make-string-input-stream text)))
+           (top-form (forms:xyz-get-top-form forms pos))
+           (expr (forms:xyz-find-expr top-form pos))
            (pkg-name (packages:for-pos text pos)))
 
-        (unless (zerop (length tokens))
-            (packages:for-tokens tokens pkg-name))))
+        (when expr
+              (packages:for-tokens (form:xyz-get-tokens expr) pkg-name))))
