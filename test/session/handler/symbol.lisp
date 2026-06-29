@@ -13,9 +13,9 @@
         (let ((state (state:create)))
             (clue:expect-fail (lambda () (symbol:for-pos state (list (cons :id 5)))))
             (clue:check-exists (gethash "result" (symbol:for-pos state (list (cons :id 5)
-                                                                                 (cons :params (list (cons :position (list (cons :line 1)
-                                                                                                                           (cons :character 2)))
-                                                                                                     (cons :text-document (list (cons :uri "some/path"))))))))))))
+                                                                             (cons :params (list (cons :position (list (cons :line 1)
+                                                                                                                       (cons :character 2)))
+                                                                                                 (cons :text-document (list (cons :uri "some/path"))))))))))))
 
 
 (defun test-unexport ()
