@@ -78,12 +78,10 @@
 
 (defun for-tokens (tokens pkg-name)
     (let* ((pkg (lookup pkg-name))
-           (token-list (cond ((<= 3 (length tokens)) tokens)
-                             ((= 2 (length tokens)) (cons tokens nil))
-                             ((= 1 (length tokens)) (list (first tokens) nil nil))))
            (*package* (or pkg *package*)))
 
-        (destructuring-bind (token1 token2 token3) token-list
+        (destructuring-bind (&optional token1 token2 token3)
+                tokens
             (cond ((and (eq (token:get-type-value token1) types:*symbol*)
                         (eq (token:get-type-value token2) types:*colons*)
                         (eq (token:get-type-value token3) types:*symbol*))

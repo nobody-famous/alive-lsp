@@ -255,7 +255,8 @@
                             (and (pos:less-or-equal (form:get-start kid) pos)
                                  (pos:less-or-equal pos (form:get-end kid))))
                        (the list (form:get-kids form)))))
-        (when (and (pos:less-or-equal start pos)
+        (when (and start end pos
+                   (pos:less-or-equal start pos)
                    (pos:less-or-equal pos end))
               (if kid
                   (find-expr kid pos)
