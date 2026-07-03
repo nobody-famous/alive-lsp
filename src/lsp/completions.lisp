@@ -242,7 +242,7 @@
                         ((and (eq (token:get-type-value token1) types:*symbol*)
                               (eq (token:get-type-value token2) types:*colons*))
                             (symbol-with-pkg :name ""
-                                             :num-colons (length (token:get-text token1))
+                                             :num-colons (length (token:get-text token2))
                                              :pkg-name (token:get-text token1)))
 
                         ((eq (token:get-type-value token1) types:*colons*)
