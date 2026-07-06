@@ -1,7 +1,8 @@
 (defpackage :alive/lsp/sig-help
     (:use :cl)
     (:export :signatures)
-    (:local-nicknames (:forms :alive/parse/forms)
+    (:local-nicknames (:form :alive/parse/form)
+                      (:forms :alive/parse/forms)
                       (:pkgs :alive/packages)
                       (:pos :alive/position)
                       (:symbols :alive/symbols)
@@ -18,22 +19,6 @@
         info))
 
 
-(declaim (ftype (function ((or null hash-table) (or null hash-table) (or null hash-table)) (values (or null string) &optional)) get-fn-package))
-(defun get-fn-package (token1 token2 token3)
-    (if (and (eq (token:get-type-value token1) types:*symbol*)
-             (eq (token:get-type-value token2) types:*colons*)
-             (eq (token:get-type-value token3) types:*symbol*))
-        (token:get-text token3)
-        (package-name *package*)))
-
-
-(declaim (ftype (function ((or null hash-table)) (values (or null string) &optional)) get-fn-name))
-(defun get-fn-name (token)
-    (when (eq (token:get-type-value token) types:*symbol*)
-          (string-upcase (token:get-text token))))
-
-
-(declaim (ftype (function (string string) string) generate-label))
 (defun generate-label (fn-name pkg-name)
     (loop :with label := fn-name
           :with lambda-list := (symbols:get-lambda-list fn-name pkg-name)
@@ -55,7 +40,6 @@
           :finally (return (values label (or (reverse params) (make-array 0))))))
 
 
-(declaim (ftype (function (number string string) (or null hash-table)) get-sig-info))
 (defun get-sig-info (active-param fn-name pkg-name)
     (multiple-value-bind (label params)
             (generate-label fn-name pkg-name)
@@ -70,48 +54,34 @@
                   info))))
 
 
-(declaim (ftype (function (pos:text-position number (or null hash-table) (or null hash-table) (or null hash-table)) (or null hash-table)) get-sig))
-(defun get-sig (pos active-param token1 token2 token3)
-    (let* ((pkg-name (get-fn-package token1 token2 token3))
-           (fn-name (get-fn-name token1)))
-        (when (and (token:get-start token1)
-                   (pos:less-than (token:get-start token1) pos)
-                   (or (symbols:function-p fn-name pkg-name) (symbols:macro-p fn-name pkg-name))
-                   fn-name
-                   pkg-name)
-              (get-sig-info active-param fn-name pkg-name))))
-
-
-(declaim (ftype (function (pos:text-position hash-table) number) get-active-parameter))
 (defun get-active-parameter (pos form)
-    (loop :with param := 0
-          :for kid :in (cdr (gethash "kids" form))
-          :do (when (and (gethash "end" kid)
-                         (pos:less-than (gethash "end" kid) pos))
-                    (incf param))
-          :finally (return param)))
+    (let* ((start (car (form:get-kids form)))
+           (start-end (form:get-end start)))
+        (if (pos:less-than pos start-end)
+            -1
+            (loop :with param := 0
+                  :for kid :in (cdr (form:get-kids form))
+                  :until (and (form:get-end kid)
+                              (pos:less-than pos (form:get-end kid)))
+                  :do (incf param)
+                  :finally (return param)))))
 
 
-(declaim (ftype (function (&key (:text string) (:pos pos:text-position)) (values (or null cons) &optional)) signatures))
 (defun signatures (&key text pos)
     (let* ((forms (forms:from-stream-or-nil (make-string-input-stream text)))
-           (tokens (tokenizer:from-stream (make-string-input-stream text)))
            (top-form (forms:get-top-form forms pos))
            (outer-form (forms:get-outer-form top-form pos))
-           (name-form (when (hash-table-p outer-form)
-                            (first (gethash "kids" outer-form))))
-           (active-param (if (hash-table-p outer-form)
+           (name-form (when outer-form
+                            (first (form:get-kids outer-form))))
+           (active-param (if outer-form
                              (get-active-parameter pos outer-form)
                              0))
-           (name-tokens (when (hash-table-p name-form)
-                              (symbols:find-tokens tokens (gethash "end" name-form))))
-           (pkg-name (alive/packages:for-pos text pos))
-           (pkg (pkgs:lookup pkg-name))
-           (*package* (if pkg pkg *package*)))
+           (name-tokens (when name-form (form:get-tokens name-form)))
+           (pkg-name (alive/packages:for-pos text pos)))
 
-        (when (>= (length name-tokens) 3)
-              (destructuring-bind (token1 token2 token3)
-                      name-tokens
-                  (let ((sig (get-sig pos active-param token1 token2 token3)))
-                      (when sig
-                            (list sig)))))))
+        (when (and name-tokens
+                   (<= 0 active-param))
+              (multiple-value-bind (name pkg)
+                      (pkgs:for-tokens name-tokens pkg-name)
+                  (let ((sig (get-sig-info active-param name pkg)))
+                      (when sig (list sig)))))))

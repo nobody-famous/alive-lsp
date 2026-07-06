@@ -9,24 +9,21 @@
 (in-package :alive/lsp/code-lens)
 
 
-(declaim (ftype (function ((or null string)) T) has-code-lens))
 (defun has-code-lens (key)
     (or (string= key "defun")
         (string= key "defparameter")
         (string= key "defconstant")))
 
 
-(declaim (ftype (function (string hash-table) string) get-text))
 (defun get-text (text form)
     (string-downcase (subseq text
                              (form:get-start-offset form)
                              (form:get-end-offset form))))
 
 
-(declaim (ftype (function (string hash-table) (values alive/position:text-position (or null string) (or null string) (or null string))) get-values))
 (defun get-values (text form)
-    (let* ((keyword-form (first (gethash "kids" form)))
-           (name-form (second (gethash "kids" form))))
+    (let* ((keyword-form (first (form:get-kids form)))
+           (name-form (second (form:get-kids form))))
         (if (and keyword-form name-form)
             (values
                 (form:get-end name-form)
@@ -90,7 +87,6 @@
         lens))
 
 
-(declaim (ftype (function (string (or null string)) (or cons null)) get))
 (defun get (uri text)
     (ignore-errors
         (loop :with forms := (forms:from-stream-or-nil (make-string-input-stream text))

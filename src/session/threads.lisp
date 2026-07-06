@@ -16,7 +16,6 @@
 (in-package :alive/session/threads)
 
 
-(declaim (ftype (function (deps:dependencies state:state) (values (or null string) &optional)) wait-for-input))
 (defun wait-for-input (deps state)
     (let ((input-resp (deps:send-request deps (lsp-msg:create-request (state:next-send-id state) "$/alive/userInput"))))
 
@@ -29,7 +28,6 @@
                           ""))))))
 
 
-(declaim (ftype (function (state:state (or null string)) (or null stream)) get-frame-text-stream))
 (defun get-frame-text-stream (state file)
     (when file
           (let* ((file-url (format NIL "file://~A" (file-utils:escape-file file)))
@@ -39,14 +37,12 @@
                     (make-string-input-stream text)))))
 
 
-(declaim (ftype (function (cons) cons) stringify-vars))
 (defun stringify-vars (vars)
     (loop :for var :in vars
           :do (setf (gethash "value" var) (alive/utils:safe-print (gethash"value"var))))
     vars)
 
 
-(declaim (ftype (function (state:state hash-table) hash-table) frame-to-wire))
 (defun frame-to-wire (state frame)
     (let* ((obj (make-hash-table :test #'equalp))
            (file (gethash "file" frame))
@@ -69,7 +65,6 @@
         obj))
 
 
-(declaim (ftype (function (deps:dependencies state:state condition cons cons)) wait-for-debug))
 (defun wait-for-debug (deps state err restarts frames)
     (let* ((debugger-id (state:next-send-id state))
            (request (req:debugger debugger-id
@@ -91,14 +86,12 @@
                       (cdr (assoc :result debug-resp)))))))
 
 
-(declaim (ftype (function (cons fixnum) null) do-restart))
 (defun do-restart (restarts ndx)
     (when (and ndx
                (<= 0 ndx (- (length restarts) 1)))
           (invoke-restart-interactively (elt restarts ndx))))
 
 
-(declaim (ftype (function (cons fixnum string) null) do-restart-frame))
 (defun do-restart-frame (frames ndx args-list)
     (let ((frame (cdr (nth ndx frames))))
         (when (sb-debug:frame-has-debug-tag-p frame)
@@ -116,7 +109,6 @@
                                     (apply fun fun-args)))))))))
 
 
-(declaim (ftype (function (deps:dependencies state:state condition cons) null) start-debugger))
 (defun start-debugger (deps state err frames)
     (let* ((restarts (compute-restarts err))
            (action (wait-for-debug deps state err
@@ -135,7 +127,6 @@
         nil))
 
 
-(declaim (ftype (function (deps:dependencies state:state function)) run-with-debugger))
 (defun run-with-debugger (deps state fn)
     (let ((sb-ext:*invoke-debugger-hook* (lambda (c h)
                                              (declare (ignore h))
@@ -148,12 +139,10 @@
         (funcall fn)))
 
 
-(declaim (ftype (function (state:state string) string) next-thread-name))
 (defun next-thread-name (state method-name)
     (format nil "~A - ~A" (state:next-thread-id state) method-name))
 
 
-(declaim (ftype (function (deps:dependencies state:state string integer function) null) run-in-thread))
 (defun run-in-thread (deps state method-name msg-id fn)
     (spawn:new-thread (next-thread-name state method-name)
         (state:with-thread-msg (state deps msg-id)

@@ -6,10 +6,11 @@
 
 (in-package :alive/test/lsp/completions)
 
+
 (defun test-symbols-m ()
     (clue:test "Symbols:m"
         (let ((actual (comps:simple :text "some text alive/symbols:m"
-                                    :pos (pos:create 0 27))))
+                                    :pos (pos:create 0 25))))
 
             (clue:check-equal :expected 3
                               :actual (length actual)))))
@@ -73,7 +74,7 @@
 
         (clue:test "Colon no symbol"
             (let ((actual (comps:simple :text ":"
-                                        :pos (pos:create 0 8))))
+                                        :pos (pos:create 0 1))))
                 (clue:check-equal :expected T
                                   :actual (< 100 (length actual)))))))
 

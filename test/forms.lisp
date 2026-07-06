@@ -1,7 +1,8 @@
 (defpackage :alive/test/forms
     (:use :cl)
     (:export :run-all)
-    (:local-nicknames (:forms :alive/parse/forms)
+    (:local-nicknames (:form :alive/parse/form)
+                      (:forms :alive/parse/forms)
                       (:pos :alive/position)))
 
 (in-package :alive/test/forms)
@@ -21,13 +22,13 @@
                (child-2 (get-child-form text (pos:create 0 12)))
                (child-3 (get-child-form text (pos:create 0 17))))
             (clue:check-equal :expected (pos:create 0 0)
-                              :actual (gethash "start" all))
+                              :actual (form:get-start all))
             (clue:check-equal :expected (pos:create 0 4)
-                              :actual (gethash "start" child-1))
+                              :actual (form:get-start child-1))
             (clue:check-equal :expected (pos:create 0 10)
-                              :actual (gethash "start" child-2))
+                              :actual (form:get-start child-2))
             (clue:check-equal :expected (pos:create 0 15)
-                              :actual (gethash "start" child-3)))))
+                              :actual (form:get-start child-3)))))
 
 
 (defun run-all ()

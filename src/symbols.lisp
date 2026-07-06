@@ -12,7 +12,8 @@
              :lookup
              :macro-p
              :special-ch-p)
-    (:local-nicknames (:forms :alive/parse/forms)
+    (:local-nicknames (:form :alive/parse/form)
+                      (:forms :alive/parse/forms)
                       (:packages :alive/packages)
                       (:pos :alive/position)
                       (:token :alive/parse/token)
@@ -145,32 +146,16 @@
     (loop :for token :in tokens
           :collect token :into found-tokens
           :while (pos:less-than (token:get-end token) pos)
-          :finally (return (cond ((<= 3 (length found-tokens)) (subseq (reverse found-tokens) 0 3))
+          :finally (return (cond ((<= 3 (length found-tokens)) (reverse (subseq (reverse found-tokens) 0 3)))
                                  ((= 2 (length found-tokens)) (reverse (cons nil found-tokens)))
                                  ((= 1 (length found-tokens)) (list (first found-tokens) nil nil))))))
 
 
 (defun for-pos (text pos)
-    (let* ((raw-tokens (tokenizer:from-stream (make-string-input-stream text)))
-           (tokens (find-tokens raw-tokens pos))
-           (pkg-name (packages:for-pos text pos))
-           (pkg (packages:lookup pkg-name))
-           (*package* (or pkg *package*)))
+    (let* ((forms (forms:from-stream (make-string-input-stream text)))
+           (top-form (forms:get-top-form forms pos))
+           (expr (forms:find-expr top-form pos))
+           (pkg-name (packages:for-pos text pos)))
 
-        (unless (zerop (length tokens))
-            (destructuring-bind (token1 token2 token3) tokens
-                (cond ((and (eq (token:get-type-value token1) types:*symbol*)
-                            (eq (token:get-type-value token2) types:*colons*)
-                            (eq (token:get-type-value token3) types:*symbol*))
-                          (let* ((real-pkg (packages:lookup (token:get-text token3)))
-                                 (real-pkg-name (if real-pkg
-                                                    (package-name real-pkg)
-                                                    (token:get-text token3))))
-                              (values (token:get-text token1)
-                                  real-pkg-name)))
-
-                      ((eq (token:get-type-value token1) types:*symbol*)
-                          (values (token:get-text token1)
-                              pkg-name))
-
-                      (T nil))))))
+        (when expr
+              (packages:for-tokens (form:get-tokens expr) pkg-name))))

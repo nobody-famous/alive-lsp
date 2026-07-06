@@ -125,9 +125,11 @@
 (defun do-compile (path)
     (do-cmd path 'compile-file))
 
+
 (defun do-load (path)
     (do-compile path)
     (do-cmd path 'load))
+
 
 (defun try-compile (path)
     (do-cmd path 'compile-file T))

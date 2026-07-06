@@ -1,6 +1,7 @@
 (defpackage :alive/parse/form
     (:use :cl)
     (:export :add-kid
+             :add-token
              :create
              :get-end
              :get-end-offset
@@ -8,79 +9,77 @@
              :get-start
              :get-start-offset
              :get-form-type
-             :get-in-pkg
-             :is-in-pkg
-             :set-end
-             :set-end-offset
-             :set-is-in-pkg))
+             :get-tokens)
+    (:local-nicknames (:pos :alive/position)
+                      (:token :alive/parse/token)))
 
 (in-package :alive/parse/form)
 
 
+(defstruct form
+    form-type
+    kids
+    tokens)
+
+
 (defun add-kid (form kid)
-    (let* ((rev-kids (reverse (gethash "kids" form))))
-        (setf (gethash "kids" form) (reverse (push kid rev-kids)))))
+    (let* ((rev-kids (reverse (form-kids form))))
+        (setf (form-kids form) (reverse (push kid rev-kids)))))
 
 
-(defun set-end (form pos)
-    (when form
-          (setf (gethash "end" form) pos)))
-
-
-(defun set-end-offset (form pos)
-    (when form
-          (setf (gethash "endOffset" form) pos)))
-
-
-(defun set-is-in-pkg (form value)
-    (when form
-          (setf (gethash "inPkg" form) value)))
-
-
-(defun is-in-pkg (form)
-    (when form
-          (gethash "inPkg" form)))
+(defun add-token (form token)
+    (let* ((rev-tokens (reverse (form-tokens form))))
+        (setf (form-tokens form) (reverse (push token rev-tokens)))))
 
 
 (defun get-end (form)
     (when form
-          (gethash "end" form)))
+          (let* ((token (car (reverse (form-tokens form))))
+                 (token-end (or (token:get-end token) (pos:create 0 0)))
+                 (kid (car (reverse (form-kids form))))
+                 (kid-end (or (get-end kid) (pos:create 0 0))))
+              (if (pos:less-than token-end kid-end)
+                  kid-end
+                  token-end))))
 
 
 (defun get-end-offset (form)
     (when form
-          (gethash "endOffset" form)))
+          (let* ((token (car (reverse (form-tokens form))))
+                 (token-end (or (token:get-end-offset token) 0))
+                 (kid (car (reverse (form-kids form))))
+                 (kid-end (or (get-end-offset kid) 0)))
+              (max token-end kid-end))))
 
 
 (defun get-kids (form)
     (when form
-          (gethash "kids" form)))
+          (form-kids form)))
+
+
+(defun get-tokens (form)
+    (when form
+          (form-tokens form)))
 
 
 (defun get-start (form)
     (when form
-          (gethash "start" form)))
+          (let ((token (car (form-tokens form))))
+              (token:get-start token))))
 
 
 (defun get-start-offset (form)
     (when form
-          (gethash "startOffset" form)))
+          (let ((token (car (form-tokens form))))
+              (token:get-start-offset token))))
 
 
 (defun get-form-type (form)
     (when form
-          (gethash "formType" form)))
+          (form-form-type form)))
 
 
-(defun create (&key start start-offset end end-offset form-type in-pkg kids)
-    (let ((form (make-hash-table :test #'equalp)))
-
-        (setf (gethash "start" form) start)
-        (setf (gethash "startOffset" form) start-offset)
-        (setf (gethash "end" form) end)
-        (setf (gethash "endOffset" form) end-offset)
-        (setf (gethash "formType" form) form-type)
-        (setf (gethash "inPkg" form) in-pkg)
-        (setf (gethash "kids" form) kids)
-
-        form))
+(defun create (&key form-type kids tokens)
+    (make-form :form-type form-type
+               :kids kids
+               :tokens tokens))

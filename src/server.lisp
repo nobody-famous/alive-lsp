@@ -29,13 +29,11 @@
                  :initarg :socket)))
 
 
-(declaim (ftype (function (cons) null) ignore-msg))
 (defun ignore-msg (msg)
     (declare (ignore msg))
     nil)
 
 
-(declaim (ftype (function (state:state) alive/session/handlers:list-of-handlers) get-message-handlers))
 (defun get-message-handlers (state)
     (list (cons "initialize" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/init:request msg)))
           (cons "initialized" (lambda (deps msg) (declare (ignore deps)) (alive/session/handler/init:initialized state msg)))
@@ -153,7 +151,6 @@
           (cons "$/alive/inspectMacro" (lambda (deps msg) (alive/session/handler/inspect:macro deps state msg)))))
 
 
-(declaim (ftype (function (&key (:input-stream flexi-streams:flexi-io-stream) (:output-stream T) (:state state:state)) deps:dependencies) create-deps))
 (defun create-deps (&key input-stream output-stream state)
     (let ((handlers (get-message-handlers state)))
         (deps:create :msg-handler (lambda (deps msg) (alive/session/message:handle deps state handlers msg))

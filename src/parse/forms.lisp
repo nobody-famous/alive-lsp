@@ -1,6 +1,7 @@
 (defpackage :alive/parse/forms
     (:use :cl)
-    (:export :from-stream
+    (:export :find-expr
+             :from-stream
              :from-stream-or-nil
              :get-outer-form
              :get-nth-form
@@ -35,11 +36,8 @@
 
 
 (defun open-paren (state token)
-    (push (form:create :start (token:get-start token)
-                       :start-offset (token:get-start-offset token)
-                       :end (token:get-end token)
-                       :end-offset (token:get-end-offset token)
-                       :form-type types:*open-paren*)
+    (push (form:create :form-type types:*open-paren*
+                       :tokens (list token))
           (parse-state-opens state)))
 
 
@@ -71,9 +69,7 @@
           :for cur := (car (parse-state-opens state)) :do
               (when cur
                     (when prev
-                          (form:add-kid cur prev)
-                          (form:set-end cur (form:get-end prev))
-                          (form:set-end-offset cur (form:get-end-offset prev)))
+                          (form:add-kid cur prev))
 
                     (unless (eq (form:get-form-type cur) target)
                         (pop (parse-state-opens state))
@@ -88,14 +84,12 @@
 
 
 (defun matched-close-paren (state token open-form)
-    (form:set-end open-form (token:get-end token))
-    (form:set-end-offset open-form (token:get-end-offset token))
+    (form:add-token open-form token)
+
     (let ((next-open (car (parse-state-opens state))))
         (cond ((or (is-comma next-open)
                    (is-quote next-open))
                   (form:add-kid next-open open-form)
-                  (form:set-end next-open (form:get-end open-form))
-                  (form:set-end-offset next-open (form:get-end-offset open-form))
                   (collapse-opens state types:*open-paren*))
 
               ((is-open-paren next-open)
@@ -106,12 +100,8 @@
               (T (push open-form (parse-state-forms state))))))
 
 
-(defun unmatched-close-paren (state token)
-    (push (form:create :start (token:get-start token)
-                       :start-offset (token:get-start-offset token)
-                       :end (token:get-end token)
-                       :end-offset (token:get-end-offset token)
-                       :form-type types:*unmatched-close-paren*)
+(defun unmatched-close-paren (state)
+    (push (form:create :form-type types:*unmatched-close-paren*)
           (parse-state-forms state)))
 
 
@@ -121,28 +111,22 @@
     (let ((open-form (pop (parse-state-opens state))))
         (if (is-open-paren open-form)
             (matched-close-paren state token open-form)
-            (unmatched-close-paren state token))))
+            (unmatched-close-paren state))))
 
 
 (defun start-quote (state token)
     (let ((open-form (car (parse-state-opens state))))
         (cond ((is-quote open-form) NIL)
-              (T (push (form:create :start (token:get-start token)
-                                    :start-offset (token:get-start-offset token)
-                                    :end (token:get-end token)
-                                    :end-offset (token:get-end-offset token)
-                                    :form-type (token:get-type-value token))
+              (T (push (form:create :form-type (token:get-type-value token)
+                                    :tokens (list token))
                        (parse-state-opens state))))))
 
 
 (defun start-comma (state token)
     (let ((open-form (car (parse-state-opens state))))
         (cond ((is-comma open-form) NIL)
-              (T (push (form:create :start (token:get-start token)
-                                    :start-offset (token:get-start-offset token)
-                                    :end (token:get-end token)
-                                    :end-offset (token:get-end-offset token)
-                                    :form-type (token:get-type-value token))
+              (T (push (form:create :form-type (token:get-type-value token)
+                                    :tokens (list token))
                        (parse-state-opens state))))))
 
 
@@ -151,27 +135,15 @@
 
         (cond ((or (is-open-paren open-form)
                    (is-quote open-form))
-                  (when (string-equal "in-package" (token:get-text token))
-                        (form:set-is-in-pkg open-form T))
-                  (form:set-end open-form (token:get-end token))
-                  (form:set-end-offset open-form (token:get-end-offset token))
-                  (push (form:create :start (token:get-start token)
-                                     :start-offset (token:get-start-offset token)
-                                     :end (token:get-end token)
-                                     :end-offset (token:get-end-offset token)
-                                     :form-type types:*symbol*
-                                     :in-pkg (form:is-in-pkg open-form))
+                  (push (form:create :form-type types:*symbol*
+                                     :tokens (list token))
                         (parse-state-opens state)))
 
               ((is-symbol open-form)
-                  (form:set-end open-form (token:get-end token))
-                  (form:set-end-offset open-form (token:get-end-offset token)))
+                  (form:add-token open-form token))
 
-              (T (push (form:create :start (token:get-start token)
-                                    :start-offset (token:get-start-offset token)
-                                    :end (token:get-end token)
-                                    :end-offset (token:get-end-offset token)
-                                    :form-type types:*symbol*)
+              (T (push (form:create :form-type types:*symbol*
+                                    :tokens (list token))
                        (parse-state-opens state))))))
 
 
@@ -179,7 +151,6 @@
     (collapse-opens state types:*open-paren*))
 
 
-(declaim (ftype (function (T) (or null cons)) from-stream))
 (defun from-stream (input)
     (loop :with state := (make-parse-state)
 
@@ -205,16 +176,10 @@
                     ((token:is-type types:*ifdef-false* token)
                         (if (parse-state-opens state)
                             (form:add-kid (car (parse-state-opens state))
-                                          (form:create :start (token:get-start token)
-                                                       :start-offset (token:get-start-offset token)
-                                                       :end (token:get-end token)
-                                                       :end-offset (token:get-end-offset token)
-                                                       :form-type types:*ifdef-false*))
-                            (push (form:create :start (token:get-start token)
-                                               :start-offset (token:get-start-offset token)
-                                               :end (token:get-end token)
-                                               :end-offset (token:get-end-offset token)
-                                               :form-type types:*ifdef-false*)
+                                          (form:create :form-type types:*ifdef-false*
+                                                       :tokens (list token)))
+                            (push (form:create :form-type types:*ifdef-false*
+                                               :tokens (list token))
                                   (parse-state-forms state))))
 
                     (T (symbol-token state token)))
@@ -223,7 +188,6 @@
                           (return (reverse (parse-state-forms state))))))
 
 
-(declaim (ftype (function (stream) (or null cons)) from-stream-or-nil))
 (defun from-stream-or-nil (input)
     (handler-case
             (from-stream input)
@@ -266,9 +230,9 @@
 
 
 (defun find-inner-form (form pos)
-    (let ((start (gethash "start" form))
-          (end (gethash "end" form))
-          (kids (gethash "kids" form)))
+    (let ((start (form:get-start form))
+          (end (form:get-end form))
+          (kids (form:get-kids form)))
 
         (if (and kids
                  (pos:less-or-equal start pos)
@@ -284,9 +248,24 @@
             nil)))
 
 
+(defun find-expr (form pos)
+    (let ((start (form:get-start form))
+          (end (form:get-end form))
+          (kid (find-if (lambda (kid)
+                            (and (pos:less-or-equal (form:get-start kid) pos)
+                                 (pos:less-or-equal pos (form:get-end kid))))
+                       (the list (form:get-kids form)))))
+        (when (and start end pos
+                   (pos:less-or-equal start pos)
+                   (pos:less-or-equal pos end))
+              (if kid
+                  (find-expr kid pos)
+                  form))))
+
+
 (defun get-outer-form (form pos)
-    (when (and (hash-table-p form)
-               (car (gethash "kids" form)))
+    (when (and form
+               (car (form:get-kids form)))
           (find-inner-form form pos)))
 
 

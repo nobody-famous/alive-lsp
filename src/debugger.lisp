@@ -11,8 +11,8 @@
 
 (defun find-form (cur-count target forms)
     (loop :with open-parens := (remove-if-not (lambda (form)
-                                                  (and (= types:*open-paren* (gethash "formType" form))
-                                                       (< 0 (length (gethash "kids" form)))))
+                                                  (and (= types:*open-paren* (form:get-form-type form))
+                                                       (< 0 (length (form:get-kids form)))))
                                        forms)
           :with ndx := cur-count
 
@@ -22,7 +22,7 @@
                     (return-from find-form (values nil form)))
 
               (multiple-value-bind (new-ndx found)
-                      (find-form (+ 1 ndx) target (gethash "kids" form))
+                      (find-form (+ 1 ndx) target (form:get-kids form))
                   (if found
                       (return-from find-form (values nil found))
                       (setf ndx new-ndx)))
@@ -42,11 +42,11 @@
 
         (when (and form-num top-form)
               (multiple-value-bind (ndx found)
-                      (find-form 1 form-num (gethash "kids" top-form))
+                      (find-form 1 form-num (form:get-kids top-form))
                   (declare (ignore ndx))
 
                   (when found
-                        (gethash "start" found))))))
+                        (form:get-start found))))))
 
 
 (defun eval-in-frame (frame text)
