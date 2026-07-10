@@ -2,6 +2,7 @@
     (:use :cl)
     (:export :list-all
              :for-position
+             :xyz-for-position
              :remove-pkg)
     (:local-nicknames (:lsp-msg :alive/lsp/message/abstract)
                       (:packages :alive/packages)
@@ -11,7 +12,6 @@
 (in-package :alive/session/handler/packages)
 
 
-(declaim (ftype (function (state:state cons) hash-table) for-position))
 (defun for-position (state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
@@ -24,14 +24,24 @@
         (utils:result id "package" pkg)))
 
 
-(declaim (ftype (function (cons) hash-table) list-all))
+(defun xyz-for-position (state msg)
+    (let* ((id (cdr (assoc :id msg)))
+           (params (cdr (assoc :params msg)))
+           (doc (cdr (assoc :text-document params)))
+           (pos (cdr (assoc :position params)))
+           (uri (cdr (assoc :uri doc)))
+           (forms (state:get-file-forms state uri))
+           (pkg (packages:xyz-for-pos forms pos)))
+
+        (utils:result id "package" pkg)))
+
+
 (defun list-all (msg)
     (let ((id (cdr (assoc :id msg)))
           (pkgs (packages:list-all)))
         (utils:result id "packages" pkgs)))
 
 
-(declaim (ftype (function (cons) hash-table) remove-pkg))
 (defun remove-pkg (msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))

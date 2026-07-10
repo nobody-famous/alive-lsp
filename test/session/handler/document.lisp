@@ -21,8 +21,9 @@
                 (clue:check-exists (gethash "result" resp))))
 
         (clue:test "Failure"
-            (let* ((state (state:create)))
-                (clue:expect-fail (lambda () (doc:completion state (list (cons :id 5)))))))))
+            (let* ((state (state:create))
+                   (resp (doc:completion state (list (cons :id 5)))))
+                (clue:check-exists (gethash "result" resp))))))
 
 
 (defun test-definition ()

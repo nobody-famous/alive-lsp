@@ -221,53 +221,53 @@
            (top-form (forms:get-top-form forms pos))
            (expr (forms:find-expr top-form pos))
            (tokens (form:get-tokens expr))
+           (token1 (car tokens))
+           (token2 (cadr tokens))
+           (token3 (caddr tokens))
+           (token4 (cadddr tokens))
            (pkg (packages:lookup (packages:for-pos text pos)))
            (*package* (if pkg pkg *package*)))
 
-        (when tokens
-              (destructuring-bind (&optional token1 token2 token3)
-                      tokens
-                  (cond ((and (eq (token:get-type-value token1) types:*symbol*)
-                              (eq (token:get-type-value token2) types:*colons*)
-                              (eq (token:get-type-value token3) types:*symbol*))
-                            (symbol-with-pkg :name (token:get-text token3)
-                                             :num-colons (length (token:get-text token2))
-                                             :pkg-name (token:get-text token1)))
+        (unless token4
+            (cond ((and (eq (token:get-type-value token1) types:*symbol*)
+                        (eq (token:get-type-value token2) types:*colons*)
+                        (eq (token:get-type-value token3) types:*symbol*))
+                      (symbol-with-pkg :name (token:get-text token3)
+                                       :num-colons (length (token:get-text token2))
+                                       :pkg-name (token:get-text token1)))
 
-                        ((and (eq (token:get-type-value token1) types:*colons*)
-                              (eq (token:get-type-value token2) types:*symbol*))
-                            (symbol-no-pkg :name (token:get-text token2)
-                                           :pkg-name (package-name *package*)))
+                  ((and (eq (token:get-type-value token1) types:*colons*)
+                        (eq (token:get-type-value token2) types:*symbol*))
+                      (symbol-no-pkg :name (token:get-text token2)
+                                     :pkg-name (package-name *package*)))
 
-                        ((and (eq (token:get-type-value token1) types:*symbol*)
-                              (eq (token:get-type-value token2) types:*colons*))
-                            (symbol-with-pkg :name ""
-                                             :num-colons (length (token:get-text token2))
-                                             :pkg-name (token:get-text token1)))
+                  ((and (eq (token:get-type-value token1) types:*symbol*)
+                        (eq (token:get-type-value token2) types:*colons*))
+                      (symbol-with-pkg :name ""
+                                       :num-colons (length (token:get-text token2))
+                                       :pkg-name (token:get-text token1)))
 
-                        ((eq (token:get-type-value token1) types:*colons*)
-                            (symbol-no-pkg :name ""
-                                           :pkg-name (package-name *package*)))
+                  ((eq (token:get-type-value token1) types:*colons*)
+                      (symbol-no-pkg :name ""
+                                     :pkg-name (package-name *package*)))
 
-                        ((and (eq (token:get-type-value token1) types:*quote*)
-                              (eq (token:get-type-value token2) types:*symbol*))
-                            (symbol-no-pkg :name (token:get-text token2)
-                                           :pkg-name (package-name *package*)))
+                  ((and (eq (token:get-type-value token1) types:*quote*)
+                        (eq (token:get-type-value token2) types:*symbol*))
+                      (symbol-no-pkg :name (token:get-text token2)
+                                     :pkg-name (package-name *package*)))
 
-                        ((and (eq (token:get-type-value token1) types:*back-quote*)
-                              (eq (token:get-type-value token2) types:*symbol*))
-                            (symbol-no-pkg :name (token:get-text token2)
-                                           :pkg-name (package-name *package*)))
+                  ((and (eq (token:get-type-value token1) types:*back-quote*)
+                        (eq (token:get-type-value token2) types:*symbol*))
+                      (symbol-no-pkg :name (token:get-text token2)
+                                     :pkg-name (package-name *package*)))
 
-                        ((eq (token:get-type-value token1) types:*symbol*)
-                            (symbol-no-pkg :name (token:get-text token1)
-                                           :pkg-name (package-name *package*)))
+                  ((eq (token:get-type-value token1) types:*symbol*)
+                      (symbol-no-pkg :name (token:get-text token1)
+                                     :pkg-name (package-name *package*)))
 
-                        ((or (eq (token:get-type-value token1) types:*ifdef-false*)
-                             (eq (token:get-type-value token1) types:*ifdef-true*))
-                            (feature (token:get-text token1)))
+                  ((or (eq (token:get-type-value token1) types:*ifdef-false*)
+                       (eq (token:get-type-value token1) types:*ifdef-true*))
+                      (feature (token:get-text token1)))
 
-                        ((eq (token:get-type-value token1) types:*macro*)
-                            (pound))
-
-                        (T nil))))))
+                  ((eq (token:get-type-value token1) types:*macro*)
+                      (pound))))))

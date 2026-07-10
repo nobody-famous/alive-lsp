@@ -5,10 +5,11 @@
              :create
              :get-end
              :get-end-offset
+             :get-form-type
              :get-kids
              :get-start
              :get-start-offset
-             :get-form-type
+             :get-sym-text
              :get-tokens)
     (:local-nicknames (:pos :alive/position)
                       (:token :alive/parse/token)))
@@ -60,6 +61,13 @@
 (defun get-tokens (form)
     (when form
           (form-tokens form)))
+
+
+(defun get-sym-text (form)
+    (when (and form
+               (eq (form-form-type form) alive/types:*symbol*))
+          (apply #'concatenate 'string
+              (mapcar 'token:get-text (get-tokens (second (get-kids form)))))))
 
 
 (defun get-start (form)

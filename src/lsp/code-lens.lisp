@@ -21,7 +21,25 @@
                              (form:get-end-offset form))))
 
 
+(defun xyz-get-text (form)
+    (string-downcase (subseq text
+                             (form:get-start-offset form)
+                             (form:get-end-offset form))))
+
+
 (defun get-values (text form)
+    (let* ((keyword-form (first (form:get-kids form)))
+           (name-form (second (form:get-kids form))))
+        (if (and keyword-form name-form)
+            (values
+                (form:get-end name-form)
+                (get-text text keyword-form)
+                (get-text text name-form)
+                (alive/packages:for-pos text (form:get-start keyword-form)))
+            (values (alive/position:create 0 0) nil nil nil))))
+
+
+(defun xyz-get-values (form)
     (let* ((keyword-form (first (form:get-kids form)))
            (name-form (second (form:get-kids form))))
         (if (and keyword-form name-form)
@@ -95,6 +113,22 @@
               :for form :in forms
               :do (multiple-value-bind (pos key name pkg)
                           (get-values text form)
+                      (if (string= key "defmacro")
+                          (push (create-inspect-macro-lens pos name pkg) lenses)
+                          (when (has-code-lens key)
+                                (push (create-inspect-lens pos name pkg) lenses)
+                                (push (create-refs-lens uri pos name pkg) lenses))))
+
+              :finally (return lenses))))
+
+
+(defun xyz-get (uri forms)
+    (ignore-errors
+        (loop :with lenses := nil
+
+              :for form :in forms
+              :do (multiple-value-bind (pos key name pkg)
+                          (xyz-get-values form)
                       (if (string= key "defmacro")
                           (push (create-inspect-macro-lens pos name pkg) lenses)
                           (when (has-code-lens key)
