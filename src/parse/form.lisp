@@ -4,11 +4,15 @@
              :add-token
              :create
              :get-end
+             :xyz-get-end
              :get-end-offset
+             :xyz-get-end-offset
              :get-form-type
              :get-kids
              :get-start
+             :xyz-get-start
              :get-start-offset
+             :xyz-get-start-offset
              :get-sym-text
              :get-tokens)
     (:local-nicknames (:pos :alive/position)
@@ -18,8 +22,8 @@
 
 
 (defstruct form
-    form-type
     kids
+    kind
     tokens)
 
 
@@ -34,7 +38,7 @@
 
 
 (defun get-end (form)
-    (when form
+    (when (form-p form)
           (let* ((token (car (reverse (form-tokens form))))
                  (token-end (or (token:get-end token) (pos:create 0 0)))
                  (kid (car (reverse (form-kids form))))
@@ -44,8 +48,19 @@
                   token-end))))
 
 
+(defun xyz-get-end (form)
+    (when (form-p form)
+          (let* ((token (car (reverse (form-tokens form))))
+                 (token-end (or (token:xyz-get-end token) (pos:create 0 0)))
+                 (kid (car (reverse (form-kids form))))
+                 (kid-end (or (xyz-get-end kid) (pos:create 0 0))))
+              (if (pos:less-than token-end kid-end)
+                  kid-end
+                  token-end))))
+
+
 (defun get-end-offset (form)
-    (when form
+    (when (form-p form)
           (let* ((token (car (reverse (form-tokens form))))
                  (token-end (or (token:get-end-offset token) 0))
                  (kid (car (reverse (form-kids form))))
@@ -53,41 +68,62 @@
               (max token-end kid-end))))
 
 
+(defun xyz-get-end-offset (form)
+    (when (form-p form)
+          (let* ((token (car (reverse (form-tokens form))))
+                 (token-end (or (token:xyz-get-end-offset token) 0))
+                 (kid (car (reverse (form-kids form))))
+                 (kid-end (or (xyz-get-end-offset kid) 0)))
+              (max token-end kid-end))))
+
+
 (defun get-kids (form)
-    (when form
+    (when (form-p form)
           (form-kids form)))
 
 
 (defun get-tokens (form)
-    (when form
+    (when (form-p form)
           (form-tokens form)))
 
 
 (defun get-sym-text (form)
-    (when (and form
-               (eq (form-form-type form) alive/types:*symbol*))
+    (when (and (form-p form)
+               (eq (form-kind form) alive/types:*symbol*))
           (apply #'concatenate 'string
               (mapcar 'token:get-text (get-tokens (second (get-kids form)))))))
 
 
 (defun get-start (form)
-    (when form
+    (when (form-p form)
           (let ((token (car (form-tokens form))))
               (token:get-start token))))
 
 
+(defun xyz-get-start (form)
+    (when (form-p form)
+          (let ((token (car (form-tokens form))))
+              (token:xyz-get-start token))))
+
+
 (defun get-start-offset (form)
-    (when form
+    (when (form-p form)
           (let ((token (car (form-tokens form))))
               (token:get-start-offset token))))
 
 
+(defun xyz-get-start-offset (form)
+    (when (form-p form)
+          (let ((token (car (form-tokens form))))
+              (token:xyz-get-start-offset token))))
+
+
 (defun get-form-type (form)
-    (when form
-          (form-form-type form)))
+    (when (form-p form)
+          (form-kind form)))
 
 
 (defun create (&key form-type kids tokens)
-    (make-form :form-type form-type
+    (make-form :kind form-type
                :kids kids
                :tokens tokens))

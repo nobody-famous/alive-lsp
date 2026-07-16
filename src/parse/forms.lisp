@@ -2,6 +2,7 @@
     (:use :cl)
     (:export :find-expr
              :from-stream
+             :xyz-from-stream
              :from-stream-or-nil
              :get-outer-form
              :get-nth-form
@@ -122,10 +123,26 @@
                        (parse-state-opens state))))))
 
 
+(defun xyz-start-quote (state token)
+    (let ((open-form (car (parse-state-opens state))))
+        (cond ((is-quote open-form) NIL)
+              (T (push (form:create :form-type (token:xyz-get-type-value token)
+                                    :tokens (list token))
+                       (parse-state-opens state))))))
+
+
 (defun start-comma (state token)
     (let ((open-form (car (parse-state-opens state))))
         (cond ((is-comma open-form) NIL)
               (T (push (form:create :form-type (token:get-type-value token)
+                                    :tokens (list token))
+                       (parse-state-opens state))))))
+
+
+(defun xyz-start-comma (state token)
+    (let ((open-form (car (parse-state-opens state))))
+        (cond ((is-comma open-form) NIL)
+              (T (push (form:create :form-type (token:xyz-get-type-value token)
                                     :tokens (list token))
                        (parse-state-opens state))))))
 
@@ -174,6 +191,44 @@
                         NIL)
 
                     ((token:is-type types:*ifdef-false* token)
+                        (if (parse-state-opens state)
+                            (form:add-kid (car (parse-state-opens state))
+                                          (form:create :form-type types:*ifdef-false*
+                                                       :tokens (list token)))
+                            (push (form:create :form-type types:*ifdef-false*
+                                               :tokens (list token))
+                                  (parse-state-forms state))))
+
+                    (T (symbol-token state token)))
+
+          :finally (progn (collapse-opens state)
+                          (return (reverse (parse-state-forms state))))))
+
+
+(defun xyz-from-stream (input)
+    (loop :with state := (make-parse-state)
+
+          :for token :in (tokenizer:xyz-from-stream input) :do
+
+              (format T "***** TOKEN ~A~%" token)
+              (cond ((token:xyz-is-type types:*open-paren* token) (open-paren state token))
+
+                    ((token:xyz-is-type types:*close-paren* token) (close-paren state token))
+
+                    ((or (token:xyz-is-type types:*quote* token)
+                         (token:xyz-is-type types:*back-quote* token)) (xyz-start-quote state token))
+
+                    ((or (token:xyz-is-type types:*comma* token)
+                         (token:xyz-is-type types:*comma-at* token)) (xyz-start-comma state token))
+
+                    ((token:xyz-is-type types:*ws* token) (white-space state))
+
+                    ((or (token:xyz-is-type types:*line-comment* token)
+                         (token:xyz-is-type types:*block-comment* token)
+                         (token:xyz-is-type types:*ifdef-true* token))
+                        NIL)
+
+                    ((token:xyz-is-type types:*ifdef-false* token)
                         (if (parse-state-opens state)
                             (form:add-kid (car (parse-state-opens state))
                                           (form:create :form-type types:*ifdef-false*
