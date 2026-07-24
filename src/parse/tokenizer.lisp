@@ -13,6 +13,9 @@
         ((input :accessor input
                 :initform nil
                 :initarg :input)
+         (opens :accessor opens
+                :initform nil
+                :initarg :opens)
          (start :accessor start
                 :initform nil
                 :initarg :start)
@@ -85,14 +88,22 @@
 
 
 (defun xyz-new-token (state token-type &optional text)
-    (let ((end (pos:create (line state) (col state))))
+    (let ((token (token:xyz-create :type-value token-type
+                                   :start (start state)
+                                   :start-offset (start-offset state)
+                                   :end (pos:create (line state) (col state))
+                                   :end-offset (file-position (input state))
+                                   :text (or text (get-output-stream-string (buffer state)))))
+          (opens (opens state)))
 
-        (token:xyz-create :type-value token-type
-                          :start (start state)
-                          :start-offset (start-offset state)
-                          :end end
-                          :end-offset (file-position (input state))
-                          :text (or text (get-output-stream-string (buffer state))))))
+        (cond ((= types:*open-paren* token-type) (push token (opens state)))
+              ((= types:*close-paren* token-type) (pop (opens state)))
+              (T (when (and (car opens)
+                            (not (= (pos:line (token:xyz-get-start (car opens)))
+                                     (pos:line (token:xyz-get-end token)))))
+                       (token:set-multiline (car opens) T))))
+
+        token))
 
 
 (defun read-text-token (&key state token-type predicate)

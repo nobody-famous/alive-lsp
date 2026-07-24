@@ -20,12 +20,22 @@
                               :actual actual))))
 
 
+(defun xyz-check-format (text range expected &optional opts)
+    (with-input-from-string (s text)
+        (let ((actual (if opts
+                          (formatting:xyz-range s range opts)
+                          (formatting:xyz-range s range))))
+
+            (clue:check-equal :expected expected
+                              :actual actual))))
+
+
 (defun test-insert-between-lists ()
     (clue:test "Insert between lists"
-        (check-format (format nil "()()")
-                      (range:create (pos:create 0 0) (pos:create 1 0))
-                      (list (edit:create :range (range:create (pos:create 0 2) (pos:create 0 2))
-                                         :text " ")))))
+        (xyz-check-format (format nil "()()")
+                          (range:create (pos:create 0 0) (pos:create 1 0))
+                          (list (edit:create :range (range:create (pos:create 0 2) (pos:create 0 2))
+                                             :text " ")))))
 
 
 (defun test-before-after-list ()

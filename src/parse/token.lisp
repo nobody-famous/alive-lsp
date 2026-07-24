@@ -1,22 +1,30 @@
 (defpackage :alive/parse/token
     (:use :cl)
-    (:export :clone
+    (:export :aligned-p
+             :clone
+             :cond-p
              :create
              :xyz-create
              :get-end
              :xyz-get-end
              :get-end-offset
              :xyz-get-end-offset
-             :get-type-value
-             :xyz-get-type-value
-             :get-text
+             :get-lambda-list
              :get-start
              :xyz-get-start
              :get-start-offset
              :xyz-get-start-offset
+             :get-text
+             :xyz-get-text
+             :get-type-value
+             :xyz-get-type-value
              :is-multiline
+             :xyz-is-multiline
              :is-type
-             :xyz-is-type)
+             :xyz-is-type
+             :loop-p
+             :multiline-p
+             :set-multiline)
     (:local-nicknames (:pos :alive/position)
                       (:types :alive/types)))
 
@@ -29,7 +37,42 @@
     start
     start-offset
     end
-    end-offset)
+    end-offset
+    is-aligned
+    is-cond
+    is-loop
+    is-multiline
+    lambda-list)
+
+
+(defun aligned-p (token)
+    (when (token-p token)
+          (token-is-aligned token)))
+
+
+(defun cond-p (token)
+    (when (token-p token)
+          (token-is-cond token)))
+
+
+(defun loop-p (token)
+    (when (token-p token)
+          (token-is-loop token)))
+
+
+(defun multiline-p (token)
+    (when (token-p token)
+          (token-is-multiline token)))
+
+
+(defun set-multiline (token value)
+    (when (token-p token)
+          (setf (token-is-multiline token) value)))
+
+
+(defun get-lambda-list (token)
+    (when (token-p token)
+          (token-lambda-list token)))
 
 
 (defun get-type-value (obj)
@@ -45,6 +88,11 @@
 (defun get-text (obj)
     (when obj
           (gethash "text" obj)))
+
+
+(defun xyz-get-text (token)
+    (when (token-p token)
+          (token-text token)))
 
 
 (defun get-start (obj)
@@ -103,6 +151,12 @@
                   (pos:line (get-end token))))))
 
 
+(defun xyz-is-multiline (token)
+    (and (token-p token)
+         (not (eq (pos:line (xyz-get-start token))
+                  (pos:line (xyz-get-end token))))))
+
+
 (defun create (&key type-value start start-offset end end-offset text)
     (let ((item (make-hash-table :test #'equalp)))
 
@@ -116,12 +170,13 @@
         item))
 
 
-(defun xyz-create (&key type-value start start-offset end end-offset text)
+(defun xyz-create (&key type-value start start-offset end end-offset text is-multiline)
     (make-token :type-value type-value
                 :start start
                 :start-offset start-offset
                 :end end
                 :end-offset end-offset
+                :is-multiline is-multiline
                 :text text))
 
 

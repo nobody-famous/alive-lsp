@@ -210,7 +210,6 @@
 
           :for token :in (tokenizer:xyz-from-stream input) :do
 
-              (format T "***** TOKEN ~A~%" token)
               (cond ((token:xyz-is-type types:*open-paren* token) (open-paren state token))
 
                     ((token:xyz-is-type types:*close-paren* token) (close-paren state token))

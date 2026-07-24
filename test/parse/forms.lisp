@@ -174,6 +174,7 @@
                                                                             :start-offset 0
                                                                             :end (pos:create 0 1)
                                                                             :end-offset 1
+                                                                            :is-multiline T
                                                                             :text "(")
                                                           (token:xyz-create :type-value types:*close-paren*
                                                                             :start (pos:create 1 0)
