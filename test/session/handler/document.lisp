@@ -35,7 +35,7 @@
 
         (clue:test "Failure"
             (let ((state (state:create)))
-                (clue:expect-fail (lambda () (doc:definition state (list (cons :id 5)))))))))
+                (clue:check-exists (gethash "result" (doc:definition state (list (cons :id 5)))))))))
 
 
 (defun test-did-change ()

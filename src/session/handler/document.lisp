@@ -90,7 +90,7 @@
            (uri (cdr (assoc :uri doc)))
            (changes (cdr (assoc :content-changes params)))
            (text (cdr (assoc :text (first changes))))
-           (forms (forms:from-stream (make-string-input-stream text))))
+           (forms (when text (forms:from-stream (make-string-input-stream text)))))
 
         (when forms
               (state:lock (state mutex)
@@ -107,8 +107,8 @@
     (let* ((params (cdr (assoc :params msg)))
            (doc (cdr (assoc :text-document params)))
            (uri (cdr (assoc :uri doc)))
-           (text (or (cdr (assoc :text doc)) ""))
-           (forms (forms:from-stream (make-string-input-stream text))))
+           (text (cdr (assoc :text doc)))
+           (forms (when text (forms:from-stream (make-string-input-stream text)))))
 
         (when forms
               (state:lock (state mutex)
