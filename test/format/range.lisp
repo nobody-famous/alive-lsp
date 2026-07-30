@@ -50,10 +50,10 @@
 
 (defun test-nl-after-comment ()
     (clue:test "Newline after comment"
-        (check-format (format nil "; Do not remove~%  ")
-                      (range:create (pos:create 0 0) (pos:create 1 2))
-                      (list (edit:create :range (range:create (pos:create 0 15) (pos:create 1 2))
-                                         :text (format NIL "~A" alive/format:eol))))))
+        (xyz-check-format (format nil "; Do not remove~%  ")
+                          (range:create (pos:create 0 0) (pos:create 1 2))
+                          (list (edit:create :range (range:create (pos:create 0 15) (pos:create 1 2))
+                                             :text (format NIL "~A" alive/format:eol))))))
 
 
 (defun test-quoted-list-nl ()

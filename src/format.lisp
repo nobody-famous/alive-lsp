@@ -226,6 +226,14 @@
                        (the fixnum (pos:line start))))))
 
 
+
+(defun xyz-new-line-count (token)
+    (let ((start (token:xyz-get-start token))
+          (end (token:xyz-get-end token)))
+        (the fixnum (- (the fixnum (pos:line end))
+                       (the fixnum (pos:line start))))))
+
+
 (defun do-indent (out num str)
     (declare (type stream out)
              (type fixnum num))
@@ -690,6 +698,20 @@
               (replace-token state token str))))
 
 
+(defun xyz-check-end-space (state)
+    (let* ((token (car (parse-state-xyz-seen state)))
+           (nl-count (min 1
+                         (if token
+                             (the fixnum (xyz-new-line-count token))
+                             0)))
+           (str (indent-string nl-count 0)))
+
+        (when (and token
+                   (not (xyz-out-of-range (parse-state-range state) token))
+                   (token:xyz-is-type types:*ws* token))
+              (xyz-replace-token state token str))))
+
+
 (defun convert-tokens (tokens)
     (loop :with converted := '()
           :with opens = '()
@@ -834,7 +856,7 @@
 
               :do (xyz-do-step state)
 
-              :finally (progn (check-end-space state)
+              :finally (progn (xyz-check-end-space state)
                               (return (reverse (parse-state-edits state)))))))
 
 
