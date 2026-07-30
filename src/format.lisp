@@ -669,7 +669,7 @@
                     ((token:xyz-is-type types:*ws* prev) (fix-indent state))
 
                     ((and (not (token:xyz-is-type types:*colons* token))
-                          (need-space-p prev))
+                          (xyz-need-space-p prev))
                         (insert-text state (token:xyz-get-end prev) " "))))
 
         (xyz-add-to-out-list state token)

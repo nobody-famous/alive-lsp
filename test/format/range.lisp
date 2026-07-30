@@ -40,12 +40,12 @@
 
 (defun test-before-after-list ()
     (clue:test "Before/after list"
-        (check-format (format nil "a()b")
-                      (range:create (pos:create 0 0) (pos:create 1 0))
-                      (list (edit:create :range (range:create (pos:create 0 1) (pos:create 0 1))
-                                         :text " ")
-                            (edit:create :range (range:create (pos:create 0 3) (pos:create 0 3))
-                                         :text " ")))))
+        (xyz-check-format (format nil "a()b")
+                          (range:create (pos:create 0 0) (pos:create 1 0))
+                          (list (edit:create :range (range:create (pos:create 0 1) (pos:create 0 1))
+                                             :text " ")
+                                (edit:create :range (range:create (pos:create 0 3) (pos:create 0 3))
+                                             :text " ")))))
 
 
 (defun test-nl-after-comment ()
