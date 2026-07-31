@@ -504,6 +504,7 @@
            (start (token:xyz-get-start token))
            (end (token:xyz-get-end token)))
 
+        (format T "***** FIX INDENT ~A ~A~%" start indent)
         (when (and next
                    (xyz-is-loop-key state next)
                    (token:xyz-is-multiline token))
@@ -511,7 +512,6 @@
                     (the fixnum (options-indent-width (parse-state-options state)))))
 
         (when (token:xyz-is-type types:*ws* token)
-              (format T "***** FIX INDENT ~A ~A~%" (token:xyz-get-start token) (xyz-out-of-range (parse-state-range state) token))
               (if (xyz-out-of-range (parse-state-range state) token)
                   (xyz-add-to-out-list state token)
                   (cond ((or (not prev)
