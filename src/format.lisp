@@ -226,7 +226,6 @@
                        (the fixnum (pos:line start))))))
 
 
-
 (defun xyz-new-line-count (token)
     (let ((start (token:xyz-get-start token))
           (end (token:xyz-get-end token)))
@@ -500,40 +499,41 @@
            (prev (cadr (parse-state-xyz-seen state)))
            (next (xyz-next-token state))
            (nl-count (if (zerop (list-length (parse-state-opens state)))
-                         (min (new-line-count token) 3)
-                         (min (new-line-count token) 2)))
+                         (min (xyz-new-line-count token) 3)
+                         (min (xyz-new-line-count token) 2)))
            (start (token:xyz-get-start token))
            (end (token:xyz-get-end token)))
 
         (when (and next
-                   (is-loop-key state next)
+                   (xyz-is-loop-key state next)
                    (token:xyz-is-multiline token))
               (decf (the fixnum indent)
                     (the fixnum (options-indent-width (parse-state-options state)))))
 
-        (when (token:is-type types:*ws* token)
-              (if (out-of-range (parse-state-range state) token)
-                  (add-to-out-list state token)
+        (when (token:xyz-is-type types:*ws* token)
+              (format T "***** FIX INDENT ~A ~A~%" (token:xyz-get-start token) (xyz-out-of-range (parse-state-range state) token))
+              (if (xyz-out-of-range (parse-state-range state) token)
+                  (xyz-add-to-out-list state token)
                   (cond ((or (not prev)
-                             (token:xyz-is-type *start-form* prev))
-                            (replace-token state token ""))
+                             (token:xyz-is-type types:*open-paren* prev))
+                            (xyz-replace-token state token ""))
 
                         ((= (the fixnum (pos:line start)) (the fixnum (pos:line end)))
                             (if (string-equal " " (token:xyz-get-text token))
-                                (add-to-out-list state token)
-                                (progn (add-to-out-list state
-                                                        (token:xyz-create :type-value types:*ws*
-                                                                          :start (token:xyz-get-start token)
-                                                                          :end (pos:create (pos:line start)
-                                                                                           (+ (the fixnum 1) (the fixnum (pos:col start))))
-                                                                          :text " "))
-                                       (replace-token state token " "))))
+                                (xyz-add-to-out-list state token)
+                                (progn (xyz-add-to-out-list state
+                                                            (token:xyz-create :type-value types:*ws*
+                                                                              :start (token:xyz-get-start token)
+                                                                              :end (pos:create (pos:line start)
+                                                                                               (+ (the fixnum 1) (the fixnum (pos:col start))))
+                                                                              :text " "))
+                                       (xyz-replace-token state token " "))))
 
                         (T (let* ((str (indent-string nl-count indent))
-                                  (new-token (make-new-token token (token:xyz-get-start token) str)))
-
-                               (add-to-out-list state new-token)
-                               (replace-token state token str))))))))
+                                  (new-token (xyz-make-new-token token (token:xyz-get-start token) str)))
+                               (format T "***** FIX INDENT ~A ~A ~A~%" (token:xyz-get-start token) nl-count indent)
+                               (xyz-add-to-out-list state new-token)
+                               (xyz-replace-token state token str))))))))
 
 
 (defun need-space-p (token)
@@ -637,6 +637,16 @@
              (member (string-downcase key) *loop-keys* :test #'string=))))
 
 
+(defun xyz-is-loop-key (state token)
+    (let ((prev (car (parse-state-xyz-seen state)))
+          (key (if (token:xyz-is-type types:*colons* token)
+                   (token:xyz-get-text (xyz-next-next-token state))
+                   (token:xyz-get-text token))))
+
+        (and (token:xyz-is-type types:*ws* prev)
+             (member (string-downcase key) *loop-keys* :test #'string=))))
+
+
 (defun process-token (state token)
     (let ((prev (car (parse-state-seen state))))
 
@@ -674,7 +684,7 @@
                                   (replace-token state prev " "))
                             (fix-indent state)))
 
-                    ((token:xyz-is-type types:*ws* prev) (fix-indent state))
+                    ((token:xyz-is-type types:*ws* prev) (xyz-fix-indent state))
 
                     ((and (not (token:xyz-is-type types:*colons* token))
                           (xyz-need-space-p prev))
@@ -731,30 +741,6 @@
                     (T (when (and (car opens)
                                   (not (= (the fixnum (pos:line (token:get-start (car opens))))
                                            (the fixnum (pos:line (token:get-end token))))))
-                             (setf (gethash "isMultiline" (car opens)) T))
-                       (push token converted)))
-
-          :finally (return (reverse converted))))
-
-
-(defun xyz-convert-tokens (tokens)
-    (loop :with converted := '()
-          :with opens = '()
-
-          :for token :in tokens :do
-              (cond ((token:xyz-is-type types:*open-paren* token)
-                        (push token opens)
-                        (push token converted))
-
-                    ((= (the fixnum types:*close-paren*) (the fixnum (token:xyz-get-type-value token)))
-                        (pop opens)
-                        (push token converted))
-
-                    ((token:xyz-is-type types:*ws* token) (push token converted))
-
-                    (T (when (and (car opens)
-                                  (not (= (the fixnum (pos:line (token:xyz-get-start (car opens))))
-                                           (the fixnum (pos:line (token:xyz-get-end token))))))
                              (setf (gethash "isMultiline" (car opens)) T))
                        (push token converted)))
 

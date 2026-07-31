@@ -26,6 +26,10 @@
                           (formatting:xyz-range s range opts)
                           (formatting:xyz-range s range))))
 
+            (alive/test/utils:print-hash-table "***** EXPECTED" (car expected))
+            (format T "***** EXPECTED TEXT ~A~%" (length (gethash "text" (car expected))))
+            (alive/test/utils:print-hash-table "***** ACTUAL" (car actual))
+            (format T "***** ACTUAL TEXT ~A~%" (length (gethash "text" (car actual))))
             (clue:check-equal :expected expected
                               :actual actual))))
 
@@ -58,10 +62,10 @@
 
 (defun test-quoted-list-nl ()
     (clue:test "Quoted list with newline"
-        (check-format (format nil "'(1 2 3 4~%   5 6 7 8)")
-                      (range:create (pos:create 0 0) (pos:create 1 3))
-                      (list (edit:create :range (range:create (pos:create 0 9) (pos:create 1 3))
-                                         :text (format nil "~A    " formatting:EOL))))))
+        (xyz-check-format (format nil "'(1 2 3 4~%   5 6 7 8)")
+                          (range:create (pos:create 0 0) (pos:create 1 3))
+                          (list (edit:create :range (range:create (pos:create 0 9) (pos:create 1 3))
+                                             :text (format nil "~A    " formatting:EOL))))))
 
 
 (defun test-comment-out-of-range ()
