@@ -100,6 +100,13 @@
              (the fixnum (pos:line (token:get-start token2))))))
 
 
+(defun xyz-same-line (token1 token2)
+    (and token1
+         token2
+         (= (the fixnum (pos:line (token:xyz-get-start token1)))
+             (the fixnum (pos:line (token:xyz-get-start token2))))))
+
+
 (defstruct parse-state
     tokens
     xyz-tokens
@@ -799,11 +806,11 @@
               (cond ((or (token:xyz-is-type types:*line-comment* token)
                          (token:xyz-is-type types:*block-comment* token))
                         (if (and (token:xyz-is-type types:*ws* prev)
-                                 (not (out-of-range (parse-state-range state) prev))
-                                 (same-line prev token))
+                                 (not (xyz-out-of-range (parse-state-range state) prev))
+                                 (xyz-same-line prev token))
                             (when (not (string-equal " " (token:xyz-get-text prev)))
                                   (replace-token state prev " "))
-                            (fix-indent state)))
+                            (xyz-fix-indent state)))
 
                     ((token:xyz-is-type types:*ws* prev) (xyz-fix-indent state))
 

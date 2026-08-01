@@ -66,20 +66,20 @@
 
 (defun test-comment-out-of-range ()
     (clue:test "Comment out of range"
-        (check-format (format nil " ( ; Do not remove~%)  ")
-                      (range:create (pos:create 0 0) (pos:create 0 1))
-                      (list (edit:create :range (range:create (pos:create 0 0) (pos:create 0 1))
-                                         :text "")))))
+        (xyz-check-format (format nil " ( ; Do not remove~%)  ")
+                          (range:create (pos:create 0 0) (pos:create 0 1))
+                          (list (edit:create :range (range:create (pos:create 0 0) (pos:create 0 1))
+                                             :text "")))))
 
 
 (defun test-comment-after-open ()
     (clue:test "Comment after open paren"
-        (check-format (format nil " ( ; Do not remove~%)  ")
-                      (range:create (pos:create 0 0) (pos:create 1 3))
-                      (list (edit:create :range (range:create (pos:create 0 0) (pos:create 0 1))
-                                         :text "")
-                            (edit:create :range (range:create (pos:create 1 1) (pos:create 1 3))
-                                         :text "")))))
+        (xyz-check-format (format nil " ( ; Do not remove~%)  ")
+                          (range:create (pos:create 0 0) (pos:create 1 3))
+                          (list (edit:create :range (range:create (pos:create 0 0) (pos:create 0 1))
+                                             :text "")
+                                (edit:create :range (range:create (pos:create 1 1) (pos:create 1 3))
+                                             :text "")))))
 
 
 (defun test-comment-after-open-spaces ()
