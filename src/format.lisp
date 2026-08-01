@@ -318,6 +318,20 @@
                                 (token:is-type *start-form* (car tokens))))))
 
 
+(defun xyz-prev-is-start-form (state)
+    (loop :with tokens := (parse-state-xyz-seen state)
+
+          :while (and tokens
+                      (or (token:xyz-is-type types:*ws* (car tokens))
+                          (token:xyz-is-type types:*line-comment* (car tokens))
+                          (token:xyz-is-type types:*block-comment* (car tokens))))
+
+          :do (pop tokens)
+
+          :finally (return (and tokens
+                                (token:xyz-is-type types:*open-paren* (car tokens))))))
+
+
 (defun has-body (lambda-list)
     (reduce (lambda (acc item)
                 (or acc
@@ -357,8 +371,29 @@
                                        (package-name *package*)))))
 
 
+(defun xyz-lookup-lambda-list (token1 token2 token3)
+    (cond ((and (token:xyz-is-type types:*symbol* token1)
+                (token:xyz-is-type types:*colons* token2)
+                (token:xyz-is-type types:*symbol* token3))
+
+              (symbols:get-lambda-list (token:xyz-get-text token3)
+                                       (token:xyz-get-text token1)))
+
+          ((and (token:xyz-is-type types:*symbol* token1)
+                (not (token:xyz-is-type types:*colons* token2)))
+
+              (symbols:get-lambda-list (token:xyz-get-text token1)
+                                       (package-name *package*)))))
+
+
 (defun force-aligned-p (token)
     (let ((name (string-downcase (token:get-text token))))
+
+        (member name *force-align-targets* :test #'string=)))
+
+
+(defun xyz-force-aligned-p (token)
+    (let ((name (string-downcase (token:xyz-get-text token))))
 
         (member name *force-align-targets* :test #'string=)))
 
@@ -367,6 +402,12 @@
     (declare (type simple-string text))
 
     (string-equal text (token:get-text token)))
+
+
+(defun xyz-token-is (token text)
+    (declare (type simple-string text))
+
+    (string-equal text (token:xyz-get-text token)))
 
 
 (defun align-first-item (state token form-open prev-open)
@@ -408,6 +449,45 @@
               (T (replace-indent state (pos:col (token:get-start token)))))))
 
 
+(defun xyz-align-first-item (state token form-open prev-open)
+    (let* ((ns (car (parse-state-xyz-tokens state)))
+           (colons (cadr (parse-state-xyz-tokens state)))
+           (sym (caddr (parse-state-xyz-tokens state)))
+           (lambda-list (xyz-lookup-lambda-list ns colons sym)))
+
+        (when (string-equal "in-package" (token:xyz-get-text token))
+              (setf (parse-state-cur-pkg state) NIL))
+
+        (cond ((xyz-token-is token "cond") (token:set-is-cond form-open T)
+                                           (replace-indent state (pos:col (token:xyz-get-start token))))
+
+              ((xyz-token-is token "loop") (token:set-is-loop form-open T)
+                                           (replace-indent state (pos:col (token:xyz-get-start token))))
+
+              ((and prev-open (token:cond-p prev-open))
+                  (replace-indent state (the fixnum (+ (the fixnum (options-indent-width (parse-state-options state)))
+                                                       (the fixnum (pos:col (token:xyz-get-start token)))
+                                                       (the fixnum -1)))))
+
+              ((xyz-force-aligned-p token) (replace-indent state (pos:col (token:xyz-get-start token))))
+
+              ((has-body lambda-list) (setf (gethash "aligned" form-open) T)
+                                      (setf (gethash "lambdaList" form-open) lambda-list)
+                                      (replace-indent state (cons (the fixnum (+ (the fixnum (* 2
+                                                                                                (the fixnum (options-indent-width (parse-state-options state)))))
+                                                                                 (the fixnum (pos:col (token:xyz-get-start token)))
+                                                                                 (the fixnum -1)))
+                                                                  (the fixnum (+ (the fixnum (options-indent-width (parse-state-options state)))
+                                                                                 (the fixnum (pos:col (token:xyz-get-start token)))
+                                                                                 (the fixnum -1))))))
+
+              (lambda-list (replace-indent state (the fixnum (+ (the fixnum (options-indent-width (parse-state-options state)))
+                                                                (the fixnum (pos:col (token:xyz-get-start token)))
+                                                                (the fixnum -1)))))
+
+              (T (replace-indent state (pos:col (token:xyz-get-start token)))))))
+
+
 (defun align-next-item (state token form-open)
     (cond ((and (token:is-type types:*symbol* (car (parse-state-seen state)))
                 (token:is-type types:*colons* token)
@@ -423,6 +503,23 @@
                  (set-cur-pkg state))
              (setf (gethash "aligned" form-open) T)
              (replace-indent state (pos:col (token:get-start token))))))
+
+
+(defun xyz-align-next-item (state token form-open)
+    (cond ((and (token:xyz-is-type types:*symbol* (car (parse-state-xyz-seen state)))
+                (token:xyz-is-type types:*colons* token)
+                (token:xyz-is-type types:*symbol* (cadr (parse-state-xyz-tokens state))))
+              (xyz-add-to-out-list state (cadr (parse-state-xyz-tokens state)))
+              (pop-token state))
+
+          ((and (token:xyz-is-type types:*colons* (car (parse-state-seen state)))
+                (token:xyz-is-type types:*symbol* token))
+              NIL)
+
+          (T (unless (parse-state-cur-pkg state)
+                 (set-cur-pkg state))
+             (token:set-aligned form-open T)
+             (replace-indent state (pos:col (token:xyz-get-start token))))))
 
 
 (defun update-aligned (state)
@@ -449,6 +546,32 @@
               ((and form-open
                     (not (gethash "aligned" form-open)))
                   (align-next-item state token form-open)))))
+
+
+(defun xyz-update-aligned (state)
+    (let* ((cur-open (car (parse-state-xyz-opens state)))
+           (prev-open (cadr (parse-state-xyz-opens state)))
+           (token (car (parse-state-xyz-out-list state)))
+           (prev (cadr (parse-state-xyz-out-list state)))
+           (pkg (packages:for-string (parse-state-cur-pkg state)))
+           (*package* (or pkg *package*)))
+
+        (cond ((xyz-prev-is-start-form state)
+                  (xyz-align-first-item state token cur-open prev-open))
+
+              ((and cur-open
+                    (token:loop-p cur-open)
+                    (not (token:aligned-p cur-open))
+                    (is-loop-key state token)
+                    (token:xyz-is-type types:*ws* prev))
+                  (token:set-aligned cur-open T)
+                  (token:set-is-loop cur-open T)
+                  (replace-indent state (the fixnum (+ (the fixnum (options-indent-width (parse-state-options state)))
+                                                       (the fixnum (pos:col (token:xyz-get-start token)))))))
+
+              ((and cur-open
+                    (not (token:aligned-p cur-open)))
+                  (xyz-align-next-item state token cur-open)))))
 
 
 (defun fix-indent (state)
@@ -504,10 +627,9 @@
            (start (token:xyz-get-start token))
            (end (token:xyz-get-end token)))
 
-        (format T "***** FIX INDENT ~A ~A~%" start indent)
         (when (and next
                    (xyz-is-loop-key state next)
-                   (token:xyz-is-multiline token))
+                   (token:multiline-p token))
               (decf (the fixnum indent)
                     (the fixnum (options-indent-width (parse-state-options state)))))
 
@@ -531,7 +653,6 @@
 
                         (T (let* ((str (indent-string nl-count indent))
                                   (new-token (xyz-make-new-token token (token:xyz-get-start token) str)))
-                               (format T "***** FIX INDENT ~A ~A ~A~%" (token:xyz-get-start token) nl-count indent)
                                (xyz-add-to-out-list state new-token)
                                (xyz-replace-token state token str))))))))
 
@@ -586,7 +707,7 @@
                         (insert-text state (token:xyz-get-end prev) " "))))
 
         (xyz-add-to-out-list state token)
-        (update-aligned state)
+        (xyz-update-aligned state)
 
         (push (car (parse-state-xyz-out-list state)) (parse-state-xyz-opens state))
 
@@ -692,7 +813,7 @@
 
         (xyz-add-to-out-list state token)
 
-        (update-aligned state)))
+        (xyz-update-aligned state)))
 
 
 (defun check-end-space (state)

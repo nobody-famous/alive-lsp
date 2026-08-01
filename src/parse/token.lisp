@@ -19,11 +19,13 @@
              :get-type-value
              :xyz-get-type-value
              :is-multiline
-             :xyz-is-multiline
              :is-type
              :xyz-is-type
              :loop-p
              :multiline-p
+             :set-aligned
+             :set-is-cond
+             :set-is-loop
              :set-multiline)
     (:local-nicknames (:pos :alive/position)
                       (:types :alive/types)))
@@ -64,6 +66,20 @@
     (when (token-p token)
           (token-is-multiline token)))
 
+
+(defun set-is-loop (token value)
+    (when (token-p token)
+          (setf (token-is-loop token) value)))
+
+
+(defun set-aligned (token value)
+    (when (token-p token)
+          (setf (token-is-aligned token) value)))
+
+
+(defun set-is-cond (token value)
+    (when (token-p token)
+          (setf (token-is-cond token) value)))
 
 (defun set-multiline (token value)
     (when (token-p token)
@@ -149,12 +165,6 @@
     (and token
          (not (eq (pos:line (get-start token))
                   (pos:line (get-end token))))))
-
-
-(defun xyz-is-multiline (token)
-    (and (token-p token)
-         (not (eq (pos:line (xyz-get-start token))
-                  (pos:line (xyz-get-end token))))))
 
 
 (defun create (&key type-value start start-offset end end-offset text)

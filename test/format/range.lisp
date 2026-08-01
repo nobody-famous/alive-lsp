@@ -26,10 +26,6 @@
                           (formatting:xyz-range s range opts)
                           (formatting:xyz-range s range))))
 
-            (alive/test/utils:print-hash-table "***** EXPECTED" (car expected))
-            (format T "***** EXPECTED TEXT ~A~%" (length (gethash "text" (car expected))))
-            (alive/test/utils:print-hash-table "***** ACTUAL" (car actual))
-            (format T "***** ACTUAL TEXT ~A~%" (length (gethash "text" (car actual))))
             (clue:check-equal :expected expected
                               :actual actual))))
 
