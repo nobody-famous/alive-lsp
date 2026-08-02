@@ -19,12 +19,14 @@
              :get-type-value
              :xyz-get-type-value
              :is-multiline
+             :xyz-is-multiline
              :is-type
              :xyz-is-type
              :loop-p
              :multiline-p
              :set-aligned
              :set-is-cond
+             :set-lambda-list
              :set-is-loop
              :set-multiline)
     (:local-nicknames (:pos :alive/position)
@@ -89,6 +91,11 @@
 (defun get-lambda-list (token)
     (when (token-p token)
           (token-lambda-list token)))
+
+
+(defun set-lambda-list (token value)
+    (when (token-p token)
+          (setf (token-lambda-list token) value)))
 
 
 (defun get-type-value (obj)
@@ -165,6 +172,12 @@
     (and token
          (not (eq (pos:line (get-start token))
                   (pos:line (get-end token))))))
+
+
+(defun xyz-is-multiline (token)
+    (and (token-p token)
+         (not (eq (pos:line (xyz-get-start token))
+                  (pos:line (xyz-get-end token))))))
 
 
 (defun create (&key type-value start start-offset end end-offset text)
