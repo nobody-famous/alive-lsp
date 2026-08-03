@@ -2,8 +2,7 @@
     (:use :cl)
     (:export :on-type
              :eol
-             :range
-             :xyz-range)
+             :range)
     (:local-nicknames (:edit :alive/text-edit)
                       (:form :alive/parse/form)
                       (:packages :alive/packages)
@@ -977,9 +976,16 @@
     (get-next-indent state))
 
 
+(defun xyz-get-on-type-indent (state)
+    (when (xyz-is-body-next state)
+          (pop-next-indent state))
+
+    (get-next-indent state))
+
+
 (defun on-type (input &key options pos)
-    (let* ((tokens (convert-tokens (tokenizer:from-stream input)))
-           (state (make-parse-state :tokens tokens
+    (let* ((tokens (tokenizer:xyz-from-stream input))
+           (state (make-parse-state :xyz-tokens tokens
                                     :range (range:create (pos:create 0 0) pos)
                                     :cur-pkg (package-name *package*))))
 
@@ -987,18 +993,18 @@
               (update-options state options))
 
         (when tokens
-              (loop :for token := (next-token state)
-                    :for token-end := (token:get-end token)
+              (loop :for token := (xyz-next-token state)
+                    :for token-end := (token:xyz-get-end token)
 
                     :while (and token
                                 (pos:less-or-equal token-end pos))
 
-                    :do (do-step state)
+                    :do (xyz-do-step state)
 
                     :finally (let* ((indent (if token
-                                                (get-on-type-indent state)
+                                                (xyz-get-on-type-indent state)
                                                 0))
-                                    (line (cdr (assoc :line pos)))
+                                    (line (pos:line pos))
                                     (new-range (range:create (pos:create line 0) pos)))
 
                                  (return (list (edit:create :range new-range
