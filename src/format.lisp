@@ -346,7 +346,7 @@
                             (xyz-replace-token state token ""))
 
                         ((= (the fixnum (pos:line start)) (the fixnum (pos:line end)))
-                            (if (string-equal " " (token:xyz-get-text token))
+                            (if (string= " " (token:xyz-get-text token))
                                 (xyz-add-to-out-list state token)
                                 (progn (xyz-add-to-out-list state
                                                             (token:xyz-create :type-value types:*ws*
