@@ -954,23 +954,6 @@
 
 
 (defun range (input range &optional opts)
-    (let* ((tokens (convert-tokens (tokenizer:from-stream input)))
-           (state (make-parse-state :tokens tokens
-                                    :range range
-                                    :cur-pkg (package-name *package*))))
-
-        (when opts
-              (update-options state opts))
-
-        (loop :while (parse-state-tokens state)
-
-              :do (do-step state)
-
-              :finally (progn (check-end-space state)
-                              (return (reverse (parse-state-edits state)))))))
-
-
-(defun xyz-range (input range &optional opts)
     (let* ((tokens (tokenizer:xyz-from-stream input))
            (state (make-parse-state :xyz-tokens tokens
                                     :range range
