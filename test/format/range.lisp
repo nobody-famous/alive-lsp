@@ -256,160 +256,160 @@
 
 (defun test-align-list ()
     (clue:test "Align list"
-        (check-format (format nil "(a:b c~%d)")
-                      (range:create (pos:create 0 0) (pos:create 2 0))
-                      (list (edit:create :range (range:create (pos:create 0 6) (pos:create 1 0))
-                                         :text (format nil "~A     " alive/format:eol))))))
+        (xyz-check-format (format nil "(a:b c~%d)")
+                          (range:create (pos:create 0 0) (pos:create 2 0))
+                          (list (edit:create :range (range:create (pos:create 0 6) (pos:create 1 0))
+                                             :text (format nil "~A     " alive/format:eol))))))
 
 
 (defun test-align-list-2 ()
     (clue:test "Align list 2"
-        (check-format (format nil "(:b c~%d)")
-                      (range:create (pos:create 0 0) (pos:create 2 0))
-                      (list (edit:create :range (range:create (pos:create 0 5) (pos:create 1 0))
-                                         :text (format nil "~A    " alive/format:eol))))))
+        (xyz-check-format (format nil "(:b c~%d)")
+                          (range:create (pos:create 0 0) (pos:create 2 0))
+                          (list (edit:create :range (range:create (pos:create 0 5) (pos:create 1 0))
+                                             :text (format nil "~A    " alive/format:eol))))))
 
 
 (defun test-nl-after-open ()
     (clue:test "Newline after open parens"
-        (check-format (format nil "( ; Foo~A" alive/format:eol)
-                      (range:create (pos:create 0 0) (pos:create 2 0))
-                      (list))))
+        (xyz-check-format (format nil "( ; Foo~A" alive/format:eol)
+                          (range:create (pos:create 0 0) (pos:create 2 0))
+                          (list))))
 
 
 (defun test-nl-after-open-with-close ()
     (clue:test "Newline after open with close parens"
-        (check-format (format nil "( ; Foo~A)" alive/format:eol)
-                      (range:create (pos:create 0 0) (pos:create 2 0))
-                      (list))))
+        (xyz-check-format (format nil "( ; Foo~A)" alive/format:eol)
+                          (range:create (pos:create 0 0) (pos:create 2 0))
+                          (list))))
 
 
 (defun test-align-list-3 ()
     (clue:test "Align list 3"
-        (check-format (format nil "(a~%    b)")
-                      (range:create (pos:create 1 0) (pos:create 1 6))
-                      (list (edit:create :range (range:create (pos:create 0 2) (pos:create 1 4))
-                                         :text (format nil "~A " alive/format:eol))))))
+        (xyz-check-format (format nil "(a~%    b)")
+                          (range:create (pos:create 1 0) (pos:create 1 6))
+                          (list (edit:create :range (range:create (pos:create 0 2) (pos:create 1 4))
+                                             :text (format nil "~A " alive/format:eol))))))
 
 
 (defun test-align-list-4 ()
     (clue:test "Align list 4"
-        (check-format (format nil "(    a b~%c d)")
-                      (range:create (pos:create 0 0) (pos:create 1 3))
-                      (list (edit:create :range (range:create (pos:create 0 1) (pos:create 0 5))
-                                         :text "")
-                            (edit:create :range (range:create (pos:create 0 8) (pos:create 1 0))
-                                         :text (format nil "~A   " alive/format:eol))))))
+        (xyz-check-format (format nil "(    a b~%c d)")
+                          (range:create (pos:create 0 0) (pos:create 1 3))
+                          (list (edit:create :range (range:create (pos:create 0 1) (pos:create 0 5))
+                                             :text "")
+                                (edit:create :range (range:create (pos:create 0 8) (pos:create 1 0))
+                                             :text (format nil "~A   " alive/format:eol))))))
 
 
 (defun test-align-nested ()
     (clue:test "Align nested lists"
-        (check-format (format nil "(    a (b~%c)   ~%   d)")
-                      (range:create (pos:create 0 0) (pos:create 2 5))
-                      (list (edit:create :range (range:create (pos:create 0 1) (pos:create 0 5))
-                                         :text "")
-                            (edit:create :range (range:create (pos:create 0 9) (pos:create 1 0))
-                                         :text (format nil "~A    " alive/format:eol))
-                            (edit:create :range (range:create (pos:create 1 2) (pos:create 2 3))
-                                         :text (format nil "~A   " alive/format:eol))))))
+        (xyz-check-format (format nil "(    a (b~%c)   ~%   d)")
+                          (range:create (pos:create 0 0) (pos:create 2 5))
+                          (list (edit:create :range (range:create (pos:create 0 1) (pos:create 0 5))
+                                             :text "")
+                                (edit:create :range (range:create (pos:create 0 9) (pos:create 1 0))
+                                             :text (format nil "~A    " alive/format:eol))
+                                (edit:create :range (range:create (pos:create 1 2) (pos:create 2 3))
+                                             :text (format nil "~A   " alive/format:eol))))))
 
 
 (defun test-align-nested-2 ()
     (clue:test "Align nested lists 2"
-        (check-format (format nil "(a~%    (b~%        (c)))")
-                      (range:create (pos:create 0 0) (pos:create 3 0))
-                      (list (edit:create :range (range:create (pos:create 0 2) (pos:create 1 4))
-                                         :text (format nil "~A " alive/format:eol))
-                            (edit:create :range (range:create (pos:create 1 6) (pos:create 2 8))
-                                         :text (format nil "~A  " alive/format:eol))))))
+        (xyz-check-format (format nil "(a~%    (b~%        (c)))")
+                          (range:create (pos:create 0 0) (pos:create 3 0))
+                          (list (edit:create :range (range:create (pos:create 0 2) (pos:create 1 4))
+                                             :text (format nil "~A " alive/format:eol))
+                                (edit:create :range (range:create (pos:create 1 6) (pos:create 2 8))
+                                             :text (format nil "~A  " alive/format:eol))))))
 
 
 (defun test-align-nested-3 ()
     (clue:test "Align nested lists 3"
-        (check-format (format nil "  (a~%(b~%c))")
-                      (range:create (pos:create 0 0) (pos:create 3 0))
-                      (list (edit:create :range (range:create (pos:create 0 0) (pos:create 0 2))
-                                         :text (format nil ""))
-                            (edit:create :range (range:create (pos:create 0 4) (pos:create 1 0))
-                                         :text (format nil "~A " alive/format:eol))
-                            (edit:create :range (range:create (pos:create 1 2) (pos:create 2 0))
-                                         :text (format nil "~A  " alive/format:eol))))))
+        (xyz-check-format (format nil "  (a~%(b~%c))")
+                          (range:create (pos:create 0 0) (pos:create 3 0))
+                          (list (edit:create :range (range:create (pos:create 0 0) (pos:create 0 2))
+                                             :text (format nil ""))
+                                (edit:create :range (range:create (pos:create 0 4) (pos:create 1 0))
+                                             :text (format nil "~A " alive/format:eol))
+                                (edit:create :range (range:create (pos:create 1 2) (pos:create 2 0))
+                                             :text (format nil "~A  " alive/format:eol))))))
 
 
 (defun test-indent-defun ()
     (clue:test "Indent defun"
-        (check-format (format nil "(  defun foo ()~%      nil)")
-                      (range:create (pos:create 0 0) (pos:create 3 0))
-                      (list (edit:create :range (range:create (pos:create 0 1) (pos:create 0 3))
-                                         :text (format nil ""))
-                            (edit:create :range (range:create (pos:create 0 15) (pos:create 1 6))
-                                         :text (format nil "~A  " alive/format:eol))))))
+        (xyz-check-format (format nil "(  defun foo ()~%      nil)")
+                          (range:create (pos:create 0 0) (pos:create 3 0))
+                          (list (edit:create :range (range:create (pos:create 0 1) (pos:create 0 3))
+                                             :text (format nil ""))
+                                (edit:create :range (range:create (pos:create 0 15) (pos:create 1 6))
+                                             :text (format nil "~A  " alive/format:eol))))))
 
 
 (defun test-strip-leading-nl ()
     (clue:test "Strip leading newlines"
-        (check-format (format nil "~%~%()")
-                      (range:create (pos:create 0 0) (pos:create 3 0))
-                      (list (edit:create :range (range:create (pos:create 0 0) (pos:create 2 0))
-                                         :text (format nil ""))))))
+        (xyz-check-format (format nil "~%~%()")
+                          (range:create (pos:create 0 0) (pos:create 3 0))
+                          (list (edit:create :range (range:create (pos:create 0 0) (pos:create 2 0))
+                                             :text (format nil ""))))))
 
 
 (defun test-strip-nl-in-list ()
     (clue:test "Strip newlines in list"
-        (check-format (format nil "(~%~%)")
-                      (range:create (pos:create 0 0) (pos:create 3 0))
-                      (list (edit:create :range (range:create (pos:create 0 1) (pos:create 2 0))
-                                         :text (format nil ""))))))
+        (xyz-check-format (format nil "(~%~%)")
+                          (range:create (pos:create 0 0) (pos:create 3 0))
+                          (list (edit:create :range (range:create (pos:create 0 1) (pos:create 2 0))
+                                             :text (format nil ""))))))
 
 
 (defun test-macro-body ()
     (clue:test "Macro body"
-        (check-format (format nil "(unwind-protect~%nil~%nil)")
-                      (range:create (pos:create 0 0) (pos:create 3 0))
-                      (list (edit:create :range (range:create (pos:create 0 15) (pos:create 1 0))
-                                         :text (format nil "~A    " alive/format:eol))
-                            (edit:create :range (range:create (pos:create 1 3) (pos:create 2 0))
-                                         :text (format nil "~A  " alive/format:eol))))))
+        (xyz-check-format (format nil "(unwind-protect~%nil~%nil)")
+                          (range:create (pos:create 0 0) (pos:create 3 0))
+                          (list (edit:create :range (range:create (pos:create 0 15) (pos:create 1 0))
+                                             :text (format nil "~A    " alive/format:eol))
+                                (edit:create :range (range:create (pos:create 1 3) (pos:create 2 0))
+                                             :text (format nil "~A  " alive/format:eol))))))
 
 
 (defun test-in-package ()
     (clue:test "in-package"
-        (check-format (format nil "(in-package~A#:foo)" alive/format:eol)
-                      (range:create (pos:create 0 0) (pos:create 2 0))
-                      (list (edit:create :range (range:create (pos:create 0 11) (pos:create 1 0))
-                                         :text (format nil "~A  " alive/format:eol))))
+        (xyz-check-format (format nil "(in-package~A#:foo)" alive/format:eol)
+                          (range:create (pos:create 0 0) (pos:create 2 0))
+                          (list (edit:create :range (range:create (pos:create 0 11) (pos:create 1 0))
+                                             :text (format nil "~A  " alive/format:eol))))
 
-        (check-format (format nil "(in-package~Abar:foo)" alive/format:eol)
-                      (range:create (pos:create 0 0) (pos:create 2 0))
-                      (list (edit:create :range (range:create (pos:create 0 11) (pos:create 1 0))
-                                         :text (format nil "~A  " alive/format:eol))))))
+        (xyz-check-format (format nil "(in-package~Abar:foo)" alive/format:eol)
+                          (range:create (pos:create 0 0) (pos:create 2 0))
+                          (list (edit:create :range (range:create (pos:create 0 11) (pos:create 1 0))
+                                             :text (format nil "~A  " alive/format:eol))))))
 
 
 (defun test-insert-range ()
     (clue:test "Insert range"
-        (check-format (format nil "()foo")
-                      (range:create (pos:create 0 0) (pos:create 0 1))
-                      nil)))
+        (xyz-check-format (format nil "()foo")
+                          (range:create (pos:create 0 0) (pos:create 0 1))
+                          nil)))
 
 
 (defun test-assoc ()
     (clue:test "Assoc"
-        (check-format (format nil "(assoc~%a~%b)")
-                      (range:create (pos:create 0 0) (pos:create 3 0))
-                      (list (edit:create :range (range:create (pos:create 0 6) (pos:create 1 0))
-                                         :text (format nil "~A  " alive/format:eol))
-                            (edit:create :range (range:create (pos:create 1 1) (pos:create 2 0))
-                                         :text (format nil "~A  " alive/format:eol))))))
+        (xyz-check-format (format nil "(assoc~%a~%b)")
+                          (range:create (pos:create 0 0) (pos:create 3 0))
+                          (list (edit:create :range (range:create (pos:create 0 6) (pos:create 1 0))
+                                             :text (format nil "~A  " alive/format:eol))
+                                (edit:create :range (range:create (pos:create 1 1) (pos:create 2 0))
+                                             :text (format nil "~A  " alive/format:eol))))))
 
 
 (defun test-invalid-fn ()
     (clue:test "Invalid function"
-        (check-format (format nil "(assoc::~%a~%b)")
-                      (range:create (pos:create 0 0) (pos:create 3 0))
-                      (list (edit:create :range (range:create (pos:create 0 8) (pos:create 1 0))
-                                         :text (format nil "~A      " alive/format:eol))
-                            (edit:create :range (range:create (pos:create 1 1) (pos:create 2 0))
-                                         :text (format nil "~A      " alive/format:eol))))))
+        (xyz-check-format (format nil "(assoc::~%a~%b)")
+                          (range:create (pos:create 0 0) (pos:create 3 0))
+                          (list (edit:create :range (range:create (pos:create 0 8) (pos:create 1 0))
+                                             :text (format nil "~A      " alive/format:eol))
+                                (edit:create :range (range:create (pos:create 1 1) (pos:create 2 0))
+                                             :text (format nil "~A      " alive/format:eol))))))
 
 
 (defun run-all ()

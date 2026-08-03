@@ -531,9 +531,9 @@
                 (token:xyz-is-type types:*colons* token)
                 (token:xyz-is-type types:*symbol* (cadr (parse-state-xyz-tokens state))))
               (xyz-add-to-out-list state (cadr (parse-state-xyz-tokens state)))
-              (pop-token state))
+              (xyz-pop-token state))
 
-          ((and (token:xyz-is-type types:*colons* (car (parse-state-seen state)))
+          ((and (token:xyz-is-type types:*colons* (car (parse-state-xyz-seen state)))
                 (token:xyz-is-type types:*symbol* token))
               NIL)
 
