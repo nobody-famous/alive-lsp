@@ -90,7 +90,13 @@
            (uri (cdr (assoc :uri doc)))
            (changes (cdr (assoc :content-changes params)))
            (text (cdr (assoc :text (first changes))))
-           (forms (when text (forms:from-stream (make-string-input-stream text)))))
+           (tokens (when text (tokenizer:xyz-from-stream (make-string-input-stream text))))
+           (forms (when tokens (forms:from-tokens tokens))))
+
+        (when tokens
+              (state:lock (state mutex)
+                  (state:set-file-tokens state uri tokens)
+                  nil))
 
         (when forms
               (state:lock (state mutex)
@@ -108,7 +114,13 @@
            (doc (cdr (assoc :text-document params)))
            (uri (cdr (assoc :uri doc)))
            (text (cdr (assoc :text doc)))
-           (forms (when text (forms:from-stream (make-string-input-stream text)))))
+           (tokens (when text (tokenizer:xyz-from-stream (make-string-input-stream text))))
+           (forms (when tokens (forms:from-tokens tokens))))
+
+        (when tokens
+              (state:lock (state mutex)
+                  (state:set-file-tokens state uri tokens)
+                  nil))
 
         (when forms
               (state:lock (state mutex)

@@ -456,7 +456,7 @@
 
     (if (char= #\@ (look-ahead state))
         (progn (next-char state)
-               (new-token state types:*comma-at*))
+               (xyz-new-token state types:*comma-at*))
         (xyz-new-token state types:*comma*)))
 
 

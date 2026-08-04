@@ -6,6 +6,7 @@
              :get-debugger
              :get-file-forms
              :get-file-text
+             :get-file-tokens
              :get-history-item
              :get-inspector
              :get-log
@@ -23,6 +24,7 @@
              :set-debugger
              :set-file-forms
              :set-file-text
+             :set-file-tokens
              :set-initialized
              :set-running
              :set-sent-msg-callback
@@ -42,6 +44,7 @@
 
     (files (make-hash-table :test 'equalp) :type hash-table)
     (forms (make-hash-table :test 'equalp) :type hash-table)
+    (tokens (make-hash-table :test 'equalp) :type hash-table)
     (thread-msgs (make-hash-table :test 'equalp) :type hash-table)
     (sent-msg-callbacks (make-hash-table :test 'equalp) :type hash-table)
     (inspectors (make-hash-table :test 'equalp) :type hash-table)
@@ -132,12 +135,20 @@
     (setf (gethash uri (state-forms state)) forms))
 
 
+(defun set-file-tokens (state uri tokens)
+    (setf (gethash uri (state-tokens state)) tokens))
+
+
 (defun get-file-text (state uri)
     (gethash uri (state-files state)))
 
 
 (defun get-file-forms (state uri)
     (gethash uri (state-forms state)))
+
+
+(defun get-file-tokens (state uri)
+    (gethash uri (state-tokens state)))
 
 
 (defmacro next-id (state fn)
