@@ -184,8 +184,8 @@
            (range (cdr (assoc :range params)))
            (doc (cdr (assoc :text-document params)))
            (uri (cdr (assoc :uri doc)))
-           (text (or (state:get-file-text state uri) ""))
-           (edits (formatter:range (make-string-input-stream text)
+           (tokens (state:get-file-tokens state uri))
+           (edits (formatter:range tokens
                                    range
                                    options)))
 

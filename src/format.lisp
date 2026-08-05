@@ -491,9 +491,11 @@
         (xyz-pop-token state)))
 
 
-(defun range (input range &optional opts)
-    (let* ((tokens (tokenizer:xyz-from-stream input))
-           (state (make-parse-state :xyz-tokens tokens
+
+
+
+(defun range (tokens range &optional opts)
+    (let* ((state (make-parse-state :xyz-tokens tokens
                                     :range range
                                     :cur-pkg (package-name *package*))))
 
