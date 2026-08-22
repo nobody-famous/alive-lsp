@@ -9,12 +9,15 @@
              :xyz-get-end-offset
              :get-form-type
              :get-kids
+             :get-package
              :get-start
              :xyz-get-start
              :get-start-offset
              :xyz-get-start-offset
              :get-sym-text
-             :get-tokens)
+             :xyz-get-sym-text
+             :get-tokens
+             :set-package)
     (:local-nicknames (:pos :alive/position)
                       (:token :alive/parse/token)))
 
@@ -24,7 +27,8 @@
 (defstruct form
     kids
     kind
-    tokens)
+    tokens
+    (pkg "cl-user"))
 
 
 (defun add-kid (form kid)
@@ -94,6 +98,13 @@
               (mapcar 'token:get-text (get-tokens (second (get-kids form)))))))
 
 
+(defun xyz-get-sym-text (form)
+    (when (and (form-p form)
+               (eq (form-kind form) alive/types:*symbol*))
+          (apply #'concatenate 'string
+              (mapcar 'token:xyz-get-text (get-tokens form)))))
+
+
 (defun get-start (form)
     (when (form-p form)
           (let ((token (car (form-tokens form))))
@@ -123,7 +134,18 @@
           (form-kind form)))
 
 
-(defun create (&key form-type kids tokens)
+(defun get-package (form)
+    (when (form-p form)
+          (form-pkg form)))
+
+
+(defun set-package (form pkg)
+    (when (form-p form)
+          (setf (form-pkg form) pkg)))
+
+
+(defun create (&key form-type kids tokens pkg)
     (make-form :kind form-type
                :kids kids
-               :tokens tokens))
+               :tokens tokens
+               :pkg pkg))
