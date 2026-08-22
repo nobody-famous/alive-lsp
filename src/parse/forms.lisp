@@ -209,7 +209,8 @@
     (let ((open-form (car (parse-state-opens state))))
         (cond ((is-quote open-form) NIL)
               (T (push (form:create :form-type (token:xyz-get-type-value token)
-                                    :tokens (list token))
+                                    :tokens (list token)
+                                    :pkg (parse-state-pkg state))
                        (parse-state-opens state))))))
 
 

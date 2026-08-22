@@ -36,6 +36,7 @@
                                                                         :end-offset 6
                                                                         :text ")"))
                                         :kids (list (form:create :form-type types:*quote*
+                                                                 :pkg "cl-user"
                                                                  :tokens (list (token:xyz-create :type-value types:*quote*
                                                                                                  :start (pos:create 0 1)
                                                                                                  :start-offset 1
@@ -70,6 +71,7 @@
     (clue:test "Quoted symbol with package"
         (check-forms (format nil "'foo:bar")
                      (list (form:create :form-type types:*quote*
+                                        :pkg "cl-user"
                                         :tokens (list (token:xyz-create :type-value types:*quote*
                                                                         :start (pos:create 0 0)
                                                                         :start-offset 0
@@ -187,6 +189,7 @@
     (clue:test "Quoted list with foo symbol"
         (check-forms (format nil "'(foo)")
                      (list (form:create :form-type types:*quote*
+                                        :pkg "cl-user"
                                         :tokens (list (token:xyz-create :type-value types:*quote*
                                                                         :start (pos:create 0 0)
                                                                         :start-offset 0
@@ -220,6 +223,7 @@
     (clue:test "Double commas"
         (check-forms (format nil "`(,,foo)")
                      (list (form:create :form-type types:*back-quote*
+                                        :pkg "cl-user"
                                         :tokens (list (token:xyz-create :type-value types:*back-quote*
                                                                         :start (pos:create 0 0)
                                                                         :start-offset 0
@@ -260,6 +264,7 @@
     (clue:test "Back quote with comma"
         (check-forms (format nil "`(foo ,bar)")
                      (list (form:create :form-type types:*back-quote*
+                                        :pkg "cl-user"
                                         :tokens (list (token:xyz-create :type-value types:*back-quote*
                                                                         :start (pos:create 0 0)
                                                                         :start-offset 0
@@ -310,6 +315,7 @@
     (clue:test "Double quote with comma"
         (check-forms (format nil "''(foo ,bar)")
                      (list (form:create :form-type types:*quote*
+                                        :pkg "cl-user"
                                         :tokens (list (token:xyz-create :type-value types:*quote*
                                                                         :start (pos:create 0 0)
                                                                         :start-offset 0
@@ -360,6 +366,7 @@
     (clue:test "Quoted symbol"
         (check-forms (format nil "'foo")
                      (list (form:create :form-type types:*quote*
+                                        :pkg "cl-user"
                                         :tokens (list (token:xyz-create :type-value types:*quote*
                                                                         :start (pos:create 0 0)
                                                                         :start-offset 0
@@ -380,6 +387,7 @@
     (clue:test "Back quoted symbol"
         (check-forms (format nil "`foo")
                      (list (form:create :form-type types:*back-quote*
+                                        :pkg "cl-user"
                                         :tokens (list (token:xyz-create :type-value types:*back-quote*
                                                                         :start (pos:create 0 0)
                                                                         :start-offset 0
@@ -496,6 +504,7 @@
     (clue:test "Symbol with package with newline"
         (check-forms (format nil "'foo:bar~%fff")
                      (list (form:create :form-type types:*quote*
+                                        :pkg "cl-user"
                                         :tokens (list (token:xyz-create :type-value types:*quote*
                                                                         :start (pos:create 0 0)
                                                                         :start-offset 0
@@ -655,6 +664,7 @@
     (clue:test "Commas"
         (check-forms (format nil "`(, )")
                      (list (form:create :form-type types:*back-quote*
+                                        :pkg "cl-user"
                                         :tokens (list (token:xyz-create :type-value types:*back-quote*
                                                                         :start (pos:create 0 0)
                                                                         :start-offset 0
