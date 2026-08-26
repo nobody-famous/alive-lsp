@@ -40,8 +40,8 @@
            (params (cdr (assoc :params msg)))
            (doc (cdr (assoc :text-document params)))
            (uri (cdr (assoc :uri doc)))
-           (text (or (state:get-file-text state uri) ""))
-           (items (or (code-lens:get uri text)
+           (forms (state:get-file-forms state uri))
+           (items (or (code-lens:xyz-get uri forms)
                       (make-array 0))))
 
         (lsp-msg:create-response id :result-value items)))

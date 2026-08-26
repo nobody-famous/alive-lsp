@@ -350,7 +350,7 @@
           :for token :in tokens :do
               (cond ((token:xyz-is-type types:*open-paren* token) (open-paren state token))
 
-                    ((token:xyz-is-type types:*close-paren* token) (close-paren state token))
+                    ((token:xyz-is-type types:*close-paren* token) (xyz-close-paren state token))
 
                     ((or (token:xyz-is-type types:*quote* token)
                          (token:xyz-is-type types:*back-quote* token)) (xyz-start-quote state token))
