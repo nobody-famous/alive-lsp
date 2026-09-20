@@ -44,6 +44,7 @@
                                                                                                  :end-offset 2
                                                                                                  :text "'"))
                                                                  :kids (list (form:create :form-type types:*open-paren*
+                                                                                          :pkg "cl-user"
                                                                                           :tokens (list (token:xyz-create :type-value types:*open-paren*
                                                                                                                           :start (pos:create 0 2)
                                                                                                                           :start-offset 2
@@ -197,6 +198,7 @@
                                                                         :end-offset 1
                                                                         :text "'"))
                                         :kids (list (form:create :form-type types:*open-paren*
+                                                                 :pkg "cl-user"
                                                                  :tokens (list (token:xyz-create :type-value types:*open-paren*
                                                                                                  :start (pos:create 0 1)
                                                                                                  :start-offset 1
@@ -231,6 +233,7 @@
                                                                         :end-offset 1
                                                                         :text "`"))
                                         :kids (list (form:create :form-type types:*open-paren*
+                                                                 :pkg "cl-user"
                                                                  :tokens (list (token:xyz-create :type-value types:*open-paren*
                                                                                                  :start (pos:create 0 1)
                                                                                                  :start-offset 1
@@ -272,6 +275,7 @@
                                                                         :end-offset 1
                                                                         :text "`"))
                                         :kids (list (form:create :form-type types:*open-paren*
+                                                                 :pkg "cl-user"
                                                                  :tokens (list (token:xyz-create :type-value types:*open-paren*
                                                                                                  :start (pos:create 0 1)
                                                                                                  :start-offset 1
@@ -323,6 +327,7 @@
                                                                         :end-offset 1
                                                                         :text "'"))
                                         :kids (list (form:create :form-type types:*open-paren*
+                                                                 :pkg "cl-user"
                                                                  :tokens (list (token:xyz-create :type-value types:*open-paren*
                                                                                                  :start (pos:create 0 2)
                                                                                                  :start-offset 2
@@ -566,7 +571,45 @@
                                                                                                      :start-offset 1
                                                                                                      :end (pos:create 0 4)
                                                                                                      :end-offset 4
-                                                                                                     :text "foo"))))))))
+                                                                                                     :text "foo")))))))
+
+            (check-forms (format nil "((foo))")
+                         (list (form:create :form-type types:*open-paren*
+                                            :pkg "cl-user"
+                                            :tokens (list (token:xyz-create :type-value types:*open-paren*
+                                                                            :start (pos:create 0 0)
+                                                                            :start-offset 0
+                                                                            :end (pos:create 0 1)
+                                                                            :end-offset 1
+                                                                            :text "(")
+                                                          (token:xyz-create :type-value types:*close-paren*
+                                                                            :start (pos:create 0 6)
+                                                                            :start-offset 6
+                                                                            :end (pos:create 0 7)
+                                                                            :end-offset 7
+                                                                            :text ")"))
+                                            :kids (list (form:create :form-type types:*open-paren*
+                                                                     :pkg "cl-user"
+                                                                     :tokens (list (token:xyz-create :type-value types:*open-paren*
+                                                                                                     :start (pos:create 0 1)
+                                                                                                     :start-offset 1
+                                                                                                     :end (pos:create 0 2)
+                                                                                                     :end-offset 2
+                                                                                                     :text "(")
+                                                                                   (token:xyz-create :type-value types:*close-paren*
+                                                                                                     :start (pos:create 0 5)
+                                                                                                     :start-offset 5
+                                                                                                     :end (pos:create 0 6)
+                                                                                                     :end-offset 6
+                                                                                                     :text ")"))
+                                                                     :kids (list (form:create :form-type types:*symbol*
+                                                                                              :pkg "cl-user"
+                                                                                              :tokens (list (token:xyz-create :type-value types:*symbol*
+                                                                                                                              :start (pos:create 0 2)
+                                                                                                                              :start-offset 2
+                                                                                                                              :end (pos:create 0 5)
+                                                                                                                              :end-offset 5
+                                                                                                                              :text "foo"))))))))))
 
         (clue:test "Unmatched close paren"
             (check-forms (format nil ")")
@@ -672,6 +715,7 @@
                                                                         :end-offset 1
                                                                         :text "`"))
                                         :kids (list (form:create :form-type types:*open-paren*
+                                                                 :pkg "cl-user"
                                                                  :tokens (list (token:xyz-create :type-value types:*open-paren*
                                                                                                  :start (pos:create 0 1)
                                                                                                  :start-offset 1

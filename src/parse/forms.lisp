@@ -41,7 +41,8 @@
 
 (defun open-paren (state token)
     (push (form:create :form-type types:*open-paren*
-                       :tokens (list token))
+                       :tokens (list token)
+                       :pkg (parse-state-pkg state))
           (parse-state-opens state)))
 
 
