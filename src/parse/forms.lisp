@@ -144,8 +144,9 @@
 
 (defun for-string (str)
     (lookup (ignore-errors
-                (read
-                    (make-string-input-stream str)))))
+                (with-input-from-string (in str)
+                    (let ((obj (read in nil nil)))
+                        obj)))))
 
 
 (defun pkg-name-from-string (str)
@@ -170,8 +171,10 @@
               ((is-symbol next-open) nil)
 
               (T (form:set-package open-form (parse-state-pkg state))
-                 (when (in-package-p open-form (parse-state-pkg state))
-                       (setf (parse-state-pkg state) (pkg-name-from-string (form:xyz-get-sym-text (cadr (form:get-kids open-form))))))
+                 #+n (when (in-package-p open-form (parse-state-pkg state))
+                           (format T "***** FOUND IN PACKAGE ~A ~A~%" (parse-state-pkg state) (pkg-name-from-string (form:xyz-get-sym-text (cadr (form:get-kids open-form)))))
+                           (setf (parse-state-pkg state) (pkg-name-from-string (form:xyz-get-sym-text (cadr (form:get-kids open-form)))))
+                           (format T "***** NEW PKG ~A~%" (parse-state-pkg state)))
                  (push open-form (parse-state-forms state))))))
 
 
