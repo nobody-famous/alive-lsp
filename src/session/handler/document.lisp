@@ -53,8 +53,8 @@
            (doc (cdr (assoc :text-document params)))
            (pos (cdr (assoc :position params)))
            (uri (cdr (assoc :uri doc)))
-           (text (or (state:get-file-text state uri) ""))
-           (items (or (comps:simple :text text :pos pos)
+           (forms (state:get-file-forms state uri))
+           (items (or (comps:xyz-simple :forms forms :pos pos)
                       (make-array 0))))
 
         (let ((data (make-hash-table :test #'equalp)))

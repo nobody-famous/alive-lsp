@@ -1,6 +1,7 @@
 (defpackage :alive/parse/forms
     (:use :cl)
     (:export :find-expr
+             :xyz-find-expr
              :from-stream
              :from-tokens
              :xyz-from-stream
@@ -8,7 +9,8 @@
              :get-outer-form
              :get-nth-form
              :get-range-for-path
-             :get-top-form)
+             :get-top-form
+             :xyz-get-top-form)
     (:local-nicknames (:errors :alive/errors)
                       (:range :alive/range)
                       (:types :alive/types)
@@ -390,6 +392,17 @@
           :finally (return top-form)))
 
 
+(defun xyz-get-top-form (forms pos)
+    (loop :with top-form := nil
+
+          :for form :in forms :do
+              (when (and (pos:less-or-equal (form:xyz-get-start form) pos)
+                         (pos:less-or-equal pos (form:xyz-get-end form)))
+                    (setf top-form form))
+
+          :finally (return top-form)))
+
+
 (defun find-inner-form (form pos)
     (let ((start (form:get-start form))
           (end (form:get-end form))
@@ -421,6 +434,21 @@
                    (pos:less-or-equal pos end))
               (if kid
                   (find-expr kid pos)
+                  form))))
+
+
+(defun xyz-find-expr (form pos)
+    (let ((start (form:xyz-get-start form))
+          (end (form:xyz-get-end form))
+          (kid (find-if (lambda (kid)
+                            (and (pos:less-or-equal (form:xyz-get-start kid) pos)
+                                 (pos:less-or-equal pos (form:xyz-get-end kid))))
+                       (the list (form:get-kids form)))))
+        (when (and start end pos
+                   (pos:less-or-equal start pos)
+                   (pos:less-or-equal pos end))
+              (if kid
+                  (xyz-find-expr kid pos)
                   form))))
 
 
