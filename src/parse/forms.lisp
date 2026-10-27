@@ -35,14 +35,12 @@
 
 (defstruct parse-state
     forms
-    opens
-    (pkg "cl-user"))
+    opens)
 
 
 (defun open-paren (state token)
     (push (form:create :form-type types:*open-paren*
-                       :tokens (list token)
-                       :pkg (parse-state-pkg state))
+                       :tokens (list token))
           (parse-state-opens state)))
 
 
@@ -131,31 +129,6 @@
                       (values (token:xyz-get-text token1) pkg-name))))))
 
 
-(defun in-package-p (form pkg)
-    (let* ((kids (form:get-kids form))
-           (kid (first kids))
-           (in-pkg-sym (find-symbol "IN-PACKAGE" "CL-USER")))
-        (when (and (eq alive/types:*open-paren* (form:get-form-type form))
-                   kid)
-              (multiple-value-bind (name pkg-name)
-                      (for-tokens (form:get-tokens kid) pkg)
-                  (eq (utils:lookup-symbol name pkg-name) in-pkg-sym)))))
-
-
-(defun for-string (str)
-    (lookup (ignore-errors
-                (with-input-from-string (in str)
-                    (let ((obj (read in nil nil)))
-                        obj)))))
-
-
-(defun pkg-name-from-string (str)
-    (let ((pkg (for-string str)))
-        (if (packagep pkg)
-            (string-downcase (package-name pkg))
-            "cl-user")))
-
-
 (defun xyz-matched-close-paren (state token open-form)
     (form:add-token open-form token)
 
@@ -170,12 +143,7 @@
 
               ((is-symbol next-open) nil)
 
-              (T (form:set-package open-form (parse-state-pkg state))
-                 #+n (when (in-package-p open-form (parse-state-pkg state))
-                           (format T "***** FOUND IN PACKAGE ~A ~A~%" (parse-state-pkg state) (pkg-name-from-string (form:xyz-get-sym-text (cadr (form:get-kids open-form)))))
-                           (setf (parse-state-pkg state) (pkg-name-from-string (form:xyz-get-sym-text (cadr (form:get-kids open-form)))))
-                           (format T "***** NEW PKG ~A~%" (parse-state-pkg state)))
-                 (push open-form (parse-state-forms state))))))
+              (T (push open-form (parse-state-forms state))))))
 
 
 (defun unmatched-close-paren (state)
@@ -213,8 +181,7 @@
     (let ((open-form (car (parse-state-opens state))))
         (cond ((is-quote open-form) NIL)
               (T (push (form:create :form-type (token:xyz-get-type-value token)
-                                    :tokens (list token)
-                                    :pkg (parse-state-pkg state))
+                                    :tokens (list token))
                        (parse-state-opens state))))))
 
 
@@ -257,16 +224,14 @@
         (cond ((or (is-open-paren open-form)
                    (is-quote open-form))
                   (push (form:create :form-type types:*symbol*
-                                     :tokens (list token)
-                                     :pkg (parse-state-pkg state))
+                                     :tokens (list token))
                         (parse-state-opens state)))
 
               ((is-symbol open-form)
                   (form:add-token open-form token))
 
               (T (push (form:create :form-type types:*symbol*
-                                    :tokens (list token)
-                                    :pkg (parse-state-pkg state))
+                                    :tokens (list token))
                        (parse-state-opens state))))))
 
 

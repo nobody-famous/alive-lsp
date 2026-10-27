@@ -22,7 +22,6 @@
     (clue:test "Quoted list"
         (check-forms (format nil "('(1))")
                      (list (form:create :form-type types:*open-paren*
-                                        :pkg "cl-user"
                                         :tokens (list (token:xyz-create :type-value types:*open-paren*
                                                                         :start (pos:create 0 0)
                                                                         :start-offset 0
@@ -36,7 +35,6 @@
                                                                         :end-offset 6
                                                                         :text ")"))
                                         :kids (list (form:create :form-type types:*quote*
-                                                                 :pkg "cl-user"
                                                                  :tokens (list (token:xyz-create :type-value types:*quote*
                                                                                                  :start (pos:create 0 1)
                                                                                                  :start-offset 1
@@ -44,7 +42,6 @@
                                                                                                  :end-offset 2
                                                                                                  :text "'"))
                                                                  :kids (list (form:create :form-type types:*open-paren*
-                                                                                          :pkg "cl-user"
                                                                                           :tokens (list (token:xyz-create :type-value types:*open-paren*
                                                                                                                           :start (pos:create 0 2)
                                                                                                                           :start-offset 2
@@ -58,7 +55,6 @@
                                                                                                                           :end-offset 5
                                                                                                                           :text ")"))
                                                                                           :kids (list (form:create :form-type types:*symbol*
-                                                                                                                   :pkg "cl-user"
                                                                                                                    :tokens (list (token:xyz-create :type-value types:*symbol*
                                                                                                                                                    :start (pos:create 0 3)
                                                                                                                                                    :start-offset 3
@@ -72,7 +68,6 @@
     (clue:test "Quoted symbol with package"
         (check-forms (format nil "'foo:bar")
                      (list (form:create :form-type types:*quote*
-                                        :pkg "cl-user"
                                         :tokens (list (token:xyz-create :type-value types:*quote*
                                                                         :start (pos:create 0 0)
                                                                         :start-offset 0
@@ -80,7 +75,6 @@
                                                                         :end-offset 1
                                                                         :text "'"))
                                         :kids (list (form:create :form-type types:*symbol*
-                                                                 :pkg "cl-user"
                                                                  :tokens (list (token:xyz-create :type-value types:*symbol*
                                                                                                  :start (pos:create 0 1)
                                                                                                  :start-offset 1
@@ -106,7 +100,6 @@
     (clue:test "Symbol with package"
         (check-forms (format nil "foo:bar")
                      (list (form:create :form-type types:*symbol*
-                                        :pkg "cl-user"
                                         :tokens (list (token:xyz-create :type-value types:*symbol*
                                                                         :start (pos:create 0 0)
                                                                         :start-offset 0
@@ -138,7 +131,6 @@
     (clue:test "Foo symbol"
         (check-forms "foo"
                      (list (form:create :form-type types:*symbol*
-                                        :pkg "cl-user"
                                         :tokens (list (token:xyz-create :type-value types:*symbol*
                                                                         :start (pos:create 0 0)
                                                                         :start-offset 0
@@ -151,7 +143,6 @@
     (clue:test "Empty list"
         (check-forms "()"
                      (list (form:create :form-type types:*open-paren*
-                                        :pkg "cl-user"
                                         :tokens (list (token:xyz-create :type-value types:*open-paren*
                                                                         :start (pos:create 0 0)
                                                                         :start-offset 0
@@ -170,7 +161,6 @@
     (clue:test "Empty list with newline"
         (check-forms (format nil "(~%)")
                      (list (form:create :form-type types:*open-paren*
-                                        :pkg "cl-user"
                                         :tokens (list (token:xyz-create :type-value types:*open-paren*
                                                                         :start (pos:create 0 0)
                                                                         :start-offset 0
@@ -190,7 +180,6 @@
     (clue:test "Quoted list with foo symbol"
         (check-forms (format nil "'(foo)")
                      (list (form:create :form-type types:*quote*
-                                        :pkg "cl-user"
                                         :tokens (list (token:xyz-create :type-value types:*quote*
                                                                         :start (pos:create 0 0)
                                                                         :start-offset 0
@@ -198,7 +187,6 @@
                                                                         :end-offset 1
                                                                         :text "'"))
                                         :kids (list (form:create :form-type types:*open-paren*
-                                                                 :pkg "cl-user"
                                                                  :tokens (list (token:xyz-create :type-value types:*open-paren*
                                                                                                  :start (pos:create 0 1)
                                                                                                  :start-offset 1
@@ -212,7 +200,6 @@
                                                                                                  :end-offset 6
                                                                                                  :text ")"))
                                                                  :kids (list (form:create :form-type types:*symbol*
-                                                                                          :pkg "cl-user"
                                                                                           :tokens (list (token:xyz-create :type-value types:*symbol*
                                                                                                                           :start (pos:create 0 2)
                                                                                                                           :start-offset 2
@@ -225,7 +212,6 @@
     (clue:test "Double commas"
         (check-forms (format nil "`(,,foo)")
                      (list (form:create :form-type types:*back-quote*
-                                        :pkg "cl-user"
                                         :tokens (list (token:xyz-create :type-value types:*back-quote*
                                                                         :start (pos:create 0 0)
                                                                         :start-offset 0
@@ -233,7 +219,6 @@
                                                                         :end-offset 1
                                                                         :text "`"))
                                         :kids (list (form:create :form-type types:*open-paren*
-                                                                 :pkg "cl-user"
                                                                  :tokens (list (token:xyz-create :type-value types:*open-paren*
                                                                                                  :start (pos:create 0 1)
                                                                                                  :start-offset 1
@@ -254,7 +239,6 @@
                                                                                                                           :end-offset 3
                                                                                                                           :text ","))
                                                                                           :kids (list (form:create :form-type types:*symbol*
-                                                                                                                   :pkg "cl-user"
                                                                                                                    :tokens (list (token:xyz-create :type-value types:*symbol*
                                                                                                                                                    :start (pos:create 0 4)
                                                                                                                                                    :start-offset 4
@@ -267,7 +251,6 @@
     (clue:test "Back quote with comma"
         (check-forms (format nil "`(foo ,bar)")
                      (list (form:create :form-type types:*back-quote*
-                                        :pkg "cl-user"
                                         :tokens (list (token:xyz-create :type-value types:*back-quote*
                                                                         :start (pos:create 0 0)
                                                                         :start-offset 0
@@ -275,7 +258,6 @@
                                                                         :end-offset 1
                                                                         :text "`"))
                                         :kids (list (form:create :form-type types:*open-paren*
-                                                                 :pkg "cl-user"
                                                                  :tokens (list (token:xyz-create :type-value types:*open-paren*
                                                                                                  :start (pos:create 0 1)
                                                                                                  :start-offset 1
@@ -289,7 +271,6 @@
                                                                                                  :end-offset 11
                                                                                                  :text ")"))
                                                                  :kids (list (form:create :form-type types:*symbol*
-                                                                                          :pkg "cl-user"
                                                                                           :tokens (list (token:xyz-create :type-value types:*symbol*
                                                                                                                           :start (pos:create 0 2)
                                                                                                                           :start-offset 2
@@ -305,7 +286,6 @@
                                                                                                                           :end-offset 7
                                                                                                                           :text ","))
                                                                                           :kids (list (form:create :form-type types:*symbol*
-                                                                                                                   :pkg "cl-user"
                                                                                                                    :tokens (list (token:xyz-create :type-value types:*symbol*
                                                                                                                                                    :start (pos:create 0 7)
                                                                                                                                                    :start-offset 7
@@ -319,7 +299,6 @@
     (clue:test "Double quote with comma"
         (check-forms (format nil "''(foo ,bar)")
                      (list (form:create :form-type types:*quote*
-                                        :pkg "cl-user"
                                         :tokens (list (token:xyz-create :type-value types:*quote*
                                                                         :start (pos:create 0 0)
                                                                         :start-offset 0
@@ -327,7 +306,6 @@
                                                                         :end-offset 1
                                                                         :text "'"))
                                         :kids (list (form:create :form-type types:*open-paren*
-                                                                 :pkg "cl-user"
                                                                  :tokens (list (token:xyz-create :type-value types:*open-paren*
                                                                                                  :start (pos:create 0 2)
                                                                                                  :start-offset 2
@@ -341,7 +319,6 @@
                                                                                                  :end-offset 12
                                                                                                  :text ")"))
                                                                  :kids (list (form:create :form-type types:*symbol*
-                                                                                          :pkg "cl-user"
                                                                                           :tokens (list (token:xyz-create :type-value types:*symbol*
                                                                                                                           :start (pos:create 0 3)
                                                                                                                           :start-offset 3
@@ -357,7 +334,6 @@
                                                                                                                           :end-offset 8
                                                                                                                           :text ","))
                                                                                           :kids (list (form:create :form-type types:*symbol*
-                                                                                                                   :pkg "cl-user"
                                                                                                                    :tokens (list (token:xyz-create :type-value types:*symbol*
                                                                                                                                                    :start (pos:create 0 8)
                                                                                                                                                    :start-offset 8
@@ -371,7 +347,6 @@
     (clue:test "Quoted symbol"
         (check-forms (format nil "'foo")
                      (list (form:create :form-type types:*quote*
-                                        :pkg "cl-user"
                                         :tokens (list (token:xyz-create :type-value types:*quote*
                                                                         :start (pos:create 0 0)
                                                                         :start-offset 0
@@ -379,7 +354,6 @@
                                                                         :end-offset 1
                                                                         :text "'"))
                                         :kids (list (form:create :form-type types:*symbol*
-                                                                 :pkg "cl-user"
                                                                  :tokens (list (token:xyz-create :type-value types:*symbol*
                                                                                                  :start (pos:create 0 1)
                                                                                                  :start-offset 1
@@ -392,7 +366,6 @@
     (clue:test "Back quoted symbol"
         (check-forms (format nil "`foo")
                      (list (form:create :form-type types:*back-quote*
-                                        :pkg "cl-user"
                                         :tokens (list (token:xyz-create :type-value types:*back-quote*
                                                                         :start (pos:create 0 0)
                                                                         :start-offset 0
@@ -400,7 +373,6 @@
                                                                         :end-offset 1
                                                                         :text "`"))
                                         :kids (list (form:create :form-type types:*symbol*
-                                                                 :pkg "cl-user"
                                                                  :tokens (list (token:xyz-create :type-value types:*symbol*
                                                                                                  :start (pos:create 0 1)
                                                                                                  :start-offset 1
@@ -414,7 +386,6 @@
     (clue:test "List of symbols"
         (check-forms (format nil "(a bb cccc)")
                      (list (form:create :form-type types:*open-paren*
-                                        :pkg "cl-user"
                                         :tokens (list (token:xyz-create :type-value types:*open-paren*
                                                                         :start (pos:create 0 0)
                                                                         :start-offset 0
@@ -428,7 +399,6 @@
                                                                         :end-offset 11
                                                                         :text ")"))
                                         :kids (list (form:create :form-type types:*symbol*
-                                                                 :pkg "cl-user"
                                                                  :tokens (list (token:xyz-create :type-value types:*symbol*
                                                                                                  :start (pos:create 0 1)
                                                                                                  :start-offset 1
@@ -437,7 +407,6 @@
                                                                                                  :text "a"))
                                                                  :kids (list))
                                                     (form:create :form-type types:*symbol*
-                                                                 :pkg "cl-user"
                                                                  :tokens (list (token:xyz-create :type-value types:*symbol*
                                                                                                  :start (pos:create 0 3)
                                                                                                  :start-offset 3
@@ -446,7 +415,6 @@
                                                                                                  :text "bb"))
                                                                  :kids (list))
                                                     (form:create :form-type types:*symbol*
-                                                                 :pkg "cl-user"
                                                                  :tokens (list (token:xyz-create :type-value types:*symbol*
                                                                                                  :start (pos:create 0 6)
                                                                                                  :start-offset 6
@@ -460,7 +428,6 @@
     (clue:test "In-package form"
         (check-forms (format nil "(IN-PACKAGE :foo)~%bar")
                      (list (form:create :form-type types:*open-paren*
-                                        :pkg "cl-user"
                                         :tokens (list (token:xyz-create :type-value types:*open-paren*
                                                                         :start (pos:create 0 0)
                                                                         :start-offset 0
@@ -474,7 +441,6 @@
                                                                         :end-offset 17
                                                                         :text ")"))
                                         :kids (list (form:create :form-type types:*symbol*
-                                                                 :pkg "cl-user"
                                                                  :tokens (list (token:xyz-create :type-value types:*symbol*
                                                                                                  :start (pos:create 0 1)
                                                                                                  :start-offset 1
@@ -482,7 +448,6 @@
                                                                                                  :end-offset 11
                                                                                                  :text "IN-PACKAGE")))
                                                     (form:create :form-type types:*symbol*
-                                                                 :pkg "cl-user"
                                                                  :tokens (list (token:xyz-create :type-value types:*colons*
                                                                                                  :start (pos:create 0 12)
                                                                                                  :start-offset 12
@@ -496,7 +461,6 @@
                                                                                                  :end-offset 16
                                                                                                  :text "foo")))))
                            (form:create :form-type types:*symbol*
-                                        :pkg "cl-user"
                                         :tokens (list (token:xyz-create :type-value types:*symbol*
                                                                         :start (pos:create 1 0)
                                                                         :start-offset 18
@@ -509,7 +473,6 @@
     (clue:test "Symbol with package with newline"
         (check-forms (format nil "'foo:bar~%fff")
                      (list (form:create :form-type types:*quote*
-                                        :pkg "cl-user"
                                         :tokens (list (token:xyz-create :type-value types:*quote*
                                                                         :start (pos:create 0 0)
                                                                         :start-offset 0
@@ -517,7 +480,6 @@
                                                                         :end-offset 1
                                                                         :text "'"))
                                         :kids (list (form:create :form-type types:*symbol*
-                                                                 :pkg "cl-user"
                                                                  :tokens (list (token:xyz-create :type-value types:*symbol*
                                                                                                  :start (pos:create 0 1)
                                                                                                  :start-offset 1
@@ -537,7 +499,6 @@
                                                                                                  :end-offset 8
                                                                                                  :text "bar")))))
                            (form:create :form-type types:*symbol*
-                                        :pkg "cl-user"
                                         :tokens (list (token:xyz-create :type-value types:*symbol*
                                                                         :start (pos:create 1 0)
                                                                         :start-offset 9
@@ -551,7 +512,6 @@
         (clue:test "Close parens"
             (check-forms (format nil "(foo())")
                          (list (form:create :form-type types:*open-paren*
-                                            :pkg "cl-user"
                                             :tokens (list (token:xyz-create :type-value types:*open-paren*
                                                                             :start (pos:create 0 0)
                                                                             :start-offset 0
@@ -565,7 +525,6 @@
                                                                             :end-offset 7
                                                                             :text ")"))
                                             :kids (list (form:create :form-type types:*symbol*
-                                                                     :pkg "cl-user"
                                                                      :tokens (list (token:xyz-create :type-value types:*symbol*
                                                                                                      :start (pos:create 0 1)
                                                                                                      :start-offset 1
@@ -575,7 +534,6 @@
 
             (check-forms (format nil "((foo))")
                          (list (form:create :form-type types:*open-paren*
-                                            :pkg "cl-user"
                                             :tokens (list (token:xyz-create :type-value types:*open-paren*
                                                                             :start (pos:create 0 0)
                                                                             :start-offset 0
@@ -589,7 +547,6 @@
                                                                             :end-offset 7
                                                                             :text ")"))
                                             :kids (list (form:create :form-type types:*open-paren*
-                                                                     :pkg "cl-user"
                                                                      :tokens (list (token:xyz-create :type-value types:*open-paren*
                                                                                                      :start (pos:create 0 1)
                                                                                                      :start-offset 1
@@ -603,7 +560,6 @@
                                                                                                      :end-offset 6
                                                                                                      :text ")"))
                                                                      :kids (list (form:create :form-type types:*symbol*
-                                                                                              :pkg "cl-user"
                                                                                               :tokens (list (token:xyz-create :type-value types:*symbol*
                                                                                                                               :start (pos:create 0 2)
                                                                                                                               :start-offset 2
@@ -707,7 +663,6 @@
     (clue:test "Commas"
         (check-forms (format nil "`(, )")
                      (list (form:create :form-type types:*back-quote*
-                                        :pkg "cl-user"
                                         :tokens (list (token:xyz-create :type-value types:*back-quote*
                                                                         :start (pos:create 0 0)
                                                                         :start-offset 0
@@ -715,7 +670,6 @@
                                                                         :end-offset 1
                                                                         :text "`"))
                                         :kids (list (form:create :form-type types:*open-paren*
-                                                                 :pkg "cl-user"
                                                                  :tokens (list (token:xyz-create :type-value types:*open-paren*
                                                                                                  :start (pos:create 0 1)
                                                                                                  :start-offset 1
