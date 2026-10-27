@@ -5,14 +5,16 @@
                       (:types :alive/types)
                       (:form :alive/parse/form)
                       (:forms :alive/parse/forms)
-                      (:token :alive/parse/token)))
+                      (:token :alive/parse/token)
+                      (:tokenizer :alive/parse/tokenizer)))
 
 (in-package :alive/test/parse/forms)
 
 
 (defun check-forms (text expected)
     (let* ((input (make-string-input-stream text))
-           (forms (forms:xyz-from-stream input)))
+           (tokens (tokenizer:xyz-from-stream input))
+           (forms (forms:from-tokens tokens)))
 
         (clue:check-equal :expected expected
                           :actual forms)))
