@@ -1,6 +1,7 @@
 (defpackage :alive/lsp/definition
     (:use :cl)
-    (:export :get-location)
+    (:export :get-location
+             :xyz-get-location)
     (:local-nicknames (:forms :alive/parse/forms)
                       (:packages :alive/packages)
                       (:sym :alive/symbols)))
@@ -20,5 +21,16 @@
 
         (multiple-value-bind (name pkg-name)
                 (sym:for-pos text pos)
+            (when (and name pkg-name)
+                  (get-location-for-name name pkg-name)))))
+
+
+(defun xyz-get-location (&key forms pos)
+    (let* ((pkg-name (packages:xyz-for-pos forms pos))
+           (pkg (packages:lookup pkg-name))
+           (*package* (or pkg *package*)))
+
+        (multiple-value-bind (name pkg-name)
+                (sym:xyz-for-pos forms pos)
             (when (and name pkg-name)
                   (get-location-for-name name pkg-name)))))

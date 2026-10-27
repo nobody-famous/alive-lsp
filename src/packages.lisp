@@ -4,6 +4,7 @@
              :for-pos
              :for-string
              :for-tokens
+             :xyz-for-tokens
              :list-all
              :lookup
              :package-not-found

@@ -5,6 +5,7 @@
              :external-p
              :find-tokens
              :for-pos
+             :xyz-for-pos
              :function-p
              :get-all-names
              :get-lambda-list
@@ -159,3 +160,12 @@
 
         (when expr
               (packages:for-tokens (form:get-tokens expr) pkg-name))))
+
+
+(defun xyz-for-pos (forms pos)
+    (let* ((top-form (forms:xyz-get-top-form forms pos))
+           (expr (forms:xyz-find-expr top-form pos))
+           (pkg-name (packages:xyz-for-pos forms pos)))
+
+        (when expr
+              (packages:xyz-for-tokens (form:get-tokens expr) pkg-name))))

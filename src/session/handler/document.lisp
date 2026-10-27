@@ -71,8 +71,8 @@
            (doc (cdr (assoc :text-document params)))
            (pos (cdr (assoc :position params)))
            (uri (cdr (assoc :uri doc)))
-           (text (or (state:get-file-text state uri) ""))
-           (location (alive/lsp/definition:get-location :text text :pos pos))
+           (forms (state:get-file-forms state uri))
+           (location (alive/lsp/definition:xyz-get-location :forms forms :pos pos))
            (uri (first location))
            (range (second location)))
 
