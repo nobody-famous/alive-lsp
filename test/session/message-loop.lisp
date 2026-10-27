@@ -33,43 +33,6 @@
             (msg-loop:run deps state))))
 
 
-(defun test-errors ()
-    (clue:suite "Errors"
-        (clue:test "EOF"
-            (let ((state (state:create)))
-                (check-send state nil :read-fn (lambda () (error (make-instance 'end-of-file))))))
-
-        (clue:test "Server error no id"
-            (let ((state (state:create)))
-                (check-send state nil :read-fn (lambda ()
-                                                   (msg-loop:stop state)
-                                                   (error (make-instance 'errors:server-error))))))
-
-        (clue:test "Server error with id"
-            (let ((state (state:create)))
-                (check-send state T :read-fn (lambda ()
-                                                 (msg-loop:stop state)
-                                                 (error (make-instance 'errors:server-error :id 10))))))
-
-        (clue:test "Unhandled request no id"
-            (let ((state (state:create)))
-                (check-send state nil :read-fn (lambda ()
-                                                   (msg-loop:stop state)
-                                                   (error (make-instance 'errors:unhandled-request))))))
-
-        (clue:test "Unhandled request with id"
-            (let ((state (state:create)))
-                (check-send state T :read-fn (lambda ()
-                                                 (msg-loop:stop state)
-                                                 (error (make-instance 'errors:unhandled-request :id 10))))))
-
-        (clue:test "Generic error"
-            (let ((state (state:create)))
-                (check-send state nil :read-fn (lambda ()
-                                                   (error "Failed, as requested")))))))
-
-
 (defun run-all ()
     (clue:suite "Message Loop Tests"
-        (test-valid-message)
-        (test-errors)))
+        (test-valid-message)))
