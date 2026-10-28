@@ -5,8 +5,11 @@
              :check-equal
              :check-exists
              :check-has-result
+             :get-forms
              :print-hash-table
-             :stream-from-string))
+             :stream-from-string)
+    (:local-nicknames (:forms :alive/parse/forms)
+                      (:tokenizer :alive/parse/tokenizer)))
 
 (in-package :alive/test/utils)
 
@@ -53,3 +56,8 @@
           (loop :for key :being :the :hash-key :of ht
                 :using (hash-value value)
                 :do (format T "  ~A |~A|~%" key value))))
+
+
+(defun get-forms (text)
+    (let ((tokens (tokenizer:xyz-from-stream (make-string-input-stream text))))
+        (forms:from-tokens tokens)))

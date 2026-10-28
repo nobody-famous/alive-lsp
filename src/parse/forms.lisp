@@ -242,6 +242,7 @@
 
 
 (defun from-stream (input)
+    (format T "***** FROM STREAM~%")
     (loop :with state := (make-parse-state)
 
           :for token :in (tokenizer:from-stream input) :do

@@ -40,13 +40,13 @@
 (defparameter *kind-typeparameter* 26)
 
 
-(defun for-pos (&key text pos)
-    (let* ((pkg-name (packages:for-pos text pos))
+(defun for-pos (&key forms pos)
+    (let* ((pkg-name (packages:xyz-for-pos forms pos))
            (pkg (packages:lookup pkg-name))
            (*package* (if pkg pkg *package*)))
 
         (multiple-value-bind (name pkg-name)
-                (alive/symbols:for-pos text pos)
+                (alive/symbols:xyz-for-pos forms pos)
             (when (and name pkg-name)
                   (list name pkg-name)))))
 
