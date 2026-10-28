@@ -1,6 +1,7 @@
 (defpackage :alive/lsp/sem-analysis
     (:use :cl)
-    (:export :to-sem-tokens)
+    (:export :to-sem-tokens
+             :xyz-to-sem-tokens)
     (:local-nicknames (:pos :alive/position)
                       (:sem-types :alive/lsp/types/sem-tokens)
                       (:packages :alive/packages)
@@ -93,6 +94,28 @@
                                       sem-type)
                 :with start := (token:get-start token)
                 :with end := (token:get-end token)
+
+                :for line fixnum :from (pos:line start) :to (pos:line end)
+                :for start-col := (if (eq line (pos:line start))
+                                      (pos:col start)
+                                      0)
+                :for end-col := (if (eq line (pos:line end))
+                                    (pos:col end)
+                                    #xFFFF)
+                :for new-token := (sem-types:create :line line
+                                                    :start start-col
+                                                    :end end-col
+                                                    :token-type new-type) :do
+                    (when new-type
+                          (push new-token (sem-tokens state))))))
+
+
+(defun xyz-add-sem-token (state token sem-type)
+    (when token
+          (loop :with new-type := (or (forced-type state)
+                                      sem-type)
+                :with start := (token:xyz-get-start token)
+                :with end := (token:xyz-get-end token)
 
                 :for line fixnum :from (pos:line start) :to (pos:line end)
                 :for start-col := (if (eq line (pos:line start))
@@ -202,6 +225,34 @@
         lambda-list))
 
 
+(defun xyz-update-symbol-types (state)
+    (let ((token1 (peek-token state))
+          (token2 (cadr (lex-tokens state)))
+          (token3 (caddr (lex-tokens state)))
+          (lambda-list nil)
+          (*package* (if (cur-pkg state) (cur-pkg state) *package*)))
+
+        (cond ((and (token:xyz-is-type types:*symbol* token1)
+                    (token:xyz-is-type types:*colons* token2)
+                    (token:xyz-is-type types:*symbol* token3))
+                  (xyz-add-sem-token state token1 (convert-if-comment state sem-types:*namespace*))
+                  (xyz-add-sem-token state token2 (convert-if-comment state sem-types:*symbol*))
+                  (xyz-add-sem-token state token3 (convert-if-comment state (lookup-symbol-type (token:xyz-get-text token3)
+                                                                                            (token:xyz-get-text token1))))
+                  (next-token state)
+                  (next-token state)
+
+                  (setf lambda-list (symbols:get-lambda-list (token:xyz-get-text token3)
+                                                             (token:xyz-get-text token1))))
+
+              ((and (token:xyz-is-type types:*symbol* token1)
+                    (not (token:xyz-is-type types:*colons* token2)))
+                  (xyz-add-sem-token state token1 (convert-if-comment state (get-symbol-type state (token:xyz-get-text token1))))
+                  (setf lambda-list (symbols:get-lambda-list (token:xyz-get-text token1)))))
+
+        lambda-list))
+
+
 (defun update-symbol-lambda-list (open-form)
     (when (lambda-list open-form)
           (pop (lambda-list open-form))))
@@ -222,6 +273,16 @@
         (setf (lambda-list open-form) lambda-list)))
 
 
+(defun xyz-update-symbol-fn-state (state lambda-list)
+    (let ((token (peek-token state))
+          (open-form (car (opens state))))
+        (if (string-equal "in-package" (token:xyz-get-text token))
+            (progn (setf (cur-pkg state) nil)
+                   (setf (expr-type open-form) :in-package))
+            (setf (expr-type open-form) :fn-call))
+        (setf (lambda-list open-form) lambda-list)))
+
+
 (defun update-symbol-state (state lambda-list)
     (let ((open-form (car (opens state))))
         (when (eq :expr (form-type open-form))
@@ -231,9 +292,23 @@
                     (T (setf (expr-type open-form) :plain-list))))))
 
 
+(defun xyz-update-symbol-state (state lambda-list)
+    (let ((open-form (car (opens state))))
+        (when (eq :expr (form-type open-form))
+
+              (cond ((expr-type open-form) (update-symbol-expr-state open-form))
+                    (lambda-list (xyz-update-symbol-fn-state state lambda-list))
+                    (T (setf (expr-type open-form) :plain-list))))))
+
+
 (defun process-symbol (state)
     (let ((lambda-list (update-symbol-types state)))
         (update-symbol-state state lambda-list)))
+
+
+(defun xyz-process-symbol (state)
+    (let ((lambda-list (xyz-update-symbol-types state)))
+        (xyz-update-symbol-state state lambda-list)))
 
 
 (defun add-open-form (state form-type &optional expr-type)
@@ -364,6 +439,89 @@
     (next-token state))
 
 
+(defun xyz-process-token (state)
+    (let ((token (peek-token state)))
+
+        (cond ((token:xyz-is-type types:*ifdef-false* token)
+                  (xyz-add-sem-token state token sem-types:*comment*)
+                  (setf (comment-next-p state) T))
+
+              ((token:xyz-is-type types:*ifdef-true* token)
+                  (xyz-add-sem-token state token (convert-if-comment state sem-types:*macro*)))
+
+              ((or (token:xyz-is-type types:*quote* token)
+                   (token:xyz-is-type types:*back-quote* token))
+                  (xyz-add-sem-token state token (convert-if-comment state sem-types:*keyword*))
+                  (add-open-form state :quote)
+                  (setf (comment-next-p state) NIL))
+
+              ((token:xyz-is-type types:*open-paren* token)
+                  (xyz-add-sem-token state token (convert-if-comment state sem-types:*parenthesis*))
+                  (process-open-parens state)
+                  (setf (comment-next-p state) NIL))
+
+              ((token:xyz-is-type types:*close-paren* token)
+                  (xyz-add-sem-token state token (convert-if-comment state sem-types:*parenthesis*))
+                  (setf (comment-next-p state) NIL)
+
+                  (loop :while (and (not (eq :top-level-form (form-type (car (opens state)))))
+                                    (not (eq :expr (form-type (car (opens state))))))
+                        :do (pop (opens state)))
+
+                  (when (eq :expr (form-type (car (opens state))))
+                        (pop (opens state))
+                        (loop :while (eq :quote (form-type (car (opens state))))
+                              :do (pop (opens state)))))
+
+              ((token:xyz-is-type types:*symbol* token)
+                  (xyz-process-symbol state)
+                  (setf (comment-next-p state) NIL))
+
+              ((token:xyz-is-type types:*colons* token)
+                  (xyz-add-sem-token state token (convert-if-comment state sem-types:*symbol*))
+                  (when (token:xyz-is-type types:*symbol* (cadr (lex-tokens state)))
+                        (next-token state)
+                        (when (and (not (cur-pkg state))
+                                   (opens state)
+                                   (eq :in-package (expr-type (car (opens state)))))
+                              (setf (cur-pkg state)
+                                  (packages:for-string (format nil "~A~A"
+                                                           (token:xyz-get-text token)
+                                                           (token:xyz-get-text (peek-token state))))))
+                        (xyz-add-sem-token state (peek-token state) (convert-if-comment state sem-types:*symbol*)))
+                  (setf (comment-next-p state) NIL))
+
+              ((or (token:xyz-is-type types:*line-comment* token)
+                   (token:xyz-is-type types:*block-comment* token))
+                  (xyz-add-sem-token state token sem-types:*comment*))
+
+              ((or (token:xyz-is-type types:*comma* token)
+                   (token:xyz-is-type types:*comma-at* token))
+                  (xyz-add-sem-token state token (convert-if-comment state sem-types:*keyword*)))
+
+              ((token:xyz-is-type types:*string* token)
+                  (when (and (not (cur-pkg state))
+                             (opens state)
+                             (eq :in-package (expr-type (car (opens state)))))
+                        (setf (cur-pkg state) (packages:for-string (token:xyz-get-text token))))
+                  (xyz-add-sem-token state token (convert-if-comment state sem-types:*string*)))
+
+              ((token:xyz-is-type types:*macro* token)
+                  (when (and (not (cur-pkg state))
+                             (opens state)
+                             (eq :in-package (expr-type (car (opens state)))))
+                        (setf (cur-pkg state) (packages:for-string (token:xyz-get-text token))))
+                  (xyz-add-sem-token state token (convert-if-comment state sem-types:*macro*)))
+
+              ((token:xyz-is-type types:*ws* token)
+                  (when (eq :quote (form-type (car (opens state))))
+                        (pop (opens state))))
+
+              (T (format T "UNHANDLED TOKEN ~A~%" token))))
+
+    (next-token state))
+
+
 (defun to-sem-tokens (tokens)
     (loop :with state := (make-instance 'analysis-state
                              :lex-tokens tokens
@@ -371,5 +529,16 @@
 
           :while (lex-tokens state)
           :do (process-token state)
+
+          :finally (return (reverse (sem-tokens state)))))
+
+
+(defun xyz-to-sem-tokens (tokens)
+    (loop :with state := (make-instance 'analysis-state
+                             :lex-tokens tokens
+                             :cur-pkg (packages:lookup "cl-user"))
+
+          :while (lex-tokens state)
+          :do (xyz-process-token state)
 
           :finally (return (reverse (sem-tokens state)))))

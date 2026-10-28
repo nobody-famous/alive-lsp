@@ -2,7 +2,8 @@
     (:use :cl)
     (:export :run-all)
     (:local-nicknames (:doc :alive/session/handler/document)
-                      (:state :alive/session/state)))
+                      (:state :alive/session/state)
+                      (:tokenizer :alive/parse/tokenizer)))
 
 (in-package :alive/test/session/handler/document)
 
@@ -144,8 +145,9 @@
                                       :actual (gethash "data" result)))))
 
         (clue:test "Simple tokens"
-            (let ((state (state:create)))
-                (state:set-file-text state "some/uri" "#+n")
+            (let ((state (state:create))
+                  (tokens (tokenizer:xyz-from-stream (make-string-input-stream "#+n"))))
+                (state:set-file-tokens state "some/uri" tokens)
                 (let* ((response (doc:sem-tokens state (list (cons :id 5)
                                                              (cons :params (list (cons :text-document (list (cons :uri "some/uri"))))))))
                        (result (gethash "result" response)))
@@ -153,8 +155,9 @@
                                       :actual (gethash "data" result)))))
 
         (clue:test "Multi-line token"
-            (let ((state (state:create)))
-                (state:set-file-text state "some/uri" (format nil "#| a bb~%~%ccc dddd~%|#"))
+            (let ((state (state:create))
+                  (tokens (tokenizer:xyz-from-stream (make-string-input-stream (format nil "#| a bb~%~%ccc dddd~%|#")))))
+                (state:set-file-tokens state "some/uri" tokens)
                 (let* ((response (doc:sem-tokens state (list (cons :id 5)
                                                              (cons :params (list (cons :text-document (list (cons :uri "some/uri"))))))))
                        (result (gethash "result" response)))

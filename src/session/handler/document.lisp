@@ -248,10 +248,8 @@
            (params (cdr (assoc :params msg)))
            (doc (cdr (assoc :text-document params)))
            (uri (cdr (assoc :uri doc)))
-           (text (or (state:get-file-text state uri) ""))
-           (sem-tokens (analysis:to-sem-tokens
-                           (tokenizer:from-stream
-                               (make-string-input-stream text)))))
+           (tokens (state:get-file-tokens state uri))
+           (sem-tokens (analysis:xyz-to-sem-tokens tokens)))
 
         (utils:result id "data" (if sem-tokens
                                     (to-sem-array sem-tokens)
