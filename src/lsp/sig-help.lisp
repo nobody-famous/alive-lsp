@@ -1,7 +1,6 @@
 (defpackage :alive/lsp/sig-help
     (:use :cl)
-    (:export :signatures
-             :xyz-signatures)
+    (:export :signatures)
     (:local-nicknames (:form :alive/parse/form)
                       (:forms :alive/parse/forms)
                       (:pkgs :alive/packages)
@@ -81,27 +80,7 @@
                   :finally (return param)))))
 
 
-(defun signatures (&key text pos)
-    (let* ((forms (forms:from-stream-or-nil (make-string-input-stream text)))
-           (top-form (forms:get-top-form forms pos))
-           (outer-form (forms:get-outer-form top-form pos))
-           (name-form (when outer-form
-                            (first (form:get-kids outer-form))))
-           (active-param (if outer-form
-                             (get-active-parameter pos outer-form)
-                             0))
-           (name-tokens (when name-form (form:get-tokens name-form)))
-           (pkg-name (alive/packages:for-pos text pos)))
-
-        (when (and name-tokens
-                   (<= 0 active-param))
-              (multiple-value-bind (name pkg)
-                      (pkgs:for-tokens name-tokens pkg-name)
-                  (let ((sig (get-sig-info active-param name pkg)))
-                      (when sig (list sig)))))))
-
-
-(defun xyz-signatures (&key forms pos)
+(defun signatures (&key forms pos)
     (let* ((top-form (forms:xyz-get-top-form forms pos))
            (outer-form (forms:xyz-get-outer-form top-form pos))
            (name-form (when outer-form

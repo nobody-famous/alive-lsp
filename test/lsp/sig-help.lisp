@@ -2,7 +2,8 @@
     (:use :cl)
     (:export :run-all)
     (:local-nicknames (:pos :alive/position)
-                      (:sig :alive/lsp/sig-help)))
+                      (:sig :alive/lsp/sig-help)
+                      (:utils :alive/test/utils)))
 
 (in-package :alive/test/lsp/sig-help)
 
@@ -17,27 +18,27 @@
 (defun test-no-signature ()
     (clue:test "No Signature"
         (clue:check-equal :expected nil
-                          :actual (sig:signatures :text "123" :pos (pos:create 0 1)))
+                          :actual (sig:signatures :forms (utils:get-forms "123") :pos (pos:create 0 1)))
 
         (clue:check-equal :expected nil
-                          :actual (sig:signatures :text "" :pos (pos:create 0 0)))
+                          :actual (sig:signatures :forms (utils:get-forms "") :pos (pos:create 0 0)))
 
         (clue:check-equal :expected nil
-                          :actual (sig:signatures :text "(foo x y)" :pos (pos:create 0 3)))
+                          :actual (sig:signatures :forms (utils:get-forms "(foo x y)") :pos (pos:create 0 3)))
 
         (clue:check-equal :expected nil
-                          :actual (sig:signatures :text "(defun foo () nil)" :pos (pos:create 0 2)))
-        
+                          :actual (sig:signatures :forms (utils:get-forms "(defun foo () nil)") :pos (pos:create 0 2)))
+
         (clue:check-equal :expected nil
-                          :actual (sig:signatures :text "(cl:defun foo () nil)" :pos (pos:create 0 2)))))
+                          :actual (sig:signatures :forms (utils:get-forms "(cl:defun foo () nil)") :pos (pos:create 0 2)))))
 
 
 (defun test-defun ()
     (clue:test "Defun"
-        (check-sig (first (sig:signatures :text "(cl:defun foo () nil)" :pos (pos:create 0 12)))
+        (check-sig (first (sig:signatures :forms (utils:get-forms "(cl:defun foo () nil)") :pos (pos:create 0 12)))
                    "DEFUN NAME LAMBDA-LIST &BODY BODY")
 
-        (check-sig (first (sig:signatures :text "(cl:defun foo () nil)" :pos (pos:create 0 15)))
+        (check-sig (first (sig:signatures :forms (utils:get-forms "(cl:defun foo () nil)") :pos (pos:create 0 15)))
                    "DEFUN NAME LAMBDA-LIST &BODY BODY")))
 
 

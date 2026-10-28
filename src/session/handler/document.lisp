@@ -153,7 +153,7 @@
            (pos (cdr (assoc :position params)))
            (uri (cdr (assoc :uri doc)))
            (forms (state:get-file-forms state uri))
-           (hov-text (alive/lsp/hover:xyz-get-text :forms forms :pos pos))
+           (hov-text (alive/lsp/hover:get-text :forms forms :pos pos))
            (result (or hov-text "")))
 
         (utils:result id "value" result)))
@@ -263,7 +263,7 @@
            (uri (cdr (assoc :uri doc)))
            (pos (cdr (assoc :position params)))
            (forms (state:get-file-forms state uri))
-           (items (or (sig-help:xyz-signatures :forms forms :pos pos)
+           (items (or (sig-help:signatures :forms forms :pos pos)
                       (make-array 0))))
 
         (utils:result id "signatures" items)))

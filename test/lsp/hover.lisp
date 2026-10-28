@@ -11,8 +11,8 @@
 (defun test-defun ()
     (clue:test "Defun hover"
         (clue:check-equal :expected T
-                          :actual (stringp (hover:xyz-get-text :forms (utils:get-forms "defun")
-                                                               :pos (pos:create 0 3))))))
+                          :actual (stringp (hover:get-text :forms (utils:get-forms "defun")
+                                                           :pos (pos:create 0 3))))))
 
 
 (defparameter not-really-there 5)
