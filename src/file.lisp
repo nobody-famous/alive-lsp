@@ -1,8 +1,7 @@
 (defpackage :alive/file
     (:use :cl)
     (:export :do-compile
-             :do-load
-             :try-compile)
+             :do-load             :try-compile)
     (:local-nicknames (:astreams :alive/sys/streams)))
 
 (in-package :alive/file)

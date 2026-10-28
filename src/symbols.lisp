@@ -5,7 +5,6 @@
              :external-p
              :find-tokens
              :for-pos
-             :xyz-for-pos
              :function-p
              :get-all-names
              :get-lambda-list
@@ -132,6 +131,15 @@
         (T nil)))
 
 
+(defun xyz-get-range-from-file (file source-path)
+    (handler-case
+            (with-open-file (in-stream file)
+                (let* ((tokens (tokenizer:xyz-from-stream in-stream))
+                       (forms (forms:from-tokens tokens)))
+                    (forms:xyz-get-range-for-path forms source-path)))
+        (T nil)))
+
+
 (defun get-location (sym)
     (let* ((src (when sym (lookup-sources sym)))
            (file (when src (sb-introspect:definition-source-pathname src)))
@@ -152,17 +160,7 @@
                                  ((= 1 (length found-tokens)) (list (first found-tokens) nil nil))))))
 
 
-(defun for-pos (text pos)
-    (let* ((forms (forms:from-stream (make-string-input-stream text)))
-           (top-form (forms:get-top-form forms pos))
-           (expr (forms:find-expr top-form pos))
-           (pkg-name (packages:for-pos text pos)))
-
-        (when expr
-              (packages:for-tokens (form:get-tokens expr) pkg-name))))
-
-
-(defun xyz-for-pos (forms pos)
+(defun for-pos (forms pos)
     (let* ((top-form (forms:xyz-get-top-form forms pos))
            (expr (forms:xyz-find-expr top-form pos))
            (pkg-name (packages:xyz-for-pos forms pos)))

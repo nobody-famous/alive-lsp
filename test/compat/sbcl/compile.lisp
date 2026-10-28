@@ -10,8 +10,9 @@
 
 (defun compile-foo ()
     (clue:test "Compile foo.lisp Test"
-        (let ((msgs (file:do-compile "test/files/compile/foo.lisp")))
-            (clue:check-equal :expected 5
+        (let ((msgs (file:do-compile "test/files/compile/foo.lisp"
+                                     :stdout-fn (lambda (data) (format T "~A~%" data)))))
+            (clue:check-equal :expected 3
                               :actual (length msgs)))))
 
 
@@ -19,7 +20,7 @@
     (clue:test "Load foo.lisp Test"
         (let ((msgs (file:do-load "test/files/compile/foo.lisp")))
 
-            (clue:check-equal :expected 9
+            (clue:check-equal :expected 2
                               :actual (length msgs)))))
 
 

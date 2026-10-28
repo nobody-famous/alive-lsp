@@ -34,7 +34,7 @@
         (let* ((forms (utils:get-forms "alive/symbols:"))
                (actual (comps:xyz-simple :forms forms
                                          :pos (pos:create 0 14))))
-            (clue:check-equal :expected 13
+            (clue:check-equal :expected 12
                               :actual (length actual)))))
 
 

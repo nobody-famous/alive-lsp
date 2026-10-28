@@ -45,7 +45,7 @@
            (*package* (if pkg pkg *package*)))
 
         (multiple-value-bind (name pkg-name)
-                (alive/symbols:xyz-for-pos forms pos)
+                (alive/symbols:for-pos forms pos)
             (when (and name pkg-name)
                   (list name pkg-name)))))
 

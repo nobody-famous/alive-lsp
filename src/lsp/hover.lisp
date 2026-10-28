@@ -27,6 +27,6 @@
            (*package* (or pkg *package*)))
 
         (multiple-value-bind (name pkg-name)
-                (symbols:xyz-for-pos forms pos)
+                (symbols:for-pos forms pos)
             (when (and name pkg-name)
                   (get-symbol-doc name pkg-name)))))

@@ -19,6 +19,6 @@
            (*package* (or pkg *package*)))
 
         (multiple-value-bind (name pkg-name)
-                (sym:xyz-for-pos forms pos)
+                (sym:for-pos forms pos)
             (when (and name pkg-name)
                   (get-location-for-name name pkg-name)))))

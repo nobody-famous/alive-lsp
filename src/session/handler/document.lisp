@@ -276,6 +276,6 @@
            (uri (cdr (assoc :uri doc)))
            (pos (cdr (assoc :position params)))
            (forms (state:get-file-forms state uri))
-           (locs (alive/sys/xref:xyz-get-locations forms pos)))
+           (locs (alive/sys/xref:get-locations forms pos)))
         (lsp-msg:create-response id
                                  :result-value (or locs (make-array 0)))))
