@@ -152,8 +152,8 @@
            (doc (cdr (assoc :text-document params)))
            (pos (cdr (assoc :position params)))
            (uri (cdr (assoc :uri doc)))
-           (text (or (state:get-file-text state uri) ""))
-           (hov-text (alive/lsp/hover:get-text :text text :pos pos))
+           (forms (state:get-file-forms state uri))
+           (hov-text (alive/lsp/hover:xyz-get-text :forms forms :pos pos))
            (result (or hov-text "")))
 
         (utils:result id "value" result)))

@@ -1,6 +1,7 @@
 (defpackage :alive/lsp/hover
     (:use :cl)
-    (:export :get-text)
+    (:export :get-text
+             :xyz-get-text)
     (:local-nicknames (:tokenizer :alive/parse/tokenizer)
                       (:packages :alive/packages)
                       (:symbols :alive/symbols)
@@ -28,5 +29,16 @@
 
         (multiple-value-bind (name pkg-name)
                 (symbols:for-pos text pos)
+            (when (and name pkg-name)
+                  (get-symbol-doc name pkg-name)))))
+
+
+(defun xyz-get-text (&key forms pos)
+    (let* ((pkg-name (packages:xyz-for-pos forms pos))
+           (pkg (packages:lookup pkg-name))
+           (*package* (or pkg *package*)))
+
+        (multiple-value-bind (name pkg-name)
+                (symbols:xyz-for-pos forms pos)
             (when (and name pkg-name)
                   (get-symbol-doc name pkg-name)))))
