@@ -21,7 +21,6 @@
 (in-package :alive/session/handler/traced-fns)
 
 
-(declaim (ftype (function (string cons) (values (or null string) (or null string))) get-function-for-pos))
 (defun get-function-for-pos (text pos)
     (loop :with done := nil
           :with to-trace := nil
@@ -77,17 +76,71 @@
                                  (T nil)))))
 
 
-(declaim (ftype (function (deps:dependencies state:state cons) null) trace-fn))
+(defun xyz-get-function-for-pos (tokens pos)
+    (loop :with done := nil
+          :with to-trace := nil
+          :with fn-name := nil
+          :with pkg-name := nil
+          :with colons := nil
+          :with prev := nil
+          :with next := nil
+          :with next-next := nil
+          :with token := nil
+
+          :while (and tokens (not done))
+          :do (setf token (car tokens))
+              (setf tokens (cdr tokens))
+              (setf next (car tokens))
+              (setf next-next (car (cdr tokens)))
+
+              (cond ((pos:less-than pos (token:xyz-get-end token))
+                        (cond ((eq types:*symbol* (token:xyz-get-type-value token))
+                                  (cond ((and (not (eq types:*colons* (token:xyz-get-type-value next)))
+                                              (not (and (eq types:*colons* (token:xyz-get-type-value prev))
+                                                        (not pkg-name))))
+                                            (setf fn-name (token:xyz-get-text token)))
+                                        ((and (not pkg-name)
+                                              (eq types:*colons* (token:xyz-get-type-value next))
+                                              (eq types:*symbol* (token:xyz-get-type-value next-next)))
+                                            (setf pkg-name (token:xyz-get-text token))
+                                            (setf colons (token:xyz-get-text next))
+                                            (setf fn-name (token:xyz-get-text next-next)))))
+                              ((and (eq types:*colons* (token:xyz-get-type-value token))
+                                    (eq types:*symbol* (token:xyz-get-type-value prev))
+                                    (eq types:*symbol* (token:xyz-get-type-value next)))
+                                  (setf pkg-name (token:xyz-get-text prev))
+                                  (setf colons (token:xyz-get-text token))
+                                  (setf fn-name (token:xyz-get-text next))))
+
+                        (unless fn-name
+                            (setf pkg-name nil))
+
+                        (setf done T))
+                    ((eq types:*colons* (token:xyz-get-type-value token))
+                        (when (and prev (eq types:*symbol* (token:xyz-get-type-value prev)))
+                              (setf colons (token:xyz-get-text token))
+                              (setf pkg-name (token:xyz-get-text prev))))
+                    (T (setf pkg-name nil)
+                       (setf colons nil)))
+
+              (setf prev token)
+
+          :finally (return (cond ((and pkg-name colons fn-name) (format nil "~A~A~A" pkg-name colons fn-name))
+                                 (fn-name fn-name)
+                                 (T nil)))))
+
+
 (defun trace-fn (deps state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
            (doc (cdr (assoc :text-document params)))
            (pos (cdr (assoc :position params)))
            (uri (cdr (assoc :uri doc)))
-           (text (or (state:get-file-text state uri) ""))
-           (pkg (packages:for-pos text pos))
+           (forms (state:get-file-forms state uri))
+           (tokens (state:get-file-tokens state uri))
+           (pkg (packages:xyz-for-pos forms pos))
            (*package* (or (packages:lookup pkg) *package*))
-           (to-trace (get-function-for-pos text pos))
+           (to-trace (xyz-get-function-for-pos tokens pos))
            (result (if to-trace
                        (deps:trace-fn deps to-trace)
                        nil)))
@@ -95,7 +148,6 @@
         (deps:send-msg deps (utils:result id "function" result))))
 
 
-(declaim (ftype (function (deps:dependencies state:state cons) null) untrace-fn))
 (defun untrace-fn (deps state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
@@ -112,7 +164,6 @@
         (deps:send-msg deps (utils:result id "function" to-untrace))))
 
 
-(declaim (ftype (function (deps:dependencies cons) null) untrace-fn-by-name))
 (defun untrace-fn-by-name (deps msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
@@ -126,7 +177,6 @@
         (deps:send-msg deps (lsp-msg:create-response id :result-value T))))
 
 
-(declaim (ftype (function (deps:dependencies cons) null) trace-pkg))
 (defun trace-pkg (deps msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
@@ -138,7 +188,6 @@
         (deps:send-msg deps (utils:result id "function" result))))
 
 
-(declaim (ftype (function (deps:dependencies cons) null) untrace-pkg))
 (defun untrace-pkg (deps msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
@@ -149,7 +198,6 @@
         (deps:send-msg deps (lsp-msg:create-response id :result-value T))))
 
 
-(declaim (ftype (function (deps:dependencies cons) hash-table) list-all))
 (defun list-all (deps msg)
     (utils:result (cdr (assoc :id msg))
                   "traced"

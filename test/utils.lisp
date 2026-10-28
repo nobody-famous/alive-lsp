@@ -6,6 +6,7 @@
              :check-exists
              :check-has-result
              :get-forms
+             :get-tokens
              :print-hash-table
              :stream-from-string)
     (:local-nicknames (:forms :alive/parse/forms)
@@ -61,3 +62,7 @@
 (defun get-forms (text)
     (let ((tokens (tokenizer:xyz-from-stream (make-string-input-stream text))))
         (forms:from-tokens tokens)))
+
+
+(defun get-tokens (text)
+    (tokenizer:xyz-from-stream (make-string-input-stream text)))
