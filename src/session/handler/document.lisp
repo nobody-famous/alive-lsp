@@ -275,7 +275,7 @@
            (doc (cdr (assoc :text-document params)))
            (uri (cdr (assoc :uri doc)))
            (pos (cdr (assoc :position params)))
-           (text (or (state:get-file-text state uri) ""))
-           (locs (alive/sys/xref:get-locations text pos)))
+           (forms (state:get-file-forms state uri))
+           (locs (alive/sys/xref:xyz-get-locations forms pos)))
         (lsp-msg:create-response id
                                  :result-value (or locs (make-array 0)))))

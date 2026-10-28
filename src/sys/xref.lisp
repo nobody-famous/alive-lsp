@@ -1,7 +1,8 @@
 (defpackage :alive/sys/xref
     (:use :cl)
     (:export :find-references
-             :get-locations)
+             :get-locations
+             :xyz-get-locations)
     (:local-nicknames (:form :alive/parse/form)
                       (:forms :alive/parse/forms)
                       (:loc :alive/location)
@@ -71,5 +72,12 @@
 (defun get-locations (text pos)
     (multiple-value-bind (name pkg-name)
             (sym:for-pos text pos)
+        (when (and name pkg-name)
+              (find-references name pkg-name))))
+
+
+(defun xyz-get-locations (forms pos)
+    (multiple-value-bind (name pkg-name)
+            (sym:xyz-for-pos forms pos)
         (when (and name pkg-name)
               (find-references name pkg-name))))
