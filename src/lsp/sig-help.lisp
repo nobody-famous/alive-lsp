@@ -1,6 +1,7 @@
 (defpackage :alive/lsp/sig-help
     (:use :cl)
-    (:export :signatures)
+    (:export :signatures
+             :xyz-signatures)
     (:local-nicknames (:form :alive/parse/form)
                       (:forms :alive/parse/forms)
                       (:pkgs :alive/packages)
@@ -67,6 +68,19 @@
                   :finally (return param)))))
 
 
+(defun xyz-get-active-parameter (pos form)
+    (let* ((start (car (form:get-kids form)))
+           (start-end (form:xyz-get-end start)))
+        (if (pos:less-than pos start-end)
+            -1
+            (loop :with param := 0
+                  :for kid :in (cdr (form:get-kids form))
+                  :until (and (form:xyz-get-end kid)
+                              (pos:less-than pos (form:xyz-get-end kid)))
+                  :do (incf param)
+                  :finally (return param)))))
+
+
 (defun signatures (&key text pos)
     (let* ((forms (forms:from-stream-or-nil (make-string-input-stream text)))
            (top-form (forms:get-top-form forms pos))
@@ -83,5 +97,24 @@
                    (<= 0 active-param))
               (multiple-value-bind (name pkg)
                       (pkgs:for-tokens name-tokens pkg-name)
+                  (let ((sig (get-sig-info active-param name pkg)))
+                      (when sig (list sig)))))))
+
+
+(defun xyz-signatures (&key forms pos)
+    (let* ((top-form (forms:xyz-get-top-form forms pos))
+           (outer-form (forms:xyz-get-outer-form top-form pos))
+           (name-form (when outer-form
+                            (first (form:get-kids outer-form))))
+           (active-param (if outer-form
+                             (xyz-get-active-parameter pos outer-form)
+                             0))
+           (name-tokens (when name-form (form:get-tokens name-form)))
+           (pkg-name (alive/packages:xyz-for-pos forms pos)))
+
+        (when (and name-tokens
+                   (<= 0 active-param))
+              (multiple-value-bind (name pkg)
+                      (pkgs:xyz-for-tokens name-tokens pkg-name)
                   (let ((sig (get-sig-info active-param name pkg)))
                       (when sig (list sig)))))))

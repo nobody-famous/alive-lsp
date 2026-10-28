@@ -6,6 +6,7 @@
              :from-tokens
              :from-stream-or-nil
              :get-outer-form
+             :xyz-get-outer-form
              :get-nth-form
              :get-range-for-path
              :get-top-form
@@ -384,6 +385,37 @@
             nil)))
 
 
+(defun xyz-find-inner-form (form pos)
+    (let ((start (form:xyz-get-start form))
+          (end (form:xyz-get-end form))
+          (kids (form:get-kids form)))
+
+        (if (and kids
+                 (pos:less-or-equal start pos)
+                 (pos:less-than pos end))
+
+            (loop :with target := form
+                  :for kid :in kids
+                  :do (let ((inner (xyz-find-inner-form kid pos)))
+                          (when inner
+                                (setf target inner)))
+                  :finally (return target))
+
+            nil)))
+
+
+(defun get-outer-form (form pos)
+    (when (and form
+               (car (form:get-kids form)))
+          (find-inner-form form pos)))
+
+
+(defun xyz-get-outer-form (form pos)
+    (when (and form
+               (car (form:get-kids form)))
+          (xyz-find-inner-form form pos)))
+
+
 (defun find-expr (form pos)
     (let ((start (form:get-start form))
           (end (form:get-end form))
@@ -412,12 +444,6 @@
               (if kid
                   (xyz-find-expr kid pos)
                   form))))
-
-
-(defun get-outer-form (form pos)
-    (when (and form
-               (car (form:get-kids form)))
-          (find-inner-form form pos)))
 
 
 (defun get-range-for-path (forms source-path)

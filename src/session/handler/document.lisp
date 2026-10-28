@@ -262,8 +262,8 @@
            (doc (cdr (assoc :text-document params)))
            (uri (cdr (assoc :uri doc)))
            (pos (cdr (assoc :position params)))
-           (text (or (state:get-file-text state uri) ""))
-           (items (or (sig-help:signatures :text text :pos pos)
+           (forms (state:get-file-forms state uri))
+           (items (or (sig-help:xyz-signatures :forms forms :pos pos)
                       (make-array 0))))
 
         (utils:result id "signatures" items)))
