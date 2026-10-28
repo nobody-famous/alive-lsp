@@ -211,11 +211,10 @@
            (params (cdr (assoc :params msg)))
            (doc (cdr (assoc :text-document params)))
            (uri (cdr (assoc :uri doc)))
-           (text (or (state:get-file-text state uri) ""))
-           (forms (forms:from-stream-or-nil (make-string-input-stream text)))
+           (forms (state:get-file-forms state uri))
            (pos-list (cdr (assoc :positions params)))
            (ranges (when (and forms pos-list)
-                         (selection:ranges forms pos-list))))
+                         (selection:xyz-ranges forms pos-list))))
 
         (lsp-msg:create-response id :result-value (or ranges
                                                       (make-hash-table :test #'equalp)))))

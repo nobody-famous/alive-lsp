@@ -108,7 +108,6 @@
                      (kind (when fn (form-kind fn))))
 
                   (when (and fn name kind)
-                        (format T "***** XYZ-FOR-DOCUMENT ~A~%" (to-doc-sym name kind (form:xyz-get-start form) (form:xyz-get-end form)))
                         (push (to-doc-sym name kind (form:xyz-get-start form) (form:xyz-get-end form))
                               syms)))
 
