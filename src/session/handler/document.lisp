@@ -139,7 +139,7 @@
            (doc (cdr (assoc :text-document params)))
            (uri (cdr (assoc :uri doc)))
            (forms (state:get-file-forms state uri))
-           (symbols (alive/lsp/symbol:xyz-for-document forms)))
+           (symbols (alive/lsp/symbol:for-document forms)))
 
         (let ((result (or symbols (make-hash-table))))
             (lsp-msg:create-response id

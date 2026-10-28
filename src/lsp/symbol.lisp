@@ -1,8 +1,7 @@
 (defpackage :alive/lsp/symbol
     (:use :cl)
     (:export :for-pos
-             :for-document
-             :xyz-for-document)
+             :for-document)
     (:local-nicknames (:form :alive/parse/form)
                       (:packages :alive/packages)
                       (:token :alive/parse/token)
@@ -51,12 +50,6 @@
                   (list name pkg-name)))))
 
 
-(defun form-text (text form)
-    (let* ((start (form:get-start-offset form))
-           (end (form:get-end-offset form)))
-        (subseq text start end)))
-
-
 (defun form-kind (name)
     (let ((lc-name (string-downcase name)))
         (cond ((string= lc-name "defparameter") *kind-variable*)
@@ -80,25 +73,7 @@
         doc-sym))
 
 
-(defun for-document (text forms)
-    (loop :with syms := nil
-
-          :for form :in forms :do
-              (let* ((kids (form:get-kids form))
-                     (fn (when (first kids)
-                               (form-text text (first kids))))
-                     (name (when (second kids)
-                                 (form-text text (second kids))))
-                     (kind (when fn (form-kind fn))))
-
-                  (when (and fn name kind)
-                        (push (to-doc-sym name kind (form:get-start form) (form:get-end form))
-                              syms)))
-
-          :finally (return syms)))
-
-
-(defun xyz-for-document (forms)
+(defun for-document (forms)
     (loop :with syms := nil
 
           :for form :in forms :do
