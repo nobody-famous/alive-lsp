@@ -3,7 +3,6 @@
     (:export :add-bars
              :callable-p
              :external-p
-             :find-tokens
              :for-pos
              :function-p
              :get-all-names
@@ -126,14 +125,6 @@
 (defun get-range-from-file (file source-path)
     (handler-case
             (with-open-file (in-stream file)
-                (let ((forms (forms:from-stream in-stream)))
-                    (forms:get-range-for-path forms source-path)))
-        (T nil)))
-
-
-(defun xyz-get-range-from-file (file source-path)
-    (handler-case
-            (with-open-file (in-stream file)
                 (let* ((tokens (tokenizer:xyz-from-stream in-stream))
                        (forms (forms:from-tokens tokens)))
                     (forms:xyz-get-range-for-path forms source-path)))
@@ -151,19 +142,10 @@
             (list nil nil))))
 
 
-(defun find-tokens (tokens pos)
-    (loop :for token :in tokens
-          :collect token :into found-tokens
-          :while (pos:less-than (token:get-end token) pos)
-          :finally (return (cond ((<= 3 (length found-tokens)) (reverse (subseq (reverse found-tokens) 0 3)))
-                                 ((= 2 (length found-tokens)) (reverse (cons nil found-tokens)))
-                                 ((= 1 (length found-tokens)) (list (first found-tokens) nil nil))))))
-
-
 (defun for-pos (forms pos)
     (let* ((top-form (forms:xyz-get-top-form forms pos))
            (expr (forms:xyz-find-expr top-form pos))
-           (pkg-name (packages:xyz-for-pos forms pos)))
+           (pkg-name (packages:for-pos forms pos)))
 
         (when expr
               (packages:xyz-for-tokens (form:get-tokens expr) pkg-name))))

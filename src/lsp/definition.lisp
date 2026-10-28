@@ -14,7 +14,7 @@
 
 
 (defun get-location (&key forms pos)
-    (let* ((pkg-name (packages:xyz-for-pos forms pos))
+    (let* ((pkg-name (packages:for-pos forms pos))
            (pkg (packages:lookup pkg-name))
            (*package* (or pkg *package*)))
 

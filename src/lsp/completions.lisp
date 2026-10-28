@@ -225,7 +225,7 @@
            (token2 (cadr tokens))
            (token3 (caddr tokens))
            (token4 (cadddr tokens))
-           (pkg (packages:lookup (packages:xyz-for-pos forms pos)))
+           (pkg (packages:lookup (packages:for-pos forms pos)))
            (*package* (if pkg pkg *package*)))
 
         (unless token4

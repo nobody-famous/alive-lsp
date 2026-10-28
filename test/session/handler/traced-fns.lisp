@@ -81,7 +81,8 @@
                                             nil)))
            (msg (create-trace-fn-msg 5 "some/uri" pos)))
 
-        (state:set-file-text state "some/uri" text)
+        (state:set-file-forms state "some/uri" (utils:get-forms text))
+        (state:set-file-tokens state "some/uri" (utils:get-tokens text))
         (handler:untrace-fn deps state msg)
 
         (clue:check-exists (gethash "result" resp))

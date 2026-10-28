@@ -1,7 +1,6 @@
 (defpackage :alive/packages
     (:use :cl)
-    (:export :xyz-for-pos
-             :for-pos
+    (:export :for-pos
              :for-string
              :for-tokens
              :xyz-for-tokens
@@ -144,24 +143,7 @@
                   (eq (utils:lookup-symbol name pkg-name) in-pkg-sym)))))
 
 
-(defun for-pos (text pos)
-    (loop :with forms := (forms:from-stream (make-string-input-stream text))
-          :with prev-form := nil
-          :with pkg := "cl-user"
-
-          :for form :in forms
-          :until (pos:less-or-equal pos (form:get-start form))
-          :do (when (and (not (eq alive/types:*ifdef-false* (form:get-form-type prev-form)))
-                         (in-package-p form pkg)
-                         (= 2 (length (form:get-kids form))))
-                    (setf pkg (name-from-string (subseq text
-                                                        (form:get-start-offset (elt (form:get-kids form) 1))
-                                                        (form:get-end-offset (elt (form:get-kids form) 1))))))
-              (setf prev-form form)
-          :finally (return pkg)))
-
-
-(defun xyz-for-pos (forms pos)
+(defun for-pos (forms pos)
     (loop :with prev-form := nil
           :with pkg := "cl-user"
 

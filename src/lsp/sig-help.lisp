@@ -89,7 +89,7 @@
                              (xyz-get-active-parameter pos outer-form)
                              0))
            (name-tokens (when name-form (form:get-tokens name-form)))
-           (pkg-name (alive/packages:xyz-for-pos forms pos)))
+           (pkg-name (alive/packages:for-pos forms pos)))
 
         (when (and name-tokens
                    (<= 0 active-param))

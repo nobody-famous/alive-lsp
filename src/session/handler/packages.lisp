@@ -18,7 +18,7 @@
            (pos (cdr (assoc :position params)))
            (uri (cdr (assoc :uri doc)))
            (forms (state:get-file-forms state uri))
-           (pkg (packages:xyz-for-pos forms pos)))
+           (pkg (packages:for-pos forms pos)))
 
         (utils:result id "package" pkg)))
 

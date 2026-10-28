@@ -95,7 +95,7 @@
               :for form :in forms
               :do (multiple-value-bind (pos key name)
                           (xyz-get-values form)
-                      (setf pkg (packages:xyz-for-pos forms pos))
+                      (setf pkg (packages:for-pos forms pos))
                       (if (string= key "defmacro")
                           (push (create-inspect-macro-lens pos name pkg) lenses)
                           (when (has-code-lens key)

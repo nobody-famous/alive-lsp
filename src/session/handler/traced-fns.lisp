@@ -138,7 +138,7 @@
            (uri (cdr (assoc :uri doc)))
            (forms (state:get-file-forms state uri))
            (tokens (state:get-file-tokens state uri))
-           (pkg (packages:xyz-for-pos forms pos))
+           (pkg (packages:for-pos forms pos))
            (*package* (or (packages:lookup pkg) *package*))
            (to-trace (xyz-get-function-for-pos tokens pos))
            (result (if to-trace
@@ -154,10 +154,11 @@
            (doc (cdr (assoc :text-document params)))
            (pos (cdr (assoc :position params)))
            (uri (cdr (assoc :uri doc)))
-           (text (or (state:get-file-text state uri) ""))
-           (pkg (packages:for-pos text pos))
+           (forms (state:get-file-forms state uri))
+           (tokens (state:get-file-tokens state uri))
+           (pkg (packages:for-pos forms pos))
            (*package* (or (packages:lookup pkg) *package*))
-           (to-untrace (get-function-for-pos text pos)))
+           (to-untrace (xyz-get-function-for-pos tokens pos)))
 
         (when to-untrace
               (deps:untrace-fn deps to-untrace))
