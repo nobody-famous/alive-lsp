@@ -138,9 +138,8 @@
            (params (cdr (assoc :params msg)))
            (doc (cdr (assoc :text-document params)))
            (uri (cdr (assoc :uri doc)))
-           (text (or (state:get-file-text state uri) ""))
-           (forms (forms:from-stream-or-nil (make-string-input-stream text)))
-           (symbols (alive/lsp/symbol:for-document text forms)))
+           (forms (state:get-file-forms state uri))
+           (symbols (alive/lsp/symbol:xyz-for-document forms)))
 
         (let ((result (or symbols (make-hash-table))))
             (lsp-msg:create-response id
@@ -155,7 +154,7 @@
            (uri (cdr (assoc :uri doc)))
            (text (or (state:get-file-text state uri) ""))
            (hov-text (alive/lsp/hover:get-text :text text :pos pos))
-           (result (if hov-text hov-text "")))
+           (result (or hov-text "")))
 
         (utils:result id "value" result)))
 

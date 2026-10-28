@@ -1,7 +1,8 @@
 (defpackage :alive/lsp/symbol
     (:use :cl)
     (:export :for-pos
-             :for-document)
+             :for-document
+             :xyz-for-document)
     (:local-nicknames (:form :alive/parse/form)
                       (:packages :alive/packages)
                       (:token :alive/parse/token)
@@ -92,6 +93,23 @@
 
                   (when (and fn name kind)
                         (push (to-doc-sym name kind (form:get-start form) (form:get-end form))
+                              syms)))
+
+          :finally (return syms)))
+
+
+(defun xyz-for-document (forms)
+    (loop :with syms := nil
+
+          :for form :in forms :do
+              (let* ((kids (form:get-kids form))
+                     (fn (form:xyz-get-sym-text (first kids)))
+                     (name (form:xyz-get-sym-text (second kids)))
+                     (kind (when fn (form-kind fn))))
+
+                  (when (and fn name kind)
+                        (format T "***** XYZ-FOR-DOCUMENT ~A~%" (to-doc-sym name kind (form:xyz-get-start form) (form:xyz-get-end form)))
+                        (push (to-doc-sym name kind (form:xyz-get-start form) (form:xyz-get-end form))
                               syms)))
 
           :finally (return syms)))
