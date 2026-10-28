@@ -166,10 +166,10 @@
            (opts (cdr (assoc :options params)))
            (pos (cdr (assoc :position params)))
            (uri (cdr (assoc :uri doc)))
-           (text (or (state:get-file-text state uri) ""))
-           (edits (formatter:on-type (make-string-input-stream text)
-                                     :options (fmt-opts:convert opts)
-                                     :pos pos))
+           (tokens (state:get-file-tokens state uri))
+           (edits (formatter:xyz-on-type tokens
+                                         :options (fmt-opts:convert opts)
+                                         :pos pos))
            (value (if edits
                       (fmt-utils:to-text-edits edits)
                       (make-array 0))))

@@ -1,6 +1,7 @@
 (defpackage :alive/format
     (:use :cl)
     (:export :on-type
+             :xyz-on-type
              :eol
              :range)
     (:local-nicknames (:edit :alive/text-edit)
@@ -491,9 +492,6 @@
         (xyz-pop-token state)))
 
 
-
-
-
 (defun range (tokens range &optional opts)
     (let* ((state (make-parse-state :xyz-tokens tokens
                                     :range range
@@ -520,6 +518,33 @@
 (defun on-type (input &key options pos)
     (let* ((tokens (tokenizer:xyz-from-stream input))
            (state (make-parse-state :xyz-tokens tokens
+                                    :range (range:create (pos:create 0 0) pos)
+                                    :cur-pkg (package-name *package*))))
+
+        (when options
+              (update-options state options))
+
+        (when tokens
+              (loop :for token := (xyz-next-token state)
+                    :for token-end := (token:xyz-get-end token)
+
+                    :while (and token
+                                (pos:less-or-equal token-end pos))
+
+                    :do (xyz-do-step state)
+
+                    :finally (let* ((indent (if token
+                                                (xyz-get-on-type-indent state)
+                                                0))
+                                    (line (pos:line pos))
+                                    (new-range (range:create (pos:create line 0) pos)))
+
+                                 (return (list (edit:create :range new-range
+                                                            :text (indent-string 0 indent)))))))))
+
+
+(defun xyz-on-type (tokens &key options pos)
+    (let* ((state (make-parse-state :xyz-tokens tokens
                                     :range (range:create (pos:create 0 0) pos)
                                     :cur-pkg (package-name *package*))))
 
