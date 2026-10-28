@@ -2,7 +2,6 @@
     (:use :cl)
     (:export :list-all
              :for-position
-             :xyz-for-position
              :remove-pkg)
     (:local-nicknames (:lsp-msg :alive/lsp/message/abstract)
                       (:packages :alive/packages)
@@ -13,18 +12,6 @@
 
 
 (defun for-position (state msg)
-    (let* ((id (cdr (assoc :id msg)))
-           (params (cdr (assoc :params msg)))
-           (doc (cdr (assoc :text-document params)))
-           (pos (cdr (assoc :position params)))
-           (uri (cdr (assoc :uri doc)))
-           (text (or (state:get-file-text state uri) ""))
-           (pkg (packages:for-pos text pos)))
-
-        (utils:result id "package" pkg)))
-
-
-(defun xyz-for-position (state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
            (doc (cdr (assoc :text-document params)))

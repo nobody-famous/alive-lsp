@@ -3,7 +3,8 @@
     (:export :run-all)
     (:local-nicknames (:forms :alive/parse/forms)
                       (:handler :alive/session/handler/packages)
-                      (:state :alive/session/state)))
+                      (:state :alive/session/state)
+                      (:utils :alive/test/utils)))
 
 (in-package :alive/test/session/handler/packages)
 
@@ -16,18 +17,10 @@
 
 (defun run-test (exp-pkg text)
     (let ((state (state:create)))
-        (state:set-file-text state "some/uri" text)
+        (state:set-file-forms state "some/uri" (utils:get-forms text))
         (clue:check-equal :expected exp-pkg
                           :actual (gethash "package"
                                            (gethash "result" (handler:for-position state *default-message*))))))
-
-
-(defun xyz-run-test (exp-pkg text)
-    (let ((state (state:create)))
-        (state:set-file-forms state "some/uri" (forms:from-stream (make-string-input-stream text)))
-        (clue:check-equal :expected exp-pkg
-                          :actual (gethash "package"
-                                           (gethash "result" (handler:xyz-for-position state *default-message*))))))
 
 
 (defun test-for-pos ()
@@ -37,15 +30,6 @@
 
         (clue:test "in-package"
             (run-test "alive/test/session/handler/packages" "(in-package :alive/test/session/handler/packages)"))))
-
-
-(defun xyz-test-for-pos ()
-    (clue:suite "For Position"
-        (clue:test "cl-user"
-            (xyz-run-test "cl-user" "(+ 1 2)"))
-
-        (clue:test "in-package"
-            (xyz-run-test "alive/test/session/handler/packages" "(in-package :alive/test/session/handler/packages)"))))
 
 
 (defun test-list-all ()
