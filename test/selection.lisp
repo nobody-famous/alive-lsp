@@ -45,7 +45,7 @@
 
 (defun test-failure ()
     (clue:test "Failures"
-        (let ((forms (forms:from-stream (make-string-input-stream "foo"))))
+        (let ((forms (utils:get-forms "foo")))
             (clue:expect-fail (lambda ()
                                   (selection:ranges forms 5))))))
 
