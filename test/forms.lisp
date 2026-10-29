@@ -23,13 +23,13 @@
                (child-2 (get-child-form text (pos:create 0 12)))
                (child-3 (get-child-form text (pos:create 0 17))))
             (clue:check-equal :expected (pos:create 0 0)
-                              :actual (form:xyz-get-start all))
+                              :actual (form:get-start all))
             (clue:check-equal :expected (pos:create 0 4)
-                              :actual (form:xyz-get-start child-1))
+                              :actual (form:get-start child-1))
             (clue:check-equal :expected (pos:create 0 10)
-                              :actual (form:xyz-get-start child-2))
+                              :actual (form:get-start child-2))
             (clue:check-equal :expected (pos:create 0 15)
-                              :actual (form:xyz-get-start child-3)))))
+                              :actual (form:get-start child-3)))))
 
 
 (defun run-all ()

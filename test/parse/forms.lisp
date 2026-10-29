@@ -583,14 +583,10 @@
                                                                      :end (pos:create 0 11)
                                                                      :end-offset 11
                                                                      :text "aa")))))
-            (clue:check-equal :expected 9
-                              :actual (form:xyz-get-start-offset sym-form))
             (clue:check-equal :expected (pos:create 0 9)
-                              :actual (form:xyz-get-start sym-form))
-            (clue:check-equal :expected 11
-                              :actual (form:xyz-get-end-offset sym-form))
+                              :actual (form:get-start sym-form))
             (clue:check-equal :expected (pos:create 0 11)
-                              :actual (form:xyz-get-end sym-form))))
+                              :actual (form:get-end sym-form))))
 
     (clue:test "Getters for parens form"
         (let ((paren-form (form:create :form-type types:*open-paren*
@@ -613,14 +609,10 @@
                                                                                                 :end (pos:create 0 5)
                                                                                                 :end-offset 5
                                                                                                 :text "foo")))))))
-            (clue:check-equal :expected 1
-                              :actual (form:xyz-get-start-offset paren-form))
             (clue:check-equal :expected (pos:create 0 1)
-                              :actual (form:xyz-get-start paren-form))
-            (clue:check-equal :expected 6
-                              :actual (form:xyz-get-end-offset paren-form))
+                              :actual (form:get-start paren-form))
             (clue:check-equal :expected (pos:create 0 6)
-                              :actual (form:xyz-get-end paren-form))))
+                              :actual (form:get-end paren-form))))
 
     (clue:test "Getters for quoted form"
         (let ((quoted-form (form:create :form-type types:*quote*
@@ -651,14 +643,10 @@
                                                                                                                           :end-offset 4
                                                                                                                           :text "1"))
                                                                                           :kids (list))))))))
-            (clue:check-equal :expected 1
-                              :actual (form:xyz-get-start-offset quoted-form))
             (clue:check-equal :expected (pos:create 0 1)
-                              :actual (form:xyz-get-start quoted-form))
-            (clue:check-equal :expected 5
-                              :actual (form:xyz-get-end-offset quoted-form))
+                              :actual (form:get-start quoted-form))
             (clue:check-equal :expected (pos:create 0 5)
-                              :actual (form:xyz-get-end quoted-form)))))
+                              :actual (form:get-end quoted-form)))))
 
 
 (defun test-commas ()
