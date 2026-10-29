@@ -54,7 +54,7 @@
                   info))))
 
 
-(defun xyz-get-active-parameter (pos form)
+(defun get-active-parameter (pos form)
     (let* ((start (car (form:get-kids form)))
            (start-end (form:get-end start)))
         (if (pos:less-than pos start-end)
@@ -73,7 +73,7 @@
            (name-form (when outer-form
                             (first (form:get-kids outer-form))))
            (active-param (if outer-form
-                             (xyz-get-active-parameter pos outer-form)
+                             (get-active-parameter pos outer-form)
                              0))
            (name-tokens (when name-form (form:get-tokens name-form)))
            (pkg-name (alive/packages:for-pos forms pos)))
