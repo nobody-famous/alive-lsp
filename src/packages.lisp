@@ -116,8 +116,9 @@
           :for form :in forms
           :until (pos:less-or-equal pos (form:get-start form))
           :do (when (and (not (eq alive/types:*ifdef-false* (form:get-form-type prev-form)))
-                         (in-package-p form pkg))
-                    (setf pkg (name-from-string (form:get-sym-text (elt (form:get-kids form) 1)))))
+                         (in-package-p form pkg)
+                         (cdr (form:get-kids form)))
+                    (setf pkg (name-from-string (form:get-sym-text (cdr (form:get-kids form))))))
               (setf prev-form form)
           :finally (return pkg)))
 
