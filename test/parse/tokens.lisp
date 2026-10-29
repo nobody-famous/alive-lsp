@@ -16,7 +16,7 @@
 
 (defun test-foo ()
     (clue:test "Foo symbol"
-        (clue:check-equal :expected (list (token:xyz-create
+        (clue:check-equal :expected (list (token:create
                                               :type-value alive/types:*symbol*
                                               :start (pos:create 0 0)
                                               :start-offset 0
@@ -28,7 +28,7 @@
 
 (defun test-defun ()
     (clue:test "Defun symbol"
-        (clue:check-equal :expected (list (token:xyz-create
+        (clue:check-equal :expected (list (token:create
                                               :type-value alive/types:*symbol*
                                               :start (pos:create 0 0)
                                               :start-offset 0
@@ -40,7 +40,7 @@
 
 (defun test-comment ()
     (clue:test "Comment"
-        (clue:check-equal :expected (list (token:xyz-create
+        (clue:check-equal :expected (list (token:create
                                               :type-value alive/types:*line-comment*
                                               :start (pos:create 0 0)
                                               :start-offset 0
@@ -53,7 +53,7 @@
 (defun test-string ()
     (clue:suite "String"
         (clue:test "String"
-            (clue:check-equal :expected (list (token:xyz-create
+            (clue:check-equal :expected (list (token:create
                                                   :type-value alive/types:*string*
                                                   :start (pos:create 0 0)
                                                   :start-offset 0
@@ -63,7 +63,7 @@
                               :actual (tokens-for-string "\"String\"")))
 
         (clue:test "Open String"
-            (clue:check-equal :expected (list (token:xyz-create
+            (clue:check-equal :expected (list (token:create
                                                   :type-value alive/types:*string*
                                                   :start (pos:create 0 0)
                                                   :start-offset 0
@@ -75,14 +75,14 @@
 
 (defun test-basic-macro ()
     (clue:test "Basic macro"
-        (clue:check-equal :expected (list (token:xyz-create
+        (clue:check-equal :expected (list (token:create
                                               :type-value alive/types:*macro*
                                               :start (pos:create 0 0)
                                               :start-offset 0
                                               :end (pos:create 0 2)
                                               :end-offset 2
                                               :text "#'")
-                                          (token:xyz-create
+                                          (token:create
                                               :type-value alive/types:*symbol*
                                               :start (pos:create 0 2)
                                               :start-offset 2
@@ -95,7 +95,7 @@
 (defun test-ifdef-macro ()
     (clue:suite "ifdef"
         (clue:test "Ifdef macro"
-            (clue:check-equal :expected (list (token:xyz-create
+            (clue:check-equal :expected (list (token:create
                                                   :type-value alive/types:*ifdef-false*
                                                   :start (pos:create 0 0)
                                                   :start-offset 0
@@ -105,7 +105,7 @@
                               :actual (tokens-for-string "#+n")))
 
         (clue:test "Invalid ifdef macro"
-            (clue:check-equal :expected (list (token:xyz-create
+            (clue:check-equal :expected (list (token:create
                                                   :type-value alive/types:*ifdef-false*
                                                   :start (pos:create 0 0)
                                                   :start-offset 0
@@ -115,7 +115,7 @@
                               :actual (tokens-for-string "#+(")))
 
         (clue:test "Valid ifdef macro"
-            (clue:check-equal :expected (list (token:xyz-create
+            (clue:check-equal :expected (list (token:create
                                                   :type-value alive/types:*ifdef-false*
                                                   :start (pos:create 0 0)
                                                   :start-offset 0
@@ -127,14 +127,14 @@
 
 (defun test-parens ()
     (clue:test "Parens"
-        (clue:check-equal :expected (list (token:xyz-create
+        (clue:check-equal :expected (list (token:create
                                               :type-value alive/types:*open-paren*
                                               :start (pos:create 0 0)
                                               :start-offset 0
                                               :end (pos:create 0 1)
                                               :end-offset 1
                                               :text "(")
-                                          (token:xyz-create
+                                          (token:create
                                               :type-value alive/types:*close-paren*
                                               :start (pos:create 0 1)
                                               :start-offset 1
@@ -146,21 +146,21 @@
 
 (defun test-sym-with-pkg ()
     (clue:test "Symbol with package"
-        (clue:check-equal :expected (list (token:xyz-create
+        (clue:check-equal :expected (list (token:create
                                               :type-value alive/types:*symbol*
                                               :start (pos:create 0 0)
                                               :start-offset 0
                                               :end (pos:create 0 3)
                                               :end-offset 3
                                               :text "foo")
-                                          (token:xyz-create
+                                          (token:create
                                               :type-value alive/types:*colons*
                                               :start (pos:create 0 3)
                                               :start-offset 3
                                               :end (pos:create 0 5)
                                               :end-offset 5
                                               :text "::")
-                                          (token:xyz-create
+                                          (token:create
                                               :type-value alive/types:*symbol*
                                               :start (pos:create 0 5)
                                               :start-offset 5
@@ -172,7 +172,7 @@
 
 (defun test-vertical-bars ()
     (clue:test "Vertical bar name"
-        (clue:check-equal :expected (list (token:xyz-create
+        (clue:check-equal :expected (list (token:create
                                               :type-value alive/types:*symbol*
                                               :start (pos:create 0 0)
                                               :start-offset 0
@@ -182,7 +182,7 @@
                           :actual (tokens-for-string "|foo:bar|")))
 
     (clue:test "Unterminated vertical bar name"
-        (clue:check-equal :expected (list (token:xyz-create
+        (clue:check-equal :expected (list (token:create
                                               :type-value alive/types:*symbol*
                                               :start (pos:create 0 0)
                                               :start-offset 0

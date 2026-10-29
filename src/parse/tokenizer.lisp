@@ -76,7 +76,7 @@
 
 
 (defun new-token (state token-type &optional text)
-    (let ((token (token:xyz-create :type-value token-type
+    (let ((token (token:create :type-value token-type
                                    :start (start state)
                                    :start-offset (start-offset state)
                                    :end (pos:create (line state) (col state))
@@ -87,8 +87,8 @@
         (cond ((= types:*open-paren* token-type) (push token (opens state)))
               ((= types:*close-paren* token-type) (pop (opens state)))
               (T (when (and (car opens)
-                            (not (= (pos:line (token:xyz-get-start (car opens)))
-                                     (pos:line (token:xyz-get-end token)))))
+                            (not (= (pos:line (token:get-start (car opens)))
+                                     (pos:line (token:get-end token)))))
                        (token:set-multiline (car opens) T))))
 
         token))

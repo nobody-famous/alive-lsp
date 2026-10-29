@@ -38,7 +38,7 @@
 (defun get-end (form)
     (when (form-p form)
           (let* ((token (car (reverse (form-tokens form))))
-                 (token-end (or (token:xyz-get-end token) (pos:create 0 0)))
+                 (token-end (or (token:get-end token) (pos:create 0 0)))
                  (kid (car (reverse (form-kids form))))
                  (kid-end (or (get-end kid) (pos:create 0 0))))
               (if (pos:less-than token-end kid-end)
@@ -60,13 +60,13 @@
     (when (and (form-p form)
                (eq (form-kind form) alive/types:*symbol*))
           (apply #'concatenate 'string
-              (mapcar 'token:xyz-get-text (get-tokens form)))))
+              (mapcar 'token:get-text (get-tokens form)))))
 
 
 (defun get-start (form)
     (when (form-p form)
           (let ((token (car (form-tokens form))))
-              (token:xyz-get-start token))))
+              (token:get-start token))))
 
 
 (defun get-form-type (form)

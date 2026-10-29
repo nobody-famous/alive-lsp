@@ -119,7 +119,7 @@
 (defun start-quote (state token)
     (let ((open-form (car (parse-state-opens state))))
         (cond ((is-quote open-form) NIL)
-              (T (push (form:create :form-type (token:xyz-get-type-value token)
+              (T (push (form:create :form-type (token:get-type-value token)
                                     :tokens (list token))
                        (parse-state-opens state))))))
 
@@ -127,7 +127,7 @@
 (defun start-comma (state token)
     (let ((open-form (car (parse-state-opens state))))
         (cond ((is-comma open-form) NIL)
-              (T (push (form:create :form-type (token:xyz-get-type-value token)
+              (T (push (form:create :form-type (token:get-type-value token)
                                     :tokens (list token))
                        (parse-state-opens state))))))
 
@@ -157,24 +157,24 @@
     (loop :with state := (make-parse-state)
 
           :for token :in tokens :do
-              (cond ((token:xyz-is-type types:*open-paren* token) (open-paren state token))
+              (cond ((token:is-type types:*open-paren* token) (open-paren state token))
 
-                    ((token:xyz-is-type types:*close-paren* token) (close-paren state token))
+                    ((token:is-type types:*close-paren* token) (close-paren state token))
 
-                    ((or (token:xyz-is-type types:*quote* token)
-                         (token:xyz-is-type types:*back-quote* token)) (start-quote state token))
+                    ((or (token:is-type types:*quote* token)
+                         (token:is-type types:*back-quote* token)) (start-quote state token))
 
-                    ((or (token:xyz-is-type types:*comma* token)
-                         (token:xyz-is-type types:*comma-at* token)) (start-comma state token))
+                    ((or (token:is-type types:*comma* token)
+                         (token:is-type types:*comma-at* token)) (start-comma state token))
 
-                    ((token:xyz-is-type types:*ws* token) (white-space state))
+                    ((token:is-type types:*ws* token) (white-space state))
 
-                    ((or (token:xyz-is-type types:*line-comment* token)
-                         (token:xyz-is-type types:*block-comment* token)
-                         (token:xyz-is-type types:*ifdef-true* token))
+                    ((or (token:is-type types:*line-comment* token)
+                         (token:is-type types:*block-comment* token)
+                         (token:is-type types:*ifdef-true* token))
                         NIL)
 
-                    ((token:xyz-is-type types:*ifdef-false* token)
+                    ((token:is-type types:*ifdef-false* token)
                         (if (parse-state-opens state)
                             (form:add-kid (car (parse-state-opens state))
                                           (form:create :form-type types:*ifdef-false*

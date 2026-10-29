@@ -85,17 +85,17 @@
            (*package* (or pkg *package*)))
 
         (unless token4
-            (cond ((and (eq (token:xyz-get-type-value token1) types:*symbol*)
-                        (eq (token:xyz-get-type-value token2) types:*colons*)
-                        (eq (token:xyz-get-type-value token3) types:*symbol*))
-                      (let* ((real-pkg (lookup (token:xyz-get-text token1)))
+            (cond ((and (eq (token:get-type-value token1) types:*symbol*)
+                        (eq (token:get-type-value token2) types:*colons*)
+                        (eq (token:get-type-value token3) types:*symbol*))
+                      (let* ((real-pkg (lookup (token:get-text token1)))
                              (real-pkg-name (if real-pkg
                                                 (package-name real-pkg)
-                                                (token:xyz-get-text token1))))
-                          (values (token:xyz-get-text token3) real-pkg-name)))
+                                                (token:get-text token1))))
+                          (values (token:get-text token3) real-pkg-name)))
 
-                  ((eq (token:xyz-get-type-value token1) types:*symbol*)
-                      (values (token:xyz-get-text token1) pkg-name))))))
+                  ((eq (token:get-type-value token1) types:*symbol*)
+                      (values (token:get-text token1) pkg-name))))))
 
 
 (defun in-package-p (form pkg)
