@@ -21,62 +21,7 @@
 (in-package :alive/session/handler/traced-fns)
 
 
-(defun get-function-for-pos (text pos)
-    (loop :with done := nil
-          :with to-trace := nil
-          :with fn-name := nil
-          :with pkg-name := nil
-          :with colons := nil
-          :with prev := nil
-          :with next := nil
-          :with next-next := nil
-          :with token := nil
-          :with tokens := (tokenizer:from-stream (make-string-input-stream text))
-
-          :while (and tokens (not done))
-          :do (setf token (car tokens))
-              (setf tokens (cdr tokens))
-              (setf next (car tokens))
-              (setf next-next (car (cdr tokens)))
-
-              (cond ((pos:less-than pos (token:get-end token))
-                        (cond ((eq types:*symbol* (token:get-type-value token))
-                                  (cond ((and (not (eq types:*colons* (token:get-type-value next)))
-                                              (not (and (eq types:*colons* (token:get-type-value prev))
-                                                        (not pkg-name))))
-                                            (setf fn-name (token:get-text token)))
-                                        ((and (not pkg-name)
-                                              (eq types:*colons* (token:get-type-value next))
-                                              (eq types:*symbol* (token:get-type-value next-next)))
-                                            (setf pkg-name (token:get-text token))
-                                            (setf colons (token:get-text next))
-                                            (setf fn-name (token:get-text next-next)))))
-                              ((and (eq types:*colons* (token:get-type-value token))
-                                    (eq types:*symbol* (token:get-type-value prev))
-                                    (eq types:*symbol* (token:get-type-value next)))
-                                  (setf pkg-name (token:get-text prev))
-                                  (setf colons (token:get-text token))
-                                  (setf fn-name (token:get-text next))))
-
-                        (unless fn-name
-                            (setf pkg-name nil))
-
-                        (setf done T))
-                    ((eq types:*colons* (token:get-type-value token))
-                        (when (and prev (eq types:*symbol* (token:get-type-value prev)))
-                              (setf colons (token:get-text token))
-                              (setf pkg-name (token:get-text prev))))
-                    (T (setf pkg-name nil)
-                       (setf colons nil)))
-
-              (setf prev token)
-
-          :finally (return (cond ((and pkg-name colons fn-name) (format nil "~A~A~A" pkg-name colons fn-name))
-                                 (fn-name fn-name)
-                                 (T nil)))))
-
-
-(defun xyz-get-function-for-pos (tokens pos)
+(defun get-function-for-pos (tokens pos)
     (loop :with done := nil
           :with to-trace := nil
           :with fn-name := nil
@@ -140,7 +85,7 @@
            (tokens (state:get-file-tokens state uri))
            (pkg (packages:for-pos forms pos))
            (*package* (or (packages:lookup pkg) *package*))
-           (to-trace (xyz-get-function-for-pos tokens pos))
+           (to-trace (get-function-for-pos tokens pos))
            (result (if to-trace
                        (deps:trace-fn deps to-trace)
                        nil)))
@@ -158,7 +103,7 @@
            (tokens (state:get-file-tokens state uri))
            (pkg (packages:for-pos forms pos))
            (*package* (or (packages:lookup pkg) *package*))
-           (to-untrace (xyz-get-function-for-pos tokens pos)))
+           (to-untrace (get-function-for-pos tokens pos)))
 
         (when to-untrace
               (deps:untrace-fn deps to-untrace))
