@@ -117,8 +117,8 @@
           :until (pos:less-or-equal pos (form:get-start form))
           :do (when (and (not (eq alive/types:*ifdef-false* (form:get-form-type prev-form)))
                          (in-package-p form pkg)
-                         (cdr (form:get-kids form)))
-                    (setf pkg (name-from-string (form:get-sym-text (cdr (form:get-kids form))))))
+                         (car (cdr (form:get-kids form))))
+                    (setf pkg (name-from-string (form:get-sym-text (car (cdr (form:get-kids form)))))))
               (setf prev-form form)
           :finally (return pkg)))
 
