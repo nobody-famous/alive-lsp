@@ -41,7 +41,7 @@
            (doc (cdr (assoc :text-document params)))
            (uri (cdr (assoc :uri doc)))
            (forms (state:get-file-forms state uri))
-           (items (or (code-lens:xyz-get uri forms)
+           (items (or (code-lens:get state uri forms)
                       (make-array 0))))
 
         (lsp-msg:create-response id :result-value items)))
@@ -276,6 +276,6 @@
            (uri (cdr (assoc :uri doc)))
            (pos (cdr (assoc :position params)))
            (forms (state:get-file-forms state uri))
-           (locs (alive/sys/xref:get-locations forms pos)))
+           (locs (alive/sys/xref:get-locations state forms pos)))
         (lsp-msg:create-response id
                                  :result-value (or locs (make-array 0)))))

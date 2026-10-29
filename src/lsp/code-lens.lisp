@@ -1,6 +1,6 @@
 (defpackage :alive/lsp/code-lens
     (:use :cl)
-    (:export :xyz-get)
+    (:export :get)
     (:shadow :get)
     (:local-nicknames (:form :alive/parse/form)
                       (:forms :alive/parse/forms)
@@ -22,7 +22,7 @@
                              (form:get-end-offset form))))
 
 
-(defun xyz-get-values (form)
+(defun get-values (form)
     (let* ((keyword-form (first (form:get-kids form)))
            (name-form (second (form:get-kids form))))
         (if (and keyword-form name-form)
@@ -33,10 +33,10 @@
             (values (alive/position:create 0 0) nil nil))))
 
 
-(defun create-refs-lens (uri pos name pkg)
+(defun create-refs-lens (state uri pos name pkg)
     (let ((lens (make-hash-table :test #'equalp))
           (cmd (make-hash-table :test #'equalp))
-          (xrefs (ignore-errors (alive/sys/xref:find-references name pkg)))
+          (xrefs (ignore-errors (alive/sys/xref:find-references state name pkg)))
           (path (if (alive/utils:has-prefix uri "file://")
                     uri
                     (format nil "file://~A" uri))))
@@ -87,19 +87,19 @@
         lens))
 
 
-(defun xyz-get (uri forms)
+(defun get (state uri forms)
     (ignore-errors
         (loop :with lenses := nil
               :with pkg := nil
 
               :for form :in forms
               :do (multiple-value-bind (pos key name)
-                          (xyz-get-values form)
+                          (get-values form)
                       (setf pkg (packages:for-pos forms pos))
                       (if (string= key "defmacro")
                           (push (create-inspect-macro-lens pos name pkg) lenses)
                           (when (has-code-lens key)
                                 (push (create-inspect-lens pos name pkg) lenses)
-                                (push (create-refs-lens uri pos name pkg) lenses))))
+                                (push (create-refs-lens state uri pos name pkg) lenses))))
 
               :finally (return lenses))))

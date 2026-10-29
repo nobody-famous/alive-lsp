@@ -50,27 +50,8 @@
             (forms:get-range-for-path forms source-path))))
 
 
-(defun xyz-get-err-location (err forms)
-    (let* ((context (sb-c::find-error-context nil))
-           (source-path (when context (reverse (sb-c::compiler-error-context-original-source-path context)))))
-
-        (if (not source-path)
-            (parse-err-loc (string-downcase (princ-to-string err)))
-            (forms:xyz-get-range-for-path forms source-path))))
-
-
 (defun send-message (out-fn forms sev err)
     (let* ((loc (get-err-location err forms))
-           (msg (comp-msg:create :severity sev
-                                 :location loc
-                                 :message (format nil "~A" err))))
-
-        (when loc
-              (funcall out-fn msg))))
-
-
-(defun xyz-send-message (out-fn forms sev err)
-    (let* ((loc (xyz-get-err-location err forms))
            (msg (comp-msg:create :severity sev
                                  :location loc
                                  :message (format nil "~A" err))))
@@ -105,13 +86,13 @@
                (capture-msg (lambda (msg)
                                 (setf msgs (add-message msgs msg))))
                (do-abort (lambda (err)
-                             (xyz-send-message capture-msg forms types:*sev-error* err)
+                             (send-message capture-msg forms types:*sev-error* err)
                              (let ((to-call (find-restart 'abort err)))
                                  (if to-call
                                      (invoke-restart to-call)
                                      (return-from do-cmd msgs)))))
                (handle-error (lambda (err)
-                                 (xyz-send-message capture-msg forms types:*sev-error* err)
+                                 (send-message capture-msg forms types:*sev-error* err)
                                  (when (and (not (should-filter-p (format NIL "~A" err)))
                                             stop-on-error)
                                        (return-from do-cmd msgs))))
@@ -127,7 +108,7 @@
                                                     (return-from do-cmd msgs))))))
             (labels ((handle-skippable (sev)
                                        (lambda (err)
-                                           (xyz-send-message capture-msg forms sev err)
+                                           (send-message capture-msg forms sev err)
                                            (let ((skip (find-restart 'muffle-warning err)))
                                                (if skip
                                                    (invoke-restart skip)

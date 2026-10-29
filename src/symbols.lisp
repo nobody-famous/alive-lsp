@@ -127,7 +127,7 @@
             (with-open-file (in-stream file)
                 (let* ((tokens (tokenizer:xyz-from-stream in-stream))
                        (forms (forms:from-tokens tokens)))
-                    (forms:xyz-get-range-for-path forms source-path)))
+                    (forms:get-range-for-path forms source-path)))
         (T nil)))
 
 
