@@ -220,23 +220,6 @@
                        (parse-state-opens state))))))
 
 
-(defun xyz-symbol-token (state token)
-    (let ((open-form (car (parse-state-opens state))))
-
-        (cond ((or (is-open-paren open-form)
-                   (is-quote open-form))
-                  (push (form:create :form-type types:*symbol*
-                                     :tokens (list token))
-                        (parse-state-opens state)))
-
-              ((is-symbol open-form)
-                  (form:add-token open-form token))
-
-              (T (push (form:create :form-type types:*symbol*
-                                    :tokens (list token))
-                       (parse-state-opens state))))))
-
-
 (defun white-space (state)
     (collapse-opens state types:*open-paren*))
 
@@ -315,14 +298,6 @@
                           (return (reverse (parse-state-forms state))))))
 
 
-(defun from-stream-or-nil (input)
-    (handler-case
-            (from-stream input)
-        (T (c)
-           (declare (ignore c))
-           nil)))
-
-
 (defun get-nth-form (forms n)
     (declare (type fixnum n))
 
@@ -343,17 +318,6 @@
                     (T (incf counted)))
 
           :finally (return cur-form)))
-
-
-(defun get-top-form (forms pos)
-    (loop :with top-form := nil
-
-          :for form :in forms :do
-              (when (and (pos:less-or-equal (form:get-start form) pos)
-                         (pos:less-or-equal pos (form:get-end form)))
-                    (setf top-form form))
-
-          :finally (return top-form)))
 
 
 (defun xyz-get-top-form (forms pos)
@@ -405,31 +369,10 @@
             nil)))
 
 
-(defun get-outer-form (form pos)
-    (when (and form
-               (car (form:get-kids form)))
-          (find-inner-form form pos)))
-
-
 (defun xyz-get-outer-form (form pos)
     (when (and form
                (car (form:get-kids form)))
           (xyz-find-inner-form form pos)))
-
-
-(defun find-expr (form pos)
-    (let ((start (form:get-start form))
-          (end (form:get-end form))
-          (kid (find-if (lambda (kid)
-                            (and (pos:less-or-equal (form:get-start kid) pos)
-                                 (pos:less-or-equal pos (form:get-end kid))))
-                       (the list (form:get-kids form)))))
-        (when (and start end pos
-                   (pos:less-or-equal start pos)
-                   (pos:less-or-equal pos end))
-              (if kid
-                  (find-expr kid pos)
-                  form))))
 
 
 (defun xyz-find-expr (form pos)
