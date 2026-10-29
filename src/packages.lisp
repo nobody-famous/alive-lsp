@@ -64,8 +64,8 @@
 
 
 (defun for-string (str)
-    (lookup (ignore-errors
-                (with-input-from-string (in str)
+    (ignore-errors
+        (lookup (with-input-from-string (in str)
                     (read in nil nil)))))
 
 
