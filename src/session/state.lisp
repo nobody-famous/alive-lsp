@@ -150,10 +150,8 @@
 
 (defun read-file-forms (file)
     (with-open-file (s file)
-        (let ((tokens (tokenizer:xyz-from-stream s)))
+        (let ((tokens (alive/parse/tokenizer:xyz-from-stream s)))
             (alive/parse/forms:from-tokens tokens))))
-
-
 
 
 (defun update-file-forms (state file)

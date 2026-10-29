@@ -72,7 +72,7 @@
            (pos (cdr (assoc :position params)))
            (uri (cdr (assoc :uri doc)))
            (forms (state:get-file-forms state uri))
-           (location (alive/lsp/definition:get-location :forms forms :pos pos))
+           (location (alive/lsp/definition:get-location :state state :forms forms :pos pos))
            (uri (first location))
            (range (second location)))
 

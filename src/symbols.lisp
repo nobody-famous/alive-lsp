@@ -9,6 +9,7 @@
              :get-lambda-list
              :get-location
              :lookup
+             :lookup-sources
              :macro-p
              :special-ch-p)
     (:local-nicknames (:form :alive/parse/form)
@@ -120,26 +121,6 @@
                                 nil))))
                 types
             :initial-value nil)))
-
-
-(defun get-range-from-file (file source-path)
-    (handler-case
-            (with-open-file (in-stream file)
-                (let* ((tokens (tokenizer:xyz-from-stream in-stream))
-                       (forms (forms:from-tokens tokens)))
-                    (forms:get-range-for-path forms source-path)))
-        (T nil)))
-
-
-(defun get-location (sym)
-    (let* ((src (when sym (lookup-sources sym)))
-           (file (when src (sb-introspect:definition-source-pathname src)))
-           (form-path (when src (sb-introspect:definition-source-form-path src))))
-
-        (if file
-            (list (utils:url-encode-filename (namestring (translate-logical-pathname file)))
-                  (get-range-from-file file form-path))
-            (list nil nil))))
 
 
 (defun for-pos (forms pos)
