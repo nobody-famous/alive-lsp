@@ -151,7 +151,7 @@
 (defun read-file-forms (file)
     (handler-case
             (with-open-file (s file)
-                (let ((tokens (alive/parse/tokenizer:xyz-from-stream s)))
+                (let ((tokens (alive/parse/tokenizer:from-stream s)))
                     (alive/parse/forms:from-tokens tokens)))
         (T (c)
            (declare (ignore c))

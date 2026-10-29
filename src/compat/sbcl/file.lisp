@@ -20,7 +20,7 @@
 (defmacro with-forms ((path) &body body)
     (let ((file-id (gensym)))
         `(with-open-file (,file-id ,path)
-             (let* ((tokens (tokenizer:xyz-from-stream ,file-id))
+             (let* ((tokens (tokenizer:from-stream ,file-id))
                     (forms (forms:from-tokens tokens)))
                  ,@body))))
 

@@ -90,7 +90,7 @@
            (uri (cdr (assoc :uri doc)))
            (changes (cdr (assoc :content-changes params)))
            (text (cdr (assoc :text (first changes))))
-           (tokens (when text (tokenizer:xyz-from-stream (make-string-input-stream text))))
+           (tokens (when text (tokenizer:from-stream (make-string-input-stream text))))
            (forms (when tokens (forms:from-tokens tokens))))
 
         (when tokens
@@ -114,7 +114,7 @@
            (doc (cdr (assoc :text-document params)))
            (uri (cdr (assoc :uri doc)))
            (text (cdr (assoc :text doc)))
-           (tokens (when text (tokenizer:xyz-from-stream (make-string-input-stream text))))
+           (tokens (when text (tokenizer:from-stream (make-string-input-stream text))))
            (forms (when tokens (forms:from-tokens tokens))))
 
         (when tokens

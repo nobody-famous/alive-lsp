@@ -60,9 +60,9 @@
 
 
 (defun get-forms (text)
-    (let ((tokens (tokenizer:xyz-from-stream (make-string-input-stream text))))
+    (let ((tokens (tokenizer:from-stream (make-string-input-stream text))))
         (forms:from-tokens tokens)))
 
 
 (defun get-tokens (text)
-    (tokenizer:xyz-from-stream (make-string-input-stream text)))
+    (tokenizer:from-stream (make-string-input-stream text)))

@@ -13,7 +13,7 @@
 
 (defun check-forms (text expected)
     (let* ((input (make-string-input-stream text))
-           (tokens (tokenizer:xyz-from-stream input))
+           (tokens (tokenizer:from-stream input))
            (forms (forms:from-tokens tokens)))
 
         (clue:check-equal :expected expected

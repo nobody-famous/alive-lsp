@@ -12,7 +12,7 @@
 
 (defun check-format (&key text pos expected)
     (with-input-from-string (s text)
-        (let* ((tokens (tokenizer:xyz-from-stream s))
+        (let* ((tokens (tokenizer:from-stream s))
                (actual (formatting:on-type tokens :pos pos)))
             (clue:check-equal :expected expected
                               :actual actual))))

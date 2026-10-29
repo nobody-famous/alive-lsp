@@ -146,7 +146,7 @@
 
         (clue:test "Simple tokens"
             (let ((state (state:create))
-                  (tokens (tokenizer:xyz-from-stream (make-string-input-stream "#+n"))))
+                  (tokens (tokenizer:from-stream (make-string-input-stream "#+n"))))
                 (state:set-file-tokens state "some/uri" tokens)
                 (let* ((response (doc:sem-tokens state (list (cons :id 5)
                                                              (cons :params (list (cons :text-document (list (cons :uri "some/uri"))))))))
@@ -156,7 +156,7 @@
 
         (clue:test "Multi-line token"
             (let ((state (state:create))
-                  (tokens (tokenizer:xyz-from-stream (make-string-input-stream (format nil "#| a bb~%~%ccc dddd~%|#")))))
+                  (tokens (tokenizer:from-stream (make-string-input-stream (format nil "#| a bb~%~%ccc dddd~%|#")))))
                 (state:set-file-tokens state "some/uri" tokens)
                 (let* ((response (doc:sem-tokens state (list (cons :id 5)
                                                              (cons :params (list (cons :text-document (list (cons :uri "some/uri"))))))))

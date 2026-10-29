@@ -12,7 +12,7 @@
 
 
 (defun check-format (text range expected &optional opts)
-    (let* ((tokens (tokenizer:xyz-from-stream (make-string-input-stream text)))
+    (let* ((tokens (tokenizer:from-stream (make-string-input-stream text)))
            (actual (if opts
                        (formatting:range tokens range opts)
                        (formatting:range tokens range))))

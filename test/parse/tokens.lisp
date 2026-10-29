@@ -14,11 +14,6 @@
         (tokens:from-stream s)))
 
 
-(defun xyz-tokens-for-string (str)
-    (with-input-from-string (s str)
-        (tokens:xyz-from-stream s)))
-
-
 (defun test-foo ()
     (clue:test "Foo symbol"
         (clue:check-equal :expected (list (token:xyz-create
@@ -28,7 +23,7 @@
                                               :end (pos:create 0 3)
                                               :end-offset 3
                                               :text "foo"))
-                          :actual (xyz-tokens-for-string "foo"))))
+                          :actual (tokens-for-string "foo"))))
 
 
 (defun test-defun ()
@@ -40,7 +35,7 @@
                                               :end (pos:create 0 5)
                                               :end-offset 5
                                               :text "defun"))
-                          :actual (xyz-tokens-for-string "defun"))))
+                          :actual (tokens-for-string "defun"))))
 
 
 (defun test-comment ()
@@ -52,7 +47,7 @@
                                               :end (pos:create 0 9)
                                               :end-offset 9
                                               :text "; Comment"))
-                          :actual (xyz-tokens-for-string "; Comment"))))
+                          :actual (tokens-for-string "; Comment"))))
 
 
 (defun test-string ()
@@ -65,7 +60,7 @@
                                                   :end (pos:create 0 8)
                                                   :end-offset 8
                                                   :text "\"String\""))
-                              :actual (xyz-tokens-for-string "\"String\"")))
+                              :actual (tokens-for-string "\"String\"")))
 
         (clue:test "Open String"
             (clue:check-equal :expected (list (token:xyz-create
@@ -75,7 +70,7 @@
                                                   :end (pos:create 0 7)
                                                   :end-offset 7
                                                   :text "\"String"))
-                              :actual (xyz-tokens-for-string "\"String")))))
+                              :actual (tokens-for-string "\"String")))))
 
 
 (defun test-basic-macro ()
@@ -94,7 +89,7 @@
                                               :end (pos:create 0 6)
                                               :end-offset 6
                                               :text "abcd"))
-                          :actual (xyz-tokens-for-string "#'abcd"))))
+                          :actual (tokens-for-string "#'abcd"))))
 
 
 (defun test-ifdef-macro ()
@@ -107,7 +102,7 @@
                                                   :end (pos:create 0 3)
                                                   :end-offset 3
                                                   :text "#+n"))
-                              :actual (xyz-tokens-for-string "#+n")))
+                              :actual (tokens-for-string "#+n")))
 
         (clue:test "Invalid ifdef macro"
             (clue:check-equal :expected (list (token:xyz-create
@@ -117,7 +112,7 @@
                                                   :end (pos:create 0 3)
                                                   :end-offset 3
                                                   :text "#+("))
-                              :actual (xyz-tokens-for-string "#+(")))
+                              :actual (tokens-for-string "#+(")))
 
         (clue:test "Valid ifdef macro"
             (clue:check-equal :expected (list (token:xyz-create
@@ -127,7 +122,7 @@
                                                   :end (pos:create 0 10)
                                                   :end-offset 10
                                                   :text "#+(or a b)"))
-                              :actual (xyz-tokens-for-string "#+(or a b)")))))
+                              :actual (tokens-for-string "#+(or a b)")))))
 
 
 (defun test-parens ()
@@ -146,7 +141,7 @@
                                               :end (pos:create 0 2)
                                               :end-offset 2
                                               :text ")"))
-                          :actual (xyz-tokens-for-string "()"))))
+                          :actual (tokens-for-string "()"))))
 
 
 (defun test-sym-with-pkg ()
@@ -172,7 +167,7 @@
                                               :end (pos:create 0 8)
                                               :end-offset 8
                                               :text "bar"))
-                          :actual (xyz-tokens-for-string "foo::bar"))))
+                          :actual (tokens-for-string "foo::bar"))))
 
 
 (defun test-vertical-bars ()
@@ -184,7 +179,7 @@
                                               :end (pos:create 0 9)
                                               :end-offset 9
                                               :text "|foo:bar|"))
-                          :actual (xyz-tokens-for-string "|foo:bar|")))
+                          :actual (tokens-for-string "|foo:bar|")))
 
     (clue:test "Unterminated vertical bar name"
         (clue:check-equal :expected (list (token:xyz-create
@@ -194,7 +189,7 @@
                                               :end (pos:create 0 7)
                                               :end-offset 7
                                               :text "|foo:ba"))
-                          :actual (xyz-tokens-for-string "|foo:ba"))))
+                          :actual (tokens-for-string "|foo:ba"))))
 
 
 (defun run-all ()
