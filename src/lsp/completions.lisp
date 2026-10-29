@@ -1,7 +1,6 @@
 (defpackage :alive/lsp/completions
     (:use :cl)
     (:export :simple
-             :xyz-simple
 
              :*kind-text*
              :*kind-method*
@@ -217,7 +216,7 @@
               "#\\tab")))
 
 
-(defun xyz-simple (&key forms pos)
+(defun simple (&key forms pos)
     (let* ((top-form (forms:get-top-form forms pos))
            (expr (forms:find-expr top-form pos))
            (tokens (form:get-tokens expr))

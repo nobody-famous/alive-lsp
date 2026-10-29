@@ -54,7 +54,7 @@
            (pos (cdr (assoc :position params)))
            (uri (cdr (assoc :uri doc)))
            (forms (state:get-file-forms state uri))
-           (items (or (comps:xyz-simple :forms forms :pos pos)
+           (items (or (comps:simple :forms forms :pos pos)
                       (make-array 0))))
 
         (let ((data (make-hash-table :test #'equalp)))

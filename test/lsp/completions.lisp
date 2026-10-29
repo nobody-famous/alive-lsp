@@ -13,7 +13,7 @@
 (defun test-symbols-m ()
     (clue:test "Symbols:m"
         (let* ((forms (utils:get-forms "some text alive/symbols:m"))
-               (actual (comps:xyz-simple :forms forms
+               (actual (comps:simple :forms forms
                                          :pos (pos:create 0 25))))
 
             (clue:check-equal :expected 3
@@ -23,7 +23,7 @@
 (defun test-defmacro ()
     (clue:test "Defmacro"
         (let* ((forms (utils:get-forms "some text cl-user:defmacro"))
-               (actual (comps:xyz-simple :forms forms
+               (actual (comps:simple :forms forms
                                          :pos (pos:create 0 26))))
             (clue:check-equal :expected 4
                               :actual (length actual)))))
@@ -32,7 +32,7 @@
 (defun test-symbols ()
     (clue:test "Symbols"
         (let* ((forms (utils:get-forms "alive/symbols:"))
-               (actual (comps:xyz-simple :forms forms
+               (actual (comps:simple :forms forms
                                          :pos (pos:create 0 14))))
             (clue:check-equal :expected 12
                               :actual (length actual)))))
@@ -41,7 +41,7 @@
 (defun test-debug-io ()
     (clue:test "Debug-io"
         (let* ((forms (utils:get-forms "*debug-io"))
-               (actual (comps:xyz-simple :forms forms
+               (actual (comps:simple :forms forms
                                          :pos (pos:create 0 9))))
             (clue:check-equal :expected 2
                               :actual (length actual)))))
@@ -51,14 +51,14 @@
     (clue:suite "Quote"
         (clue:test "Quote"
             (let* ((forms (utils:get-forms "'*debug-io"))
-                   (actual (comps:xyz-simple :forms forms
+                   (actual (comps:simple :forms forms
                                              :pos (pos:create 0 10))))
                 (clue:check-equal :expected 2
                                   :actual (length actual))))
 
         (clue:test "Quote 2"
             (let* ((forms (utils:get-forms "'\"\""))
-                   (actual (comps:xyz-simple :forms forms
+                   (actual (comps:simple :forms forms
                                              :pos (pos:create 0 3))))
                 (clue:check-equal :expected 0
                                   :actual (length actual))))))
@@ -67,7 +67,7 @@
 (defun test-backquote ()
     (clue:test "Backquote"
         (let* ((forms (utils:get-forms "`*debug-io"))
-               (actual (comps:xyz-simple :forms forms
+               (actual (comps:simple :forms forms
                                          :pos (pos:create 0 10))))
             (clue:check-equal :expected 2
                               :actual (length actual)))))
@@ -77,14 +77,14 @@
     (clue:suite "Colons"
         (clue:test "Colon symbol"
             (let* ((forms (utils:get-forms ":cl-user"))
-                   (actual (comps:xyz-simple :forms forms
+                   (actual (comps:simple :forms forms
                                              :pos (pos:create 0 8))))
                 (clue:check-equal :expected 2
                                   :actual (length actual))))
 
         (clue:test "Colon no symbol"
             (let* ((forms (utils:get-forms ":"))
-                   (actual (comps:xyz-simple :forms forms
+                   (actual (comps:simple :forms forms
                                              :pos (pos:create 0 1))))
                 (clue:check-equal :expected T
                                   :actual (< 100 (length actual)))))))
