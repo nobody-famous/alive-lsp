@@ -54,7 +54,7 @@
                   info))))
 
 
-(defun get-active-parameter (pos form)
+(defun xyz-get-active-parameter (pos form)
     (let* ((start (car (form:get-kids form)))
            (start-end (form:get-end start)))
         (if (pos:less-than pos start-end)
@@ -63,19 +63,6 @@
                   :for kid :in (cdr (form:get-kids form))
                   :until (and (form:get-end kid)
                               (pos:less-than pos (form:get-end kid)))
-                  :do (incf param)
-                  :finally (return param)))))
-
-
-(defun xyz-get-active-parameter (pos form)
-    (let* ((start (car (form:get-kids form)))
-           (start-end (form:xyz-get-end start)))
-        (if (pos:less-than pos start-end)
-            -1
-            (loop :with param := 0
-                  :for kid :in (cdr (form:get-kids form))
-                  :until (and (form:xyz-get-end kid)
-                              (pos:less-than pos (form:xyz-get-end kid)))
                   :do (incf param)
                   :finally (return param)))))
 

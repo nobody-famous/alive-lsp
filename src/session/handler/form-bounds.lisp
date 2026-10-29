@@ -29,7 +29,7 @@
            (forms (state:get-file-forms state uri))
            (form (forms:get-top-form forms pos))
            (start (when form (form:xyz-get-start form)))
-           (end (when form (form:xyz-get-end form))))
+           (end (when form (form:get-end form))))
         (create-response id start end)))
 
 
@@ -44,5 +44,5 @@
            (top-form (forms:get-top-form forms pos))
            (form (forms:get-outer-form top-form pos))
            (start (when form (form:xyz-get-start form)))
-           (end (when form (form:xyz-get-end form))))
+           (end (when form (form:get-end form))))
         (create-response id start end)))

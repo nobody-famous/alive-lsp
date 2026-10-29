@@ -83,7 +83,7 @@
                      (kind (when fn (form-kind fn))))
 
                   (when (and fn name kind)
-                        (push (to-doc-sym name kind (form:xyz-get-start form) (form:xyz-get-end form))
+                        (push (to-doc-sym name kind (form:xyz-get-start form) (form:get-end form))
                               syms)))
 
           :finally (return syms)))

@@ -4,7 +4,6 @@
              :add-token
              :create
              :get-end
-             :xyz-get-end
              :get-end-offset
              :xyz-get-end-offset
              :get-form-type
@@ -44,20 +43,9 @@
 (defun get-end (form)
     (when (form-p form)
           (let* ((token (car (reverse (form-tokens form))))
-                 (token-end (or (token:get-end token) (pos:create 0 0)))
-                 (kid (car (reverse (form-kids form))))
-                 (kid-end (or (get-end kid) (pos:create 0 0))))
-              (if (pos:less-than token-end kid-end)
-                  kid-end
-                  token-end))))
-
-
-(defun xyz-get-end (form)
-    (when (form-p form)
-          (let* ((token (car (reverse (form-tokens form))))
                  (token-end (or (token:xyz-get-end token) (pos:create 0 0)))
                  (kid (car (reverse (form-kids form))))
-                 (kid-end (or (xyz-get-end kid) (pos:create 0 0))))
+                 (kid-end (or (get-end kid) (pos:create 0 0))))
               (if (pos:less-than token-end kid-end)
                   kid-end
                   token-end))))

@@ -27,7 +27,7 @@
            (name-form (second (form:get-kids form))))
         (if (and keyword-form name-form)
             (values
-                (form:xyz-get-end name-form)
+                (form:get-end name-form)
                 (form:xyz-get-sym-text keyword-form)
                 (form:xyz-get-sym-text name-form))
             (values (alive/position:create 0 0) nil nil))))
