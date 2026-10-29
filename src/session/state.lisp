@@ -149,14 +149,20 @@
 
 
 (defun read-file-forms (file)
-    (with-open-file (s file)
-        (let ((tokens (alive/parse/tokenizer:xyz-from-stream s)))
-            (alive/parse/forms:from-tokens tokens))))
+    (handler-case
+            (with-open-file (s file)
+                (let ((tokens (alive/parse/tokenizer:xyz-from-stream s)))
+                    (alive/parse/forms:from-tokens tokens)))
+        (T (c)
+           (declare (ignore c))
+           nil)))
 
 
 (defun update-file-forms (state file)
-    (let ((forms (read-file-forms file))
-          (uri (alive/utils:url-encode-filename file)))
+    (let* ((uri (alive/utils:url-encode-filename file))
+           (forms (gethash uri (state-forms state))))
+        (unless forms
+            (setf forms (read-file-forms file)))
         (when forms
               (set-file-forms state uri forms)
               forms)))

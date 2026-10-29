@@ -81,8 +81,8 @@
 
 
 (defun signatures (&key forms pos)
-    (let* ((top-form (forms:xyz-get-top-form forms pos))
-           (outer-form (forms:xyz-get-outer-form top-form pos))
+    (let* ((top-form (forms:get-top-form forms pos))
+           (outer-form (forms:get-outer-form top-form pos))
            (name-form (when outer-form
                             (first (form:get-kids outer-form))))
            (active-param (if outer-form

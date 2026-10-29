@@ -54,18 +54,19 @@
 
 
 (defun url-encode-filename (name)
-    (let* ((pathname (namestring (translate-logical-pathname name)))
-           (raw-pieces (uiop:split-string pathname :separator "/\\"))
-           (pieces (mapcar (lambda (piece)
-                               (if (string= piece "")
-                                   ""
-                                   (format NIL "/~A" (url-encode piece))))
-                           raw-pieces))
-           (filename (apply #'concatenate 'string pieces))
-           (encoded (if (has-prefix filename "file://")
-                        filename
-                        (format nil "file://~A" filename))))
-        encoded))
+    (when (or (stringp name) (pathnamep name))
+          (let* ((pathname (namestring (translate-logical-pathname name)))
+                 (raw-pieces (uiop:split-string pathname :separator "/\\"))
+                 (pieces (mapcar (lambda (piece)
+                                     (if (string= piece "")
+                                         ""
+                                         (format NIL "/~A" (url-encode piece))))
+                                 raw-pieces))
+                 (filename (apply #'concatenate 'string pieces))
+                 (encoded (if (has-prefix filename "file://")
+                              filename
+                              (format nil "file://~A" filename))))
+              encoded)))
 
 
 (defun lookup-symbol (name &optional pkg-name)

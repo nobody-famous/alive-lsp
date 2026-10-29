@@ -218,8 +218,8 @@
 
 
 (defun xyz-simple (&key forms pos)
-    (let* ((top-form (forms:xyz-get-top-form forms pos))
-           (expr (forms:xyz-find-expr top-form pos))
+    (let* ((top-form (forms:get-top-form forms pos))
+           (expr (forms:find-expr top-form pos))
            (tokens (form:get-tokens expr))
            (token1 (car tokens))
            (token2 (cadr tokens))

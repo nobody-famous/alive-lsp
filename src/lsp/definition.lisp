@@ -19,7 +19,7 @@
 
         (if file
             (list (utils:url-encode-filename (namestring (translate-logical-pathname file)))
-                  (forms:get-range-for-path forms form-path))
+                  (when forms (forms:get-range-for-path forms form-path)))
             (list nil nil))))
 
 

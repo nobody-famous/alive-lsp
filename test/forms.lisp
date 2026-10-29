@@ -11,8 +11,8 @@
 
 (defun get-child-form (text pos)
     (let* ((forms (utils:get-forms text))
-           (top-form (forms:xyz-get-top-form forms pos)))
-        (forms:xyz-get-outer-form top-form pos)))
+           (top-form (forms:get-top-form forms pos)))
+        (forms:get-outer-form top-form pos)))
 
 
 (defun test-child-form ()

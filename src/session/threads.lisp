@@ -50,7 +50,7 @@
            (restartable (if (gethash "restartable" frame) T nil))
            (args-list (gethash "argsList" frame))
            (fn-name (gethash "function" frame))
-           (pos (debugger:get-frame-loc (get-frame-text-stream state file)
+           (pos (debugger:get-frame-loc (state:update-file-forms state file)
                                         frame)))
 
         (setf (gethash "function" obj) fn-name)

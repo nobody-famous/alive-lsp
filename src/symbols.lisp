@@ -124,8 +124,8 @@
 
 
 (defun for-pos (forms pos)
-    (let* ((top-form (forms:xyz-get-top-form forms pos))
-           (expr (forms:xyz-find-expr top-form pos))
+    (let* ((top-form (forms:get-top-form forms pos))
+           (expr (forms:find-expr top-form pos))
            (pkg-name (packages:for-pos forms pos)))
 
         (when expr
