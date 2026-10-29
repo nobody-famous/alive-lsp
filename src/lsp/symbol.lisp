@@ -78,12 +78,12 @@
 
           :for form :in forms :do
               (let* ((kids (form:get-kids form))
-                     (fn (form:xyz-get-sym-text (first kids)))
-                     (name (form:xyz-get-sym-text (second kids)))
+                     (fn (form:get-sym-text (first kids)))
+                     (name (form:get-sym-text (second kids)))
                      (kind (when fn (form-kind fn))))
 
                   (when (and fn name kind)
-                        (push (to-doc-sym name kind (form:xyz-get-start form) (form:get-end form))
+                        (push (to-doc-sym name kind (form:get-start form) (form:get-end form))
                               syms)))
 
           :finally (return syms)))

@@ -4,17 +4,12 @@
              :add-token
              :create
              :get-end
-             :get-end-offset
-             :xyz-get-end-offset
              :get-form-type
              :get-kids
              :get-package
              :get-start
-             :xyz-get-start
-             :get-start-offset
-             :xyz-get-start-offset
              :get-sym-text
-             :xyz-get-sym-text
+             :get-sym-text
              :get-tokens
              :set-package)
     (:local-nicknames (:pos :alive/position)
@@ -51,24 +46,6 @@
                   token-end))))
 
 
-(defun get-end-offset (form)
-    (when (form-p form)
-          (let* ((token (car (reverse (form-tokens form))))
-                 (token-end (or (token:get-end-offset token) 0))
-                 (kid (car (reverse (form-kids form))))
-                 (kid-end (or (get-end-offset kid) 0)))
-              (max token-end kid-end))))
-
-
-(defun xyz-get-end-offset (form)
-    (when (form-p form)
-          (let* ((token (car (reverse (form-tokens form))))
-                 (token-end (or (token:xyz-get-end-offset token) 0))
-                 (kid (car (reverse (form-kids form))))
-                 (kid-end (or (xyz-get-end-offset kid) 0)))
-              (max token-end kid-end))))
-
-
 (defun get-kids (form)
     (when (form-p form)
           (form-kids form)))
@@ -83,38 +60,13 @@
     (when (and (form-p form)
                (eq (form-kind form) alive/types:*symbol*))
           (apply #'concatenate 'string
-              (mapcar 'token:get-text (get-tokens (second (get-kids form)))))))
-
-
-(defun xyz-get-sym-text (form)
-    (when (and (form-p form)
-               (eq (form-kind form) alive/types:*symbol*))
-          (apply #'concatenate 'string
               (mapcar 'token:xyz-get-text (get-tokens form)))))
 
 
 (defun get-start (form)
     (when (form-p form)
           (let ((token (car (form-tokens form))))
-              (token:get-start token))))
-
-
-(defun xyz-get-start (form)
-    (when (form-p form)
-          (let ((token (car (form-tokens form))))
               (token:xyz-get-start token))))
-
-
-(defun get-start-offset (form)
-    (when (form-p form)
-          (let ((token (car (form-tokens form))))
-              (token:get-start-offset token))))
-
-
-(defun xyz-get-start-offset (form)
-    (when (form-p form)
-          (let ((token (car (form-tokens form))))
-              (token:xyz-get-start-offset token))))
 
 
 (defun get-form-type (form)

@@ -148,10 +148,10 @@
           :with pkg := "cl-user"
 
           :for form :in forms
-          :until (pos:less-or-equal pos (form:xyz-get-start form))
+          :until (pos:less-or-equal pos (form:get-start form))
           :do (when (and (not (eq alive/types:*ifdef-false* (form:get-form-type prev-form)))
                          (xyz-in-package-p form pkg))
-                    (setf pkg (name-from-string (form:xyz-get-sym-text (elt (form:get-kids form) 1)))))
+                    (setf pkg (name-from-string (form:get-sym-text (elt (form:get-kids form) 1)))))
               (setf prev-form form)
           :finally (return pkg)))
 

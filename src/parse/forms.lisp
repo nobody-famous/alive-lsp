@@ -215,7 +215,7 @@
     (loop :with top-form := nil
 
           :for form :in forms :do
-              (when (and (pos:less-or-equal (form:xyz-get-start form) pos)
+              (when (and (pos:less-or-equal (form:get-start form) pos)
                          (pos:less-or-equal pos (form:get-end form)))
                     (setf top-form form))
 
@@ -223,7 +223,7 @@
 
 
 (defun find-inner-form (form pos)
-    (let ((start (form:xyz-get-start form))
+    (let ((start (form:get-start form))
           (end (form:get-end form))
           (kids (form:get-kids form)))
 
@@ -248,10 +248,10 @@
 
 
 (defun find-expr (form pos)
-    (let ((start (form:xyz-get-start form))
+    (let ((start (form:get-start form))
           (end (form:get-end form))
           (kid (find-if (lambda (kid)
-                            (and (pos:less-or-equal (form:xyz-get-start kid) pos)
+                            (and (pos:less-or-equal (form:get-start kid) pos)
                                  (pos:less-or-equal pos (form:get-end kid))))
                        (the list (form:get-kids form)))))
         (when (and start end pos
@@ -277,5 +277,5 @@
 
               (setf forms (form:get-kids form))
 
-          :finally (return (range:create (form:xyz-get-start form)
+          :finally (return (range:create (form:get-start form)
                                          (form:get-end form)))))

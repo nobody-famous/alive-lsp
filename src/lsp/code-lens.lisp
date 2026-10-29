@@ -16,20 +16,14 @@
         (string= key "defconstant")))
 
 
-(defun get-text (text form)
-    (string-downcase (subseq text
-                             (form:get-start-offset form)
-                             (form:get-end-offset form))))
-
-
 (defun get-values (form)
     (let* ((keyword-form (first (form:get-kids form)))
            (name-form (second (form:get-kids form))))
         (if (and keyword-form name-form)
             (values
                 (form:get-end name-form)
-                (form:xyz-get-sym-text keyword-form)
-                (form:xyz-get-sym-text name-form))
+                (form:get-sym-text keyword-form)
+                (form:get-sym-text name-form))
             (values (alive/position:create 0 0) nil nil))))
 
 

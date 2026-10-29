@@ -28,7 +28,7 @@
            (uri (cdr (assoc :uri doc)))
            (forms (state:get-file-forms state uri))
            (form (forms:get-top-form forms pos))
-           (start (when form (form:xyz-get-start form)))
+           (start (when form (form:get-start form)))
            (end (when form (form:get-end form))))
         (create-response id start end)))
 
@@ -43,6 +43,6 @@
            (forms (state:get-file-forms state uri))
            (top-form (forms:get-top-form forms pos))
            (form (forms:get-outer-form top-form pos))
-           (start (when form (form:xyz-get-start form)))
+           (start (when form (form:get-start form)))
            (end (when form (form:get-end form))))
         (create-response id start end)))

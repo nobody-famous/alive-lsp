@@ -44,7 +44,7 @@
                   (declare (ignore ndx))
 
                   (when found
-                        (form:xyz-get-start found))))))
+                        (form:get-start found))))))
 
 
 (defun eval-in-frame (frame text)
