@@ -28,6 +28,7 @@
              :set-initialized
              :set-running
              :set-sent-msg-callback
+             :update-file-forms
              :with-thread-msg
              :state)
     (:local-nicknames (:deps :alive/deps)
@@ -145,6 +146,22 @@
 
 (defun get-file-forms (state uri)
     (gethash uri (state-forms state)))
+
+
+(defun read-file-forms (file)
+    (with-open-file (s file)
+        (let ((tokens (tokenizer:xyz-from-stream s)))
+            (alive/parse/forms:from-tokens tokens))))
+
+
+
+
+(defun update-file-forms (state file)
+    (let ((forms (read-file-forms file))
+          (uri (alive/utils:url-encode-filename file)))
+        (when forms
+              (set-file-forms state uri forms)
+              forms)))
 
 
 (defun get-file-tokens (state uri)

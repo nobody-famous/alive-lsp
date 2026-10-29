@@ -38,25 +38,14 @@
                 locations)))
 
 
-(defun read-file-forms (file)
-    (with-open-file (s file)
-        (let ((tokens (tokenizer:xyz-from-stream s)))
-            (alive/parse/forms:from-tokens tokens))))
-
-
 (defun get-file-forms (state refs)
     (loop :with file := nil
           :with forms := (make-hash-table :test #'equalp)
           :for ref :in refs
           :do (let* ((file (cdr (assoc :file ref)))
-                     (uri (utils:url-encode-filename file))
-                     (uri-forms (state:get-file-forms state uri)))
-                  (unless (gethash file forms)
-                      (unless uri-forms
-                          (setf uri-forms (read-file-forms file))
-                          (state:set-file-forms state uri uri-forms))
-                      (when uri-forms
-                            (setf (gethash file forms) uri-forms))))
+                     (file-forms (state:update-file-forms state file)))
+                  (when file-forms
+                        (setf (gethash file forms) file-forms)))
           :finally (return forms)))
 
 
