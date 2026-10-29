@@ -249,7 +249,7 @@
            (doc (cdr (assoc :text-document params)))
            (uri (cdr (assoc :uri doc)))
            (tokens (state:get-file-tokens state uri))
-           (sem-tokens (analysis:xyz-to-sem-tokens tokens)))
+           (sem-tokens (analysis:to-sem-tokens tokens)))
 
         (utils:result id "data" (if sem-tokens
                                     (to-sem-array sem-tokens)

@@ -23,12 +23,12 @@
 (defun test-add-token ()
     (clue:test "Add token"
         (let ((state (make-instance 'analysis::analysis-state))
-              (token (token:create :type-value nil
-                                   :start (pos:create 0 0)
-                                   :start-offset 0
-                                   :end (pos:create 2 3)
-                                   :end-offset 3
-                                   :text "foo")))
+              (token (token:xyz-create :type-value nil
+                                       :start (pos:create 0 0)
+                                       :start-offset 0
+                                       :end (pos:create 2 3)
+                                       :end-offset 3
+                                       :text "foo")))
             (analysis::add-sem-token state token sem-types:*comment*)
             (clue:check-equal :expected 3
                               :actual (length (analysis::sem-tokens state))))))

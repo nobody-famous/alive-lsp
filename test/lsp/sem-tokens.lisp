@@ -11,7 +11,7 @@
 
 (defun get-sem-tokens (text)
     (analysis:to-sem-tokens
-        (tokenizer:from-stream
+        (tokenizer:xyz-from-stream
             (make-string-input-stream text))))
 
 
