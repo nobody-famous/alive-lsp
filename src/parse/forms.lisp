@@ -332,8 +332,8 @@
 
 
 (defun find-inner-form (form pos)
-    (let ((start (form:get-start form))
-          (end (form:get-end form))
+    (let ((start (form:xyz-get-start form))
+          (end (form:xyz-get-end form))
           (kids (form:get-kids form)))
 
         (if (and kids
@@ -350,29 +350,10 @@
             nil)))
 
 
-(defun xyz-find-inner-form (form pos)
-    (let ((start (form:xyz-get-start form))
-          (end (form:xyz-get-end form))
-          (kids (form:get-kids form)))
-
-        (if (and kids
-                 (pos:less-or-equal start pos)
-                 (pos:less-than pos end))
-
-            (loop :with target := form
-                  :for kid :in kids
-                  :do (let ((inner (xyz-find-inner-form kid pos)))
-                          (when inner
-                                (setf target inner)))
-                  :finally (return target))
-
-            nil)))
-
-
 (defun xyz-get-outer-form (form pos)
     (when (and form
                (car (form:get-kids form)))
-          (xyz-find-inner-form form pos)))
+          (find-inner-form form pos)))
 
 
 (defun xyz-find-expr (form pos)
