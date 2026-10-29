@@ -1,7 +1,6 @@
 (defpackage :alive/format
     (:use :cl)
     (:export :on-type
-             :xyz-on-type
              :eol
              :range)
     (:local-nicknames (:edit :alive/text-edit)
@@ -40,37 +39,37 @@
 
 
 (defstruct parse-state
-    xyz-tokens
+    tokens
     range
     (indent (list 0))
     edits
-    xyz-out-list
-    xyz-seen
-    xyz-opens
+    out-list
+    seen
+    opens
     cur-pkg
     (options (make-options)))
 
 
-(defun xyz-same-line (token1 token2)
+(defun same-line (token1 token2)
     (and token1
          token2
          (= (the fixnum (pos:line (token:xyz-get-start token1)))
              (the fixnum (pos:line (token:xyz-get-start token2))))))
 
 
-(defun xyz-next-token (state)
-    (car (parse-state-xyz-tokens state)))
+(defun next-token (state)
+    (car (parse-state-tokens state)))
 
 
-(defun xyz-next-next-token (state)
-    (cadr (parse-state-xyz-tokens state)))
+(defun next-next-token (state)
+    (cadr (parse-state-tokens state)))
 
 
-(defun xyz-pop-token (state)
-    (pop (parse-state-xyz-tokens state)))
+(defun pop-token (state)
+    (pop (parse-state-tokens state)))
 
 
-(defun xyz-make-new-token (token start &optional new-str)
+(defun make-new-token (token start &optional new-str)
     (loop :with line :of-type fixnum := (pos:line start)
           :with col :of-type fixnum := (pos:col start)
           :with str := (or new-str (token:xyz-get-text token))
@@ -88,13 +87,13 @@
                                              :text str))))
 
 
-(defun xyz-add-to-out-list (state token)
-    (let* ((start (if (car (parse-state-xyz-out-list state))
-                      (token:xyz-get-end (car (parse-state-xyz-out-list state)))
+(defun add-to-out-list (state token)
+    (let* ((start (if (car (parse-state-out-list state))
+                      (token:xyz-get-end (car (parse-state-out-list state)))
                       (pos:create 0 0)))
-           (adjusted (xyz-make-new-token token start)))
+           (adjusted (make-new-token token start)))
 
-        (push adjusted (parse-state-xyz-out-list state))))
+        (push adjusted (parse-state-out-list state))))
 
 
 (defun pos-out-of-range (range pos)
@@ -102,7 +101,7 @@
         (pos:less-than (range:end range) pos)))
 
 
-(defun xyz-out-of-range (range token)
+(defun out-of-range (range token)
     (or (pos:less-or-equal (token:xyz-get-end token) (range:start range))
         (pos:less-than (range:end range) (token:xyz-get-start token))
         (and (token:xyz-is-type types:*ws* token)
@@ -111,7 +110,7 @@
              (pos:less-than (range:end range) (token:xyz-get-end token)))))
 
 
-(defun xyz-new-line-count (token)
+(defun new-line-count (token)
     (let ((start (token:xyz-get-start token))
           (end (token:xyz-get-end token)))
         (the fixnum (- (the fixnum (pos:line end))
@@ -137,7 +136,7 @@
         (get-output-stream-string out)))
 
 
-(defun xyz-replace-token (state token text)
+(defun replace-token (state token text)
     (declare (optimize (speed 0)))
 
     (let* ((range (range:create (token:xyz-get-start token)
@@ -177,8 +176,8 @@
             (pop (parse-state-indent state)))))
 
 
-(defun xyz-prev-is-start-form (state)
-    (loop :with tokens := (parse-state-xyz-seen state)
+(defun prev-is-start-form (state)
+    (loop :with tokens := (parse-state-seen state)
 
           :while (and tokens
                       (or (token:xyz-is-type types:*ws* (car tokens))
@@ -201,9 +200,9 @@
         :initial-value NIL))
 
 
-(defun xyz-set-cur-pkg (state)
-    (let ((token1 (car (parse-state-xyz-tokens state)))
-          (token2 (cadr (parse-state-xyz-tokens state))))
+(defun set-cur-pkg (state)
+    (let ((token1 (car (parse-state-tokens state)))
+          (token2 (cadr (parse-state-tokens state))))
         (cond ((and (token:xyz-is-type types:*colons* token1)
                     (token:xyz-is-type types:*symbol* token2))
                   (setf (parse-state-cur-pkg state)
@@ -215,7 +214,7 @@
                       (token:xyz-get-text token1))))))
 
 
-(defun xyz-lookup-lambda-list (token1 token2 token3)
+(defun lookup-lambda-list (token1 token2 token3)
     (cond ((and (token:xyz-is-type types:*symbol* token1)
                 (token:xyz-is-type types:*colons* token2)
                 (token:xyz-is-type types:*symbol* token3))
@@ -230,37 +229,37 @@
                                        (package-name *package*)))))
 
 
-(defun xyz-force-aligned-p (token)
+(defun force-aligned-p (token)
     (let ((name (string-downcase (token:xyz-get-text token))))
         (member name *force-align-targets* :test #'string=)))
 
 
-(defun xyz-token-is (token text)
+(defun token-is (token text)
     (declare (type simple-string text))
     (string-equal text (token:xyz-get-text token)))
 
 
-(defun xyz-align-first-item (state token form-open prev-open)
-    (let* ((ns (car (parse-state-xyz-tokens state)))
-           (colons (cadr (parse-state-xyz-tokens state)))
-           (sym (caddr (parse-state-xyz-tokens state)))
-           (lambda-list (xyz-lookup-lambda-list ns colons sym)))
+(defun align-first-item (state token form-open prev-open)
+    (let* ((ns (car (parse-state-tokens state)))
+           (colons (cadr (parse-state-tokens state)))
+           (sym (caddr (parse-state-tokens state)))
+           (lambda-list (lookup-lambda-list ns colons sym)))
 
         (when (string-equal "in-package" (token:xyz-get-text token))
               (setf (parse-state-cur-pkg state) NIL))
 
-        (cond ((xyz-token-is token "cond") (token:set-is-cond form-open T)
-                                           (replace-indent state (pos:col (token:xyz-get-start token))))
+        (cond ((token-is token "cond") (token:set-is-cond form-open T)
+                                       (replace-indent state (pos:col (token:xyz-get-start token))))
 
-              ((xyz-token-is token "loop") (token:set-is-loop form-open T)
-                                           (replace-indent state (pos:col (token:xyz-get-start token))))
+              ((token-is token "loop") (token:set-is-loop form-open T)
+                                       (replace-indent state (pos:col (token:xyz-get-start token))))
 
               ((and prev-open (token:cond-p prev-open))
                   (replace-indent state (the fixnum (+ (the fixnum (options-indent-width (parse-state-options state)))
                                                        (the fixnum (pos:col (token:xyz-get-start token)))
                                                        (the fixnum -1)))))
 
-              ((xyz-force-aligned-p token) (replace-indent state (pos:col (token:xyz-get-start token))))
+              ((force-aligned-p token) (replace-indent state (pos:col (token:xyz-get-start token))))
 
               ((has-body lambda-list) (token:set-aligned form-open T)
                                       (token:set-lambda-list form-open lambda-list)
@@ -279,38 +278,38 @@
               (T (replace-indent state (pos:col (token:xyz-get-start token)))))))
 
 
-(defun xyz-align-next-item (state token form-open)
-    (cond ((and (token:xyz-is-type types:*symbol* (car (parse-state-xyz-seen state)))
+(defun align-next-item (state token form-open)
+    (cond ((and (token:xyz-is-type types:*symbol* (car (parse-state-seen state)))
                 (token:xyz-is-type types:*colons* token)
-                (token:xyz-is-type types:*symbol* (cadr (parse-state-xyz-tokens state))))
-              (xyz-add-to-out-list state (cadr (parse-state-xyz-tokens state)))
-              (xyz-pop-token state))
+                (token:xyz-is-type types:*symbol* (cadr (parse-state-tokens state))))
+              (add-to-out-list state (cadr (parse-state-tokens state)))
+              (pop-token state))
 
-          ((and (token:xyz-is-type types:*colons* (car (parse-state-xyz-seen state)))
+          ((and (token:xyz-is-type types:*colons* (car (parse-state-seen state)))
                 (token:xyz-is-type types:*symbol* token))
               NIL)
 
           (T (unless (parse-state-cur-pkg state)
-                 (xyz-set-cur-pkg state))
+                 (set-cur-pkg state))
              (token:set-aligned form-open T)
              (replace-indent state (pos:col (token:xyz-get-start token))))))
 
 
-(defun xyz-update-aligned (state)
-    (let* ((cur-open (car (parse-state-xyz-opens state)))
-           (prev-open (cadr (parse-state-xyz-opens state)))
-           (token (car (parse-state-xyz-out-list state)))
-           (prev (cadr (parse-state-xyz-out-list state)))
+(defun update-aligned (state)
+    (let* ((cur-open (car (parse-state-opens state)))
+           (prev-open (cadr (parse-state-opens state)))
+           (token (car (parse-state-out-list state)))
+           (prev (cadr (parse-state-out-list state)))
            (pkg (packages:for-string (parse-state-cur-pkg state)))
            (*package* (or pkg *package*)))
 
-        (cond ((xyz-prev-is-start-form state)
-                  (xyz-align-first-item state token cur-open prev-open))
+        (cond ((prev-is-start-form state)
+                  (align-first-item state token cur-open prev-open))
 
               ((and cur-open
                     (token:loop-p cur-open)
                     (not (token:aligned-p cur-open))
-                    (xyz-is-loop-key state token)
+                    (is-loop-key state token)
                     (token:xyz-is-type types:*ws* prev))
                   (token:set-aligned cur-open T)
                   (token:set-is-loop cur-open T)
@@ -319,51 +318,51 @@
 
               ((and cur-open
                     (not (token:aligned-p cur-open)))
-                  (xyz-align-next-item state token cur-open)))))
+                  (align-next-item state token cur-open)))))
 
 
-(defun xyz-fix-indent (state)
+(defun fix-indent (state)
     (let* ((indent (get-next-indent state))
-           (token (car (parse-state-xyz-seen state)))
-           (prev (cadr (parse-state-xyz-seen state)))
-           (next (xyz-next-token state))
-           (nl-count (if (zerop (list-length (parse-state-xyz-opens state)))
-                         (min (xyz-new-line-count token) 3)
-                         (min (xyz-new-line-count token) 2)))
+           (token (car (parse-state-seen state)))
+           (prev (cadr (parse-state-seen state)))
+           (next (next-token state))
+           (nl-count (if (zerop (list-length (parse-state-opens state)))
+                         (min (new-line-count token) 3)
+                         (min (new-line-count token) 2)))
            (start (token:xyz-get-start token))
            (end (token:xyz-get-end token)))
 
         (when (and next
-                   (xyz-is-loop-key state next)
+                   (is-loop-key state next)
                    (token:xyz-is-multiline token))
               (decf (the fixnum indent)
                     (the fixnum (options-indent-width (parse-state-options state)))))
 
         (when (token:xyz-is-type types:*ws* token)
-              (if (xyz-out-of-range (parse-state-range state) token)
-                  (xyz-add-to-out-list state token)
+              (if (out-of-range (parse-state-range state) token)
+                  (add-to-out-list state token)
                   (cond ((or (not prev)
                              (token:xyz-is-type types:*open-paren* prev))
-                            (xyz-replace-token state token ""))
+                            (replace-token state token ""))
 
                         ((= (the fixnum (pos:line start)) (the fixnum (pos:line end)))
                             (if (string= " " (token:xyz-get-text token))
-                                (xyz-add-to-out-list state token)
-                                (progn (xyz-add-to-out-list state
-                                                            (token:xyz-create :type-value types:*ws*
-                                                                              :start (token:xyz-get-start token)
-                                                                              :end (pos:create (pos:line start)
-                                                                                               (+ (the fixnum 1) (the fixnum (pos:col start))))
-                                                                              :text " "))
-                                       (xyz-replace-token state token " "))))
+                                (add-to-out-list state token)
+                                (progn (add-to-out-list state
+                                                        (token:xyz-create :type-value types:*ws*
+                                                                          :start (token:xyz-get-start token)
+                                                                          :end (pos:create (pos:line start)
+                                                                                           (+ (the fixnum 1) (the fixnum (pos:col start))))
+                                                                          :text " "))
+                                       (replace-token state token " "))))
 
                         (T (let* ((str (indent-string nl-count indent))
-                                  (new-token (xyz-make-new-token token (token:xyz-get-start token) str)))
-                               (xyz-add-to-out-list state new-token)
-                               (xyz-replace-token state token str))))))))
+                                  (new-token (make-new-token token (token:xyz-get-start token) str)))
+                               (add-to-out-list state new-token)
+                               (replace-token state token str))))))))
 
 
-(defun xyz-need-space-p (token)
+(defun need-space-p (token)
     (not (or (token:xyz-is-type types:*quote* token)
              (token:xyz-is-type types:*back-quote* token)
              (token:xyz-is-type types:*open-paren* token)
@@ -373,87 +372,87 @@
              (token:xyz-is-type types:*macro* token))))
 
 
-(defun xyz-process-open (state token)
-    (let* ((prev (car (parse-state-xyz-seen state))))
+(defun process-open (state token)
+    (let* ((prev (car (parse-state-seen state))))
         (when prev
               (cond ((token:xyz-is-type types:*ws* prev)
-                        (xyz-fix-indent state))
+                        (fix-indent state))
 
-                    ((xyz-need-space-p prev)
+                    ((need-space-p prev)
                         (insert-text state (token:xyz-get-end prev) " "))))
 
-        (xyz-add-to-out-list state token)
-        (xyz-update-aligned state)
+        (add-to-out-list state token)
+        (update-aligned state)
 
-        (push (car (parse-state-xyz-out-list state)) (parse-state-xyz-opens state))
+        (push (car (parse-state-out-list state)) (parse-state-opens state))
 
-        (push (pos:col (token:xyz-get-end (car (parse-state-xyz-out-list state))))
+        (push (pos:col (token:xyz-get-end (car (parse-state-out-list state))))
               (parse-state-indent state))))
 
 
-(defun xyz-process-close (state token)
-    (let ((prev (car (parse-state-xyz-seen state)))
-          (prev-prev (cadr (parse-state-xyz-seen state))))
+(defun process-close (state token)
+    (let ((prev (car (parse-state-seen state)))
+          (prev-prev (cadr (parse-state-seen state))))
 
         (when (and prev
-                   (not (xyz-out-of-range (parse-state-range state) prev))
+                   (not (out-of-range (parse-state-range state) prev))
                    (not (eq types:*line-comment* (token:xyz-get-type-value prev-prev)))
                    (not (eq types:*block-comment* (token:xyz-get-type-value prev-prev)))
                    (eq types:*ws* (token:xyz-get-type-value prev)))
-              (xyz-replace-token state prev "")
-              (pop (parse-state-xyz-out-list state)))
+              (replace-token state prev "")
+              (pop (parse-state-out-list state)))
 
-        (xyz-add-to-out-list state token)
-        (pop (parse-state-xyz-opens state))
+        (add-to-out-list state token)
+        (pop (parse-state-opens state))
         (pop (parse-state-indent state))))
 
 
-(defun xyz-is-loop-key (state token)
-    (let ((prev (car (parse-state-xyz-seen state)))
+(defun is-loop-key (state token)
+    (let ((prev (car (parse-state-seen state)))
           (key (if (token:xyz-is-type types:*colons* token)
-                   (token:xyz-get-text (xyz-next-next-token state))
+                   (token:xyz-get-text (next-next-token state))
                    (token:xyz-get-text token))))
 
         (and (token:xyz-is-type types:*ws* prev)
              (member (string-downcase key) *loop-keys* :test #'string=))))
 
 
-(defun xyz-process-token (state token)
-    (let ((prev (car (parse-state-xyz-seen state))))
+(defun process-token (state token)
+    (let ((prev (car (parse-state-seen state))))
 
         (when prev
               (cond ((or (token:xyz-is-type types:*line-comment* token)
                          (token:xyz-is-type types:*block-comment* token))
                         (if (and (token:xyz-is-type types:*ws* prev)
-                                 (not (xyz-out-of-range (parse-state-range state) prev))
-                                 (xyz-same-line prev token))
+                                 (not (out-of-range (parse-state-range state) prev))
+                                 (same-line prev token))
                             (when (not (string-equal " " (token:xyz-get-text prev)))
-                                  (xyz-replace-token state prev " "))
-                            (xyz-fix-indent state)))
+                                  (replace-token state prev " "))
+                            (fix-indent state)))
 
-                    ((token:xyz-is-type types:*ws* prev) (xyz-fix-indent state))
+                    ((token:xyz-is-type types:*ws* prev) (fix-indent state))
 
                     ((and (not (token:xyz-is-type types:*colons* token))
-                          (xyz-need-space-p prev))
+                          (need-space-p prev))
                         (insert-text state (token:xyz-get-end prev) " "))))
 
-        (xyz-add-to-out-list state token)
+        (add-to-out-list state token)
 
-        (xyz-update-aligned state)))
+        (update-aligned state)))
 
 
-(defun xyz-check-end-space (state)
-    (let* ((token (car (parse-state-xyz-seen state)))
+(defun check-end-space (state)
+    (let* ((token (car (parse-state-seen state)))
            (nl-count (min 1
                          (if token
-                             (the fixnum (xyz-new-line-count token))
+                             (the fixnum (new-line-count token))
                              0)))
            (str (indent-string nl-count 0)))
 
         (when (and token
-                   (not (xyz-out-of-range (parse-state-range state) token))
+                   (not (out-of-range (parse-state-range state) token))
                    (token:xyz-is-type types:*ws* token))
-              (xyz-replace-token state token str))))
+              (replace-token state token str))))
 
 
 (defun update-options (state opts)
@@ -462,8 +461,8 @@
               (cdr (assoc :indent-width opts)))))
 
 
-(defun xyz-is-body-next (state)
-    (let* ((token (car (parse-state-xyz-opens state)))
+(defun is-body-next (state)
+    (let* ((token (car (parse-state-opens state)))
            (lambda-list (token:get-lambda-list token)))
         (and token
              (not (eq 'cons (type-of (car lambda-list))))
@@ -471,53 +470,52 @@
                  (string= (the symbol (car lambda-list)) "&REST")))))
 
 
-(defun xyz-do-step (state)
-    (let* ((token (xyz-next-token state))
-           (form-open (car (parse-state-xyz-opens state)))
+(defun do-step (state)
+    (let* ((token (next-token state))
+           (form-open (car (parse-state-opens state)))
            (lambda-list (token:get-lambda-list form-open)))
 
         (when (and form-open
                    lambda-list
                    (not (token:xyz-is-type types:*ws* token)))
-              (when (xyz-is-body-next state)
+              (when (is-body-next state)
                     (pop-next-indent state))
               (token:set-lambda-list form-open (cdr lambda-list)))
 
-        (cond ((token:xyz-is-type types:*open-paren* token) (xyz-process-open state token))
-              ((token:xyz-is-type types:*close-paren* token) (xyz-process-close state token))
+        (cond ((token:xyz-is-type types:*open-paren* token) (process-open state token))
+              ((token:xyz-is-type types:*close-paren* token) (process-close state token))
               ((token:xyz-is-type types:*ws* token) nil)
-              (T (xyz-process-token state token)))
+              (T (process-token state token)))
 
-        (push token (parse-state-xyz-seen state))
-        (xyz-pop-token state)))
+        (push token (parse-state-seen state))
+        (pop-token state)))
 
 
 (defun range (tokens range &optional opts)
-    (let* ((state (make-parse-state :xyz-tokens tokens
+    (let* ((state (make-parse-state :tokens tokens
                                     :range range
                                     :cur-pkg (package-name *package*))))
 
         (when opts
               (update-options state opts))
 
-        (loop :while (parse-state-xyz-tokens state)
+        (loop :while (parse-state-tokens state)
 
-              :do (xyz-do-step state)
+              :do (do-step state)
 
-              :finally (progn (xyz-check-end-space state)
+              :finally (progn (check-end-space state)
                               (return (reverse (parse-state-edits state)))))))
 
 
-(defun xyz-get-on-type-indent (state)
-    (when (xyz-is-body-next state)
+(defun get-on-type-indent (state)
+    (when (is-body-next state)
           (pop-next-indent state))
 
     (get-next-indent state))
 
 
-(defun on-type (input &key options pos)
-    (let* ((tokens (tokenizer:xyz-from-stream input))
-           (state (make-parse-state :xyz-tokens tokens
+(defun on-type (tokens &key options pos)
+    (let* ((state (make-parse-state :tokens tokens
                                     :range (range:create (pos:create 0 0) pos)
                                     :cur-pkg (package-name *package*))))
 
@@ -525,43 +523,16 @@
               (update-options state options))
 
         (when tokens
-              (loop :for token := (xyz-next-token state)
+              (loop :for token := (next-token state)
                     :for token-end := (token:xyz-get-end token)
 
                     :while (and token
                                 (pos:less-or-equal token-end pos))
 
-                    :do (xyz-do-step state)
+                    :do (do-step state)
 
                     :finally (let* ((indent (if token
-                                                (xyz-get-on-type-indent state)
-                                                0))
-                                    (line (pos:line pos))
-                                    (new-range (range:create (pos:create line 0) pos)))
-
-                                 (return (list (edit:create :range new-range
-                                                            :text (indent-string 0 indent)))))))))
-
-
-(defun xyz-on-type (tokens &key options pos)
-    (let* ((state (make-parse-state :xyz-tokens tokens
-                                    :range (range:create (pos:create 0 0) pos)
-                                    :cur-pkg (package-name *package*))))
-
-        (when options
-              (update-options state options))
-
-        (when tokens
-              (loop :for token := (xyz-next-token state)
-                    :for token-end := (token:xyz-get-end token)
-
-                    :while (and token
-                                (pos:less-or-equal token-end pos))
-
-                    :do (xyz-do-step state)
-
-                    :finally (let* ((indent (if token
-                                                (xyz-get-on-type-indent state)
+                                                (get-on-type-indent state)
                                                 0))
                                     (line (pos:line pos))
                                     (new-range (range:create (pos:create line 0) pos)))

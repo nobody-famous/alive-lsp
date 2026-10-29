@@ -167,9 +167,9 @@
            (pos (cdr (assoc :position params)))
            (uri (cdr (assoc :uri doc)))
            (tokens (state:get-file-tokens state uri))
-           (edits (formatter:xyz-on-type tokens
-                                         :options (fmt-opts:convert opts)
-                                         :pos pos))
+           (edits (formatter:on-type tokens
+                                     :options (fmt-opts:convert opts)
+                                     :pos pos))
            (value (if edits
                       (fmt-utils:to-text-edits edits)
                       (make-array 0))))
