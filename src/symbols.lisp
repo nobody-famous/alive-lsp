@@ -129,4 +129,4 @@
            (pkg-name (packages:for-pos forms pos)))
 
         (when expr
-              (packages:xyz-for-tokens (form:get-tokens expr) pkg-name))))
+              (packages:for-tokens (form:get-tokens expr) pkg-name))))

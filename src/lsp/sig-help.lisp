@@ -81,6 +81,6 @@
         (when (and name-tokens
                    (<= 0 active-param))
               (multiple-value-bind (name pkg)
-                      (pkgs:xyz-for-tokens name-tokens pkg-name)
+                      (pkgs:for-tokens name-tokens pkg-name)
                   (let ((sig (get-sig-info active-param name pkg)))
                       (when sig (list sig)))))))

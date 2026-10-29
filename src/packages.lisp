@@ -3,7 +3,6 @@
     (:export :for-pos
              :for-string
              :for-tokens
-             :xyz-for-tokens
              :list-all
              :lookup
              :package-not-found
@@ -86,28 +85,6 @@
            (*package* (or pkg *package*)))
 
         (unless token4
-            (cond ((and (eq (token:get-type-value token1) types:*symbol*)
-                        (eq (token:get-type-value token2) types:*colons*)
-                        (eq (token:get-type-value token3) types:*symbol*))
-                      (let* ((real-pkg (lookup (token:get-text token1)))
-                             (real-pkg-name (if real-pkg
-                                                (package-name real-pkg)
-                                                (token:get-text token1))))
-                          (values (token:get-text token3) real-pkg-name)))
-
-                  ((eq (token:get-type-value token1) types:*symbol*)
-                      (values (token:get-text token1) pkg-name))))))
-
-
-(defun xyz-for-tokens (tokens pkg-name)
-    (let* ((token1 (car tokens))
-           (token2 (cadr tokens))
-           (token3 (caddr tokens))
-           (token4 (cadddr tokens))
-           (pkg (lookup pkg-name))
-           (*package* (or pkg *package*)))
-
-        (unless token4
             (cond ((and (eq (token:xyz-get-type-value token1) types:*symbol*)
                         (eq (token:xyz-get-type-value token2) types:*colons*)
                         (eq (token:xyz-get-type-value token3) types:*symbol*))
@@ -132,17 +109,6 @@
                   (eq (utils:lookup-symbol name pkg-name) in-pkg-sym)))))
 
 
-(defun xyz-in-package-p (form pkg)
-    (let* ((kids (form:get-kids form))
-           (kid (first kids))
-           (in-pkg-sym (find-symbol "IN-PACKAGE" "CL-USER")))
-        (when (and (eq alive/types:*open-paren* (form:get-form-type form))
-                   kid)
-              (multiple-value-bind (name pkg-name)
-                      (xyz-for-tokens (form:get-tokens kid) pkg)
-                  (eq (utils:lookup-symbol name pkg-name) in-pkg-sym)))))
-
-
 (defun for-pos (forms pos)
     (loop :with prev-form := nil
           :with pkg := "cl-user"
@@ -150,7 +116,7 @@
           :for form :in forms
           :until (pos:less-or-equal pos (form:get-start form))
           :do (when (and (not (eq alive/types:*ifdef-false* (form:get-form-type prev-form)))
-                         (xyz-in-package-p form pkg))
+                         (in-package-p form pkg))
                     (setf pkg (name-from-string (form:get-sym-text (elt (form:get-kids form) 1)))))
               (setf prev-form form)
           :finally (return pkg)))
