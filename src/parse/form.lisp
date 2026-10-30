@@ -6,12 +6,10 @@
              :get-end
              :get-form-type
              :get-kids
-             :get-package
              :get-start
              :get-sym-text
              :get-sym-text
-             :get-tokens
-             :set-package)
+             :get-tokens)
     (:local-nicknames (:pos :alive/position)
                       (:token :alive/parse/token)))
 
@@ -72,16 +70,6 @@
 (defun get-form-type (form)
     (when (form-p form)
           (form-kind form)))
-
-
-(defun get-package (form)
-    (when (form-p form)
-          (form-pkg form)))
-
-
-(defun set-package (form pkg)
-    (when (form-p form)
-          (setf (form-pkg form) pkg)))
 
 
 (defun create (&key form-type kids tokens pkg)
