@@ -30,7 +30,7 @@
     (msg-handler nil :type (or null (function (dependencies cons) (values (or null hash-table) &optional))))
     (read-msg nil :type (or null (function () (values (or null cons) &optional))))
     (send-msg nil :type (or null (function (cons) null)))
-    (send-request nil :type (or null (function (list) hash-table)))
+    (send-request nil :type (or null (function (hash-table) list)))
     (eval-fn nil :type (or null (function (T) *)))
     (list-all-threads nil :type (or null (function () cons)))
     (kill-thread nil :type (or null (function (T) *)))
