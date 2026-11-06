@@ -1,23 +1,24 @@
 (defpackage :alive/test/format/range
     (:use :cl)
     (:export :run-all)
-    (:local-nicknames (:formatting :alive/format)
-                      (:range :alive/range)
+    (:local-nicknames (:edit :alive/text-edit)
+                      (:formatting :alive/format)
                       (:pos :alive/position)
-                      (:edit :alive/text-edit)
+                      (:range :alive/range)
+                      (:tokenizer :alive/parse/tokenizer)
                       (:utils :alive/test/utils)))
 
 (in-package :alive/test/format/range)
 
 
 (defun check-format (text range expected &optional opts)
-    (with-input-from-string (s text)
-        (let ((actual (if opts
-                          (formatting:range s range opts)
-                          (formatting:range s range))))
+    (let* ((tokens (tokenizer:from-stream (make-string-input-stream text)))
+           (actual (if opts
+                       (formatting:range tokens range opts)
+                       (formatting:range tokens range))))
 
-            (clue:check-equal :expected expected
-                              :actual actual))))
+        (clue:check-equal :expected expected
+                          :actual actual)))
 
 
 (defun test-insert-between-lists ()

@@ -64,9 +64,9 @@
 
 
 (defun for-string (str)
-    (lookup (ignore-errors
-                (read
-                    (make-string-input-stream str)))))
+    (ignore-errors
+        (lookup (with-input-from-string (in str)
+                    (read in nil nil)))))
 
 
 (defun name-from-string (str)
@@ -77,11 +77,14 @@
 
 
 (defun for-tokens (tokens pkg-name)
-    (let* ((pkg (lookup pkg-name))
+    (let* ((token1 (car tokens))
+           (token2 (cadr tokens))
+           (token3 (caddr tokens))
+           (token4 (cadddr tokens))
+           (pkg (lookup pkg-name))
            (*package* (or pkg *package*)))
 
-        (destructuring-bind (&optional token1 token2 token3)
-                tokens
+        (unless token4
             (cond ((and (eq (token:get-type-value token1) types:*symbol*)
                         (eq (token:get-type-value token2) types:*colons*)
                         (eq (token:get-type-value token3) types:*symbol*))
@@ -92,9 +95,7 @@
                           (values (token:get-text token3) real-pkg-name)))
 
                   ((eq (token:get-type-value token1) types:*symbol*)
-                      (values (token:get-text token1) pkg-name))
-
-                  (T nil)))))
+                      (values (token:get-text token1) pkg-name))))))
 
 
 (defun in-package-p (form pkg)
@@ -108,19 +109,16 @@
                   (eq (utils:lookup-symbol name pkg-name) in-pkg-sym)))))
 
 
-(defun for-pos (text pos)
-    (loop :with forms := (forms:from-stream (make-string-input-stream text))
-          :with prev-form := nil
+(defun for-pos (forms pos)
+    (loop :with prev-form := nil
           :with pkg := "cl-user"
 
           :for form :in forms
           :until (pos:less-or-equal pos (form:get-start form))
           :do (when (and (not (eq alive/types:*ifdef-false* (form:get-form-type prev-form)))
                          (in-package-p form pkg)
-                         (= 2 (length (form:get-kids form))))
-                    (setf pkg (name-from-string (subseq text
-                                                        (form:get-start-offset (elt (form:get-kids form) 1))
-                                                        (form:get-end-offset (elt (form:get-kids form) 1))))))
+                         (car (cdr (form:get-kids form))))
+                    (setf pkg (name-from-string (form:get-sym-text (car (cdr (form:get-kids form)))))))
               (setf prev-form form)
           :finally (return pkg)))
 

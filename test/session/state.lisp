@@ -23,15 +23,6 @@
                                   :actual (state:get-history-item state -10))))))
 
 
-(defun test-add-listener ()
-    (clue:test "Add"
-        (let ((listener (make-instance 'state:listener)))
-            (let ((state (state:create)))
-                (state:add-listener state listener)
-                (clue:check-equal :expected 1
-                                  :actual (length (state:listeners state)))))))
-
-
 (defun test-set-initialized ()
     (clue:suite "Set initialized"
         (clue:test "True"
@@ -53,8 +44,8 @@
     (clue:test "Set send message callback"
         (let ((state (state:create)))
             (state:set-sent-msg-callback state 5 (lambda (msg)
-                                                         (declare (ignore msg))
-                                                         (make-hash-table)))
+                                                     (declare (ignore msg))
+                                                     (make-hash-table)))
             (clue:check-exists (state:get-sent-msg-callback state 5)))))
 
 
@@ -108,16 +99,9 @@
                 nil))))
 
 
-(defun test-create-listener ()
-    (clue:test "Create listener"
-        (clue:check-equal :expected T
-                          :actual (typep (state:create-listener (lambda ())) 'state:listener))))
-
-
 (defun run-all ()
     (clue:suite "Session State Tests"
         (test-add-history)
-        (test-add-listener)
         (test-set-initialized)
         (test-set-file-text)
         (test-set-send-msg-callback)
@@ -126,5 +110,4 @@
         (test-next-thread-id)
         (test-inspector)
         (test-running)
-        (test-thread-msg)
-        (test-create-listener)))
+        (test-thread-msg)))

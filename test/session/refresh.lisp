@@ -17,24 +17,22 @@
                                                 response)
                               :send-msg (lambda (msg)
                                             (setf sent-msg msg)
-                                            nil))))
-        (handler-bind ((alive/session/spawn:spawned-thread (lambda (evt)
-                                                               (setf thread (alive/session/spawn:thread evt)))))
-            (refresh:send deps state)
-            (bt:join-thread thread)
-            (clue:check-exists sent-msg))))
+                                            nil)))
+           (thread (refresh:send deps state)))
+        (bt:join-thread thread)
+        (clue:check-exists sent-msg)))
 
 
 (defun test-send ()
     (clue:suite "Send"
-        (clue:test "OK"
-            (run-test (list (cons :id 5))))
+                (clue:test "OK"
+                           (run-test (list (cons :id 5))))
 
-        (clue:test "Error"
-            (run-test (list (cons :id 5)
-                            (cons :error "foo"))))))
+                (clue:test "Error"
+                           (run-test (list (cons :id 5)
+                                           (cons :error "foo"))))))
 
 
 (defun run-all ()
     (clue:suite "Refresh Tests"
-        (test-send)))
+                (test-send)))

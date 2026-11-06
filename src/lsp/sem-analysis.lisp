@@ -187,7 +187,7 @@
                   (add-sem-token state token1 (convert-if-comment state sem-types:*namespace*))
                   (add-sem-token state token2 (convert-if-comment state sem-types:*symbol*))
                   (add-sem-token state token3 (convert-if-comment state (lookup-symbol-type (token:get-text token3)
-                                                                                            (token:get-text token1))))
+                                                                                                (token:get-text token1))))
                   (next-token state)
                   (next-token state)
 

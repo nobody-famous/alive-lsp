@@ -3,13 +3,13 @@
     (:export :add-bars
              :callable-p
              :external-p
-             :find-tokens
              :for-pos
              :function-p
              :get-all-names
              :get-lambda-list
              :get-location
              :lookup
+             :lookup-sources
              :macro-p
              :special-ch-p)
     (:local-nicknames (:form :alive/parse/form)
@@ -123,39 +123,10 @@
             :initial-value nil)))
 
 
-(defun get-range-from-file (file source-path)
-    (handler-case
-            (with-open-file (in-stream file)
-                (let ((forms (forms:from-stream in-stream)))
-                    (forms:get-range-for-path forms source-path)))
-        (T nil)))
-
-
-(defun get-location (sym)
-    (let* ((src (when sym (lookup-sources sym)))
-           (file (when src (sb-introspect:definition-source-pathname src)))
-           (form-path (when src (sb-introspect:definition-source-form-path src))))
-
-        (if file
-            (list (utils:url-encode-filename (namestring (translate-logical-pathname file)))
-                  (get-range-from-file file form-path))
-            (list nil nil))))
-
-
-(defun find-tokens (tokens pos)
-    (loop :for token :in tokens
-          :collect token :into found-tokens
-          :while (pos:less-than (token:get-end token) pos)
-          :finally (return (cond ((<= 3 (length found-tokens)) (reverse (subseq (reverse found-tokens) 0 3)))
-                                 ((= 2 (length found-tokens)) (reverse (cons nil found-tokens)))
-                                 ((= 1 (length found-tokens)) (list (first found-tokens) nil nil))))))
-
-
-(defun for-pos (text pos)
-    (let* ((forms (forms:from-stream (make-string-input-stream text)))
-           (top-form (forms:get-top-form forms pos))
+(defun for-pos (forms pos)
+    (let* ((top-form (forms:get-top-form forms pos))
            (expr (forms:find-expr top-form pos))
-           (pkg-name (packages:for-pos text pos)))
+           (pkg-name (packages:for-pos forms pos)))
 
         (when expr
               (packages:for-tokens (form:get-tokens expr) pkg-name))))

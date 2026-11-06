@@ -21,8 +21,7 @@
 (in-package :alive/session/handler/traced-fns)
 
 
-(declaim (ftype (function (string cons) (values (or null string) (or null string))) get-function-for-pos))
-(defun get-function-for-pos (text pos)
+(defun get-function-for-pos (tokens pos)
     (loop :with done := nil
           :with to-trace := nil
           :with fn-name := nil
@@ -32,7 +31,6 @@
           :with next := nil
           :with next-next := nil
           :with token := nil
-          :with tokens := (tokenizer:from-stream (make-string-input-stream text))
 
           :while (and tokens (not done))
           :do (setf token (car tokens))
@@ -77,17 +75,17 @@
                                  (T nil)))))
 
 
-(declaim (ftype (function (deps:dependencies state:state cons) null) trace-fn))
 (defun trace-fn (deps state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
            (doc (cdr (assoc :text-document params)))
            (pos (cdr (assoc :position params)))
            (uri (cdr (assoc :uri doc)))
-           (text (or (state:get-file-text state uri) ""))
-           (pkg (packages:for-pos text pos))
+           (forms (state:get-file-forms state uri))
+           (tokens (state:get-file-tokens state uri))
+           (pkg (packages:for-pos forms pos))
            (*package* (or (packages:lookup pkg) *package*))
-           (to-trace (get-function-for-pos text pos))
+           (to-trace (get-function-for-pos tokens pos))
            (result (if to-trace
                        (deps:trace-fn deps to-trace)
                        nil)))
@@ -95,24 +93,23 @@
         (deps:send-msg deps (utils:result id "function" result))))
 
 
-(declaim (ftype (function (deps:dependencies state:state cons) null) untrace-fn))
 (defun untrace-fn (deps state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
            (doc (cdr (assoc :text-document params)))
            (pos (cdr (assoc :position params)))
            (uri (cdr (assoc :uri doc)))
-           (text (or (state:get-file-text state uri) ""))
-           (pkg (packages:for-pos text pos))
+           (forms (state:get-file-forms state uri))
+           (tokens (state:get-file-tokens state uri))
+           (pkg (packages:for-pos forms pos))
            (*package* (or (packages:lookup pkg) *package*))
-           (to-untrace (get-function-for-pos text pos)))
+           (to-untrace (get-function-for-pos tokens pos)))
 
         (when to-untrace
               (deps:untrace-fn deps to-untrace))
         (deps:send-msg deps (utils:result id "function" to-untrace))))
 
 
-(declaim (ftype (function (deps:dependencies cons) null) untrace-fn-by-name))
 (defun untrace-fn-by-name (deps msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
@@ -126,7 +123,6 @@
         (deps:send-msg deps (lsp-msg:create-response id :result-value T))))
 
 
-(declaim (ftype (function (deps:dependencies cons) null) trace-pkg))
 (defun trace-pkg (deps msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
@@ -138,7 +134,6 @@
         (deps:send-msg deps (utils:result id "function" result))))
 
 
-(declaim (ftype (function (deps:dependencies cons) null) untrace-pkg))
 (defun untrace-pkg (deps msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
@@ -149,7 +144,6 @@
         (deps:send-msg deps (lsp-msg:create-response id :result-value T))))
 
 
-(declaim (ftype (function (deps:dependencies cons) hash-table) list-all))
 (defun list-all (deps msg)
     (utils:result (cdr (assoc :id msg))
                   "traced"

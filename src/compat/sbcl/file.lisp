@@ -10,6 +10,7 @@
                       (:errors :alive/errors)
                       (:range :alive/range)
                       (:pos :alive/position)
+                      (:tokenizer :alive/parse/tokenizer)
                       (:types :alive/types)
                       (:comp-msg :alive/compile-message)))
 
@@ -19,7 +20,8 @@
 (defmacro with-forms ((path) &body body)
     (let ((file-id (gensym)))
         `(with-open-file (,file-id ,path)
-             (let ((forms (forms:from-stream ,file-id)))
+             (let* ((tokens (tokenizer:from-stream ,file-id))
+                    (forms (forms:from-tokens tokens)))
                  ,@body))))
 
 

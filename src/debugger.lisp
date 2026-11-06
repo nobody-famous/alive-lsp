@@ -30,13 +30,11 @@
           :finally (return (values ndx nil))))
 
 
-(defun get-frame-loc (stream frame)
+(defun get-frame-loc (forms frame)
     (let* ((top-ndx (when frame
                           (gethash "topForm" frame)))
            (form-num (when frame
                            (gethash "formNumber" frame)))
-           (forms (when stream
-                        (forms:from-stream stream)))
            (top-form (when (and top-ndx forms)
                            (forms:get-nth-form forms top-ndx))))
 

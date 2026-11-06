@@ -2,7 +2,8 @@
     (:use :cl)
     (:export :run-all)
     (:local-nicknames (:hover :alive/lsp/hover)
-                      (:pos :alive/position)))
+                      (:pos :alive/position)
+                      (:utils :alive/test/utils)))
 
 (in-package :alive/test/lsp/hover)
 
@@ -10,7 +11,7 @@
 (defun test-defun ()
     (clue:test "Defun hover"
         (clue:check-equal :expected T
-                          :actual (stringp (hover:get-text :text "defun"
+                          :actual (stringp (hover:get-text :forms (utils:get-forms "defun")
                                                            :pos (pos:create 0 3))))))
 
 

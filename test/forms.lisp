@@ -3,13 +3,14 @@
     (:export :run-all)
     (:local-nicknames (:form :alive/parse/form)
                       (:forms :alive/parse/forms)
-                      (:pos :alive/position)))
+                      (:pos :alive/position)
+                      (:utils :alive/test/utils)))
 
 (in-package :alive/test/forms)
 
 
 (defun get-child-form (text pos)
-    (let* ((forms (forms:from-stream (make-string-input-stream text)))
+    (let* ((forms (utils:get-forms text))
            (top-form (forms:get-top-form forms pos)))
         (forms:get-outer-form top-form pos)))
 

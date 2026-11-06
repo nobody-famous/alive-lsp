@@ -1,17 +1,19 @@
 (defpackage :alive/test/format/on-type
     (:use :cl)
     (:export :run-all)
-    (:local-nicknames (:formatting :alive/format)
+    (:local-nicknames (:edit :alive/text-edit)
+                      (:formatting :alive/format)
                       (:pos :alive/position)
                       (:range :alive/range)
-                      (:edit :alive/text-edit)))
+                      (:tokenizer :alive/parse/tokenizer)))
 
 (in-package :alive/test/format/on-type)
 
 
 (defun check-format (&key text pos expected)
     (with-input-from-string (s text)
-        (let ((actual (formatting:on-type s :pos pos)))
+        (let* ((tokens (tokenizer:from-stream s))
+               (actual (formatting:on-type tokens :pos pos)))
             (clue:check-equal :expected expected
                               :actual actual))))
 

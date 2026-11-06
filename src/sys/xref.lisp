@@ -7,7 +7,9 @@
                       (:loc :alive/location)
                       (:pos :alive/position)
                       (:range :alive/range)
+                      (:state :alive/session/state)
                       (:sym :alive/symbols)
+                      (:tokenizer :alive/parse/tokenizer)
                       (:utils :alive/utils)))
 
 (in-package :alive/sys/xref)
@@ -36,18 +38,14 @@
                 locations)))
 
 
-(defun read-file-forms (file)
-    (with-open-file (s file)
-        (alive/parse/forms:from-stream s)))
-
-
-(defun get-file-forms (refs)
+(defun get-file-forms (state refs)
     (loop :with file := nil
           :with forms := (make-hash-table :test #'equalp)
           :for ref :in refs
-          :do (setf file (cdr (assoc :file ref)))
-              (unless (gethash file forms)
-                  (setf (gethash file forms) (read-file-forms file)))
+          :do (let* ((file (cdr (assoc :file ref)))
+                     (file-forms (state:update-file-forms state file)))
+                  (when file-forms
+                        (setf (gethash file forms) file-forms)))
           :finally (return forms)))
 
 
@@ -60,16 +58,16 @@
                     range)))
 
 
-(defun find-references (name pkg-name)
+(defun find-references (state name pkg-name)
     (let* ((refs (lookup-references name pkg-name))
-           (file-forms (get-file-forms refs)))
+           (file-forms (get-file-forms state refs)))
         (mapcar (lambda (ref)
                     (ref-to-location file-forms ref))
                 refs)))
 
 
-(defun get-locations (text pos)
+(defun get-locations (state forms pos)
     (multiple-value-bind (name pkg-name)
-            (sym:for-pos text pos)
+            (sym:for-pos forms pos)
         (when (and name pkg-name)
-              (find-references name pkg-name))))
+              (find-references state name pkg-name))))

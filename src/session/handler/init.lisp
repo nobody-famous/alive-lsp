@@ -14,7 +14,6 @@
 (defparameter *doc-sync-incr* 2)
 
 
-(declaim (ftype (function (cons) hash-table) request))
 (defun request (msg)
     (let* ((id (cdr (assoc :id msg)))
            (data (make-hash-table :test #'equalp))
@@ -60,7 +59,6 @@
         (lsp-msg:create-response id :result-value data)))
 
 
-(declaim (ftype (function (state:state cons) null) initialized))
 (defun initialized (state msg)
     (declare (ignore msg))
     (state:set-initialized state T)

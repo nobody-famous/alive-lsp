@@ -2,6 +2,7 @@
     (:use :cl)
     (:export :find-expr
              :from-stream
+             :from-tokens
              :from-stream-or-nil
              :get-outer-form
              :get-nth-form
@@ -13,7 +14,8 @@
                       (:form :alive/parse/form)
                       (:pos :alive/position)
                       (:token :alive/parse/token)
-                      (:tokenizer :alive/parse/tokenizer)))
+                      (:tokenizer :alive/parse/tokenizer)
+                      (:utils :alive/utils)))
 
 (in-package :alive/parse/forms)
 
@@ -151,11 +153,10 @@
     (collapse-opens state types:*open-paren*))
 
 
-(defun from-stream (input)
+(defun from-tokens (tokens)
     (loop :with state := (make-parse-state)
 
-          :for token :in (tokenizer:from-stream input) :do
-
+          :for token :in tokens :do
               (cond ((token:is-type types:*open-paren* token) (open-paren state token))
 
                     ((token:is-type types:*close-paren* token) (close-paren state token))
@@ -186,14 +187,6 @@
 
           :finally (progn (collapse-opens state)
                           (return (reverse (parse-state-forms state))))))
-
-
-(defun from-stream-or-nil (input)
-    (handler-case
-            (from-stream input)
-        (T (c)
-           (declare (ignore c))
-           nil)))
 
 
 (defun get-nth-form (forms n)
@@ -248,6 +241,12 @@
             nil)))
 
 
+(defun get-outer-form (form pos)
+    (when (and form
+               (car (form:get-kids form)))
+          (find-inner-form form pos)))
+
+
 (defun find-expr (form pos)
     (let ((start (form:get-start form))
           (end (form:get-end form))
@@ -261,12 +260,6 @@
               (if kid
                   (find-expr kid pos)
                   form))))
-
-
-(defun get-outer-form (form pos)
-    (when (and form
-               (car (form:get-kids form)))
-          (find-inner-form form pos)))
 
 
 (defun get-range-for-path (forms source-path)

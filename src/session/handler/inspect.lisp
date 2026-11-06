@@ -22,7 +22,6 @@
 (in-package :alive/session/handler/inspect)
 
 
-(declaim (ftype (function (integer &key (:insp-id (or integer null)) (:result *) (:result-type string)) hash-table) inspect-response))
 (defun inspect-response (id &key insp-id result result-type)
     (let ((data (make-hash-table :test #'equalp))
           (expr-type (if result-type result-type "expr")))
@@ -34,7 +33,6 @@
         (lsp-msg:create-response id :result-value data)))
 
 
-(declaim (ftype (function (deps:dependencies state:state &key (:id integer) (:text string) (:pkg-name string) (:result *) (:result-type string) (:convert boolean)) null) send-inspect-result))
 (defun send-inspect-result (deps state &key id text pkg-name result (convert T) (result-type "expr"))
     (let ((insp-id (state:next-inspector-id state)))
         (state:add-inspector state insp-id
@@ -50,7 +48,6 @@
                                                           (princ-to-string result))))))
 
 
-(declaim (ftype (function (deps:dependencies state:state integer string string) null) try-inspect))
 (defun try-inspect (deps state id text pkg-name)
     (let ((result (eval:from-string deps text
                                     :pkg-name pkg-name
@@ -68,7 +65,6 @@
                              :result result)))
 
 
-(declaim (ftype (function (deps:dependencies state:state list) null) do-inspect))
 (defun do-inspect (deps state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
@@ -88,7 +84,6 @@
                                                          :message (princ-to-string c)))))))
 
 
-(declaim (ftype (function (deps:dependencies state:state list) null) do-inspect-eval))
 (defun do-inspect-eval (deps state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
@@ -121,7 +116,6 @@
                                                          :result-value (make-hash-table))))))
 
 
-(declaim (ftype (function (deps:dependencies state:state list) null) refresh))
 (defun refresh (deps state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
@@ -140,7 +134,6 @@
                                                              :result (inspector:to-result result)))))))
 
 
-(declaim (ftype (function (state:state list) hash-table) do-close))
 (defun do-close (state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
@@ -150,7 +143,6 @@
         (lsp-msg:create-response id :result-value T)))
 
 
-(declaim (ftype (function (deps:dependencies state:state list) null) do-symbol))
 (defun do-symbol (deps state msg)
     (let ((id (cdr (assoc :id msg))))
         (handler-case
@@ -171,7 +163,6 @@
                                                          :message (princ-to-string c)))))))
 
 
-(declaim (ftype (function (deps:dependencies state:state list) null) macro))
 (defun macro (deps state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))

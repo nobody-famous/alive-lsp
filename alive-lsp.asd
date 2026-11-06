@@ -36,6 +36,8 @@
      (:file "packages")
      (:file "symbols")
 
+     (:file "session/state")
+
      (:file "sys/streams")
      (:file "sys/asdf")
      (:file "sys/eval")
@@ -76,7 +78,6 @@
      (:file "lsp/message/response")
      (:file "lsp/message/notification")
 
-     (:file "session/state")
      (:file "session/handlers")
 
      (:file "session/spawn")

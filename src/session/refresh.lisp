@@ -11,7 +11,6 @@
 (in-package :alive/session/refresh)
 
 
-(declaim (ftype (function (deps:dependencies state:state) null) send))
 (defun send (deps state)
     (spawn:new-thread "Refresh Thread"
         (let* ((send-id (state:next-send-id state))

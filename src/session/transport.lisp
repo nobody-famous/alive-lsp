@@ -10,12 +10,10 @@
 (in-package :alive/session/transport)
 
 
-(declaim (ftype (function (T) (or null cons)) read-msg))
 (defun read-msg (input-stream)
     (parse:from-stream input-stream))
 
 
-(declaim (ftype (function (state:state T T)) send-msg))
 (defun send-msg (state out-stream msg)
     (state:lock (state mutex)
         (when (and (hash-table-p msg)
@@ -24,7 +22,6 @@
               (force-output out-stream))))
 
 
-(declaim (ftype (function (state:state T hash-table) cons) send-request))
 (defun send-request (state out-stream req)
     (state:lock (state mutex)
         (let ((cond-var (bt:make-condition-variable))

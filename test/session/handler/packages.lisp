@@ -1,8 +1,10 @@
 (defpackage :alive/test/session/handler/packages
     (:use :cl)
     (:export :run-all)
-    (:local-nicknames (:handler :alive/session/handler/packages)
-                      (:state :alive/session/state)))
+    (:local-nicknames (:forms :alive/parse/forms)
+                      (:handler :alive/session/handler/packages)
+                      (:state :alive/session/state)
+                      (:utils :alive/test/utils)))
 
 (in-package :alive/test/session/handler/packages)
 
@@ -15,7 +17,7 @@
 
 (defun run-test (exp-pkg text)
     (let ((state (state:create)))
-        (state:set-file-text state "some/uri" text)
+        (state:set-file-forms state "some/uri" (utils:get-forms text))
         (clue:check-equal :expected exp-pkg
                           :actual (gethash "package"
                                            (gethash "result" (handler:for-position state *default-message*))))))

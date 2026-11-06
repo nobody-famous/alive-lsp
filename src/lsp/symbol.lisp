@@ -39,21 +39,15 @@
 (defparameter *kind-typeparameter* 26)
 
 
-(defun for-pos (&key text pos)
-    (let* ((pkg-name (packages:for-pos text pos))
+(defun for-pos (&key forms pos)
+    (let* ((pkg-name (packages:for-pos forms pos))
            (pkg (packages:lookup pkg-name))
            (*package* (if pkg pkg *package*)))
 
         (multiple-value-bind (name pkg-name)
-                (alive/symbols:for-pos text pos)
+                (alive/symbols:for-pos forms pos)
             (when (and name pkg-name)
                   (list name pkg-name)))))
-
-
-(defun form-text (text form)
-    (let* ((start (form:get-start-offset form))
-           (end (form:get-end-offset form)))
-        (subseq text start end)))
 
 
 (defun form-kind (name)
@@ -79,15 +73,13 @@
         doc-sym))
 
 
-(defun for-document (text forms)
+(defun for-document (forms)
     (loop :with syms := nil
 
           :for form :in forms :do
               (let* ((kids (form:get-kids form))
-                     (fn (when (first kids)
-                               (form-text text (first kids))))
-                     (name (when (second kids)
-                                 (form-text text (second kids))))
+                     (fn (form:get-sym-text (first kids)))
+                     (name (form:get-sym-text (second kids)))
                      (kind (when fn (form-kind fn))))
 
                   (when (and fn name kind)

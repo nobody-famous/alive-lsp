@@ -13,7 +13,6 @@
 (in-package :alive/session/handler/eval)
 
 
-(declaim (ftype (function (deps:dependencies state:state cons) null) handle))
 (defun handle (deps state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
@@ -44,7 +43,6 @@
             (deps:send-msg deps (handler-utils:result id "text" response-content)))))
 
 
-(declaim (ftype (function (deps:dependencies state:state cons) null) handle-in-frame))
 (defun handle-in-frame (deps state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))

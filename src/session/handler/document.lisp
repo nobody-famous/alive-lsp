@@ -40,8 +40,8 @@
            (params (cdr (assoc :params msg)))
            (doc (cdr (assoc :text-document params)))
            (uri (cdr (assoc :uri doc)))
-           (text (or (state:get-file-text state uri) ""))
-           (items (or (code-lens:get uri text)
+           (forms (state:get-file-forms state uri))
+           (items (or (code-lens:get state uri forms)
                       (make-array 0))))
 
         (lsp-msg:create-response id :result-value items)))
@@ -53,8 +53,8 @@
            (doc (cdr (assoc :text-document params)))
            (pos (cdr (assoc :position params)))
            (uri (cdr (assoc :uri doc)))
-           (text (or (state:get-file-text state uri) ""))
-           (items (or (comps:simple :text text :pos pos)
+           (forms (state:get-file-forms state uri))
+           (items (or (comps:simple :forms forms :pos pos)
                       (make-array 0))))
 
         (let ((data (make-hash-table :test #'equalp)))
@@ -71,8 +71,8 @@
            (doc (cdr (assoc :text-document params)))
            (pos (cdr (assoc :position params)))
            (uri (cdr (assoc :uri doc)))
-           (text (or (state:get-file-text state uri) ""))
-           (location (alive/lsp/definition:get-location :text text :pos pos))
+           (forms (state:get-file-forms state uri))
+           (location (alive/lsp/definition:get-location :state state :forms forms :pos pos))
            (uri (first location))
            (range (second location)))
 
@@ -89,7 +89,19 @@
            (doc (cdr (assoc :text-document params)))
            (uri (cdr (assoc :uri doc)))
            (changes (cdr (assoc :content-changes params)))
-           (text (cdr (assoc :text (first changes)))))
+           (text (cdr (assoc :text (first changes))))
+           (tokens (when text (tokenizer:from-stream (make-string-input-stream text))))
+           (forms (when tokens (forms:from-tokens tokens))))
+
+        (when tokens
+              (state:lock (state mutex)
+                  (state:set-file-tokens state uri tokens)
+                  nil))
+
+        (when forms
+              (state:lock (state mutex)
+                  (state:set-file-forms state uri forms)
+                  nil))
 
         (when text
               (state:lock (state mutex)
@@ -101,7 +113,19 @@
     (let* ((params (cdr (assoc :params msg)))
            (doc (cdr (assoc :text-document params)))
            (uri (cdr (assoc :uri doc)))
-           (text (cdr (assoc :text doc))))
+           (text (cdr (assoc :text doc)))
+           (tokens (when text (tokenizer:from-stream (make-string-input-stream text))))
+           (forms (when tokens (forms:from-tokens tokens))))
+
+        (when tokens
+              (state:lock (state mutex)
+                  (state:set-file-tokens state uri tokens)
+                  nil))
+
+        (when forms
+              (state:lock (state mutex)
+                  (state:set-file-forms state uri forms)
+                  nil))
 
         (when text
               (state:lock (state mutex)
@@ -114,9 +138,8 @@
            (params (cdr (assoc :params msg)))
            (doc (cdr (assoc :text-document params)))
            (uri (cdr (assoc :uri doc)))
-           (text (or (state:get-file-text state uri) ""))
-           (forms (forms:from-stream-or-nil (make-string-input-stream text)))
-           (symbols (alive/lsp/symbol:for-document text forms)))
+           (forms (state:get-file-forms state uri))
+           (symbols (alive/lsp/symbol:for-document forms)))
 
         (let ((result (or symbols (make-hash-table))))
             (lsp-msg:create-response id
@@ -129,9 +152,9 @@
            (doc (cdr (assoc :text-document params)))
            (pos (cdr (assoc :position params)))
            (uri (cdr (assoc :uri doc)))
-           (text (or (state:get-file-text state uri) ""))
-           (hov-text (alive/lsp/hover:get-text :text text :pos pos))
-           (result (if hov-text hov-text "")))
+           (forms (state:get-file-forms state uri))
+           (hov-text (alive/lsp/hover:get-text :forms forms :pos pos))
+           (result (or hov-text "")))
 
         (utils:result id "value" result)))
 
@@ -143,8 +166,8 @@
            (opts (cdr (assoc :options params)))
            (pos (cdr (assoc :position params)))
            (uri (cdr (assoc :uri doc)))
-           (text (or (state:get-file-text state uri) ""))
-           (edits (formatter:on-type (make-string-input-stream text)
+           (tokens (state:get-file-tokens state uri))
+           (edits (formatter:on-type tokens
                                      :options (fmt-opts:convert opts)
                                      :pos pos))
            (value (if edits
@@ -160,8 +183,8 @@
            (range (cdr (assoc :range params)))
            (doc (cdr (assoc :text-document params)))
            (uri (cdr (assoc :uri doc)))
-           (text (or (state:get-file-text state uri) ""))
-           (edits (formatter:range (make-string-input-stream text)
+           (tokens (state:get-file-tokens state uri))
+           (edits (formatter:range tokens
                                    range
                                    options)))
 
@@ -188,8 +211,7 @@
            (params (cdr (assoc :params msg)))
            (doc (cdr (assoc :text-document params)))
            (uri (cdr (assoc :uri doc)))
-           (text (or (state:get-file-text state uri) ""))
-           (forms (forms:from-stream-or-nil (make-string-input-stream text)))
+           (forms (state:get-file-forms state uri))
            (pos-list (cdr (assoc :positions params)))
            (ranges (when (and forms pos-list)
                          (selection:ranges forms pos-list))))
@@ -226,10 +248,8 @@
            (params (cdr (assoc :params msg)))
            (doc (cdr (assoc :text-document params)))
            (uri (cdr (assoc :uri doc)))
-           (text (or (state:get-file-text state uri) ""))
-           (sem-tokens (analysis:to-sem-tokens
-                           (tokenizer:from-stream
-                               (make-string-input-stream text)))))
+           (tokens (state:get-file-tokens state uri))
+           (sem-tokens (analysis:to-sem-tokens tokens)))
 
         (utils:result id "data" (if sem-tokens
                                     (to-sem-array sem-tokens)
@@ -242,8 +262,8 @@
            (doc (cdr (assoc :text-document params)))
            (uri (cdr (assoc :uri doc)))
            (pos (cdr (assoc :position params)))
-           (text (or (state:get-file-text state uri) ""))
-           (items (or (sig-help:signatures :text text :pos pos)
+           (forms (state:get-file-forms state uri))
+           (items (or (sig-help:signatures :forms forms :pos pos)
                       (make-array 0))))
 
         (utils:result id "signatures" items)))
@@ -255,7 +275,7 @@
            (doc (cdr (assoc :text-document params)))
            (uri (cdr (assoc :uri doc)))
            (pos (cdr (assoc :position params)))
-           (text (or (state:get-file-text state uri) ""))
-           (locs (alive/sys/xref:get-locations text pos)))
+           (forms (state:get-file-forms state uri))
+           (locs (alive/sys/xref:get-locations state forms pos)))
         (lsp-msg:create-response id
                                  :result-value (or locs (make-array 0)))))

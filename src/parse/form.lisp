@@ -4,11 +4,11 @@
              :add-token
              :create
              :get-end
-             :get-end-offset
+             :get-form-type
              :get-kids
              :get-start
-             :get-start-offset
-             :get-form-type
+             :get-sym-text
+             :get-sym-text
              :get-tokens)
     (:local-nicknames (:pos :alive/position)
                       (:token :alive/parse/token)))
@@ -17,9 +17,10 @@
 
 
 (defstruct form
-    form-type
     kids
-    tokens)
+    kind
+    tokens
+    (pkg "cl-user"))
 
 
 (defun add-kid (form kid)
@@ -33,7 +34,7 @@
 
 
 (defun get-end (form)
-    (when form
+    (when (form-p form)
           (let* ((token (car (reverse (form-tokens form))))
                  (token-end (or (token:get-end token) (pos:create 0 0)))
                  (kid (car (reverse (form-kids form))))
@@ -43,43 +44,36 @@
                   token-end))))
 
 
-(defun get-end-offset (form)
-    (when form
-          (let* ((token (car (reverse (form-tokens form))))
-                 (token-end (or (token:get-end-offset token) 0))
-                 (kid (car (reverse (form-kids form))))
-                 (kid-end (or (get-end-offset kid) 0)))
-              (max token-end kid-end))))
-
-
 (defun get-kids (form)
-    (when form
+    (when (form-p form)
           (form-kids form)))
 
 
 (defun get-tokens (form)
-    (when form
+    (when (form-p form)
           (form-tokens form)))
 
 
+(defun get-sym-text (form)
+    (when (and (form-p form)
+               (eq (form-kind form) alive/types:*symbol*))
+          (apply #'concatenate 'string
+              (mapcar 'token:get-text (get-tokens form)))))
+
+
 (defun get-start (form)
-    (when form
+    (when (form-p form)
           (let ((token (car (form-tokens form))))
               (token:get-start token))))
 
 
-(defun get-start-offset (form)
-    (when form
-          (let ((token (car (form-tokens form))))
-              (token:get-start-offset token))))
-
-
 (defun get-form-type (form)
-    (when form
-          (form-form-type form)))
+    (when (form-p form)
+          (form-kind form)))
 
 
-(defun create (&key form-type kids tokens)
-    (make-form :form-type form-type
+(defun create (&key form-type kids tokens pkg)
+    (make-form :kind form-type
                :kids kids
-               :tokens tokens))
+               :tokens tokens
+               :pkg pkg))

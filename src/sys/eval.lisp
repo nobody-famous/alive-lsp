@@ -9,18 +9,10 @@
 (in-package :alive/sys/eval)
 
 
-(declaim (ftype (function (stream) *) eval-fn))
 (defun eval-fn (input)
     (eval (read input)))
 
 
-(declaim (ftype (function (deps:dependencies string &key
-                                             (:pkg-name string)
-                                             (:stdin-fn function)
-                                             (:stdout-fn function)
-                                             (:stderr-fn function)
-                                             (:query-fn function)
-                                             (:trace-fn function)) *) from-string))
 (defun from-string (deps str &key pkg-name stdin-fn stdout-fn stderr-fn query-fn trace-fn)
     (astreams:with-redirect-streams (:stdin-fn stdin-fn :stdout-fn stdout-fn :stderr-fn stderr-fn :query-fn query-fn :trace-fn trace-fn)
         (let* ((input (make-string-input-stream str))

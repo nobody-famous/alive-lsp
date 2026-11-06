@@ -4,15 +4,17 @@
     (:local-nicknames (:pos :alive/position)
                       (:types :alive/types)
                       (:form :alive/parse/form)
+                      (:forms :alive/parse/forms)
                       (:token :alive/parse/token)
-                      (:p :alive/parse/forms)))
+                      (:tokenizer :alive/parse/tokenizer)))
 
 (in-package :alive/test/parse/forms)
 
 
 (defun check-forms (text expected)
     (let* ((input (make-string-input-stream text))
-           (forms (p:from-stream input)))
+           (tokens (tokenizer:from-stream input))
+           (forms (forms:from-tokens tokens)))
 
         (clue:check-equal :expected expected
                           :actual forms)))
@@ -166,6 +168,7 @@
                                                                     :start-offset 0
                                                                     :end (pos:create 0 1)
                                                                     :end-offset 1
+                                                                    :is-multiline T
                                                                     :text "(")
                                                       (token:create :type-value types:*close-paren*
                                                                     :start (pos:create 1 0)
@@ -529,13 +532,47 @@
                                                                                                  :start-offset 1
                                                                                                  :end (pos:create 0 4)
                                                                                                  :end-offset 4
-                                                                                                 :text "foo"))))))))
+                                                                                                 :text "foo")))))))
+
+            (check-forms (format nil "((foo))")
+                         (list (form:create :form-type types:*open-paren*
+                                            :tokens (list (token:create :type-value types:*open-paren*
+                                                                        :start (pos:create 0 0)
+                                                                        :start-offset 0
+                                                                        :end (pos:create 0 1)
+                                                                        :end-offset 1
+                                                                        :text "(")
+                                                          (token:create :type-value types:*close-paren*
+                                                                        :start (pos:create 0 6)
+                                                                        :start-offset 6
+                                                                        :end (pos:create 0 7)
+                                                                        :end-offset 7
+                                                                        :text ")"))
+                                            :kids (list (form:create :form-type types:*open-paren*
+                                                                     :tokens (list (token:create :type-value types:*open-paren*
+                                                                                                 :start (pos:create 0 1)
+                                                                                                 :start-offset 1
+                                                                                                 :end (pos:create 0 2)
+                                                                                                 :end-offset 2
+                                                                                                 :text "(")
+                                                                                   (token:create :type-value types:*close-paren*
+                                                                                                 :start (pos:create 0 5)
+                                                                                                 :start-offset 5
+                                                                                                 :end (pos:create 0 6)
+                                                                                                 :end-offset 6
+                                                                                                 :text ")"))
+                                                                     :kids (list (form:create :form-type types:*symbol*
+                                                                                              :tokens (list (token:create :type-value types:*symbol*
+                                                                                                                          :start (pos:create 0 2)
+                                                                                                                          :start-offset 2
+                                                                                                                          :end (pos:create 0 5)
+                                                                                                                          :end-offset 5
+                                                                                                                          :text "foo"))))))))))
 
         (clue:test "Unmatched close paren"
             (check-forms (format nil ")")
                          (list (form:create :form-type types:*unmatched-close-paren*
                                             :kids nil))))))
-
 
 (defun test-getters ()
     (clue:test "Getters for symbol form"
@@ -546,12 +583,8 @@
                                                                  :end (pos:create 0 11)
                                                                  :end-offset 11
                                                                  :text "aa")))))
-            (clue:check-equal :expected 9
-                              :actual (form:get-start-offset sym-form))
             (clue:check-equal :expected (pos:create 0 9)
                               :actual (form:get-start sym-form))
-            (clue:check-equal :expected 11
-                              :actual (form:get-end-offset sym-form))
             (clue:check-equal :expected (pos:create 0 11)
                               :actual (form:get-end sym-form))))
 
@@ -576,12 +609,8 @@
                                                                                             :end (pos:create 0 5)
                                                                                             :end-offset 5
                                                                                             :text "foo")))))))
-            (clue:check-equal :expected 1
-                              :actual (form:get-start-offset paren-form))
             (clue:check-equal :expected (pos:create 0 1)
                               :actual (form:get-start paren-form))
-            (clue:check-equal :expected 6
-                              :actual (form:get-end-offset paren-form))
             (clue:check-equal :expected (pos:create 0 6)
                               :actual (form:get-end paren-form))))
 
@@ -614,12 +643,8 @@
                                                                                                                       :end-offset 4
                                                                                                                       :text "1"))
                                                                                           :kids (list))))))))
-            (clue:check-equal :expected 1
-                              :actual (form:get-start-offset quoted-form))
             (clue:check-equal :expected (pos:create 0 1)
                               :actual (form:get-start quoted-form))
-            (clue:check-equal :expected 5
-                              :actual (form:get-end-offset quoted-form))
             (clue:check-equal :expected (pos:create 0 5)
                               :actual (form:get-end quoted-form)))))
 
