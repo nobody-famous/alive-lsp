@@ -10,7 +10,6 @@
 (in-package :alive/session/message)
 
 
-(declaim (ftype (function (alive/deps:dependencies state:state handlers:list-of-handlers cons) (values (or null hash-table) &optional)) handle-request))
 (defun handle-request (deps state handlers msg)
     (let* ((method-name (cdr (assoc :method msg)))
            (handler (handlers:get-handler handlers method-name)))
@@ -25,7 +24,6 @@
                                                :message error-msg))))))
 
 
-(declaim (ftype (function (state:state cons) (values (or null hash-table) &optional)) handle-response))
 (defun handle-response (state msg)
     (let* ((msg-id (cdr (assoc :id msg)))
            (cb (state:get-sent-msg-callback state msg-id)))
@@ -37,7 +35,6 @@
                                   :message (format nil "No callback for request: ~A" msg-id)))))
 
 
-(declaim (ftype (function (alive/deps:dependencies state:state handlers:list-of-handlers cons) (values (or null hash-table) &optional)) handle))
 (defun handle (deps state handlers msg)
     (cond ((assoc :method msg) (handle-request deps state handlers msg))
           ((or (assoc :result msg)

@@ -14,7 +14,6 @@
     (state:set-running state nil))
 
 
-(declaim (ftype (function (alive/deps:dependencies state:state) null) start))
 (defun start (deps state)
     (state:set-running state T)
 

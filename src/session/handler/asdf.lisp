@@ -12,14 +12,12 @@
 (in-package :alive/session/handler/asdf)
 
 
-(declaim (ftype (function (deps:dependencies cons) hash-table) list-all))
 (defun list-all (deps msg)
     (utils:result (cdr (assoc :id msg))
                   "systems"
                   (deps:list-all-asdf deps)))
 
 
-(declaim (ftype (function (deps:dependencies state:state cons) (values null &optional)) load-system))
 (defun load-system (deps state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))

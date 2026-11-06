@@ -7,7 +7,6 @@
 (in-package :alive/session/handler/utils)
 
 
-(declaim (ftype (function (fixnum string T) hash-table) result))
 (defun result (id key value)
     (let ((data (make-hash-table :test #'equalp)))
         (setf (gethash key data) value)

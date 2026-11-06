@@ -50,7 +50,6 @@
         (error "Object has no result")))
 
 
-(declaim (ftype (function (string (or null hash-table)) null) print-hash-table))
 (defun print-hash-table (label ht)
     (when (hash-table-p ht)
           (format T "~A~%" label)

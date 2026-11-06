@@ -14,7 +14,6 @@
 (in-package :alive/session/handler/compile)
 
 
-(declaim (ftype (function (deps:dependencies list) null) try))
 (defun try (deps msg)
     (let* ((params (cdr (assoc :params msg)))
            (path (cdr (assoc :path params)))
@@ -24,7 +23,6 @@
         (deps:send-msg deps (utils:result (cdr (assoc :id msg)) "messages" msgs))))
 
 
-(declaim (ftype (function (deps:dependencies state:state list) null) file))
 (defun file (deps state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
@@ -41,7 +39,6 @@
         (deps:send-msg deps (lsp-msg:create-response id :result-value "OK"))))
 
 
-(declaim (ftype (function (deps:dependencies state:state list) null) load-file))
 (defun load-file (deps state msg)
     (let* ((id (cdr (assoc :id msg)))
            (params (cdr (assoc :params msg)))
